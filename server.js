@@ -55,9 +55,7 @@ function authMiddleware(req, res, next) {
 // ── ROUTES ───────────────────────────────────────────────────────────────────
 
 // Health check
-app.get('/', (req, res) => {
-  res.json({ message: '✅ IdeaHub backend is running!', version: '1.0.0' });
-});
+
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 
