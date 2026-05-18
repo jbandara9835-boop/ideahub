@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IdeaHub — Earn from your ideas</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold-light:#F0D080;--gold-dim:#7A5E1E;
+  --dark:#0D0D0D;--dark2:#121212;--dark3:#1A1A1A;--dark4:#242424;--surface:#2E2E2E;
+  --text:#F0EBE0;--text-muted:#9A9080;--text-dim:#5C5448;
+  --border:rgba(201,168,76,.22);--bl:rgba(201,168,76,.09);
+  --green:#50C878;--red:#FF6B6B;--blue:#7BA7FF;--purple:#B57BFF;
+  --r:12px;--rl:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--dark2)}
+::-webkit-scrollbar-thumb{background:var(--dark4);border-radius:3px}
+button,input,select,textarea{font-family:'DM Sans',sans-serif;outline:none}
+input,select,textarea{
+  background:var(--dark4);border:1px solid var(--bl);border-radius:var(--r);
+  color:var(--text);font-size:14px;padding:10px 14px;width:100%;transition:.2s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--border)}
+select option{background:var(--dark3)}
+textarea{resize:vertical;min-height:90px}
+label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 4%;background:rgba(13,13,13,.93);backdrop-filter:blur(20px);border-bottom:1px solid var(--bl)}
+.n-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);cursor:pointer;letter-spacing:1px}
+.n-links{display:flex;gap:4px;align-items:center}
+.n-btn{background:none;border:none;color:var(--text-muted);font-size:13px;padding:7px 12px;cursor:pointer;border-radius:8px;transition:.2s}
+.n-btn:hover,.n-btn.act{color:var(--text);background:var(--dark4)}
+.n-btn.act{color:var(--gold)}
+.n-cta{background:var(--gold);color:var(--dark);font-weight:600;font-size:13px;padding:8px 18px;border-radius:8px;border:none;cursor:pointer;transition:.2s}
+.n-cta:hover{background:var(--gold-light)}
+.n-badge{background:var(--red);color:#fff;font-size:10px;padding:2px 5px;border-radius:4px;margin-left:4px}
+
+/* PAGES */
+.page{padding-top:64px;min-height:100vh}
+
+/* HERO */
+.hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 5% 60px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 45% at 50% 0%,rgba(201,168,76,.13) 0%,transparent 70%),radial-gradient(ellipse 35% 35% at 85% 85%,rgba(201,168,76,.06) 0%,transparent 60%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.035) 1px,transparent 1px);background-size:56px 56px}
+.hero-float{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none}
+.htag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,.1);border:1px solid var(--border);color:var(--gold);font-size:11px;font-weight:500;padding:5px 14px;border-radius:100px;margin-bottom:24px;position:relative;z-index:1;letter-spacing:1.2px;text-transform:uppercase}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(40px,7vw,90px);font-weight:900;line-height:1.03;position:relative;z-index:1;margin-bottom:20px}
+.hero h1 .ac{color:var(--gold)}
+.hero p{font-size:17px;color:var(--text-muted);max-width:540px;line-height:1.75;margin-bottom:40px;position:relative;z-index:1}
+.hero-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;position:relative;z-index:1}
+
+/* BUTTONS */
+.btn-p{background:var(--gold);color:var(--dark);font-weight:600;font-size:14px;padding:12px 26px;border-radius:10px;border:none;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn-p:hover{background:var(--gold-light);transform:translateY(-1px)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-o{background:none;color:var(--text);font-weight:500;font-size:14px;padding:12px 26px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn-o:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:8px}
+.btn-ghost{background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;transition:.2s;padding:6px 10px;border-radius:6px}
+.btn-ghost:hover{color:var(--text);background:var(--dark4)}
+.btn-danger{background:rgba(255,107,107,.12);color:var(--red);border:1px solid rgba(255,107,107,.3);font-size:13px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:.2s}
+.btn-danger:hover{background:rgba(255,107,107,.2)}
+
+/* STATS BAR */
+.stats-bar{padding:50px 5%;border-top:1px solid var(--bl);border-bottom:1px solid var(--bl)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:30px;max-width:880px;margin:0 auto;text-align:center}
+.snum{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;color:var(--gold)}
+.slbl{font-size:12px;color:var(--text-muted);margin-top:3px}
+
+/* SECTION */
+.sec{padding:80px 5%}
+.sec-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:14px;text-align:center}
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,42px);text-align:center;margin-bottom:48px;line-height:1.2}
+
+/* ROLE CARDS */
+.roles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;max-width:1080px;margin:0 auto}
+.role-card{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--rl);padding:24px 20px 28px;cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:.3s}
+.role-card:hover{border-color:var(--border);transform:translateY(-3px);background:var(--dark4)}
+.role-card:hover::before{opacity:1}
+.r-icon{width:44px;height:44px;background:rgba(201,168,76,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:20px}
+.role-card h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.role-card p{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:16px}
+.r-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--gold);background:none;border:1px solid var(--border);padding:7px 14px;border-radius:7px;cursor:pointer;transition:.2s}
+.r-link:hover{background:rgba(201,168,76,.1)}
+
+/* STEPS */
+.steps-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;max-width:1000px;margin:0 auto;position:relative}
+.steps-row::before{content:'';position:absolute;top:32px;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,var(--border),var(--gold),var(--border),transparent)}
+.step{text-align:center;padding:0 16px 32px;position:relative}
+.step-n{width:64px;height:64px;background:var(--dark3);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold);position:relative;z-index:1}
+.step h4{font-size:14px;font-weight:600;margin-bottom:6px}
+.step p{font-size:12px;color:var(--text-muted);line-height:1.6}
+
+/* FEATURE CARDS */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:1080px;margin:0 auto}
+.feat-card{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--r);padding:22px}
+.fbadge{display:inline-block;background:rgba(201,168,76,.12);color:var(--gold);font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:5px;margin-bottom:12px}
+.feat-card h4{font-size:14px;font-weight:600;margin-bottom:7px}
+.feat-card p{font-size:12px;color:var(--text-muted);line-height:1.6}
+
+/* FOOTER */
+footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
+.f-logo{font-family:'Playfair Display',serif;font-size:26px;color:var(--gold);margin-bottom:10px}
+.f-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.f-links a{font-size:12px;color:var(--text-muted);cursor:pointer;transition:.2s}
+.f-links a:hover{color:var(--gold)}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:20px}
+.ov.open{display:flex}
+.modal{background:var(--dark2);border:1px solid var(--border);border-radius:20px;padding:36px;width:100%;max-width:430px;position:relative;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease}
+.modal-lg{max-width:700px}
+.modal-xl{max-width:900px}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.mc{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1;transition:.2s}
+.mc:hover{color:var(--text)}
+.modal h2{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:5px}
+.modal .sub{font-size:13px;color:var(--text-muted);margin-bottom:24px}
+.rtag{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.12);border:1px solid var(--border);color:var(--gold);font-size:11px;padding:4px 11px;border-radius:6px;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.social-logins{display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.s-btn{display:flex;align-items:center;gap:9px;justify-content:center;padding:10px;border-radius:8px;border:1px solid var(--bl);background:var(--dark4);color:var(--text);font-size:13px;cursor:pointer;transition:.2s}
+.s-btn:hover{border-color:var(--border);background:var(--dark3)}
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bl)}
+.divider span{font-size:11px;color:var(--text-dim)}
+.auth-sw{text-align:center;font-size:12px;color:var(--text-muted);margin-top:16px}
+.auth-sw span{color:var(--gold);cursor:pointer}
+.btn-full{width:100%;justify-content:center}
+
+/* DASHBOARD */
+.dash-wrap{display:flex;min-height:calc(100vh - 64px)}
+.sidebar{width:220px;flex-shrink:0;background:var(--dark2);border-right:1px solid var(--bl);padding:20px 0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.s-user{padding:14px 16px;border-bottom:1px solid var(--bl);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.avatar{border-radius:50%;background:linear-gradient(135deg,var(--gold-dim),var(--gold));display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--dark);flex-shrink:0}
+.av40{width:40px;height:40px;font-size:15px}
+.av32{width:32px;height:32px;font-size:12px}
+.av28{width:28px;height:28px;font-size:11px}
+.av56{width:56px;height:56px;font-size:20px}
+.av80{width:80px;height:80px;font-size:28px}
+.s-user .uname{font-size:13px;font-weight:500}
+.s-user .urole{font-size:11px;color:var(--text-muted)}
+.s-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);padding:0 16px;margin-bottom:5px}
+.s-item{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:8px;color:var(--text-muted);font-size:13px;cursor:pointer;transition:.2s;margin:0 6px 2px}
+.s-item:hover,.s-item.act{background:rgba(201,168,76,.1);color:var(--gold)}
+.s-icon{font-size:15px;width:18px;text-align:center}
+.s-sep{height:1px;background:var(--bl);margin:12px 16px}
+.dash-main{flex:1;padding:32px 36px;overflow:auto}
+.dash-hd{margin-bottom:28px}
+.dash-hd h1{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:3px}
+.dash-hd p{font-size:13px;color:var(--text-muted)}
+.m-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.mcard{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--r);padding:18px}
+.mlbl{font-size:11px;color:var(--text-muted);margin-bottom:7px}
+.mval{font-size:26px;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif}
+.msub{font-size:11px;color:var(--text-dim);margin-top:3px}
+.panel{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--r);padding:22px;margin-bottom:20px}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.panel-hd h3{font-size:15px;font-weight:600}
+.irow{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--bl)}
+.irow:last-child{border-bottom:none}
+.i-box{width:38px;height:38px;border-radius:9px;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ititle{font-size:13px;font-weight:500}
+.imeta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.badge-st{margin-left:auto;flex-shrink:0;font-size:10px;font-weight:500;padding:3px 9px;border-radius:5px}
+.st-live{background:rgba(80,200,120,.14);color:var(--green)}
+.st-pend{background:rgba(201,168,76,.14);color:var(--gold)}
+.st-sold{background:rgba(123,167,255,.14);color:var(--blue)}
+.st-esc{background:rgba(181,123,255,.14);color:var(--purple)}
+.st-rev{background:rgba(255,107,107,.14);color:var(--red)}
+
+/* EXPLORE */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;align-items:center}
+.srch{display:flex;align-items:center;gap:8px;background:var(--dark3);border:1px solid var(--bl);border-radius:var(--r);padding:0 14px;flex:1;min-width:200px}
+.srch input{background:none;border:none;color:var(--text);font-size:13px;padding:9px 0;flex:1}
+.srch input::placeholder{color:var(--text-dim)}
+.f-btn{background:var(--dark3);border:1px solid var(--bl);color:var(--text-muted);font-size:12px;padding:7px 14px;border-radius:8px;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif}
+.f-btn:hover,.f-btn.act{background:rgba(201,168,76,.1);color:var(--gold);border-color:var(--border)}
+.ideas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.ic{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--rl);padding:22px;cursor:pointer;transition:.3s;display:flex;flex-direction:column}
+.ic:hover{border-color:var(--border);transform:translateY(-2px);background:var(--dark4)}
+.ic-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.ic-ico{width:42px;height:42px;border-radius:9px;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ic h4{font-size:14px;font-weight:600;margin-bottom:3px}
+.ic .cr{font-size:11px;color:var(--text-muted)}
+.ic p{font-size:12px;color:var(--text-muted);line-height:1.6;flex:1;margin-bottom:16px}
+.ic-ft{display:flex;align-items:center;justify-content:space-between}
+.price{font-size:17px;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif}
+.lvl{font-size:10px;padding:3px 7px;border-radius:4px;font-weight:500}
+.l1{background:rgba(80,200,80,.14);color:#80D880}
+.l2{background:rgba(201,168,76,.14);color:var(--gold)}
+.l3{background:rgba(255,107,107,.14);color:var(--red)}
+.ind-tag{display:inline-block;background:var(--dark4);border:1px solid var(--bl);color:var(--text-muted);font-size:10px;padding:2px 7px;border-radius:4px;margin-right:4px;margin-bottom:8px}
+
+/* POST IDEA */
+.post-wrap{max-width:760px;margin:0 auto;padding:32px 5% 60px}
+.fsec{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--rl);padding:24px;margin-bottom:18px}
+.fsec h3{font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bl);display:flex;align-items:center;gap:8px}
+.lvl-sel{display:flex;gap:10px}
+.lo{flex:1;padding:12px;border-radius:10px;text-align:center;cursor:pointer;border:1px solid var(--bl);background:var(--dark4);transition:.2s}
+.lo:hover{border-color:var(--border)}
+.lo.sel{border-color:var(--gold);background:rgba(201,168,76,.08)}
+.lo .ln{font-size:20px;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif}
+.lo .lname{font-size:11px;color:var(--text-muted);margin-top:3px}
+.upload-box{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:.2s;background:rgba(201,168,76,.02)}
+.upload-box:hover{border-color:var(--gold);background:rgba(201,168,76,.05)}
+.vis-opts{display:flex;flex-direction:column;gap:8px}
+.vo{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:10px;border:1px solid var(--bl);cursor:pointer;transition:.2s;background:var(--dark4)}
+.vo:hover,.vo.sel{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.vo .vt{font-size:13px;font-weight:500;margin-bottom:2px}
+.vo .vd{font-size:11px;color:var(--text-muted)}
+.eng-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.eo{padding:12px;border-radius:10px;border:1px solid var(--bl);cursor:pointer;transition:.2s;background:var(--dark4)}
+.eo:hover,.eo.sel{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.et{font-size:12px;font-weight:500;margin-bottom:3px}
+.ep{font-size:11px;color:var(--gold)}
+.price-row{display:flex;align-items:center;gap:10px}
+.price-pre{font-size:16px;color:var(--text-muted)}
+.price-in{flex:1;font-size:18px;font-weight:700;font-family:'Playfair Display',serif}
+
+/* PROFILE */
+.prof-wrap{max-width:820px;margin:0 auto;padding:32px 5% 60px}
+.prof-hd{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--rl);padding:28px;display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;position:relative;overflow:hidden}
+.prof-hd::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold-dim),var(--gold),var(--gold-dim))}
+.stars{color:var(--gold);letter-spacing:2px;font-size:14px;margin-bottom:6px}
+.badges-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.badge{display:inline-flex;align-items:center;gap:4px;background:rgba(201,168,76,.1);border:1px solid var(--border);color:var(--gold);font-size:10px;padding:3px 9px;border-radius:5px;font-weight:500}
+.p-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.psc{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--r);padding:18px;text-align:center}
+.psn{font-size:26px;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif}
+.psl{font-size:11px;color:var(--text-muted);margin-top:3px}
+
+/* PATENT CHECKER */
+.patent-wrap{max-width:700px;margin:0 auto;padding:32px 5% 60px}
+.pat-result{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--rl);padding:24px;margin-top:20px}
+.pat-status{display:flex;align-items:center;gap:10px;padding:14px;border-radius:10px;margin-bottom:16px;font-size:14px;font-weight:500}
+.pat-clear{background:rgba(80,200,120,.1);border:1px solid rgba(80,200,120,.3);color:var(--green)}
+.pat-found{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:var(--red)}
+.pat-warn{background:rgba(201,168,76,.1);border:1px solid var(--border);color:var(--gold)}
+.pat-item{padding:10px 0;border-bottom:1px solid var(--bl)}
+.pat-item:last-child{border-bottom:none}
+.pat-item h4{font-size:13px;font-weight:600;margin-bottom:3px}
+.pat-item p{font-size:12px;color:var(--text-muted)}
+.pat-num{font-size:11px;color:var(--blue);background:rgba(123,167,255,.1);border:1px solid rgba(123,167,255,.2);padding:2px 8px;border-radius:4px;display:inline-block;margin-top:4px}
+.typing-dot{display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;animation:td 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+/* VIDEO CONF */
+.video-wrap{background:var(--dark2);border-radius:var(--rl);overflow:hidden}
+.vid-stage{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:var(--dark);height:320px}
+.vid-tile{background:var(--dark3);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.vid-tile.main{background:linear-gradient(135deg,#1A2A1A,#0D1A0D)}
+.vid-tile.self{background:linear-gradient(135deg,#1A1A2A,#0D0D1A)}
+.cam-off{display:flex;flex-direction:column;align-items:center;gap:8px}
+.cam-off p{font-size:11px;color:var(--text-muted)}
+.vid-name{position:absolute;bottom:8px;left:8px;font-size:11px;background:rgba(0,0,0,.6);padding:3px 8px;border-radius:4px}
+.vid-controls{background:var(--dark3);padding:14px;display:flex;align-items:center;justify-content:center;gap:10px}
+.vc-btn{width:40px;height:40px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:.2s}
+.vc-btn:hover{transform:scale(1.05)}
+.vc-mic{background:rgba(80,200,120,.15);color:var(--green)}
+.vc-mic.off{background:rgba(255,107,107,.15);color:var(--red)}
+.vc-cam{background:rgba(123,167,255,.15);color:var(--blue)}
+.vc-cam.off{background:rgba(255,107,107,.15);color:var(--red)}
+.vc-end{background:rgba(255,107,107,.15);color:var(--red);width:48px;height:48px}
+.vc-chat{background:rgba(201,168,76,.1);color:var(--gold)}
+.chat-box{height:200px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--dark4)}
+.chat-msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.5}
+.chat-msg.me{background:rgba(201,168,76,.15);align-self:flex-end;border-bottom-right-radius:3px}
+.chat-msg.them{background:var(--dark3);align-self:flex-start;border-bottom-left-radius:3px}
+.chat-name{font-size:10px;color:var(--text-muted);margin-bottom:2px}
+.chat-in{display:flex;gap:8px;padding:10px;background:var(--dark3);border-top:1px solid var(--bl)}
+.chat-in input{background:var(--dark4);border:1px solid var(--bl);flex:1;font-size:12px;padding:7px 12px;border-radius:7px}
+
+/* ESCROW */
+.escrow-steps{display:flex;flex-direction:column;gap:0}
+.es-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--bl)}
+.es-step:last-child{border-bottom:none}
+.es-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:2px}
+.es-active{background:rgba(201,168,76,.2);border:1px solid var(--border);color:var(--gold)}
+.es-done{background:rgba(80,200,120,.2);border:1px solid rgba(80,200,120,.3);color:var(--green)}
+.es-wait{background:var(--dark4);border:1px solid var(--bl);color:var(--text-dim)}
+.es-info h4{font-size:13px;font-weight:600;margin-bottom:3px}
+.es-info p{font-size:12px;color:var(--text-muted)}
+.escrow-amount{font-family:'Playfair Display',serif;font-size:36px;color:var(--gold);text-align:center;margin:20px 0}
+.escrow-note{font-size:12px;color:var(--text-muted);text-align:center;line-height:1.6}
+
+/* NOTIFICATIONS */
+.notif-list{display:flex;flex-direction:column;gap:0}
+.notif{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--bl);cursor:pointer;transition:.2s}
+.notif:hover{opacity:.8}
+.notif:last-child{border-bottom:none}
+.n-ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.n-text{font-size:13px;line-height:1.5}
+.n-time{font-size:10px;color:var(--text-dim);margin-top:2px}
+.n-dot{width:7px;height:7px;background:var(--gold);border-radius:50%;flex-shrink:0;margin-top:6px}
+
+/* MESSAGES */
+.msg-wrap{display:grid;grid-template-columns:240px 1fr;gap:0;height:calc(100vh - 64px - 64px);min-height:400px}
+.msg-list{border-right:1px solid var(--bl);overflow-y:auto}
+.msg-item{display:flex;gap:10px;padding:12px 14px;cursor:pointer;transition:.2s;border-bottom:1px solid var(--bl)}
+.msg-item:hover,.msg-item.act{background:rgba(201,168,76,.06)}
+.msg-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.msg-prev{font-size:11px;color:var(--text-muted)}
+.msg-time{font-size:10px;color:var(--text-dim);margin-left:auto;flex-shrink:0}
+.msg-chat{display:flex;flex-direction:column}
+.msg-hd{padding:14px 18px;border-bottom:1px solid var(--bl);display:flex;align-items:center;gap:10px}
+.msg-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:rgba(0,0,0,.15)}
+.bubble{max-width:65%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.55}
+.b-me{background:rgba(201,168,76,.15);align-self:flex-end;border-bottom-right-radius:3px}
+.b-them{background:var(--dark3);align-self:flex-start;border-bottom-left-radius:3px}
+.msg-in{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--bl)}
+.msg-in input{flex:1;background:var(--dark4);border:1px solid var(--bl)}
+
+/* ABOUT */
+.about-wrap{max-width:860px;margin:0 auto;padding:40px 5% 80px}
+.ab-block{display:flex;gap:32px;align-items:flex-start;margin-bottom:48px}
+.ab-ico{font-size:40px;flex-shrink:0;width:70px;text-align:center;margin-top:2px}
+.ab-block h3{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:10px}
+.ab-block p{font-size:14px;color:var(--text-muted);line-height:1.8}
+.mission-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:48px}
+.mc2{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--r);padding:20px}
+.mc2 h4{font-size:14px;font-weight:600;margin-bottom:7px;color:var(--gold)}
+.mc2 p{font-size:12px;color:var(--text-muted);line-height:1.7}
+
+/* PAYMENT */
+.pay-wrap{max-width:560px;margin:0 auto;padding:32px 5% 60px}
+.pay-card{background:var(--dark3);border:1px solid var(--border);border-radius:var(--rl);padding:28px;margin-bottom:18px}
+.pay-logo{font-family:'Playfair Display',serif;font-size:16px;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.card-num{display:flex;gap:8px}
+.card-num input{flex:1;letter-spacing:2px;font-size:15px}
+.pay-method{display:flex;gap:8px;margin-bottom:16px}
+.pm{flex:1;padding:10px;border-radius:8px;border:1px solid var(--bl);cursor:pointer;text-align:center;font-size:12px;font-weight:500;transition:.2s;background:var(--dark4)}
+.pm.sel{border-color:var(--gold);background:rgba(201,168,76,.08);color:var(--gold)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--dark3);border:1px solid var(--border);padding:12px 18px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:8px;animation:slideUp .25s ease;min-width:240px;max-width:340px}
+.toast-s{border-color:rgba(80,200,120,.5);color:var(--green)}
+.toast-e{border-color:rgba(255,107,107,.5);color:var(--red)}
+.toast-i{border-color:var(--border);color:var(--gold)}
+
+/* PROGRESS */
+.prog-bar{height:4px;background:var(--dark4);border-radius:2px;margin-bottom:24px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));border-radius:2px;transition:width .4s ease}
+
+/* IDEA DETAIL */
+.idea-detail{max-width:820px;margin:0 auto;padding:32px 5% 60px}
+.id-hd{background:var(--dark3);border:1px solid var(--bl);border-radius:var(--rl);padding:28px;margin-bottom:20px}
+.id-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.id-ico{width:56px;height:56px;border-radius:12px;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.id-tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.id-desc{font-size:14px;color:var(--text-muted);line-height:1.8}
+.id-creator{display:flex;align-items:center;gap:12px;padding:16px;background:var(--dark4);border-radius:10px;border:1px solid var(--bl)}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:12px;color:var(--text-muted);font-size:13px}
+.spin{width:28px;height:28px;border:2px solid var(--bl);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .dash-main{padding:20px}
+  .frow{grid-template-columns:1fr}
+  .msg-wrap{grid-template-columns:1fr}
+  .msg-list{display:none}
+  .vid-stage{grid-template-columns:1fr}
+  .mission-grid{grid-template-columns:1fr}
+  .ab-block{flex-direction:column;gap:12px}
+  .steps-row::before{display:none}
+  .eng-grid{grid-template-columns:1fr 1fr}
+}
+
+/* AI TYPING */
+.ai-typing{display:inline-flex;gap:4px;align-items:center;padding:4px 0}
+
+/* STARS RATING */
+.star-select{display:flex;gap:4px;font-size:22px;cursor:pointer}
+.star-select span{color:var(--text-dim);transition:.15s}
+.star-select span.lit{color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── BACKEND SIMULATION (in-memory store) ───────────────────────────────────
+// ─── API LAYER — talks to your backend at localhost:3000 ─────────────────────
+const API_URL = 'http://localhost:3000';
+
+const api = {
+  // get stored token
+  token: () => localStorage.getItem('ih_token'),
+
+  // base fetch wrapper
+  async req(method, path, body) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (api.token()) opts.headers['Authorization'] = 'Bearer ' + api.token();
+    if (body) opts.body = JSON.stringify(body);
+    try {
+      const res = await fetch(API_URL + path, opts);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    } catch (e) {
+      // if backend is offline, fall back to local DB silently
+      console.warn('API offline, using local data:', e.message);
+      return null;
+    }
+  },
+
+  get:    (path)        => api.req('GET',    path),
+  post:   (path, body)  => api.req('POST',   path, body),
+  put:    (path, body)  => api.req('PUT',    path, body),
+  delete: (path)        => api.req('DELETE', path),
+
+  // AUTH
+  async signup(form) {
+    const data = await api.post('/api/auth/signup', form);
+    if (data?.token) localStorage.setItem('ih_token', data.token);
+    return data;
+  },
+  async login(email, password) {
+    const data = await api.post('/api/auth/login', { email, password });
+    if (data?.token) localStorage.setItem('ih_token', data.token);
+    return data;
+  },
+  logout() { localStorage.removeItem('ih_token'); },
+  getMe()  { return api.get('/api/auth/me'); },
+  updateMe(form) { return api.put('/api/auth/me', form); },
+
+  // IDEAS
+  getIdeas(params = {}) {
+    const q = new URLSearchParams(params).toString();
+    return api.get('/api/ideas' + (q ? '?' + q : ''));
+  },
+  getIdea(id)    { return api.get('/api/ideas/' + id); },
+  postIdea(form) { return api.post('/api/ideas', form); },
+  myIdeas()      { return api.get('/api/my-ideas'); },
+
+  // TRANSACTIONS
+  createTransaction(ideaId, paymentMethod) { return api.post('/api/transactions', { ideaId, paymentMethod }); },
+  confirmDelivery(txId) { return api.put('/api/transactions/' + txId + '/confirm'); },
+  myTransactions() { return api.get('/api/transactions'); },
+
+  // MESSAGES
+  getMessages()          { return api.get('/api/messages'); },
+  sendMessage(toId, text, ideaId) { return api.post('/api/messages', { toId, text, ideaId }); },
+
+  // PATENTS
+  applyPatent(form) { return api.post('/api/patents', form); },
+  myPatents()       { return api.get('/api/patents'); },
+
+  // DASHBOARD
+  dashboard() { return api.get('/api/dashboard'); },
+};
+
+const DB = {
+  users: [
+    { id:1, firstName:'John', lastName:'Doe', email:'john@demo.com', password:'demo', role:'idea_creator', initials:'JD', country:'Sri Lanka', city:'Colombo', bio:'Passionate innovator with 8+ years in tech and sustainable agriculture.', specializations:['Technology & Engineering','Healthcare & wellness'], qual:'Master\'s Degree', stars:4, ideas:[], earnings:3400, verified:true, patentHolder:true }
+  ],
+  ideas: [
+    { id:1, title:'AI-Powered Crop Disease Scanner', creator:'Priya M.', creatorId:99, industry:'Technology & Engineering', ideaType:'New Technology', summary:'A mobile app using computer vision to detect plant diseases in real-time.', desc:'Using transfer learning on a dataset of 58,000 plant images, this app identifies 38 classes of diseases with 96% accuracy — even offline, using a compressed on-device model.', price:4500, level:2, icon:'🌾', status:'live', views:1240, inquiries:8, visibility:2 },
+    { id:2, title:'Micro-Lending via Blockchain', creator:'Carlos R.', creatorId:98, industry:'Business & Finance', ideaType:'New Business Idea', summary:'Blockchain-based micro-lending connecting SMEs in emerging markets with global investors.', desc:'A permissioned blockchain (Hyperledger Fabric) tracks all loan agreements, repayments, and investor returns in real-time. Smart contracts automatically enforce terms and release funds.', price:12000, level:3, icon:'💳', status:'live', views:3400, inquiries:21, visibility:2 },
+    { id:3, title:'Solar-Powered Cold Storage Unit', creator:'Amara N.', creatorId:97, industry:'Technology & Engineering', ideaType:'New Technology', summary:'Off-grid cold storage using solar energy for rural farmers.', desc:'A 500L insulated container with phase-change material keeps produce at 4°C for 36 hours without grid electricity. Powered entirely by a 400W solar array with a 24V battery bank.', price:8200, level:3, icon:'❄️', status:'live', views:2100, inquiries:14, visibility:3 },
+    { id:4, title:'Hyper-Local Freelance App', creator:'Jake T.', creatorId:96, industry:'Social media, Internet and Digital Services', ideaType:'New Business Idea', summary:'Neighborhood-based platform connecting residents with local service providers.', desc:'Unlike global freelance platforms, this app uses geofencing to limit listings to a 5km radius, enabling same-day services and cash payments. Includes community ratings and background checks.', price:2800, level:1, icon:'📱', status:'live', views:870, inquiries:5, visibility:1 },
+    { id:5, title:'AI Nutritionist for Budget Meals', creator:'Nina L.', creatorId:95, industry:'Healthcare & wellness', ideaType:'New Technology', summary:'App generating nutritious meal plans within a budget.', desc:'Integrates with local grocery store APIs to provide real-time pricing and availability. Uses a GAN-trained model to suggest culturally relevant meals within a user-defined weekly budget.', price:3300, level:2, icon:'🥗', status:'live', views:1560, inquiries:9, visibility:2 },
+    { id:6, title:'Restaurant Food-Waste Exchange', creator:'Tom H.', creatorId:94, industry:'Food & Culinary', ideaType:'New Business Idea', summary:'B2B platform for restaurants to sell surplus ingredients before closing.', desc:'A 2-hour-window marketplace where restaurants list surplus ingredients at 70% discount. Uses AI to predict what will be surplus by 8pm each night based on booking data.', price:5100, level:2, icon:'🍽️', status:'live', views:1980, inquiries:12, visibility:2 },
+    { id:7, title:'Smart Parking Sensor Network', creator:'Yuki S.', creatorId:93, industry:'Automobile & Transport', ideaType:'New Technology', summary:'IoT sensors in parking spots feeding a city-wide availability app.', desc:'Low-power LoRaWAN sensors with 10-year battery life detect vehicle presence and transmit to a city dashboard. The consumer app uses ML predictions for parking availability 15 mins ahead.', price:15000, level:3, icon:'🚗', status:'live', views:4200, inquiries:28, visibility:2 },
+    { id:8, title:'Pop-Up Kitchen Rental Platform', creator:'Sona K.', creatorId:92, industry:'Food & Culinary', ideaType:'New Business Idea', summary:'Airbnb for commercial kitchens — hourly rental for food entrepreneurs.', desc:'Partners with certified commercial kitchens to list their off-peak hours. Includes liability insurance, equipment inventory checks, and a digital sanitation log. Targets the $1.2T ghost kitchen market.', price:6400, level:2, icon:'👨‍🍳', status:'live', views:2340, inquiries:17, visibility:2 },
+    { id:9, title:'Remote Elder Care Check-In App', creator:'Marcus D.', creatorId:91, industry:'Healthcare & wellness', ideaType:'New Technology', summary:'Daily wellness check-in app for elderly users with family alerts.', desc:'A one-tap check-in using habit-based UX (coffee machine NFC trigger). If no check-in by 10am, automated gentle nudges escalate to family WhatsApp alerts and emergency contact calls.', price:4000, level:2, icon:'🏥', status:'live', views:1670, inquiries:11, visibility:2 },
+  ],
+  transactions: [],
+  messages: [
+    { id:1, with:'Sarah R.', withRole:'Investor', avatar:'SR', msgs:[
+      { from:'them', text:'Hi! I came across your Vertical Farm Monitoring App idea. Really impressive concept!', time:'10:32 AM' },
+      { from:'me', text:'Thank you, Sarah! I\'d love to walk you through the technical details.', time:'10:45 AM' },
+      { from:'them', text:'Can we set up a video call this week? I have some questions about the monetization strategy.', time:'10:47 AM' },
+    ]},
+    { id:2, with:'Mark K.', withRole:'Virtual Manager', avatar:'MK', msgs:[
+      { from:'them', text:'I\'d like to propose a partnership where I manage the investor relations for your AI Triage System.', time:'Yesterday' },
+      { from:'me', text:'That sounds interesting. What commission structure are you proposing?', time:'Yesterday' },
+    ]},
+    { id:3, with:'IdeaHub Support', withRole:'Platform', avatar:'IH', msgs:[
+      { from:'them', text:'Welcome to IdeaHub! Your account is fully verified. You can now post ideas and apply for patents directly from your dashboard.', time:'3 days ago' },
+    ]},
+  ],
+  notifications: [
+    { id:1, icon:'💌', text:'Sarah R. sent you a message about your Vertical Farm Monitoring App', time:'2 hours ago', read:false },
+    { id:2, icon:'💰', text:'Escrow released: $3,200 for Ride-share Delivery idea. Funds transferred to your account.', time:'3 days ago', read:false },
+    { id:3, icon:'⭐', text:'You received a 5-star review from your latest buyer!', time:'4 days ago', read:true },
+    { id:4, icon:'📜', text:'Patent application IH-2024-0041 status updated: Under Examination', time:'1 week ago', read:true },
+    { id:5, icon:'🔍', text:'Your idea "AI Triage System" got 50 new views this week', time:'1 week ago', read:true },
+  ],
+  patents: [
+    { id:'IH-2024-0041', title:'Vertical Farm IoT Monitoring System', status:'Under Examination', filed:'2024-03-12', number:'PCT/LK2024/000041' },
+  ]
+};
+
+// ─── GLOBAL STATE / CONTEXT ──────────────────────────────────────────────────
+const App = () => {
+  const [page, setPage] = useState('home');
+  const [user, setUser] = useState(null);
+  const [modal, setModal] = useState(null); // {type, data}
+  const [toasts, setToasts] = useState([]);
+  const [ideas, setIdeas] = useState(DB.ideas);
+  const [selectedIdea, setSelectedIdea] = useState(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  const nav = (p) => { setPage(p); setNotifOpen(false); window.scrollTo(0,0); };
+
+  const toast = (msg, type='i') => {
+    const id = Date.now();
+    setToasts(t => [...t, {id, msg, type}]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
+  };
+
+  const login = (u) => {
+    setUser(u);
+    setModal(null);
+    toast('Welcome back, ' + u.firstName + '! 👋', 's');
+    setTimeout(() => nav('dashboard'), 400);
+  };
+
+  const logout = () => {
+    setUser(null);
+    nav('home');
+    toast('Logged out successfully.', 'i');
+  };
+
+  const openIdea = (idea) => {
+    setSelectedIdea(idea);
+    nav('idea-detail');
+  };
+
+  const unreadCount = DB.notifications.filter(n => !n.read).length;
+
+  return (
+    <div>
+      {/* NAV */}
+      <nav>
+        <div className="n-logo" onClick={() => nav('home')}>IdeaHub</div>
+        <div className="n-links">
+          <button className={'n-btn'+(page==='home'?' act':'')} onClick={() => nav('home')}>Home</button>
+          <button className={'n-btn'+(page==='explore'?' act':'')} onClick={() => nav('explore')}>Explore</button>
+          <button className={'n-btn'+(page==='patent'?' act':'')} onClick={() => nav('patent')}>Patents</button>
+          <button className={'n-btn'+(page==='about'?' act':'')} onClick={() => nav('about')}>About</button>
+          {user && <button className={'n-btn'+(page==='dashboard'?' act':'')} onClick={() => nav('dashboard')}>Dashboard</button>}
+          {user && <button className={'n-btn'+(page==='messages'?' act':'')} onClick={() => nav('messages')}>Messages</button>}
+          {user && <button className={'n-btn'+(page==='post'?' act':'')} onClick={() => nav('post')}>+ Post Idea</button>}
+          {user && (
+            <button className="n-btn" style={{position:'relative'}} onClick={() => setNotifOpen(o => !o)}>
+              🔔{unreadCount > 0 && <span className="n-badge">{unreadCount}</span>}
+            </button>
+          )}
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          {!user ? <>
+            <button className="btn-o btn-sm" onClick={() => setModal({type:'login'})}>Log In</button>
+            <button className="n-cta" onClick={() => setModal({type:'signup'})}>Get Started</button>
+          </> : <>
+            <button className="n-btn" onClick={() => nav('profile')}>
+              <span style={{background:'linear-gradient(135deg,var(--gold-dim),var(--gold))',borderRadius:'50%',width:28,height:28,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:600,color:'var(--dark)',marginRight:4}}>{user.initials}</span>
+              {user.firstName}
+            </button>
+            <button className="btn-ghost" onClick={logout}>Log Out</button>
+          </>}
+        </div>
+      </nav>
+
+      {/* NOTIFICATIONS DROPDOWN */}
+      {notifOpen && (
+        <div style={{position:'fixed',top:64,right:16,z:950,background:'var(--dark2)',border:'1px solid var(--border)',borderRadius:'var(--rl)',padding:'0 0 8px',width:340,maxHeight:420,overflowY:'auto',zIndex:950,boxShadow:'0 8px 32px rgba(0,0,0,.5)'}}>
+          <div style={{padding:'14px 16px',borderBottom:'1px solid var(--bl)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <span style={{fontSize:14,fontWeight:600}}>Notifications</span>
+            <button className="btn-ghost" style={{fontSize:11}} onClick={() => {DB.notifications.forEach(n=>n.read=true);setNotifOpen(false);}}>Mark all read</button>
+          </div>
+          <div className="notif-list" style={{padding:'0 8px'}}>
+            {DB.notifications.map(n => (
+              <div key={n.id} className="notif" style={{padding:'12px 8px'}}>
+                <div className="n-ico" style={{background:n.read?'var(--dark4)':'rgba(201,168,76,.1)'}}>{n.icon}</div>
+                <div style={{flex:1}}>
+                  <div className="n-text" style={{color:n.read?'var(--text-muted)':'var(--text)'}}>{n.text}</div>
+                  <div className="n-time">{n.time}</div>
+                </div>
+                {!n.read && <div className="n-dot"></div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* PAGE ROUTER */}
+      {page === 'home' && <HomePage nav={nav} user={user} setModal={setModal} toast={toast} ideas={ideas} openIdea={openIdea} />}
+      {page === 'explore' && <ExplorePage ideas={ideas} nav={nav} openIdea={openIdea} />}
+      {page === 'idea-detail' && selectedIdea && <IdeaDetailPage idea={selectedIdea} user={user} nav={nav} setModal={setModal} toast={toast} />}
+      {page === 'dashboard' && user && <DashboardPage user={user} nav={nav} ideas={ideas} toast={toast} setModal={setModal} />}
+      {page === 'post' && user && <PostIdeaPage user={user} nav={nav} toast={toast} ideas={ideas} setIdeas={setIdeas} />}
+      {page === 'profile' && user && <ProfilePage user={user} setUser={setUser} nav={nav} toast={toast} />}
+      {page === 'patent' && <PatentPage user={user} nav={nav} toast={toast} setModal={setModal} />}
+      {page === 'messages' && user && <MessagesPage user={user} nav={nav} />}
+      {page === 'about' && <AboutPage nav={nav} setModal={setModal} />}
+      {page === 'payment' && <PaymentPage user={user} nav={nav} toast={toast} selectedIdea={selectedIdea} />}
+      {page === 'video' && <VideoConfPage nav={nav} selectedIdea={selectedIdea} />}
+
+      {/* MODALS */}
+      {modal && (
+        <div className="ov open" onClick={e => e.target.classList.contains('ov') && setModal(null)}>
+          <div className={`modal ${modal.type==='video-setup'?'modal-lg':''}`}>
+            <button className="mc" onClick={() => setModal(null)}>✕</button>
+            {modal.type === 'login' && <AuthModal type="login" login={login} setModal={setModal} toast={toast} />}
+            {modal.type === 'signup' && <AuthModal type="signup" login={login} setModal={setModal} toast={toast} role={modal.role} />}
+            {modal.type === 'escrow' && <EscrowModal idea={modal.idea} user={user} nav={nav} setModal={setModal} toast={toast} />}
+            {modal.type === 'patent-apply' && <PatentApplyModal idea={modal.idea} setModal={setModal} toast={toast} />}
+          </div>
+        </div>
+      )}
+
+      {/* TOASTS */}
+      <div style={{position:'fixed',bottom:24,right:24,zIndex:9999,display:'flex',flexDirection:'column',gap:8}}>
+        {toasts.map(t => (
+          <div key={t.id} className={`toast toast-${t.type}`}>
+            <span>{t.type==='s'?'✓':t.type==='e'?'✕':'◆'}</span>
+            {t.msg}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── HOME PAGE ────────────────────────────────────────────────────────────────
+const HomePage = ({ nav, user, setModal, toast, ideas, openIdea }) => {
+  const roles = [
+    { icon:'💡', title:'Idea Creator', desc:'You have innovative ideas. Post, protect, and profit from your concepts on a global stage.', label:'I want to sell my idea', role:'idea_creator' },
+    { icon:'💼', title:'Investor', desc:'Deploy capital into the world\'s best ideas. Discover vetted concepts across every industry.', label:'I want to buy an idea', role:'investor' },
+    { icon:'🤝', title:'Virtual Manager', desc:'Bridge creators and investors. Build and run a business on behalf of both parties.', label:'I want to be a manager', role:'virtual_manager' },
+    { icon:'⚖️', title:'Patent Attorney', desc:'Provide legal expertise to innovators. Grow your practice with a global client base.', label:'Join as attorney', role:'patent_attorney' },
+    { icon:'📜', title:'Patent Seller', desc:'Already hold a patent? List your IP on the marketplace and find the right buyer.', label:'Sell my patent', role:'patent_seller' },
+    { icon:'🏢', title:'Corporate Services', desc:'Offer company formation and accounting services to new ventures born on IdeaHub.', label:'Offer services', role:'corporate_service' },
+  ];
+  const features = [
+    { badge:'AI-Powered', title:'Novelty Detection', desc:'AI cross-checks your idea against global patent databases before listing — protecting you automatically.' },
+    { badge:'Patent', title:'Google Patent Integration', desc:'Check, apply for, and sell patents without leaving the platform. Real-time patent status tracking.' },
+    { badge:'Security', title:'Escrow Payments', desc:'All funds held in escrow until both parties confirm delivery. Zero tolerance for fraud or chargebacks.' },
+    { badge:'Communication', title:'Video Conferencing', desc:'Built-in HD video calls let buyers and sellers connect face-to-face before committing to any deal.' },
+    { badge:'AI-Powered', title:'Smart Idea Matching', desc:'AI sorts ideas by industry, novelty, and investor interest — surfacing the most relevant matches.' },
+    { badge:'Engagement', title:'Tiered Engagement Levels', desc:'From a single video call to full partnership — creators set exactly how involved they\'ll be.' },
+  ];
+  const steps = [
+    { n:'1', title:'Create Your Profile', desc:'Build a rich creator or investor profile with your expertise, qualifications, and star rating.' },
+    { n:'2', title:'Post or Browse', desc:'List your idea with full details, or explore thousands of vetted concepts across industries.' },
+    { n:'3', title:'AI Patent Check', desc:'Our AI cross-references Google Patents to verify your idea\'s novelty before it goes live.' },
+    { n:'4', title:'Connect & Negotiate', desc:'Use secure video conferencing and in-platform messaging to discuss and close deals.' },
+    { n:'5', title:'Secure Transaction', desc:'Funds held in escrow until service is confirmed — no risk for either party.' },
+  ];
+  return (
+    <div className="page">
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-bg"></div>
+        <div className="hero-grid"></div>
+        <div className="htag">✦ The Global Ideas Marketplace</div>
+        <h1>Earn money<br/>from your <span className="ac">idea</span>.<br/>No effort needed.</h1>
+        <p>Connect with investors worldwide. Sell innovative concepts, patent your work, and transform your imagination into income.</p>
+        <div className="hero-btns">
+          <button className="btn-p" onClick={() => user ? nav('post') : setModal({type:'signup'})}>Start Selling Ideas →</button>
+          <button className="btn-o" onClick={() => nav('explore')}>Browse Marketplace</button>
+        </div>
+      </section>
+
+      {/* STATS */}
+      <div className="stats-bar">
+        <div className="stats-grid">
+          {[['12K+','Ideas Listed'],['3.4K+','Active Investors'],['$2.8M','Ideas Sold'],['94%','Satisfaction Rate']].map(([n,l]) => (
+            <div key={l}><div className="snum">{n}</div><div className="slbl">{l}</div></div>
+          ))}
+        </div>
+      </div>
+
+      {/* ROLES */}
+      <section className="sec">
+        <div className="sec-lbl">Who is this for?</div>
+        <div className="sec-title">Choose your role on IdeaHub</div>
+        <div className="roles-grid">
+          {roles.map(r => (
+            <div key={r.role} className="role-card" onClick={() => setModal({type:'signup', role:r.role})}>
+              <div className="r-icon">{r.icon}</div>
+              <h3>{r.title}</h3>
+              <p>{r.desc}</p>
+              <button className="r-link">{r.label} →</button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="sec" style={{background:'var(--dark2)',paddingTop:70,paddingBottom:70}}>
+        <div className="sec-lbl">The Process</div>
+        <div className="sec-title">How IdeaHub works</div>
+        <div className="steps-row">
+          {steps.map(s => (
+            <div key={s.n} className="step">
+              <div className="step-n">{s.n}</div>
+              <h4>{s.title}</h4>
+              <p>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="sec">
+        <div className="sec-lbl">Platform Features</div>
+        <div className="sec-title">Everything you need in one place</div>
+        <div className="feat-grid">
+          {features.map(f => (
+            <div key={f.title} className="feat-card">
+              <div className="fbadge">{f.badge}</div>
+              <h4>{f.title}</h4>
+              <p>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURED IDEAS */}
+      <section className="sec" style={{background:'var(--dark2)',paddingTop:70,paddingBottom:70}}>
+        <div className="sec-lbl">Marketplace</div>
+        <div className="sec-title">Featured Ideas</div>
+        <div className="ideas-grid">
+          {ideas.slice(0,6).map(idea => <IdeaCard key={idea.id} idea={idea} onClick={() => openIdea(idea)} />)}
+        </div>
+        <div style={{textAlign:'center',marginTop:32}}>
+          <button className="btn-o" onClick={() => nav('explore')}>View All Ideas →</button>
+        </div>
+      </section>
+
+      {/* CTA BANNER */}
+      <section className="sec" style={{textAlign:'center'}}>
+        <div style={{background:'linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.03))',border:'1px solid var(--border)',borderRadius:'var(--rl)',padding:'56px 40px',maxWidth:680,margin:'0 auto'}}>
+          <div style={{fontSize:40,marginBottom:16}}>💡</div>
+          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(24px,4vw,36px)',marginBottom:12}}>Have an idea worth millions?</h2>
+          <p style={{fontSize:14,color:'var(--text-muted)',lineHeight:1.8,marginBottom:28,maxWidth:480,margin:'0 auto 28px'}}>Join thousands of creators who are already earning from their ideas. It takes less than 5 minutes to post your first concept.</p>
+          <button className="btn-p" onClick={() => user ? nav('post') : setModal({type:'signup'})}>Post Your First Idea — It's Free →</button>
+        </div>
+      </section>
+
+      <Footer nav={nav} setModal={setModal} />
+    </div>
+  );
+};
+
+// ─── IDEA CARD ────────────────────────────────────────────────────────────────
+const IdeaCard = ({ idea, onClick }) => (
+  <div className="ic" onClick={onClick}>
+    <div className="ic-top">
+      <div className="ic-ico">{idea.icon}</div>
+      <div>
+        <h4>{idea.title}</h4>
+        <div className="cr">by {idea.creator}</div>
+      </div>
+    </div>
+    <div><span className="ind-tag">{idea.industry}</span></div>
+    <p>{idea.summary}</p>
+    <div className="ic-ft">
+      <div className="price">${idea.price.toLocaleString()}</div>
+      <span className={`lvl l${idea.level}`}>Level {idea.level}</span>
+    </div>
+  </div>
+);
+
+// ─── EXPLORE PAGE ─────────────────────────────────────────────────────────────
+const ExplorePage = ({ ideas, openIdea }) => {
+  const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const industries = ['all','Technology & Engineering','Business & Finance','Healthcare & wellness','Food & Culinary','Automobile & Transport','Social media, Internet and Digital Services'];
+  const filtered = ideas.filter(i => {
+    const matchF = filter === 'all' || i.industry === filter;
+    const matchS = !search || i.title.toLowerCase().includes(search.toLowerCase()) || i.creator.toLowerCase().includes(search.toLowerCase()) || i.industry.toLowerCase().includes(search.toLowerCase());
+    return matchF && matchS;
+  });
+  const industryShort = {'all':'All','Technology & Engineering':'Tech','Business & Finance':'Business','Healthcare & wellness':'Health','Food & Culinary':'Food','Automobile & Transport':'Automotive','Social media, Internet and Digital Services':'Digital'};
+  return (
+    <div className="page sec" style={{paddingTop:80}}>
+      <div className="sec-lbl">Marketplace</div>
+      <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(28px,5vw,44px)',marginBottom:8}}>Explore Ideas</h1>
+      <p style={{color:'var(--text-muted)',marginBottom:28,fontSize:14}}>Browse thousands of vetted concepts from creators worldwide</p>
+      <div className="filter-bar">
+        <div className="srch">
+          <span style={{fontSize:14,color:'var(--text-dim)'}}>🔍</span>
+          <input placeholder="Search ideas, industries, creators..." value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        {Object.entries(industryShort).map(([k,v]) => (
+          <button key={k} className={'f-btn'+(filter===k?' act':'')} onClick={() => setFilter(k)}>{v}</button>
+        ))}
+      </div>
+      {filtered.length === 0 ? (
+        <div className="loading"><div style={{fontSize:32}}>🔍</div><p>No ideas found matching your search.</p></div>
+      ) : (
+        <div className="ideas-grid">
+          {filtered.map(idea => <IdeaCard key={idea.id} idea={idea} onClick={() => openIdea(idea)} />)}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── IDEA DETAIL PAGE ─────────────────────────────────────────────────────────
+const IdeaDetailPage = ({ idea, user, nav, setModal, toast }) => {
+  const [tab, setTab] = useState('overview');
+  const creator = DB.users.find(u => u.id === idea.creatorId) || { firstName: idea.creator.split(' ')[0], lastName: idea.creator.split(' ')[1]||'', initials: idea.creator.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(), bio:'Experienced innovator and entrepreneur.', specializations:['Technology & Engineering'], stars:4, verified:true };
+
+  return (
+    <div className="page">
+      <div className="idea-detail">
+        <button className="btn-ghost" style={{marginBottom:16,fontSize:12}} onClick={() => nav('explore')}>← Back to Explore</button>
+        <div className="id-hd">
+          <div className="id-top">
+            <div className="id-ico">{idea.icon}</div>
+            <div style={{flex:1}}>
+              <div className="id-tag-row">
+                <span className={`lvl l${idea.level}`}>Level {idea.level}</span>
+                <span className="ind-tag">{idea.industry}</span>
+                <span className="ind-tag">{idea.ideaType}</span>
+              </div>
+              <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(22px,3vw,32px)',marginBottom:8}}>{idea.title}</h1>
+              <div style={{fontSize:13,color:'var(--text-muted)',marginBottom:16}}>👁 {idea.views.toLocaleString()} views · 💬 {idea.inquiries} inquiries · Posted by {idea.creator}</div>
+              <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+                <span style={{fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:'var(--gold)'}}>${idea.price.toLocaleString()}</span>
+                {user ? (
+                  <>
+                    <button className="btn-p btn-sm" onClick={() => setModal({type:'escrow', idea})}>Purchase via Escrow →</button>
+                    <button className="btn-o btn-sm" onClick={() => { toast('Video call request sent!','s'); }}>📹 Request Video Call</button>
+                  </>
+                ) : (
+                  <button className="btn-p btn-sm" onClick={() => setModal({type:'signup'})}>Sign in to Purchase</button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* TABS */}
+        <div style={{display:'flex',gap:4,marginBottom:20,borderBottom:'1px solid var(--bl)',paddingBottom:0}}>
+          {['overview','creator','patent'].map(t => (
+            <button key={t} className="btn-ghost" style={{borderRadius:'8px 8px 0 0',fontWeight:tab===t?600:400,color:tab===t?'var(--gold)':'var(--text-muted)',borderBottom:tab===t?'2px solid var(--gold)':'2px solid transparent',paddingBottom:8}} onClick={() => setTab(t)}>
+              {t==='overview'?'Overview':t==='creator'?'About Creator':'Patent Info'}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'overview' && (
+          <div className="panel">
+            <h3 style={{marginBottom:12}}>What\'s new about this idea?</h3>
+            <p style={{fontSize:14,color:'var(--text-muted)',lineHeight:1.8,marginBottom:20}}>{idea.summary}</p>
+            {idea.visibility >= 2 ? <>
+              <h3 style={{marginBottom:12}}>Full Description</h3>
+              <p style={{fontSize:14,color:'var(--text-muted)',lineHeight:1.8}}>{idea.desc}</p>
+            </> : (
+              <div style={{background:'rgba(201,168,76,.07)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:20,textAlign:'center'}}>
+                <div style={{fontSize:28,marginBottom:8}}>🔒</div>
+                <p style={{fontSize:13,color:'var(--text-muted)'}}>The full description is only visible after purchase. This creator has set confidentiality to Level {idea.visibility}.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'creator' && (
+          <div className="panel">
+            <div className="id-creator">
+              <div className="avatar av40">{creator.initials}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600,marginBottom:2}}>{creator.firstName} {creator.lastName}</div>
+                <div style={{fontSize:12,color:'var(--text-muted)'}}>{(creator.specializations||[]).join(' · ')}</div>
+                <div className="stars">{'★'.repeat(creator.stars||4)}{'☆'.repeat(5-(creator.stars||4))}</div>
+              </div>
+              {creator.verified && <span className="badge">✓ Verified</span>}
+            </div>
+            <p style={{fontSize:13,color:'var(--text-muted)',lineHeight:1.7,marginTop:16}}>{creator.bio}</p>
+          </div>
+        )}
+
+        {tab === 'patent' && (
+          <div className="panel">
+            <div style={{background:'rgba(123,167,255,.07)',border:'1px solid rgba(123,167,255,.2)',borderRadius:'var(--r)',padding:16,marginBottom:16}}>
+              <div style={{fontSize:13,fontWeight:600,color:'var(--blue)',marginBottom:4}}>🔍 Patent Status</div>
+              <p style={{fontSize:12,color:'var(--text-muted)'}}>This idea {idea.patentChecked?'has been verified against global patent databases.':'has not yet been cross-checked. The creator can initiate a patent check from their dashboard.'}</p>
+            </div>
+            {user && <button className="btn-o btn-sm" onClick={() => setModal({type:'patent-apply', idea})}>Apply for Patent via IdeaHub →</button>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── AUTH MODAL ───────────────────────────────────────────────────────────────
+const AuthModal = ({ type, login, setModal, toast, role }) => {
+  const [mode, setMode] = useState(type);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ firstName:'', lastName:'', email:'', password:'', role: role||'idea_creator' });
+  const roleLabels = { idea_creator:'💡 Idea Creator', investor:'💼 Investor', virtual_manager:'🤝 Virtual Manager', patent_attorney:'⚖️ Patent Attorney', patent_seller:'📜 Patent Seller', corporate_service:'🏢 Corporate Services' };
+  const roles = Object.entries(roleLabels);
+
+  const set = (k,v) => setForm(f => ({...f,[k]:v}));
+
+  const doLogin = async () => {
+    setLoading(true);
+    const data = await api.login(form.email, form.password);
+    if (data && data.user) {
+      const u = { ...data.user, initials: ((data.user.firstName||'?')[0] + (data.user.lastName||'?')[0]).toUpperCase() };
+      login(u);
+    } else {
+      const u = DB.users.find(u => u.email === form.email);
+      if (u) { login({...u, initials:(u.firstName[0]+(u.lastName||'')[0]||'X').toUpperCase()}); }
+      else { toast('Invalid email or password', 'e'); setLoading(false); }
+    }
+  };
+
+  const doSignup = async () => {
+    if (!form.firstName || !form.email || !form.password) { toast('Please fill in all required fields', 'e'); return; }
+    setLoading(true);
+    const data = await api.signup(form);
+    if (data && data.user) {
+      const u = { ...data.user, initials: ((data.user.firstName||'?')[0] + (data.user.lastName||'?')[0]).toUpperCase() };
+      login(u);
+      toast('Account created! Welcome to IdeaHub!', 's');
+    } else {
+      const u = { id: Date.now(), firstName: form.firstName, lastName: form.lastName, email: form.email, role: form.role, initials: (form.firstName[0]+(form.lastName||'')[0]||'X').toUpperCase(), country:'', city:'', bio:'', specializations:[], earnings:0, verified:false };
+      login(u);
+      toast('Account created! Welcome to IdeaHub!', 's');
+    }
+  };
+
+  const doSocial = async (provider) => {
+    setLoading(true);
+    const fakeForm = { firstName:'Alex', lastName:'Johnson', email:'alex.' + provider.toLowerCase() + '.' + Date.now() + '@demo.com', password:'social123', role: form.role||'idea_creator' };
+    const data = await api.signup(fakeForm);
+    const u = (data && data.user)
+      ? { ...data.user, initials:'AJ' }
+      : { id: Date.now(), firstName:'Alex', lastName:'Johnson', email: fakeForm.email, role: fakeForm.role, initials:'AJ', country:'', city:'', bio:'', verified:true };
+    login(u);
+  };
+
+  return (
+    <>
+      {mode === 'login' ? (
+        <>
+          <h2>Welcome back</h2>
+          <div className="sub">Sign in to your IdeaHub account</div>
+          <div className="social-logins">
+            <button className="s-btn" onClick={() => doSocial('Google')}>
+              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continue with Google
+            </button>
+            <button className="s-btn" onClick={() => doSocial('Facebook')}>
+              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              Continue with Facebook
+            </button>
+          </div>
+          <div className="divider"><span>or sign in with email</span></div>
+          <div className="fg"><label>Email *</label><input type="email" placeholder="you@example.com" value={form.email} onChange={e=>set('email',e.target.value)} /></div>
+          <div className="fg"><label>Password *</label><input type="password" placeholder="••••••••" value={form.password} onChange={e=>set('password',e.target.value)} onKeyDown={e=>e.key==='Enter'&&doLogin()} /></div>
+          <div style={{fontSize:11,color:'var(--text-dim)',marginBottom:16}}>Demo: john@demo.com / demo</div>
+          <button className="btn-p btn-full" onClick={doLogin} disabled={loading}>{loading?'Signing in…':'Sign In →'}</button>
+          <div className="auth-sw">Don't have an account? <span onClick={() => setMode('signup')}>Sign up free</span></div>
+        </>
+      ) : (
+        <>
+          <h2>Join IdeaHub</h2>
+          <div className="sub">Create your free account and start today</div>
+          {role && <div className="rtag">{roleLabels[role]}</div>}
+          <div className="social-logins">
+            <button className="s-btn" onClick={() => doSocial('Google')}>
+              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continue with Google
+            </button>
+          </div>
+          <div className="divider"><span>or create with email</span></div>
+          <div className="frow">
+            <div className="fg"><label>First Name *</label><input placeholder="John" value={form.firstName} onChange={e=>set('firstName',e.target.value)} /></div>
+            <div className="fg"><label>Last Name *</label><input placeholder="Doe" value={form.lastName} onChange={e=>set('lastName',e.target.value)} /></div>
+          </div>
+          <div className="fg"><label>Email *</label><input type="email" placeholder="you@example.com" value={form.email} onChange={e=>set('email',e.target.value)} /></div>
+          <div className="fg"><label>Password *</label><input type="password" placeholder="At least 8 characters" value={form.password} onChange={e=>set('password',e.target.value)} /></div>
+          <div className="fg">
+            <label>I am joining as *</label>
+            <select value={form.role} onChange={e=>set('role',e.target.value)}>
+              {roles.map(([k,v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+          <button className="btn-p btn-full" onClick={doSignup} disabled={loading}>{loading?'Creating account…':'Create Account →'}</button>
+          <div className="auth-sw">Already have an account? <span onClick={() => setMode('login')}>Log in</span></div>
+        </>
+      )}
+    </>
+  );
+};
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+const DashboardPage = ({ user, nav, ideas, toast, setModal }) => {
+  const [tab, setTab] = useState('overview');
+  const myIdeas = [
+    { title:'Vertical Farm Monitoring App', industry:'Technology', views:342, status:'live', icon:'🌱' },
+    { title:'AI Triage System for Rural Clinics', industry:'Healthcare', views:578, status:'pending', icon:'🏥' },
+    { title:'Ride-share for Last-Mile Delivery', industry:'Logistics', views:920, status:'sold', icon:'🚗', soldFor:3200 },
+    { title:'Restaurant Waste Reduction System', industry:'Food', views:364, status:'live', icon:'🍔' },
+  ];
+  const statusMap = { live:['st-live','Live'], pending:['st-pend','Under Review'], sold:['st-sold','Sold'], escrow:['st-esc','In Escrow'] };
+
+  return (
+    <div className="page">
+      <div className="dash-wrap">
+        <div className="sidebar">
+          <div className="s-user">
+            <div className="avatar av40">{user.initials}</div>
+            <div><div className="uname">{user.firstName} {user.lastName}</div><div className="urole">{user.role.replace(/_/g,' ')}</div></div>
+          </div>
+          <div className="s-lbl">Main</div>
+          {[['📊','overview','Overview'],['💡','post','Post New Idea'],['🔍','explore','Browse Ideas'],['📜','patent','Patents']].map(([ic,pg,lb]) => (
+            <div key={pg} className={'s-item'+(tab===pg&&pg==='overview'?' act':'')} onClick={() => pg==='overview'?setTab('overview'):nav(pg)}><span className="s-icon">{ic}</span>{lb}</div>
+          ))}
+          <div className="s-sep"></div>
+          <div className="s-lbl">Account</div>
+          {[['👤','profile'],['💬','messages'],['🔔','notifications']].map(([ic,pg]) => (
+            <div key={pg} className="s-item" onClick={() => nav(pg)}><span className="s-icon">{ic}</span>{pg.charAt(0).toUpperCase()+pg.slice(1)}</div>
+          ))}
+          {[['💰','Earnings'],['⚙️','Settings']].map(([ic,lb]) => (
+            <div key={lb} className="s-item" onClick={() => toast('Coming soon: '+lb,'i')}><span className="s-icon">{ic}</span>{lb}</div>
+          ))}
+        </div>
+
+        <div className="dash-main">
+          <div className="dash-hd">
+            <h1>Welcome back, <span style={{color:'var(--gold)'}}>{user.firstName}</span> 👋</h1>
+            <p>Here's what's happening with your ideas today.</p>
+          </div>
+
+          <div className="m-grid">
+            {[['Ideas Posted','4','+1 this month'],['Total Views','1,284','↑18% this week'],['Inquiries','12','3 awaiting reply'],['Total Earnings','$3,400','2 ideas sold']].map(([l,v,s]) => (
+              <div key={l} className="mcard"><div className="mlbl">{l}</div><div className="mval" style={{fontSize:l==='Total Earnings'?'20px':''}}>{v}</div><div className="msub">{s}</div></div>
+            ))}
+          </div>
+
+          {/* Quick Actions */}
+          <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
+            <button className="btn-p btn-sm" onClick={() => nav('post')}>+ Post New Idea</button>
+            <button className="btn-o btn-sm" onClick={() => nav('patent')}>🔍 Check Patent</button>
+            <button className="btn-o btn-sm" onClick={() => nav('messages')}>💬 Messages <span className="n-badge" style={{marginLeft:4}}>2</span></button>
+            <button className="btn-o btn-sm" onClick={() => nav('video')}>📹 Start Video Call</button>
+          </div>
+
+          <div className="panel">
+            <div className="panel-hd"><h3>My Ideas</h3><button className="btn-ghost" style={{fontSize:12}} onClick={() => nav('post')}>+ New</button></div>
+            {myIdeas.map((idea,i) => (
+              <div key={i} className="irow">
+                <div className="i-box">{idea.icon}</div>
+                <div style={{flex:1}}>
+                  <div className="ititle">{idea.title}</div>
+                  <div className="imeta">{idea.industry} · {idea.views} views{idea.soldFor?' · Sold for $'+idea.soldFor.toLocaleString():''}</div>
+                </div>
+                <span className={`badge-st ${statusMap[idea.status][0]}`}>{statusMap[idea.status][1]}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="panel">
+            <div className="panel-hd"><h3>Recent Inquiries</h3></div>
+            {DB.messages.slice(0,2).map((m,i) => (
+              <div key={i} className="irow">
+                <div className="avatar av32">{m.avatar}</div>
+                <div style={{flex:1}}>
+                  <div className="ititle">{m.with} <span style={{fontSize:11,color:'var(--text-muted)'}}>— {m.withRole}</span></div>
+                  <div className="imeta">{m.msgs[m.msgs.length-1].text.slice(0,55)}…</div>
+                </div>
+                <button className="btn-o btn-sm" style={{fontSize:11}} onClick={() => nav('messages')}>Reply →</button>
+              </div>
+            ))}
+          </div>
+
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+            <div className="panel">
+              <div className="panel-hd"><h3>My Patents</h3></div>
+              {DB.patents.map(p => (
+                <div key={p.id} className="irow">
+                  <div className="i-box">📜</div>
+                  <div style={{flex:1}}>
+                    <div className="ititle">{p.title}</div>
+                    <div className="imeta">Filed {p.filed} · {p.number}</div>
+                  </div>
+                  <span className="badge-st st-pend">{p.status}</span>
+                </div>
+              ))}
+            </div>
+            <div className="panel">
+              <div className="panel-hd"><h3>Earnings</h3></div>
+              <div style={{textAlign:'center',padding:'12px 0'}}>
+                <div style={{fontFamily:"'Playfair Display',serif",fontSize:36,color:'var(--gold)'}}>$3,400</div>
+                <div style={{fontSize:12,color:'var(--text-muted)',margin:'6px 0 16px'}}>Total lifetime earnings</div>
+                <div style={{display:'flex',gap:8,justifyContent:'center'}}>
+                  <div style={{background:'var(--dark4)',borderRadius:'var(--r)',padding:'10px 16px',flex:1}}>
+                    <div style={{fontSize:11,color:'var(--text-muted)'}}>This month</div>
+                    <div style={{fontSize:18,fontWeight:700,color:'var(--gold)'}}>$0</div>
+                  </div>
+                  <div style={{background:'var(--dark4)',borderRadius:'var(--r)',padding:'10px 16px',flex:1}}>
+                    <div style={{fontSize:11,color:'var(--text-muted)'}}>Pending</div>
+                    <div style={{fontSize:18,fontWeight:700,color:'var(--purple)'}}>$1,200</div>
+                  </div>
+                </div>
+                <button className="btn-o btn-sm" style={{marginTop:14,width:'100%',justifyContent:'center'}} onClick={() => toast('Withdrawal feature coming soon!','i')}>Withdraw Funds</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── POST IDEA PAGE ───────────────────────────────────────────────────────────
+const PostIdeaPage = ({ user, nav, toast, ideas, setIdeas }) => {
+  const [step, setStep] = useState(1);
+  const totalSteps = 5;
+  const [form, setForm] = useState({ title:'', newThing:'', desc:'', industry:'', ideaType:'New Business Idea', visibility:1, level:1, engLevel:0, price:'', hasPatent:false, patentNumber:'' });
+  const [loading, setLoading] = useState(false);
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  const industries = ['Business & Finance','Technology & Engineering','Creative & Design','Writing & Content','Marketing & Sales','Music & Art','Education and Training','Personal & Lifestyle','Food & Culinary','Healthcare & wellness','Personal Service','Skilled Trades and Technical','Automobile & Transport','Groceries & Essentials','Home, Real Estate & Construction','Travel & Hospitality','Printing & Publications','E-commerce, Retail & Trade','Pets and Animal Care','Social media, Internet and Digital Services','Logistics, Shipping and Supply Chain','Scientists and Researching','NGO & Social Work','Consultation','Other Services'];
+  const ideaTypes = ['New Business Idea','New Technology','Improvement of Existing Product','New Technique / Process','Life Hack'];
+  const engLevels = [['Describe in Video Call','Lowest pay grade'],['Physical Meeting','Low-mid pay grade'],['Prototype Sale','Mid pay grade'],['Manufacture & Supply','High pay grade'],['Support Until Product Launch','Very high pay grade'],['Full Partnership','Partnership / Equity']];
+  const visOpts = [['Level 1 — Title & Summary only','Protects highly sensitive ideas. Investors see concept and industry only.'],['Level 2 — Partial Description','Reveal enough to attract genuine interest without exposing the core innovation.'],['Level 3 — Full Disclosure','Ideal for life hacks, open-concept ideas, or fully patented work.']];
+
+  const submit = () => {
+    if (!form.title || !form.industry || !form.price) { toast('Please fill in all required fields', 'e'); return; }
+    setLoading(true);
+    setTimeout(() => {
+      const newIdea = { id: Date.now(), title: form.title, creator: user.firstName + ' ' + user.lastName, creatorId: user.id, industry: form.industry, ideaType: form.ideaType, summary: form.newThing, desc: form.desc, price: parseFloat(form.price)||0, level: form.level, icon: '💡', status: 'pending', views: 0, inquiries: 0, visibility: form.visibility };
+      setIdeas(prev => [newIdea, ...prev]);
+      setLoading(false);
+      toast('Idea submitted for review! You\'ll hear back within 24 hours. 🎉', 's');
+      setTimeout(() => nav('dashboard'), 600);
+    }, 1000);
+  };
+
+  return (
+    <div className="page">
+      <div className="post-wrap">
+        <button className="btn-ghost" style={{marginBottom:16,fontSize:12}} onClick={() => nav('dashboard')}>← Back to Dashboard</button>
+        <div className="sec-lbl">New Listing</div>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(26px,4vw,36px)',marginBottom:6}}>Post Your Idea</h1>
+        <p style={{fontSize:13,color:'var(--text-muted)',marginBottom:24}}>Fill in the details to list your idea on the marketplace.</p>
+
+        <div className="prog-bar"><div className="prog-fill" style={{width:`${(step/totalSteps)*100}%`}}></div></div>
+        <div style={{fontSize:12,color:'var(--text-muted)',marginBottom:20}}>Step {step} of {totalSteps}</div>
+
+        {/* STEP 1: BASICS */}
+        {step === 1 && (
+          <div className="fsec">
+            <h3>💡 Idea Basics</h3>
+            <div className="fg"><label>Idea Title *</label><input placeholder="Give your idea a clear, catchy title" value={form.title} onChange={e=>set('title',e.target.value)} /></div>
+            <div className="fg"><label>What's new about it? *</label><textarea placeholder="In 1–2 paragraphs, describe what makes this idea unique or novel…" value={form.newThing} onChange={e=>set('newThing',e.target.value)} /></div>
+            <div className="fg"><label>Full Description *</label><textarea style={{minHeight:120}} placeholder="Detailed explanation: how it works, the problem it solves, market opportunity…" value={form.desc} onChange={e=>set('desc',e.target.value)} /></div>
+            <div className="frow">
+              <div className="fg"><label>Industry *</label><select value={form.industry} onChange={e=>set('industry',e.target.value)}><option value="">Select Industry</option>{industries.map(i=><option key={i}>{i}</option>)}</select></div>
+              <div className="fg"><label>Idea Type</label><select value={form.ideaType} onChange={e=>set('ideaType',e.target.value)}>{ideaTypes.map(t=><option key={t}>{t}</option>)}</select></div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: VISIBILITY & RANK */}
+        {step === 2 && (
+          <>
+            <div className="fsec">
+              <h3>🔒 Confidentiality Level</h3>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14}}>How much of your idea should non-buyers see?</p>
+              <div className="vis-opts">
+                {visOpts.map(([t,d],i) => (
+                  <div key={i} className={'vo'+(form.visibility===i+1?' sel':'')} onClick={() => set('visibility',i+1)}>
+                    <input type="radio" readOnly checked={form.visibility===i+1} style={{accentColor:'var(--gold)',marginTop:2}} />
+                    <div><div className="vt">{t}</div><div className="vd">{d}</div></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="fsec">
+              <h3>⭐ Idea Rank</h3>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14}}>Rank 3 is the highest complexity and impact. Higher ranks attract more serious investors.</p>
+              <div className="lvl-sel">
+                {[['1','Concept Stage'],['2','Developed Idea'],['3','Critical Innovation']].map(([n,nm]) => (
+                  <div key={n} className={'lo'+(form.level===parseInt(n)?' sel':'')} onClick={() => set('level',parseInt(n))}>
+                    <div className="ln">{n}</div><div className="lname">{nm}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* STEP 3: MEDIA */}
+        {step === 3 && (
+          <div className="fsec">
+            <h3>📁 Supporting Material</h3>
+            <div className="upload-box" onClick={() => toast('File upload ready — connect storage backend to enable','i')}>
+              <div style={{fontSize:32,marginBottom:10}}>📎</div>
+              <p style={{fontSize:13,color:'var(--text-muted)'}}>Drag & drop files or click to upload</p>
+              <span style={{fontSize:11,color:'var(--text-dim)'}}>Photos, prototypes, documents, videos (max 50MB each)</span>
+            </div>
+            <div style={{marginTop:16}}>
+              <div className="fg"><label>Prototype or Product URL (optional)</label><input placeholder="https://..." /></div>
+              <div className="fg"><label>Demo Video URL (optional)</label><input placeholder="https://youtube.com/..." /></div>
+            </div>
+            <div className="fsec" style={{marginTop:16,background:'var(--dark4)'}}>
+              <h3>📜 Patent Status</h3>
+              <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px',borderRadius:10,border:'1px solid var(--bl)',cursor:'pointer',background:'var(--dark3)'}} onClick={() => set('hasPatent',!form.hasPatent)}>
+                <input type="checkbox" readOnly checked={form.hasPatent} style={{accentColor:'var(--gold)',width:16,height:16}} />
+                <label style={{cursor:'pointer',margin:0,color:'var(--text)',fontSize:13}}>I have a patent license to sell with this idea</label>
+              </div>
+              {form.hasPatent && (
+                <div style={{marginTop:12}}>
+                  <div className="fg"><label>Patent Number</label><input placeholder="e.g. US10,234,567 B2" value={form.patentNumber} onChange={e=>set('patentNumber',e.target.value)} /></div>
+                  <div style={{fontSize:11,color:'var(--gold)',background:'rgba(201,168,76,.06)',border:'1px solid var(--border)',borderRadius:8,padding:10,marginTop:6}}>📋 Patent ownership will be verified manually. Upload proof of ownership documents.</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: ENGAGEMENT */}
+        {step === 4 && (
+          <div className="fsec">
+            <h3>🤝 Engagement Level</h3>
+            <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14}}>How involved are you willing to be post-sale? Higher levels command higher prices.</p>
+            <div className="eng-grid">
+              {engLevels.map(([t,p],i) => (
+                <div key={i} className={'eo'+(form.engLevel===i?' sel':'')} onClick={() => set('engLevel',i)}>
+                  <div className="et">{t}</div><div className="ep">{p}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5: PRICING */}
+        {step === 5 && (
+          <div className="fsec">
+            <h3>💰 Asking Price</h3>
+            <div className="price-row">
+              <span className="price-pre">$</span>
+              <input className="price-in" type="number" placeholder="0.00" min="0" value={form.price} onChange={e=>set('price',e.target.value)} style={{fontSize:22,fontFamily:"'Playfair Display',serif",fontWeight:700}} />
+            </div>
+            <p style={{fontSize:11,color:'var(--text-dim)',marginTop:10}}>Platform fee: 8% of sale price. Funds held in escrow until delivery confirmed.</p>
+            <div style={{marginTop:24,background:'var(--dark4)',borderRadius:'var(--r)',padding:16}}>
+              <div style={{fontSize:13,fontWeight:600,marginBottom:10}}>📋 Review Summary</div>
+              <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                {[['Title', form.title||'(not set)'],['Industry', form.industry||'(not set)'],['Type', form.ideaType],['Rank', 'Level '+form.level],['Confidentiality', 'Level '+form.visibility],['Engagement', engLevels[form.engLevel]?.[0]||'(not set)'],['Patent', form.hasPatent?'Yes — '+form.patentNumber:'No']].map(([k,v]) => (
+                  <div key={k} style={{display:'flex',gap:8,fontSize:12}}><span style={{color:'var(--text-muted)',minWidth:110}}>{k}</span><span>{v}</span></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* NAV BUTTONS */}
+        <div style={{display:'flex',gap:10,marginTop:4}}>
+          {step > 1 && <button className="btn-o" onClick={() => setStep(s=>s-1)}>← Back</button>}
+          {step < totalSteps ? (
+            <button className="btn-p" onClick={() => setStep(s=>s+1)}>Continue →</button>
+          ) : (
+            <button className="btn-p" onClick={submit} disabled={loading}>{loading?'Submitting…':'Submit Idea for Review →'}</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
+const ProfilePage = ({ user, setUser, nav, toast }) => {
+  const [form, setForm] = useState({ firstName: user.firstName, lastName: user.lastName, email: user.email, phone:'', country: user.country||'Sri Lanka', city: user.city||'', bio: user.bio||'', qual: user.qual||'Bachelor\'s Degree' });
+  const [specs, setSpecs] = useState(user.specializations||[]);
+  const [stars, setStars] = useState(user.stars||3);
+  const [hoverStar, setHoverStar] = useState(0);
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const allSpecs = ['Business & Finance','Technology & Engineering','Creative & Design','Writing & Content','Marketing & Sales','Music & Art','Education and Training','Personal & Lifestyle','Food & Culinary','Healthcare & wellness','Personal Service','Skilled Trades and Technical','Automobile & Transport','Groceries & Essentials','Home, Real Estate & Construction','Travel & Hospitality','E-commerce, Retail & Trade','Social media, Internet and Digital Services','Logistics, Shipping and Supply Chain','Scientists and Researching','NGO & Social Work','Consultation','Other Services'];
+  const toggleSpec = s => setSpecs(prev => prev.includes(s) ? prev.filter(x=>x!==s) : [...prev,s]);
+  const save = () => {
+    setUser(u => ({...u, ...form, specializations: specs}));
+    toast('Profile saved successfully! ✓', 's');
+  };
+  const quals = ["Bachelor's Degree","Master's Degree","Professional Qualifications","Work Experience","Business in relevant field","Family background","Desire in that field"];
+
+  return (
+    <div className="page">
+      <div className="prof-wrap">
+        <button className="btn-ghost" style={{marginBottom:16,fontSize:12}} onClick={() => nav('dashboard')}>← Back to Dashboard</button>
+        <div className="prof-hd">
+          <div className="avatar av80">{user.initials}</div>
+          <div style={{flex:1}}>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(20px,3vw,26px)',marginBottom:3}}>{user.firstName} {user.lastName}</h2>
+            <div style={{fontSize:13,color:'var(--gold)',marginBottom:6}}>{user.role.replace(/_/g,' ')} · {form.country}</div>
+            <div className="star-select">
+              {[1,2,3,4,5].map(n => <span key={n} className={n<=(hoverStar||stars)?'lit':''} onMouseEnter={()=>setHoverStar(n)} onMouseLeave={()=>setHoverStar(0)} onClick={()=>setStars(n)}>★</span>)}
+            </div>
+            <p style={{fontSize:13,color:'var(--text-muted)',lineHeight:1.65,marginTop:8,maxWidth:480}}>{form.bio||'No bio yet.'}</p>
+            <div className="badges-row">
+              {user.verified && <span className="badge">✓ Verified Creator</span>}
+              {user.patentHolder && <span className="badge">📜 Patent Holder</span>}
+              {user.stars >= 4 && <span className="badge">⭐ Top Seller</span>}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-stats">
+          {[['4','Ideas Posted'],['2','Ideas Sold'],['$3.4K','Earned']].map(([n,l]) => (
+            <div key={l} className="psc"><div className="psn">{n}</div><div className="psl">{l}</div></div>
+          ))}
+        </div>
+
+        <div className="panel">
+          <h3 style={{marginBottom:18}}>Personal Information</h3>
+          <div className="frow"><div className="fg"><label>First Name *</label><input value={form.firstName} onChange={e=>set('firstName',e.target.value)} /></div><div className="fg"><label>Last Name *</label><input value={form.lastName} onChange={e=>set('lastName',e.target.value)} /></div></div>
+          <div className="fg"><label>Middle Name</label><input placeholder="(optional)" /></div>
+          <div className="frow"><div className="fg"><label>Email *</label><input type="email" value={form.email} onChange={e=>set('email',e.target.value)} /></div><div className="fg"><label>Phone (with country code)</label><input placeholder="+94 77 123 4567" value={form.phone} onChange={e=>set('phone',e.target.value)} /></div></div>
+          <div className="frow">
+            <div className="fg"><label>Gender</label><select><option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option></select></div>
+            <div className="fg"><label>Country *</label><select value={form.country} onChange={e=>set('country',e.target.value)}>{['Sri Lanka','United States','United Kingdom','India','Australia','Singapore','Canada','Germany','France','Japan','Other'].map(c=><option key={c}>{c}</option>)}</select></div>
+          </div>
+          <div className="frow"><div className="fg"><label>City</label><input value={form.city} onChange={e=>set('city',e.target.value)} /></div><div className="fg"><label>Postal Code</label><input placeholder="10001" /></div></div>
+          <div className="fg"><label>Bio (max 200 words)</label><textarea value={form.bio} onChange={e=>set('bio',e.target.value)} placeholder="Describe yourself, your background, and your expertise…" /></div>
+        </div>
+
+        <div className="panel">
+          <h3 style={{marginBottom:14}}>Area of Specialization</h3>
+          <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14}}>Select all areas that apply. This helps investors find the right creators.</p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:8}}>
+            {allSpecs.map(s => (
+              <div key={s} className={'eo'+(specs.includes(s)?' sel':'')} onClick={() => toggleSpec(s)} style={{padding:'8px 12px'}}>
+                <div className="et" style={{fontSize:11}}>{s}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="panel">
+          <h3 style={{marginBottom:14}}>Qualifications</h3>
+          <div className="fg"><label>Highest Education / Experience Level</label>
+            <select value={form.qual} onChange={e=>set('qual',e.target.value)}>{quals.map(q=><option key={q}>{q}</option>)}</select>
+          </div>
+          <div style={{fontSize:11,color:'var(--gold)',background:'rgba(201,168,76,.06)',border:'1px solid var(--border)',borderRadius:8,padding:10,marginTop:8}}>📋 Education qualifications may be requested as proof by the platform or investors when required. See Privacy Policy.</div>
+        </div>
+
+        <div className="panel">
+          <h3 style={{marginBottom:14}}>Payment Details</h3>
+          <div style={{background:'rgba(201,168,76,.05)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:16,marginBottom:14}}>
+            <div style={{fontSize:13,fontWeight:500,marginBottom:4}}>🏦 Bank Account / Payment Method</div>
+            <p style={{fontSize:12,color:'var(--text-muted)'}}>Connect your bank account, PayPal, or crypto wallet to receive payments from idea sales.</p>
+          </div>
+          <div className="frow">
+            <div className="fg"><label>Bank Name</label><input placeholder="e.g. People's Bank" /></div>
+            <div className="fg"><label>Account Number</label><input placeholder="••••••••" type="password" /></div>
+          </div>
+          <button className="btn-o btn-sm" style={{marginTop:8}} onClick={() => toast('Payment method saved!','s')}>Save Payment Method</button>
+        </div>
+
+        <div style={{display:'flex',gap:10}}>
+          <button className="btn-p" onClick={save}>Save Profile →</button>
+          <button className="btn-o" onClick={() => nav('dashboard')}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── AI PATENT CHECKER ────────────────────────────────────────────────────────
+const PatentPage = ({ user, nav, toast, setModal }) => {
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [applyIdea, setApplyIdea] = useState('');
+
+  const checkPatent = async () => {
+    if (!query.trim()) { toast('Please enter your idea to check','e'); return; }
+    setLoading(true);
+    setResult(null);
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: `You are a patent research assistant for IdeaHub, a marketplace platform. A user wants to check if their idea is novel and patentable.
+
+Idea submitted: "${query}"
+
+Respond ONLY with a JSON object (no markdown, no explanation outside JSON) in this exact format:
+{
+  "status": "clear" | "similar_found" | "likely_patented",
+  "summary": "2-3 sentence plain-English verdict",
+  "noveltyScore": 0-100,
+  "similarPatents": [
+    { "number": "US patent number", "title": "patent title", "year": "year", "similarity": "low|medium|high", "note": "brief note" }
+  ],
+  "recommendation": "one clear recommendation for the inventor",
+  "canApply": true | false
+}`
+          }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.[0]?.text || '{}';
+      const clean = text.replace(/```json|```/g,'').trim();
+      setResult(JSON.parse(clean));
+    } catch(e) {
+      // fallback mock
+      setResult({
+        status: query.length > 20 ? 'similar_found' : 'clear',
+        summary: query.length > 20
+          ? 'Your idea has some similarities to existing patents in this space, but the specific combination of elements you describe may still be patentable with the right claims strategy.'
+          : 'Your idea appears to be novel based on our initial search. No directly conflicting patents were found in the major patent databases.',
+        noveltyScore: query.length > 20 ? 62 : 88,
+        similarPatents: query.length > 20 ? [
+          { number:'US10,234,567', title:'Method for automated agricultural monitoring using machine learning', year:'2021', similarity:'medium', note:'Covers ML-based crop monitoring but not real-time disease detection via mobile.' },
+          { number:'EP3456789', title:'System for plant pathology detection using neural networks', year:'2022', similarity:'low', note:'European patent covering laboratory-grade detection, not field-deployable mobile apps.' }
+        ] : [],
+        recommendation: query.length > 20
+          ? 'Consider filing a provisional patent application to establish a priority date while you refine your claims.'
+          : 'Your idea appears patentable. We recommend filing a provisional application immediately to establish a priority date.',
+        canApply: true
+      });
+    }
+    setLoading(false);
+  };
+
+  const statusStyle = { clear:'pat-clear', similar_found:'pat-warn', likely_patented:'pat-found' };
+  const statusIcon = { clear:'✅', similar_found:'⚠️', likely_patented:'❌' };
+  const statusText = { clear:'Likely Novel — No direct conflicts found', similar_found:'Similar Patents Exist — Review recommended', likely_patented:'Likely Already Patented' };
+
+  return (
+    <div className="page">
+      <div className="patent-wrap">
+        <div className="sec-lbl">Intellectual Property</div>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(26px,4vw,38px)',marginBottom:8}}>AI Patent Checker</h1>
+        <p style={{fontSize:13,color:'var(--text-muted)',marginBottom:28,lineHeight:1.7}}>Describe your idea and our AI will cross-reference global patent databases to check novelty before you list on IdeaHub.</p>
+
+        <div className="panel">
+          <h3 style={{marginBottom:14}}>Describe Your Idea</h3>
+          <div className="fg">
+            <label>What is your idea? (Be as specific as possible)</label>
+            <textarea style={{minHeight:120}} placeholder="E.g.: A mobile application that uses computer vision to detect plant diseases in real-time by analyzing photos taken by farmers using their smartphone cameras, providing instant diagnosis and treatment recommendations even without internet connectivity…" value={query} onChange={e=>setQuery(e.target.value)} />
+          </div>
+          <button className="btn-p" onClick={checkPatent} disabled={loading}>
+            {loading ? <><span className="spin" style={{width:16,height:16,marginRight:6}}></span>Checking patents…</> : '🔍 Check Patent Novelty →'}
+          </button>
+        </div>
+
+        {result && (
+          <div className="pat-result">
+            <div className={`pat-status ${statusStyle[result.status]}`}>
+              <span style={{fontSize:20}}>{statusIcon[result.status]}</span>
+              <span>{statusText[result.status]}</span>
+            </div>
+
+            <div style={{display:'flex',alignItems:'center',gap:16,marginBottom:18}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,color:'var(--text-muted)',marginBottom:4}}>Novelty Score</div>
+                <div style={{background:'var(--dark4)',borderRadius:4,height:8,overflow:'hidden'}}>
+                  <div style={{height:'100%',background:result.noveltyScore>70?'var(--green)':result.noveltyScore>45?'var(--gold)':'var(--red)',width:result.noveltyScore+'%',transition:'width .6s ease'}}></div>
+                </div>
+              </div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:28,fontWeight:700,color:result.noveltyScore>70?'var(--green)':result.noveltyScore>45?'var(--gold)':'var(--red)'}}>{result.noveltyScore}/100</div>
+            </div>
+
+            <p style={{fontSize:13,color:'var(--text-muted)',lineHeight:1.7,marginBottom:16}}>{result.summary}</p>
+
+            {result.similarPatents?.length > 0 && (
+              <>
+                <div style={{fontSize:13,fontWeight:600,marginBottom:10}}>Similar Patents Found</div>
+                {result.similarPatents.map((p,i) => (
+                  <div key={i} className="pat-item">
+                    <h4>{p.title}</h4>
+                    <p>{p.note}</p>
+                    <span className="pat-num">{p.number} ({p.year})</span>
+                    <span style={{fontSize:10,marginLeft:8,color:p.similarity==='high'?'var(--red)':p.similarity==='medium'?'var(--gold)':'var(--green)'}}>Similarity: {p.similarity}</span>
+                  </div>
+                ))}
+              </>
+            )}
+
+            <div style={{background:'rgba(201,168,76,.07)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:14,marginTop:16}}>
+              <div style={{fontSize:12,fontWeight:600,color:'var(--gold)',marginBottom:4}}>💡 Recommendation</div>
+              <p style={{fontSize:12,color:'var(--text-muted)',lineHeight:1.6}}>{result.recommendation}</p>
+            </div>
+
+            {result.canApply && (
+              <div style={{display:'flex',gap:10,marginTop:16,flexWrap:'wrap'}}>
+                <button className="btn-p btn-sm" onClick={() => { if (!user) { setModal({type:'signup'}); } else { toast('Patent application started! A patent attorney will contact you within 48 hours.','s'); } }}>
+                  📜 Apply for Patent via IdeaHub →
+                </button>
+                <button className="btn-o btn-sm" onClick={() => nav('explore')}>List This Idea on Marketplace</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MY PATENTS */}
+        {user && DB.patents.length > 0 && (
+          <div className="panel" style={{marginTop:24}}>
+            <div className="panel-hd"><h3>My Patents</h3></div>
+            {DB.patents.map(p => (
+              <div key={p.id} className="irow">
+                <div className="i-box">📜</div>
+                <div style={{flex:1}}>
+                  <div className="ititle">{p.title}</div>
+                  <div className="imeta">{p.number} · Filed {p.filed}</div>
+                </div>
+                <span className="badge-st st-pend">{p.status}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* INFO CARDS */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:14,marginTop:24}}>
+          {[['📋','How Patent Filing Works on IdeaHub','Submit your idea → AI checks novelty → Matched with a patent attorney → File provisional application → Full patent examination'],['⚡','Provisional vs Full Patent','A provisional patent establishes your priority date for 12 months while you develop your idea. A full patent provides 20 years of protection.'],['💰','Cost on IdeaHub','Provisional filing: from $299 via our partner attorneys. Full patent prosecution: from $1,200. All handled within the platform.']].map(([ic,t,d]) => (
+            <div key={t} className="feat-card">
+              <div style={{fontSize:24,marginBottom:10}}>{ic}</div>
+              <h4>{t}</h4>
+              <p>{d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── MESSAGES PAGE ────────────────────────────────────────────────────────────
+const MessagesPage = ({ user, nav }) => {
+  const [activeConv, setActiveConv] = useState(0);
+  const [input, setInput] = useState('');
+  const [convs, setConvs] = useState(DB.messages);
+  const bodyRef = useRef();
+
+  useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight; }, [activeConv, convs]);
+
+  const send = () => {
+    if (!input.trim()) return;
+    const newMsg = { from:'me', text:input, time:'Now' };
+    setConvs(prev => prev.map((c,i) => i === activeConv ? {...c, msgs:[...c.msgs, newMsg]} : c));
+    setInput('');
+  };
+
+  const conv = convs[activeConv];
+
+  return (
+    <div className="page">
+      <div style={{maxWidth:900,margin:'0 auto',padding:'24px 20px'}}>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:24,marginBottom:20}}>Messages</h2>
+        <div className="msg-wrap" style={{background:'var(--dark3)',border:'1px solid var(--bl)',borderRadius:'var(--rl)',overflow:'hidden'}}>
+          <div className="msg-list">
+            {convs.map((c,i) => (
+              <div key={c.id} className={'msg-item'+(activeConv===i?' act':'')} onClick={() => setActiveConv(i)}>
+                <div className="avatar av32">{c.avatar}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="msg-name">{c.with}</div>
+                  <div className="msg-prev">{c.msgs[c.msgs.length-1].text.slice(0,36)}…</div>
+                </div>
+                <div className="msg-time">{c.msgs[c.msgs.length-1].time}</div>
+              </div>
+            ))}
+          </div>
+          <div className="msg-chat">
+            <div className="msg-hd">
+              <div className="avatar av32">{conv.avatar}</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:600}}>{conv.with}</div>
+                <div style={{fontSize:11,color:'var(--green)'}}>● Online</div>
+              </div>
+              <div style={{marginLeft:'auto',display:'flex',gap:8}}>
+                <button className="btn-o btn-sm" style={{fontSize:11}} onClick={() => nav('video')}>📹 Video Call</button>
+              </div>
+            </div>
+            <div className="msg-body" ref={bodyRef}>
+              {conv.msgs.map((m,i) => (
+                <div key={i} className={`bubble ${m.from==='me'?'b-me':'b-them'}`}>
+                  {m.from!=='me' && <div style={{fontSize:10,color:'var(--text-muted)',marginBottom:3}}>{conv.with}</div>}
+                  {m.text}
+                  <div style={{fontSize:10,color:'var(--text-dim)',marginTop:4,textAlign:'right'}}>{m.time}</div>
+                </div>
+              ))}
+            </div>
+            <div className="msg-in">
+              <input placeholder={`Message ${conv.with}…`} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} />
+              <button className="btn-p btn-sm" onClick={send}>Send →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── VIDEO CONF PAGE ──────────────────────────────────────────────────────────
+const VideoConfPage = ({ nav, selectedIdea }) => {
+  const [mic, setMic] = useState(true);
+  const [cam, setCam] = useState(true);
+  const [chat, setChat] = useState(false);
+  const [msgs, setMsgs] = useState([
+    { from:'them', who:'Sarah R.', text:'Hi! Thanks for joining. I want to ask about the monetization model.', time:'10:32' },
+  ]);
+  const [input, setInput] = useState('');
+  const [time, setTime] = useState(0);
+  const [active, setActive] = useState(true);
+  const chatRef = useRef();
+
+  useEffect(() => {
+    if (!active) return;
+    const t = setInterval(() => setTime(s=>s+1), 1000);
+    return () => clearInterval(t);
+  }, [active]);
+
+  useEffect(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, [msgs]);
+
+  const formatTime = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+  const send = () => {
+    if (!input.trim()) return;
+    setMsgs(m => [...m, { from:'me', who:'You', text:input, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) }]);
+    setInput('');
+    // simulate reply
+    setTimeout(() => {
+      const replies = ['That makes sense! What about the go-to-market strategy?','Can you share your prototype or demo?','What\'s your timeline for launching this?','I\'m very interested. What\'s your minimum asking price?'];
+      setMsgs(m => [...m, { from:'them', who:'Sarah R.', text: replies[Math.floor(Math.random()*replies.length)], time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
+    }, 1500);
+  };
+
+  const end = () => { setActive(false); nav('messages'); };
+
+  return (
+    <div className="page" style={{padding:'0 0 0'}}>
+      <div style={{maxWidth:920,margin:'0 auto',padding:'24px 20px'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+          <div>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:20}}>Video Call</h2>
+            <div style={{fontSize:12,color:'var(--text-muted)'}}>
+              {selectedIdea ? `Re: ${selectedIdea.title}` : 'Direct Call'} · 
+              <span style={{color:active?'var(--green)':'var(--text-dim)',marginLeft:4}}>● {active?'Live — '+formatTime(time):'Ended'}</span>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn-o btn-sm" onClick={() => setChat(c=>!c)}>💬 {chat?'Hide':'Show'} Chat</button>
+          </div>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:chat?'1fr 300px':'1fr',gap:14}}>
+          <div className="video-wrap">
+            <div className="vid-stage">
+              <div className="vid-tile main">
+                <div className="cam-off">
+                  <div className="avatar av56" style={{background:'linear-gradient(135deg,#1A4A3A,#2A7A5A)'}}>SR</div>
+                  <p>Sarah R. — Investor</p>
+                </div>
+                <div className="vid-name">Sarah R.</div>
+              </div>
+              <div className="vid-tile self">
+                {cam ? (
+                  <div className="cam-off">
+                    <div className="avatar av56">You</div>
+                    <p>Your camera</p>
+                  </div>
+                ) : (
+                  <div className="cam-off">
+                    <div style={{fontSize:30,marginBottom:8}}>📷</div>
+                    <p style={{color:'var(--red)',fontSize:12}}>Camera off</p>
+                  </div>
+                )}
+                <div className="vid-name">You</div>
+              </div>
+            </div>
+            <div className="vid-controls">
+              <button className={`vc-btn vc-mic${mic?'':' off'}`} onClick={() => setMic(m=>!m)} title="Toggle mic">
+                {mic ? '🎙️' : '🔇'}
+              </button>
+              <button className={`vc-btn vc-cam${cam?'':' off'}`} onClick={() => setCam(c=>!c)} title="Toggle camera">
+                {cam ? '📹' : '📷'}
+              </button>
+              <button className="vc-btn" style={{background:'rgba(100,180,255,.1)',color:'var(--blue)'}} title="Screen share" onClick={() => {}}>🖥</button>
+              <button className="vc-btn" style={{background:'rgba(201,168,76,.1)',color:'var(--gold)'}} title="Record" onClick={() => {}}>⏺</button>
+              <button className="vc-btn vc-end" onClick={end} title="End call">📵</button>
+            </div>
+          </div>
+
+          {chat && (
+            <div style={{display:'flex',flexDirection:'column',background:'var(--dark3)',border:'1px solid var(--bl)',borderRadius:'var(--rl)',overflow:'hidden'}}>
+              <div style={{padding:'12px 14px',borderBottom:'1px solid var(--bl)',fontSize:13,fontWeight:600}}>💬 Chat</div>
+              <div className="chat-box" ref={chatRef} style={{flex:1}}>
+                {msgs.map((m,i) => (
+                  <div key={i} className={`chat-msg ${m.from==='me'?'me':'them'}`}>
+                    <div className="chat-name">{m.who}</div>
+                    {m.text}
+                    <div style={{fontSize:9,color:'var(--text-dim)',marginTop:3,textAlign:'right'}}>{m.time}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="chat-in">
+                <input placeholder="Type a message…" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} />
+                <button className="btn-p btn-sm" style={{flexShrink:0}} onClick={send}>→</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{background:'var(--dark3)',border:'1px solid var(--bl)',borderRadius:'var(--r)',padding:14,marginTop:14,display:'flex',gap:12,flexWrap:'wrap',alignItems:'center'}}>
+          <span style={{fontSize:12,color:'var(--text-muted)',flex:1}}>Call notes: You can take notes during or after the call. They are saved privately to your account.</span>
+          <input placeholder="Add a note…" style={{flex:2,minWidth:200,fontSize:12}} />
+          <button className="btn-o btn-sm" style={{fontSize:11}}>Save Note</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── ESCROW MODAL ─────────────────────────────────────────────────────────────
+const EscrowModal = ({ idea, user, nav, setModal, toast }) => {
+  const [step, setStep] = useState(1);
+  const [payMethod, setPayMethod] = useState('card');
+  const fee = Math.round(idea.price * 0.08);
+  const total = idea.price + fee;
+
+  const confirm = () => {
+    setStep(3);
+    setTimeout(() => {
+      toast('Payment placed in escrow! The seller has been notified. 🎉', 's');
+      setModal(null);
+      nav('dashboard');
+    }, 2000);
+  };
+
+  return (
+    <>
+      <h2>Purchase via Escrow</h2>
+      <div className="sub">Secure payment — funds released only after delivery</div>
+
+      {step === 1 && (
+        <>
+          <div className="escrow-amount">${idea.price.toLocaleString()}</div>
+          <div style={{background:'var(--dark4)',borderRadius:'var(--r)',padding:14,marginBottom:16}}>
+            <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>{idea.icon} {idea.title}</div>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--text-muted)',marginBottom:4}}><span>Idea price</span><span>${idea.price.toLocaleString()}</span></div>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--text-muted)',marginBottom:4}}><span>Platform fee (8%)</span><span>${fee.toLocaleString()}</span></div>
+            <div style={{height:1,background:'var(--bl)',margin:'8px 0'}}></div>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:600}}><span>Total</span><span style={{color:'var(--gold)'}}>$<b>{total.toLocaleString()}</b></span></div>
+          </div>
+          <div className="escrow-steps">
+            {[['Buyer pays into escrow','You pay now — funds are held securely by IdeaHub','es-active'],['Creator delivers idea','Full description, materials, and agreed engagement delivered','es-wait'],['You confirm delivery','Inspect and confirm — only then are funds released to creator','es-wait'],['Funds released','Creator receives payment. Deal complete!','es-wait']].map(([h,d,cls],i) => (
+              <div key={i} className="es-step">
+                <div className={`es-num ${cls}`}>{i+1}</div>
+                <div className="es-info"><h4>{h}</h4><p>{d}</p></div>
+              </div>
+            ))}
+          </div>
+          <button className="btn-p btn-full" style={{marginTop:16}} onClick={() => setStep(2)}>Proceed to Payment →</button>
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <div style={{fontSize:13,color:'var(--text-muted)',marginBottom:16}}>Total to pay: <strong style={{color:'var(--gold)'}}>${total.toLocaleString()}</strong></div>
+          <div className="pay-method">
+            {[['card','💳 Card'],['paypal','🅿 PayPal'],['crypto','₿ Crypto']].map(([m,l]) => (
+              <div key={m} className={'pm'+(payMethod===m?' sel':'')} onClick={() => setPayMethod(m)}>{l}</div>
+            ))}
+          </div>
+          {payMethod === 'card' && (
+            <>
+              <div className="fg"><label>Card Number</label><input placeholder="1234 5678 9012 3456" maxLength={19} /></div>
+              <div className="frow">
+                <div className="fg"><label>Expiry</label><input placeholder="MM / YY" /></div>
+                <div className="fg"><label>CVV</label><input placeholder="•••" type="password" maxLength={4} /></div>
+              </div>
+              <div className="fg"><label>Name on Card</label><input placeholder="John Doe" /></div>
+            </>
+          )}
+          {payMethod === 'paypal' && <div style={{textAlign:'center',padding:24,color:'var(--text-muted)',fontSize:13}}>You will be redirected to PayPal to complete the payment.</div>}
+          {payMethod === 'crypto' && (
+            <div style={{background:'var(--dark4)',borderRadius:'var(--r)',padding:14,fontSize:12,color:'var(--text-muted)'}}>
+              <div style={{fontWeight:600,color:'var(--text)',marginBottom:4}}>Send exactly ${total.toLocaleString()} USDT to:</div>
+              <div style={{fontFamily:'monospace',fontSize:11,color:'var(--blue)',wordBreak:'break-all'}}>0x742d35Cc6634C0532925a3b8D4C9B5Ef6aB4c1234</div>
+            </div>
+          )}
+          <div style={{display:'flex',gap:10,marginTop:16}}>
+            <button className="btn-o btn-sm" onClick={() => setStep(1)}>← Back</button>
+            <button className="btn-p btn-full" onClick={confirm}>Pay ${total.toLocaleString()} & Lock in Escrow →</button>
+          </div>
+        </>
+      )}
+
+      {step === 3 && (
+        <div style={{textAlign:'center',padding:'20px 0'}}>
+          <div style={{fontSize:48,marginBottom:16}}>⏳</div>
+          <h3 style={{marginBottom:8}}>Processing payment…</h3>
+          <p style={{fontSize:13,color:'var(--text-muted)'}}>Locking ${total.toLocaleString()} in escrow. This takes just a moment.</p>
+          <div style={{marginTop:20}}><span className="spin" style={{display:'inline-block'}}></span></div>
+        </div>
+      )}
+    </>
+  );
+};
+
+// ─── PATENT APPLY MODAL ───────────────────────────────────────────────────────
+const PatentApplyModal = ({ idea, setModal, toast }) => {
+  const [submitted, setSubmitted] = useState(false);
+  const submit = () => {
+    setSubmitted(true);
+    DB.patents.push({ id:'IH-'+Date.now(), title: idea?.title||'Your Idea', status:'Application Received', filed: new Date().toISOString().slice(0,10), number:'Pending' });
+    setTimeout(() => { toast('Patent application submitted! A patent attorney will contact you within 48 hours.', 's'); setModal(null); }, 1500);
+  };
+  return (
+    <>
+      <h2>Apply for Patent</h2>
+      <div className="sub">Via IdeaHub's patent attorney network</div>
+      {!submitted ? (
+        <>
+          {idea && <div className="rtag">💡 {idea.title}</div>}
+          <div className="fg"><label>Type of Application</label><select><option>Provisional Patent (12-month protection, from $299)</option><option>Utility Patent (20 years, from $1,200)</option><option>Design Patent (15 years, from $800)</option></select></div>
+          <div className="fg"><label>Country / Jurisdiction</label><select><option>United States (USPTO)</option><option>European Patent Office</option><option>WIPO — International PCT</option><option>Sri Lanka (NIPO)</option></select></div>
+          <div className="fg"><label>Brief Inventor Statement</label><textarea placeholder="Describe the invention in your own words. This helps the attorney draft the claims…" style={{minHeight:80}} /></div>
+          <div style={{background:'rgba(201,168,76,.06)',border:'1px solid var(--border)',borderRadius:'var(--r)',padding:12,marginBottom:16,fontSize:12,color:'var(--text-muted)'}}>
+            📋 By submitting, you acknowledge that a partner attorney will review your application. You will be contacted within 48 hours. No payment until you approve the attorney's quote.
+          </div>
+          <button className="btn-p btn-full" onClick={submit}>Submit Patent Application →</button>
+        </>
+      ) : (
+        <div style={{textAlign:'center',padding:'20px 0'}}>
+          <div style={{fontSize:40,marginBottom:12}}>📜</div>
+          <h3>Submitting your application…</h3>
+          <div style={{marginTop:16}}><span className="spin" style={{display:'inline-block'}}></span></div>
+        </div>
+      )}
+    </>
+  );
+};
+
+// ─── PAYMENT PAGE (standalone) ────────────────────────────────────────────────
+const PaymentPage = ({ user, nav, toast, selectedIdea }) => {
+  const [method, setMethod] = useState('card');
+  const [done, setDone] = useState(false);
+  const price = selectedIdea?.price || 0;
+  const fee = Math.round(price * 0.08);
+
+  const pay = () => {
+    setDone(true);
+    setTimeout(() => { toast('Payment successful! Funds in escrow.', 's'); nav('dashboard'); }, 1800);
+  };
+
+  if (!selectedIdea) return <div className="page sec"><p style={{color:'var(--text-muted)'}}>No idea selected for payment.</p></div>;
+
+  return (
+    <div className="page">
+      <div className="pay-wrap">
+        <button className="btn-ghost" style={{marginBottom:16,fontSize:12}} onClick={() => nav('explore')}>← Back</button>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:28,marginBottom:6}}>Secure Checkout</h1>
+        <p style={{fontSize:13,color:'var(--text-muted)',marginBottom:24}}>Your payment is protected by IdeaHub Escrow.</p>
+        <div className="pay-card">
+          <div style={{fontSize:13,marginBottom:16,color:'var(--text-muted)'}}>Purchasing: <strong style={{color:'var(--text)'}}>{selectedIdea.icon} {selectedIdea.title}</strong></div>
+          <div className="pay-method">
+            {[['card','💳 Card'],['paypal','🅿 PayPal'],['crypto','₿ Crypto']].map(([m,l]) => (
+              <div key={m} className={'pm'+(method===m?' sel':'')} onClick={() => setMethod(m)}>{l}</div>
+            ))}
+          </div>
+          {method === 'card' && (
+            <>
+              <div className="fg"><label>Card Number</label><input placeholder="1234 5678 9012 3456" /></div>
+              <div className="frow">
+                <div className="fg"><label>Expiry</label><input placeholder="MM / YY" /></div>
+                <div className="fg"><label>CVV</label><input placeholder="•••" type="password" /></div>
+              </div>
+              <div className="fg"><label>Name on Card</label><input defaultValue={user?.firstName+' '+(user?.lastName||'')} /></div>
+            </>
+          )}
+        </div>
+        <div className="pay-card">
+          <div style={{fontSize:12,color:'var(--text-muted)',marginBottom:10}}>Order Summary</div>
+          {[['Idea price','$'+price.toLocaleString()],['Platform fee (8%)','$'+fee.toLocaleString()],['Escrow service','Free']].map(([k,v]) => (
+            <div key={k} style={{display:'flex',justifyContent:'space-between',fontSize:12,marginBottom:5}}><span style={{color:'var(--text-muted)'}}>{k}</span><span>{v}</span></div>
+          ))}
+          <div style={{height:1,background:'var(--bl)',margin:'10px 0'}}></div>
+          <div style={{display:'flex',justifyContent:'space-between',fontWeight:600,fontSize:15}}><span>Total</span><span style={{color:'var(--gold)'}}>${'{'+(price+fee).toLocaleString()+'}'}</span></div>
+        </div>
+        <button className="btn-p btn-full" onClick={pay} disabled={done}>{done?'Processing…':'Pay & Lock in Escrow →'}</button>
+        <p className="escrow-note" style={{marginTop:12}}>🔒 Funds are held by IdeaHub until you confirm delivery. If the seller doesn't deliver, you receive a full refund.</p>
+      </div>
+    </div>
+  );
+};
+
+// ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
+const AboutPage = ({ nav, setModal }) => (
+  <div className="page">
+    <div className="about-wrap">
+      <div className="sec-lbl">Our Story</div>
+      <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(32px,6vw,56px)',marginBottom:16}}>Where ideas meet <span style={{color:'var(--gold)'}}>opportunity</span></h1>
+      <p style={{fontSize:16,color:'var(--text-muted)',lineHeight:1.85,marginBottom:56,maxWidth:680}}>Millions of brilliant ideas die every year — not from lack of merit, but from lack of connection. IdeaHub was built to end that. We believe every great idea deserves a chance to become reality, and every investor deserves access to the world's best concepts.</p>
+
+      {[['🎯','Our Purpose','To serve as the world\'s leading marketplace where idea creators can showcase and monetize their innovative concepts, and where investors can discover truly unique opportunities — turning ideas into thriving businesses.'],['🌍','Our Goal','To become a globally recognized e-commerce platform for idea creators and investors alike — a place where geography doesn\'t limit genius, and where the next big thing can come from anywhere in the world.'],['🔮','The Future We\'re Building','IdeaHub is more than a marketplace — it\'s an ecosystem. With AI-powered idea validation, global patent integration, escrow-protected transactions, built-in video conferencing, and a new Virtual Manager career path, we\'re building infrastructure for the world\'s next generation of innovation.']].map(([ic,t,d]) => (
+        <div key={t} className="ab-block">
+          <div className="ab-ico">{ic}</div>
+          <div><h3>{t}</h3><p>{d}</p></div>
+        </div>
+      ))}
+
+      <div className="sec-lbl" style={{textAlign:'left',marginBottom:20}}>What we stand for</div>
+      <div className="mission-grid">
+        {[['Bridge the Gap','Fill the critical gap between idea creators who lack funding and investors who lack access to truly unique ideas.'],['Protect Innovation','Integrate with global patent systems to help creators protect their work and ensure fair compensation.'],['Enable New Careers','Create new professional roles — Virtual Managers who build businesses on behalf of creators and investors.'],['Democratize Innovation','Not limited to business ideas — life hacks, techniques, and everyday innovations are all welcome here.'],['Trust & Security','Escrow payments, identity verification, and a rating system ensure every transaction is safe and transparent.'],['AI-Powered Matching','Our AI connects the right investors with the right ideas, eliminating noise and wasted time for both sides.']].map(([t,d]) => (
+          <div key={t} className="mc2"><h4>{t}</h4><p>{d}</p></div>
+        ))}
+      </div>
+
+      <div style={{background:'linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.03))',border:'1px solid var(--border)',borderRadius:'var(--rl)',padding:'40px',textAlign:'center'}}>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:28,marginBottom:12}}>Ready to join the movement?</h2>
+        <p style={{fontSize:13,color:'var(--text-muted)',marginBottom:20}}>Whether you have an idea to sell or capital to invest — IdeaHub is your platform.</p>
+        <div style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
+          <button className="btn-p" onClick={() => setModal({type:'signup',role:'idea_creator'})}>Start as Idea Creator →</button>
+          <button className="btn-o" onClick={() => setModal({type:'signup',role:'investor'})}>Join as Investor</button>
+        </div>
+      </div>
+    </div>
+    <Footer nav={nav} setModal={setModal} />
+  </div>
+);
+
+// ─── FOOTER ───────────────────────────────────────────────────────────────────
+const Footer = ({ nav, setModal }) => (
+  <footer>
+    <div className="f-logo">IdeaHub</div>
+    <p style={{fontSize:12,color:'var(--text-dim)',marginBottom:4}}>The global marketplace where ideas become opportunities.</p>
+    <div className="f-links">
+      {[['About',()=>nav('about')],['Explore Ideas',()=>nav('explore')],['Patent Checker',()=>nav('patent')],['Privacy Policy',()=>{}],['Terms of Service',()=>{}],['Patent Guide',()=>{}],['Help Center',()=>{}],['Contact',()=>{}]].map(([l,fn]) => (
+        <a key={l} onClick={fn}>{l}</a>
+      ))}
+    </div>
+    <div style={{marginTop:20,display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
+      {[['💡','Idea Creator','idea_creator'],['💼','Investor','investor'],['🤝','Virtual Manager','virtual_manager'],['⚖️','Patent Attorney','patent_attorney']].map(([ic,l,r]) => (
+        <button key={r} className="btn-o btn-sm" style={{fontSize:11}} onClick={() => setModal({type:'signup',role:r})}>{ic} {l}</button>
+      ))}
+    </div>
+    <p style={{marginTop:20,fontSize:11,color:'var(--text-dim)'}}>© 2025 IdeaHub. All rights reserved. Bridging innovators and investors worldwide.</p>
+  </footer>
+);
+
+// ─── MOUNT ────────────────────────────────────────────────────────────────────
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>

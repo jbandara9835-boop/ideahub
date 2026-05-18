@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use(express.static('public'));
 // ── IN-MEMORY DATABASE (we'll replace with Supabase later) ──────────────────
 const DB = {
   users: [
