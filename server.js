@@ -20,7 +20,14 @@ const supabase = createClient(
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
-
+app.get('/api/test', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('users').select('count');
+    res.json({ supabase: 'connected', data, error });
+  } catch(e) {
+    res.json({ supabase: 'failed', error: e.message });
+  }
+});
 // ── HELPER: verify JWT token ─────────────────────────────────────────────────
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
