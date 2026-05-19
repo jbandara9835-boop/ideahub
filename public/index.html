@@ -401,7 +401,7 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 // ─── BACKEND SIMULATION (in-memory store) ───────────────────────────────────
 // ─── API LAYER — talks to your backend at localhost:3000 ─────────────────────
-const API_URL = 'http://localhost:3000';
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://ideahub-production-1b18.up.railway.app';
 
 const api = {
   // get stored token
