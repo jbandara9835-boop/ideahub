@@ -401,9 +401,9 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 // ─── BACKEND SIMULATION (in-memory store) ───────────────────────────────────
 // ─── API LAYER — talks to your backend at localhost:3000 ─────────────────────
-const API_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3000' 
-  : 'https://ideahub-production-1b18.up.railway.app';const api = {
+const API_URL = 'http://localhost:3000';
+
+const api = {
   // get stored token
   token: () => localStorage.getItem('ih_token'),
 
@@ -1169,16 +1169,19 @@ const PostIdeaPage = ({ user, nav, toast, ideas, setIdeas }) => {
   const engLevels = [['Describe in Video Call','Lowest pay grade'],['Physical Meeting','Low-mid pay grade'],['Prototype Sale','Mid pay grade'],['Manufacture & Supply','High pay grade'],['Support Until Product Launch','Very high pay grade'],['Full Partnership','Partnership / Equity']];
   const visOpts = [['Level 1 — Title & Summary only','Protects highly sensitive ideas. Investors see concept and industry only.'],['Level 2 — Partial Description','Reveal enough to attract genuine interest without exposing the core innovation.'],['Level 3 — Full Disclosure','Ideal for life hacks, open-concept ideas, or fully patented work.']];
 
-  const submit = () => {
+  const submit = async () => {
     if (!form.title || !form.industry || !form.price) { toast('Please fill in all required fields', 'e'); return; }
     setLoading(true);
-    setTimeout(() => {
-      const newIdea = { id: Date.now(), title: form.title, creator: user.firstName + ' ' + user.lastName, creatorId: user.id, industry: form.industry, ideaType: form.ideaType, summary: form.newThing, desc: form.desc, price: parseFloat(form.price)||0, level: form.level, icon: '💡', status: 'pending', views: 0, inquiries: 0, visibility: form.visibility };
-      setIdeas(prev => [newIdea, ...prev]);
-      setLoading(false);
-      toast('Idea submitted for review! You\'ll hear back within 24 hours. 🎉', 's');
-      setTimeout(() => nav('dashboard'), 600);
-    }, 1000);
+    const payload = { title: form.title, summary: form.newThing, desc: form.desc, industry: form.industry, ideaType: form.ideaType, price: parseFloat(form.price)||0, level: form.level, visibility: form.visibility, engLevel: form.engLevel, hasPatent: form.hasPatent, patentNumber: form.patentNumber };
+    const data = await api.postIdea(payload);
+    if (data && data.id) {
+      setIdeas(prev => [data, ...prev]);
+      toast('Idea posted successfully!', 's');
+    } else {
+      toast('Idea submitted!', 's');
+    }
+    setLoading(false);
+    setTimeout(() => nav('dashboard'), 800);
   };
 
   return (
