@@ -159,6 +159,8 @@ app.get('/api/ideas/:id', async (req, res) => {
 
 // POST new idea
 app.post('/api/ideas', authMiddleware, async (req, res) => {
+    console.log('POST /api/ideas called by user:', req.user.id);
+  console.log('Body:', req.body);
   const { title, summary, desc, industry, ideaType, price, level, visibility, engLevel, hasPatent, patentNumber } = req.body;
   if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
 
