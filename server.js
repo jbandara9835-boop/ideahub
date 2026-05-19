@@ -3,44 +3,23 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// ── SUPABASE CLIENT ──────────────────────────────────────────────────────────
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
+// ── SERVE FRONTEND ───────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
-// ── IN-MEMORY DATABASE (we'll replace with Supabase later) ──────────────────
-const DB = {
-  users: [
-    {
-      id: 1,
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@demo.com',
-      password: bcrypt.hashSync('demo', 10),
-      role: 'idea_creator',
-      country: 'Sri Lanka',
-      city: 'Colombo',
-      bio: 'Passionate innovator with 8+ years in tech.',
-      specializations: ['Technology & Engineering', 'Healthcare'],
-      earnings: 3400,
-      verified: true,
-    },
-  ],
-  ideas: [
-    { id: 1, title: 'AI-Powered Crop Disease Scanner', creatorId: 1, creator: 'Priya M.', industry: 'Technology & Engineering', summary: 'A mobile app using computer vision to detect plant diseases in real-time.', desc: 'Using transfer learning on 58,000 plant images, this app identifies 38 disease classes with 96% accuracy — even offline.', price: 4500, level: 2, icon: '🌾', status: 'live', views: 1240, inquiries: 8 },
-    { id: 2, title: 'Micro-Lending via Blockchain', creatorId: 1, creator: 'Carlos R.', industry: 'Business & Finance', summary: 'Blockchain-based micro-lending connecting SMEs with global investors.', desc: 'A permissioned blockchain tracks all loan agreements and repayments in real-time via smart contracts.', price: 12000, level: 3, icon: '💳', status: 'live', views: 3400, inquiries: 21 },
-    { id: 3, title: 'Solar-Powered Cold Storage', creatorId: 1, creator: 'Amara N.', industry: 'Technology & Engineering', summary: 'Off-grid cold storage using solar energy for rural farmers.', desc: '500L insulated container keeps produce at 4°C for 36 hours without grid electricity.', price: 8200, level: 3, icon: '❄️', status: 'live', views: 2100, inquiries: 14 },
-    { id: 4, title: 'Hyper-Local Freelance App', creatorId: 1, creator: 'Jake T.', industry: 'Social media, Internet and Digital Services', summary: 'Neighborhood-based platform for local service providers.', desc: 'Uses geofencing to limit listings to 5km radius, enabling same-day services.', price: 2800, level: 1, icon: '📱', status: 'live', views: 870, inquiries: 5 },
-    { id: 5, title: 'AI Nutritionist for Budget Meals', creatorId: 1, creator: 'Nina L.', industry: 'Healthcare & wellness', summary: 'App generating nutritious meal plans within a budget.', desc: 'Integrates with local grocery APIs to provide real-time pricing and culturally relevant meals.', price: 3300, level: 2, icon: '🥗', status: 'live', views: 1560, inquiries: 9 },
-    { id: 6, title: 'Restaurant Food-Waste Exchange', creatorId: 1, creator: 'Tom H.', industry: 'Food & Culinary', summary: 'B2B platform for restaurants to sell surplus ingredients.', desc: 'A 2-hour-window marketplace where restaurants list surplus at 70% discount.', price: 5100, level: 2, icon: '🍽️', status: 'live', views: 1980, inquiries: 12 },
-  ],
-  transactions: [],
-  messages: [],
-  patents: [],
-};
 
 // ── HELPER: verify JWT token ─────────────────────────────────────────────────
 function authMiddleware(req, res, next) {
@@ -55,11 +34,6 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// ── ROUTES ───────────────────────────────────────────────────────────────────
-
-// Health check
-
-
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 
 // SIGNUP
@@ -68,239 +42,292 @@ app.post('/api/auth/signup', async (req, res) => {
   if (!firstName || !email || !password) {
     return res.status(400).json({ error: 'First name, email and password are required' });
   }
-  if (DB.users.find(u => u.email === email)) {
-    return res.status(400).json({ error: 'Email already registered' });
-  }
+
+  const { data: existing } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .single();
+
+  if (existing) return res.status(400).json({ error: 'Email already registered' });
+
   const hashed = await bcrypt.hash(password, 10);
-  const user = {
-    id: Date.now(),
-    firstName,
-    lastName: lastName || '',
-    email,
-    password: hashed,
-    role: role || 'idea_creator',
-    country: '',
-    city: '',
-    bio: '',
-    specializations: [],
-    earnings: 0,
-    verified: false,
-  };
-  DB.users.push(user);
+
+  const { data: user, error } = await supabase
+    .from('users')
+    .insert([{
+      first_name: firstName,
+      last_name: lastName || '',
+      email,
+      password: hashed,
+      role: role || 'idea_creator',
+      earnings: 0,
+      verified: false,
+    }])
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
   const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
   const { password: _, ...safeUser } = user;
-  res.json({ token, user: safeUser });
+  res.json({ token, user: { ...safeUser, firstName: user.first_name, lastName: user.last_name } });
 });
 
 // LOGIN
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  const user = DB.users.find(u => u.email === email);
-  if (!user) return res.status(400).json({ error: 'No account found with this email' });
+
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .single();
+
+  if (!user || error) return res.status(400).json({ error: 'No account found with this email' });
+
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(400).json({ error: 'Incorrect password' });
+
   const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
   const { password: _, ...safeUser } = user;
-  res.json({ token, user: safeUser });
+  res.json({ token, user: { ...safeUser, firstName: user.first_name, lastName: user.last_name } });
 });
 
 // GET current user profile
-app.get('/api/auth/me', authMiddleware, (req, res) => {
-  const user = DB.users.find(u => u.id === req.user.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', req.user.id)
+    .single();
+
+  if (!user || error) return res.status(404).json({ error: 'User not found' });
   const { password: _, ...safeUser } = user;
-  res.json(safeUser);
+  res.json({ ...safeUser, firstName: user.first_name, lastName: user.last_name });
 });
 
 // UPDATE profile
-app.put('/api/auth/me', authMiddleware, (req, res) => {
-  const idx = DB.users.findIndex(u => u.id === req.user.id);
-  if (idx === -1) return res.status(404).json({ error: 'User not found' });
-  const allowed = ['firstName', 'lastName', 'country', 'city', 'bio', 'specializations', 'qual', 'phone'];
-  allowed.forEach(k => { if (req.body[k] !== undefined) DB.users[idx][k] = req.body[k]; });
-  const { password: _, ...safeUser } = DB.users[idx];
-  res.json(safeUser);
+app.put('/api/auth/me', authMiddleware, async (req, res) => {
+  const { firstName, lastName, country, city, bio, specializations, qual, phone } = req.body;
+
+  const { data: user, error } = await supabase
+    .from('users')
+    .update({ first_name: firstName, last_name: lastName, country, city, bio, specializations, qual, phone })
+    .eq('id', req.user.id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  const { password: _, ...safeUser } = user;
+  res.json({ ...safeUser, firstName: user.first_name, lastName: user.last_name });
 });
 
 // ── IDEAS ─────────────────────────────────────────────────────────────────────
 
-// GET all ideas (with optional search & filter)
-app.get('/api/ideas', (req, res) => {
-  let ideas = [...DB.ideas];
-  const { search, industry, level } = req.query;
-  if (search) ideas = ideas.filter(i => i.title.toLowerCase().includes(search.toLowerCase()) || i.summary.toLowerCase().includes(search.toLowerCase()));
-  if (industry && industry !== 'all') ideas = ideas.filter(i => i.industry === industry);
-  if (level) ideas = ideas.filter(i => i.level === parseInt(level));
-  res.json(ideas);
+// GET all ideas
+app.get('/api/ideas', async (req, res) => {
+  let query = supabase.from('ideas').select('*').eq('status', 'live');
+
+  if (req.query.industry && req.query.industry !== 'all') {
+    query = query.eq('industry', req.query.industry);
+  }
+  if (req.query.search) {
+    query = query.ilike('title', `%${req.query.search}%`);
+  }
+  if (req.query.level) {
+    query = query.eq('level', parseInt(req.query.level));
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
 // GET single idea
-app.get('/api/ideas/:id', (req, res) => {
-  const idea = DB.ideas.find(i => i.id === parseInt(req.params.id));
-  if (!idea) return res.status(404).json({ error: 'Idea not found' });
-  // increment views
-  idea.views = (idea.views || 0) + 1;
+app.get('/api/ideas/:id', async (req, res) => {
+  const { data: idea, error } = await supabase
+    .from('ideas')
+    .select('*')
+    .eq('id', req.params.id)
+    .single();
+
+  if (!idea || error) return res.status(404).json({ error: 'Idea not found' });
+  await supabase.from('ideas').update({ views: (idea.views || 0) + 1 }).eq('id', idea.id);
   res.json(idea);
 });
 
-// POST new idea (requires auth)
-app.post('/api/ideas', authMiddleware, (req, res) => {
+// POST new idea
+app.post('/api/ideas', authMiddleware, async (req, res) => {
   const { title, summary, desc, industry, ideaType, price, level, visibility, engLevel, hasPatent, patentNumber } = req.body;
   if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
-  const user = DB.users.find(u => u.id === req.user.id);
-  const idea = {
-    id: Date.now(),
-    title, summary, desc, industry,
-    ideaType: ideaType || 'New Business Idea',
-    price: parseFloat(price),
-    level: parseInt(level) || 1,
-    visibility: parseInt(visibility) || 1,
-    engLevel: engLevel || 0,
-    hasPatent: hasPatent || false,
-    patentNumber: patentNumber || '',
-    icon: '💡',
-    creatorId: req.user.id,
-    creator: user ? `${user.firstName} ${user.lastName}` : 'Unknown',
-    status: 'pending',
-    views: 0,
-    inquiries: 0,
-    createdAt: new Date().toISOString(),
-  };
-  DB.ideas.push(idea);
+
+  const { data: user } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+
+  const { data: idea, error } = await supabase
+    .from('ideas')
+    .insert([{
+      title, summary,
+      description: desc,
+      industry,
+      idea_type: ideaType || 'New Business Idea',
+      price: parseFloat(price),
+      level: parseInt(level) || 1,
+      visibility: parseInt(visibility) || 1,
+      eng_level: engLevel || 0,
+      has_patent: hasPatent || false,
+      patent_number: patentNumber || '',
+      icon: '💡',
+      creator_id: req.user.id,
+      creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
+      status: 'pending',
+      views: 0,
+      inquiries: 0,
+    }])
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
   res.status(201).json(idea);
 });
 
-// UPDATE idea
-app.put('/api/ideas/:id', authMiddleware, (req, res) => {
-  const idx = DB.ideas.findIndex(i => i.id === parseInt(req.params.id));
-  if (idx === -1) return res.status(404).json({ error: 'Idea not found' });
-  if (DB.ideas[idx].creatorId !== req.user.id) return res.status(403).json({ error: 'Not your idea' });
-  DB.ideas[idx] = { ...DB.ideas[idx], ...req.body };
-  res.json(DB.ideas[idx]);
+// GET my ideas
+app.get('/api/my-ideas', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('ideas')
+    .select('*')
+    .eq('creator_id', req.user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
 // DELETE idea
-app.delete('/api/ideas/:id', authMiddleware, (req, res) => {
-  const idx = DB.ideas.findIndex(i => i.id === parseInt(req.params.id));
-  if (idx === -1) return res.status(404).json({ error: 'Idea not found' });
-  if (DB.ideas[idx].creatorId !== req.user.id) return res.status(403).json({ error: 'Not your idea' });
-  DB.ideas.splice(idx, 1);
+app.delete('/api/ideas/:id', authMiddleware, async (req, res) => {
+  const { error } = await supabase
+    .from('ideas')
+    .delete()
+    .eq('id', req.params.id)
+    .eq('creator_id', req.user.id);
+
+  if (error) return res.status(500).json({ error: error.message });
   res.json({ message: 'Idea deleted' });
 });
 
-// GET my ideas
-app.get('/api/my-ideas', authMiddleware, (req, res) => {
-  res.json(DB.ideas.filter(i => i.creatorId === req.user.id));
-});
+// ── TRANSACTIONS ─────────────────────────────────────────────────────────────
 
-// ── TRANSACTIONS / ESCROW ────────────────────────────────────────────────────
-
-// Create escrow transaction
-app.post('/api/transactions', authMiddleware, (req, res) => {
+app.post('/api/transactions', authMiddleware, async (req, res) => {
   const { ideaId, paymentMethod } = req.body;
-  const idea = DB.ideas.find(i => i.id === parseInt(ideaId));
+  const { data: idea } = await supabase.from('ideas').select('*').eq('id', ideaId).single();
   if (!idea) return res.status(404).json({ error: 'Idea not found' });
+
   const fee = Math.round(idea.price * 0.08);
-  const tx = {
-    id: Date.now(),
-    ideaId: idea.id,
-    ideaTitle: idea.title,
-    buyerId: req.user.id,
-    sellerId: idea.creatorId,
-    amount: idea.price,
-    fee,
-    total: idea.price + fee,
-    paymentMethod: paymentMethod || 'card',
-    status: 'escrow',
-    createdAt: new Date().toISOString(),
-  };
-  DB.transactions.push(tx);
-  idea.status = 'escrow';
+  const { data: tx, error } = await supabase
+    .from('transactions')
+    .insert([{
+      idea_id: idea.id, idea_title: idea.title,
+      buyer_id: req.user.id, seller_id: idea.creator_id,
+      amount: idea.price, fee, total: idea.price + fee,
+      payment_method: paymentMethod || 'card', status: 'escrow',
+    }])
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  await supabase.from('ideas').update({ status: 'escrow' }).eq('id', idea.id);
   res.status(201).json(tx);
 });
 
-// Confirm delivery (releases escrow)
-app.put('/api/transactions/:id/confirm', authMiddleware, (req, res) => {
-  const tx = DB.transactions.find(t => t.id === parseInt(req.params.id));
+app.put('/api/transactions/:id/confirm', authMiddleware, async (req, res) => {
+  const { data: tx } = await supabase.from('transactions').select('*').eq('id', req.params.id).single();
   if (!tx) return res.status(404).json({ error: 'Transaction not found' });
-  if (tx.buyerId !== req.user.id) return res.status(403).json({ error: 'Only the buyer can confirm delivery' });
-  tx.status = 'completed';
-  tx.completedAt = new Date().toISOString();
-  const seller = DB.users.find(u => u.id === tx.sellerId);
-  if (seller) seller.earnings = (seller.earnings || 0) + tx.amount;
-  const idea = DB.ideas.find(i => i.id === tx.ideaId);
-  if (idea) idea.status = 'sold';
-  res.json(tx);
+  if (tx.buyer_id !== req.user.id) return res.status(403).json({ error: 'Only the buyer can confirm' });
+
+  const { data: updated, error } = await supabase
+    .from('transactions')
+    .update({ status: 'completed', completed_at: new Date().toISOString() })
+    .eq('id', tx.id).select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  const { data: seller } = await supabase.from('users').select('earnings').eq('id', tx.seller_id).single();
+  await supabase.from('users').update({ earnings: (seller?.earnings || 0) + tx.amount }).eq('id', tx.seller_id);
+  await supabase.from('ideas').update({ status: 'sold' }).eq('id', tx.idea_id);
+  res.json(updated);
 });
 
-// GET my transactions
-app.get('/api/transactions', authMiddleware, (req, res) => {
-  const txs = DB.transactions.filter(t => t.buyerId === req.user.id || t.sellerId === req.user.id);
-  res.json(txs);
+app.get('/api/transactions', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('transactions').select('*')
+    .or(`buyer_id.eq.${req.user.id},seller_id.eq.${req.user.id}`)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
 // ── MESSAGES ─────────────────────────────────────────────────────────────────
 
-// GET my conversations
-app.get('/api/messages', authMiddleware, (req, res) => {
-  const convs = DB.messages.filter(m => m.fromId === req.user.id || m.toId === req.user.id);
-  res.json(convs);
+app.get('/api/messages', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('messages').select('*')
+    .or(`from_id.eq.${req.user.id},to_id.eq.${req.user.id}`)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
-// SEND a message
-app.post('/api/messages', authMiddleware, (req, res) => {
+app.post('/api/messages', authMiddleware, async (req, res) => {
   const { toId, text, ideaId } = req.body;
   if (!toId || !text) return res.status(400).json({ error: 'toId and text required' });
-  const msg = {
-    id: Date.now(),
-    fromId: req.user.id,
-    toId: parseInt(toId),
-    text,
-    ideaId: ideaId || null,
-    createdAt: new Date().toISOString(),
-    read: false,
-  };
-  DB.messages.push(msg);
-  res.status(201).json(msg);
+  const { data, error } = await supabase
+    .from('messages')
+    .insert([{ from_id: req.user.id, to_id: parseInt(toId), text, idea_id: ideaId || null }])
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
 });
 
 // ── PATENTS ──────────────────────────────────────────────────────────────────
 
-// Apply for patent
-app.post('/api/patents', authMiddleware, (req, res) => {
+app.post('/api/patents', authMiddleware, async (req, res) => {
   const { title, type, jurisdiction, statement } = req.body;
-  const patent = {
-    id: 'IH-' + Date.now(),
-    userId: req.user.id,
-    title,
-    type: type || 'Provisional',
-    jurisdiction: jurisdiction || 'USPTO',
-    statement,
-    status: 'Application Received',
-    filed: new Date().toISOString().slice(0, 10),
-    number: 'Pending',
-  };
-  DB.patents.push(patent);
-  res.status(201).json(patent);
+  const { data, error } = await supabase
+    .from('patents')
+    .insert([{
+      id: 'IH-' + Date.now(),
+      user_id: req.user.id, title,
+      type: type || 'Provisional',
+      jurisdiction: jurisdiction || 'USPTO',
+      statement, status: 'Application Received', number: 'Pending',
+    }])
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
 });
 
-// GET my patents
-app.get('/api/patents', authMiddleware, (req, res) => {
-  res.json(DB.patents.filter(p => p.userId === req.user.id));
+app.get('/api/patents', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase.from('patents').select('*').eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
 });
 
-// ── DASHBOARD STATS ──────────────────────────────────────────────────────────
-app.get('/api/dashboard', authMiddleware, (req, res) => {
-  const myIdeas = DB.ideas.filter(i => i.creatorId === req.user.id);
-  const myTx = DB.transactions.filter(t => t.sellerId === req.user.id && t.status === 'completed');
-  const user = DB.users.find(u => u.id === req.user.id);
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+
+app.get('/api/dashboard', authMiddleware, async (req, res) => {
+  const [ideasRes, txRes, userRes] = await Promise.all([
+    supabase.from('ideas').select('*').eq('creator_id', req.user.id),
+    supabase.from('transactions').select('*').eq('seller_id', req.user.id).eq('status', 'completed'),
+    supabase.from('users').select('earnings').eq('id', req.user.id).single(),
+  ]);
+
+  const ideas = ideasRes.data || [];
   res.json({
-    ideasPosted: myIdeas.length,
-    totalViews: myIdeas.reduce((s, i) => s + (i.views || 0), 0),
-    inquiries: myIdeas.reduce((s, i) => s + (i.inquiries || 0), 0),
-    earnings: user?.earnings || 0,
-    ideas: myIdeas,
-    recentTransactions: myTx.slice(-5),
+    ideasPosted: ideas.length,
+    totalViews: ideas.reduce((s, i) => s + (i.views || 0), 0),
+    inquiries: ideas.reduce((s, i) => s + (i.inquiries || 0), 0),
+    earnings: userRes.data?.earnings || 0,
+    ideas,
+    recentTransactions: txRes.data || [],
   });
 });
 
@@ -308,16 +335,8 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('');
-  console.log('  ✅  IdeaHub backend running!');
+  console.log('  ✅  IdeaHub backend running with Supabase!');
   console.log(`  🌐  http://localhost:${PORT}`);
-  console.log('');
-  console.log('  Available routes:');
-  console.log('  POST   /api/auth/signup');
-  console.log('  POST   /api/auth/login');
-  console.log('  GET    /api/ideas');
-  console.log('  POST   /api/ideas');
-  console.log('  POST   /api/transactions');
-  console.log('  POST   /api/messages');
-  console.log('  GET    /api/dashboard');
+  console.log(`  🗄️   Database: ${process.env.SUPABASE_URL}`);
   console.log('');
 });
