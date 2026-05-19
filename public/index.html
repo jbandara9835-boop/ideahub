@@ -401,8 +401,9 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 // ─── BACKEND SIMULATION (in-memory store) ───────────────────────────────────
 // ─── API LAYER — talks to your backend at localhost:3000 ─────────────────────
-const API_URL = 'http://localhost:3000';
-
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000' 
+  : 'https://ideahub-ivory.vercel.app';
 const api = {
   // get stored token
   token: () => localStorage.getItem('ih_token'),
