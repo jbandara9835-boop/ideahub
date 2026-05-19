@@ -1019,13 +1019,18 @@ const AuthModal = ({ type, login, setModal, toast, role }) => {
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 const DashboardPage = ({ user, nav, ideas, toast, setModal }) => {
   const [tab, setTab] = useState('overview');
-  const myIdeas = [
-    { title:'Vertical Farm Monitoring App', industry:'Technology', views:342, status:'live', icon:'🌱' },
-    { title:'AI Triage System for Rural Clinics', industry:'Healthcare', views:578, status:'pending', icon:'🏥' },
-    { title:'Ride-share for Last-Mile Delivery', industry:'Logistics', views:920, status:'sold', icon:'🚗', soldFor:3200 },
-    { title:'Restaurant Waste Reduction System', industry:'Food', views:364, status:'live', icon:'🍔' },
-  ];
+  const [stats, setStats] = useState({ ideasPosted:0, totalViews:0, inquiries:0, earnings:0, ideas:[], recentTransactions:[] });
+  const [loading, setLoading] = useState(true);
   const statusMap = { live:['st-live','Live'], pending:['st-pend','Under Review'], sold:['st-sold','Sold'], escrow:['st-esc','In Escrow'] };
+
+  useEffect(() => {
+    api.dashboard().then(data => {
+      if (data) setStats(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const myIdeas = stats.ideas;
 
   return (
     <div className="page">
@@ -1056,9 +1061,18 @@ const DashboardPage = ({ user, nav, ideas, toast, setModal }) => {
           </div>
 
           <div className="m-grid">
-            {[['Ideas Posted','4','+1 this month'],['Total Views','1,284','↑18% this week'],['Inquiries','12','3 awaiting reply'],['Total Earnings','$3,400','2 ideas sold']].map(([l,v,s]) => (
-              <div key={l} className="mcard"><div className="mlbl">{l}</div><div className="mval" style={{fontSize:l==='Total Earnings'?'20px':''}}>{v}</div><div className="msub">{s}</div></div>
-            ))}
+            {loading ? (
+              <div className="loading"><div className="spin"></div></div>
+            ) : (
+              [
+                ['Ideas Posted', stats.ideasPosted, 'total posted'],
+                ['Total Views', stats.totalViews.toLocaleString(), 'across all ideas'],
+                ['Inquiries', stats.inquiries, 'total inquiries'],
+                ['Total Earnings', '$'+stats.earnings.toLocaleString(), 'lifetime earnings'],
+              ].map(([l,v,s]) => (
+                <div key={l} className="mcard"><div className="mlbl">{l}</div><div className="mval" style={{fontSize:l==='Total Earnings'?'20px':''}}>{v}</div><div className="msub">{s}</div></div>
+              ))
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -1071,14 +1085,20 @@ const DashboardPage = ({ user, nav, ideas, toast, setModal }) => {
 
           <div className="panel">
             <div className="panel-hd"><h3>My Ideas</h3><button className="btn-ghost" style={{fontSize:12}} onClick={() => nav('post')}>+ New</button></div>
-            {myIdeas.map((idea,i) => (
+            {myIdeas.length === 0 ? (
+              <div style={{textAlign:'center',padding:'24px',color:'var(--text-muted)',fontSize:13}}>
+                <div style={{fontSize:32,marginBottom:8}}>💡</div>
+                <p>No ideas posted yet.</p>
+                <button className="btn-p btn-sm" style={{marginTop:12}} onClick={() => nav('post')}>Post Your First Idea →</button>
+              </div>
+            ) : myIdeas.map((idea,i) => (
               <div key={i} className="irow">
-                <div className="i-box">{idea.icon}</div>
+                <div className="i-box">{idea.icon || '💡'}</div>
                 <div style={{flex:1}}>
                   <div className="ititle">{idea.title}</div>
-                  <div className="imeta">{idea.industry} · {idea.views} views{idea.soldFor?' · Sold for $'+idea.soldFor.toLocaleString():''}</div>
+                  <div className="imeta">{idea.industry} · {idea.views || 0} views</div>
                 </div>
-                <span className={`badge-st ${statusMap[idea.status][0]}`}>{statusMap[idea.status][1]}</span>
+                <span className={`badge-st ${(statusMap[idea.status]||['st-pend','Pending'])[0]}`}>{(statusMap[idea.status]||['st-pend','Pending'])[1]}</span>
               </div>
             ))}
           </div>
@@ -1114,7 +1134,7 @@ const DashboardPage = ({ user, nav, ideas, toast, setModal }) => {
             <div className="panel">
               <div className="panel-hd"><h3>Earnings</h3></div>
               <div style={{textAlign:'center',padding:'12px 0'}}>
-                <div style={{fontFamily:"'Playfair Display',serif",fontSize:36,color:'var(--gold)'}}>$3,400</div>
+                <div style={{fontFamily:"'Playfair Display',serif",fontSize:36,color:'var(--gold)'}}>${stats.earnings.toLocaleString()}</div>
                 <div style={{fontSize:12,color:'var(--text-muted)',margin:'6px 0 16px'}}>Total lifetime earnings</div>
                 <div style={{display:'flex',gap:8,justifyContent:'center'}}>
                   <div style={{background:'var(--dark4)',borderRadius:'var(--r)',padding:'10px 16px',flex:1}}>
