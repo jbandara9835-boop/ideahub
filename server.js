@@ -180,7 +180,7 @@ app.post('/api/ideas', authMiddleware, async (req, res) => {
       icon: '💡',
       creator_id: req.user.id,
       creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
-      status: 'pending',
+      status: 'live',
       views: 0,
       inquiries: 0,
     }])
