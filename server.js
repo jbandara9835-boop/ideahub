@@ -375,3 +375,334 @@ app.listen(PORT, () => {
   console.log(`  🗄️   Database: ${process.env.SUPABASE_URL}`);
   console.log('');
 });
+// ── SUPPORT PROFILES ─────────────────────────────────────────
+
+// GET support profile for current user
+app.get('/api/support/profile', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('support_profiles')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .single();
+  if (error && error.code !== 'PGRST116') return res.status(500).json({ error: error.message });
+  res.json(data || null);
+});
+
+// CREATE or UPDATE support profile
+app.post('/api/support/profile', authMiddleware, async (req, res) => {
+  const { tagline, hourly_rate, availability, experience_years, languages, home_country, service_type, allowed_countries, restricted_countries } = req.body;
+
+  const { data: user } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const { data: existing } = await supabase.from('support_profiles').select('id').eq('user_id', req.user.id).single();
+
+  let result;
+  if (existing) {
+    const { data, error } = await supabase
+      .from('support_profiles')
+      .update({ tagline, hourly_rate, availability, experience_years, languages, home_country, service_type, allowed_countries, restricted_countries, updated_at: new Date().toISOString() })
+      .eq('user_id', req.user.id)
+      .select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    result = data;
+  } else {
+    const { data, error } = await supabase
+      .from('support_profiles')
+      .insert([{ user_id: req.user.id, role: user.role, tagline, hourly_rate, availability, experience_years, languages, home_country, service_type, allowed_countries, restricted_countries }])
+      .select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    result = data;
+  }
+  res.json(result);
+});
+
+// GET all support roles (browse page) — public
+app.get('/api/support/browse', async (req, res) => {
+  let query = supabase
+    .from('support_profiles')
+    .select('*, users(id, first_name, last_name, email, role, verified)')
+    .eq('availability', 'available');
+
+  if (req.query.role) query = query.eq('role', req.query.role);
+  if (req.query.country) query = query.eq('home_country', req.query.country);
+  if (req.query.verified === 'true') query = query.eq('is_verified', true);
+
+  const { data, error } = await query.order('avg_rating', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// GET single support profile by user_id — public
+app.get('/api/support/profile/:userId', async (req, res) => {
+  const { data, error } = await supabase
+    .from('support_profiles')
+    .select('*, users(id, first_name, last_name, email, role, country, bio)')
+    .eq('user_id', req.params.userId)
+    .single();
+  if (!data || error) return res.status(404).json({ error: 'Profile not found' });
+  res.json(data);
+});
+
+// CHECK country restriction before hiring
+app.post('/api/support/check-restriction', authMiddleware, async (req, res) => {
+  const { support_user_id, client_country } = req.body;
+
+  const { data: profile } = await supabase
+    .from('support_profiles')
+    .select('service_type, allowed_countries, restricted_countries, home_country')
+    .eq('user_id', support_user_id)
+    .single();
+
+  if (!profile) return res.status(404).json({ error: 'Profile not found' });
+
+  let warning = null;
+  let blocked = false;
+
+  if (profile.service_type === 'specific_countries') {
+    if (profile.allowed_countries && !profile.allowed_countries.includes(client_country)) {
+      warning = `This professional only serves: ${profile.allowed_countries.join(', ')}. Your country (${client_country}) is not in their service area.`;
+      blocked = true;
+    }
+  } else if (profile.service_type === 'restricted_countries') {
+    if (profile.restricted_countries && profile.restricted_countries.includes(client_country)) {
+      warning = `This professional does not serve ${client_country} due to restrictions.`;
+      blocked = true;
+    }
+  }
+
+  res.json({ warning, blocked, service_type: profile.service_type });
+});
+
+// ── CERTIFICATES ──────────────────────────────────────────────
+
+// GET my certificates
+app.get('/api/certificates', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('certificates')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// ADD certificate (file upload handled by frontend via Supabase Storage)
+app.post('/api/certificates', authMiddleware, async (req, res) => {
+  const { title, issuer, issued_year, file_url, file_name } = req.body;
+  if (!title || !file_url) return res.status(400).json({ error: 'Title and file are required' });
+
+  const { data, error } = await supabase
+    .from('certificates')
+    .insert([{ user_id: req.user.id, title, issuer, issued_year, file_url, file_name, status: 'pending' }])
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+// DELETE certificate
+app.delete('/api/certificates/:id', authMiddleware, async (req, res) => {
+  const { error } = await supabase
+    .from('certificates')
+    .delete()
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Certificate deleted' });
+});
+
+// ADMIN: approve or reject certificate
+app.put('/api/admin/certificates/:id', authMiddleware, async (req, res) => {
+  const { status, reject_reason } = req.body;
+  const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+
+  const updateData = { status };
+  if (status === 'approved') updateData.verified_at = new Date().toISOString();
+  if (status === 'rejected') updateData.reject_reason = reject_reason;
+
+  const { data, error } = await supabase
+    .from('certificates')
+    .update(updateData)
+    .eq('id', req.params.id)
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// GET Supabase storage upload URL for certificates
+app.post('/api/certificates/upload-url', authMiddleware, async (req, res) => {
+  const { fileName, fileType } = req.body;
+  const filePath = `${req.user.id}/${Date.now()}_${fileName}`;
+
+  const { data, error } = await supabase.storage
+    .from('certificates')
+    .createSignedUploadUrl(filePath);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ uploadUrl: data.signedUrl, filePath, token: data.token });
+});
+
+// ── HIRE REQUESTS ─────────────────────────────────────────────
+
+// CREATE hire request
+app.post('/api/hire', authMiddleware, async (req, res) => {
+  const { support_id, idea_id, title, description, budget, deadline, country } = req.body;
+  if (!support_id || !title) return res.status(400).json({ error: 'Support ID and title are required' });
+
+  // Check country restriction
+  const { data: profile } = await supabase
+    .from('support_profiles')
+    .select('service_type, allowed_countries, restricted_countries')
+    .eq('user_id', support_id)
+    .single();
+
+  let country_warning = false;
+  let warning_message = null;
+
+  if (profile && country) {
+    if (profile.service_type === 'specific_countries' && profile.allowed_countries && !profile.allowed_countries.includes(country)) {
+      country_warning = true;
+      warning_message = `Note: This professional primarily serves ${profile.allowed_countries.join(', ')}`;
+    } else if (profile.service_type === 'restricted_countries' && profile.restricted_countries && profile.restricted_countries.includes(country)) {
+      country_warning = true;
+      warning_message = `Note: This professional has restrictions for ${country}`;
+    }
+  }
+
+  const { data: supportUser } = await supabase.from('users').select('role').eq('id', support_id).single();
+
+  const { data, error } = await supabase
+    .from('hire_requests')
+    .insert([{ client_id: req.user.id, support_id, idea_id: idea_id || null, role: supportUser?.role || 'support', title, description, budget, deadline, country, country_warning, warning_message, status: 'pending' }])
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Update total_jobs count
+  await supabase.from('support_profiles').update({ total_jobs: supabase.rpc('increment', { x: 1 }) }).eq('user_id', support_id);
+
+  res.status(201).json(data);
+});
+
+// GET my hire requests (as client)
+app.get('/api/hire/my-requests', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('hire_requests')
+    .select('*, support:support_id(id, first_name, last_name, role)')
+    .eq('client_id', req.user.id)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// GET incoming hire requests (as support role)
+app.get('/api/hire/incoming', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('hire_requests')
+    .select('*, client:client_id(id, first_name, last_name, role)')
+    .eq('support_id', req.user.id)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// UPDATE hire request status (accept/reject/complete)
+app.put('/api/hire/:id/status', authMiddleware, async (req, res) => {
+  const { status, cancel_reason } = req.body;
+  const { data: hire } = await supabase.from('hire_requests').select('*').eq('id', req.params.id).single();
+  if (!hire) return res.status(404).json({ error: 'Hire request not found' });
+
+  const isClient = hire.client_id === req.user.id;
+  const isSupport = hire.support_id === req.user.id;
+  if (!isClient && !isSupport) return res.status(403).json({ error: 'Not authorized' });
+
+  const updateData = { status, updated_at: new Date().toISOString() };
+  if (status === 'completed') {
+    updateData.completed_at = new Date().toISOString();
+    await supabase.from('support_profiles')
+      .update({ completed_jobs: supabase.rpc('increment', { x: 1 }) })
+      .eq('user_id', hire.support_id);
+  }
+  if (status === 'cancelled') {
+    updateData.cancelled_at = new Date().toISOString();
+    updateData.cancel_reason = cancel_reason || '';
+  }
+
+  const { data, error } = await supabase
+    .from('hire_requests')
+    .update(updateData)
+    .eq('id', req.params.id)
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ── HIRE MESSAGES ─────────────────────────────────────────────
+
+// GET messages for a hire request
+app.get('/api/hire/:id/messages', authMiddleware, async (req, res) => {
+  const { data: hire } = await supabase.from('hire_requests').select('client_id, support_id').eq('id', req.params.id).single();
+  if (!hire) return res.status(404).json({ error: 'Not found' });
+  if (hire.client_id !== req.user.id && hire.support_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+  const { data, error } = await supabase
+    .from('hire_messages')
+    .select('*')
+    .eq('hire_id', req.params.id)
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// POST message in a hire request
+app.post('/api/hire/:id/messages', authMiddleware, async (req, res) => {
+  const { text, file_url, file_name } = req.body;
+  if (!text) return res.status(400).json({ error: 'Message text required' });
+
+  const { data: hire } = await supabase.from('hire_requests').select('client_id, support_id').eq('id', req.params.id).single();
+  if (!hire) return res.status(404).json({ error: 'Not found' });
+  if (hire.client_id !== req.user.id && hire.support_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+  const { data, error } = await supabase
+    .from('hire_messages')
+    .insert([{ hire_id: parseInt(req.params.id), from_id: req.user.id, text, file_url: file_url || null, file_name: file_name || null }])
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+// ── RATINGS ───────────────────────────────────────────────────
+
+// SUBMIT a rating
+app.post('/api/ratings', authMiddleware, async (req, res) => {
+  const { hire_id, rated_user_id, stars, review } = req.body;
+  if (!hire_id || !rated_user_id || !stars) return res.status(400).json({ error: 'hire_id, rated_user_id and stars are required' });
+  if (stars < 1 || stars > 5) return res.status(400).json({ error: 'Stars must be between 1 and 5' });
+
+  const { data: hire } = await supabase.from('hire_requests').select('*').eq('id', hire_id).single();
+  if (!hire) return res.status(404).json({ error: 'Hire request not found' });
+  if (hire.status !== 'completed') return res.status(400).json({ error: 'Can only rate completed jobs' });
+  if (hire.client_id !== req.user.id) return res.status(403).json({ error: 'Only the client can rate' });
+
+  const { data, error } = await supabase
+    .from('ratings')
+    .insert([{ hire_id, rated_user_id, rater_user_id: req.user.id, stars, review }])
+    .select().single();
+  if (error) {
+    if (error.code === '23505') return res.status(400).json({ error: 'You have already rated this job' });
+    return res.status(500).json({ error: error.message });
+  }
+  res.status(201).json(data);
+});
+
+// GET ratings for a support role
+app.get('/api/ratings/:userId', async (req, res) => {
+  const { data, error } = await supabase
+    .from('ratings')
+    .select('*, rater:rater_user_id(first_name, last_name)')
+    .eq('rated_user_id', req.params.userId)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
