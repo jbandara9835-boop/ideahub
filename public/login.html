@@ -385,7 +385,12 @@
       btnText.textContent = 'Success!';
 
       setTimeout(() => {
-        window.location.href = '/';
+        const creatorRoles = ['idea_creator', 'patent_seller'];
+        if (creatorRoles.includes(data.user.role)) {
+          window.location.href = '/dashboard';
+        } else {
+          window.location.href = '/buyer-dashboard';
+        }
       }, 1000);
 
     } catch (err) {
