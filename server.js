@@ -23,6 +23,9 @@ app.get('/login', (req, res) => {
 app.get('/login', (req, res) => {
   res.sendFile(__dirname + '/public/login.html');
 });
+app.get('/signup', (req, res) => {
+  res.sendFile(__dirname + '/public/signup.html');
+});
 
 app.get('/api/test', async (req, res) => {
   try {
