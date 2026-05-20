@@ -28,6 +28,12 @@ app.get('/dashboard', (req, res) => {
 app.get('/submit', (req, res) => {
   res.sendFile(__dirname + '/public/submit.html');
 });
+app.get('/profile', (req, res) => {
+  res.sendFile(__dirname + '/public/profile.html');
+});
+app.get('/messages', (req, res) => {
+  res.sendFile(__dirname + '/public/messages.html');
+});
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
