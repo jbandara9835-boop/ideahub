@@ -20,6 +20,10 @@ const supabase = createClient(
 app.get('/login', (req, res) => {
   res.sendFile(__dirname + '/public/login.html');
 });
+app.get('/login', (req, res) => {
+  res.sendFile(__dirname + '/public/login.html');
+});
+
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
