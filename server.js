@@ -34,6 +34,9 @@ app.get('/profile', (req, res) => {
 app.get('/messages', (req, res) => {
   res.sendFile(__dirname + '/public/messages.html');
 });
+app.get('/transactions', (req, res) => {
+  res.sendFile(__dirname + '/public/transactions.html');
+});
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
