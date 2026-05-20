@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Browse Ideas — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+  }
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { position: fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
+  .logout-btn:hover { color:var(--error); }
+
+  /* MAIN */
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+
+  /* HERO */
+  .hero { margin-bottom:2rem; }
+  .hero-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.5px; margin-bottom:0.4rem; }
+  .hero-title span { color:var(--accent); }
+  .hero-sub { font-size:15px; color:var(--muted); }
+
+  /* SEARCH BAR */
+  .search-bar { display:flex; gap:12px; margin-bottom:1.5rem; align-items:center; }
+  .search-wrap { flex:1; position:relative; }
+  .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:16px; pointer-events:none; }
+  .search-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem 0.75rem 2.75rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
+  .search-input:focus { border-color:var(--accent); }
+  .search-input::placeholder { color:var(--muted); }
+
+  /* FILTERS */
+  .filter-row { display:flex; gap:8px; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; }
+  .filter-chip { background:none; border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--muted); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .filter-chip:hover { color:var(--text); border-color:var(--border-hover); }
+  .filter-chip.active { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+
+  .sort-select { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:6px 14px; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--muted); cursor:pointer; outline:none; margin-left:auto; }
+  .sort-select option { background:#16161a; }
+
+  /* STATS BAR */
+  .stats-bar { display:flex; gap:20px; margin-bottom:1.5rem; font-size:13px; color:var(--muted); }
+  .stats-bar span { color:var(--text); font-weight:500; }
+
+  /* IDEAS GRID */
+  .ideas-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
+
+  .idea-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:1.5rem; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;
+    text-decoration:none; display:block; color:var(--text);
+  }
+  .idea-card:hover { border-color:var(--border-hover); transform:translateY(-3px); }
+  .idea-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(245,200,66,0.03) 0%, transparent 60%); opacity:0; transition:opacity 0.2s; }
+  .idea-card:hover::before { opacity:1; }
+
+  .card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:1rem; }
+  .card-icon { font-size:32px; }
+  .card-badges { display:flex; flex-direction:column; gap:4px; align-items:flex-end; }
+
+  .badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:20px; font-size:10px; font-weight:500; }
+  .badge-level1 { background:rgba(110,231,183,0.15); color:var(--success); }
+  .badge-level2 { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .badge-level3 { background:rgba(96,165,250,0.15); color:#60a5fa; }
+  .badge-patent { background:rgba(167,139,250,0.15); color:#a78bfa; }
+
+  .card-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; line-height:1.3; margin-bottom:0.5rem; }
+  .card-summary { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+  .card-industry { display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:20px; padding:3px 10px; margin-bottom:1rem; }
+
+  .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid var(--border); }
+  .card-price { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--accent); }
+  .card-meta { display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted); }
+  .card-meta-item { display:flex; align-items:center; gap:4px; }
+
+  .view-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s; }
+  .view-btn:hover { opacity:0.85; }
+
+  /* EMPTY / LOADING */
+  .empty { text-align:center; padding:4rem 1rem; color:var(--muted); grid-column:1/-1; }
+  .empty-icon { font-size:48px; margin-bottom:1rem; }
+  .empty-text { font-size:15px; }
+  .loading { display:flex; align-items:center; justify-content:center; padding:4rem; color:var(--muted); gap:10px; font-size:14px; grid-column:1/-1; }
+  .spin { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* GUEST BANNER */
+  .guest-banner { background:var(--accent-dim); border:1px solid rgba(245,200,66,0.2); border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+  .guest-banner-text { font-size:14px; }
+  .guest-banner-text strong { color:var(--accent); }
+  .banner-btns { display:flex; gap:8px; flex-shrink:0; }
+  .banner-btn { padding:6px 16px; border-radius:8px; font-size:13px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; transition:all 0.15s; text-decoration:none; }
+  .banner-btn.primary { background:var(--accent); color:#0d0d0f; border:none; }
+  .banner-btn.secondary { background:none; border:1px solid var(--border); color:var(--text); }
+  .banner-btn:hover { opacity:0.85; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .ideas-grid { grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item active" href="/browse"><span class="nav-icon">🔍</span><span>Browse Ideas</span></a>
+    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Guest</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="hero">
+    <div class="hero-title">Discover <span>Ideas</span> that change everything</div>
+    <div class="hero-sub">Browse thousands of ideas from creators around the world</div>
+  </div>
+
+  <div id="guestBanner" style="display:none;">
+    <div class="guest-banner">
+      <div class="guest-banner-text"><strong>Sign up free</strong> to contact creators, save ideas and make purchases</div>
+      <div class="banner-btns">
+        <a class="banner-btn secondary" href="/login">Sign in</a>
+        <a class="banner-btn primary" href="/signup">Join free</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search ideas by title, keyword..." oninput="handleSearch()" />
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-chip active" onclick="setIndustry('all', this)">All</button>
+    <button class="filter-chip" onclick="setIndustry('Technology', this)">💻 Technology</button>
+    <button class="filter-chip" onclick="setIndustry('Health & Wellness', this)">🏥 Health</button>
+    <button class="filter-chip" onclick="setIndustry('Education', this)">📚 Education</button>
+    <button class="filter-chip" onclick="setIndustry('Finance', this)">💰 Finance</button>
+    <button class="filter-chip" onclick="setIndustry('Food & Beverage', this)">🍔 Food</button>
+    <button class="filter-chip" onclick="setIndustry('E-commerce', this)">🛒 E-commerce</button>
+    <button class="filter-chip" onclick="setIndustry('Environment', this)">🌱 Environment</button>
+    <button class="filter-chip" onclick="setIndustry('Entertainment', this)">🎮 Entertainment</button>
+    <select class="sort-select" id="sortSelect" onchange="renderIdeas()">
+      <option value="newest">Newest first</option>
+      <option value="price_low">Price: Low to High</option>
+      <option value="price_high">Price: High to Low</option>
+      <option value="views">Most viewed</option>
+    </select>
+  </div>
+
+  <div class="stats-bar" id="statsBar">
+    <div>Loading ideas...</div>
+  </div>
+
+  <div class="ideas-grid" id="ideasGrid">
+    <div class="loading"><div class="spin"></div> Loading ideas...</div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  let allIdeas = [];
+  let activeIndustry = 'all';
+  let searchTerm = '';
+
+  // Setup user
+  if (user) {
+    const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+    document.getElementById('sidebarAvatar').textContent = initials || '?';
+    document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate' };
+    document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role || '—';
+
+    const creatorRoles = ['idea_creator', 'patent_seller'];
+    if (creatorRoles.includes(user.role)) {
+      document.getElementById('dashLink').href = '/dashboard';
+    } else {
+      document.getElementById('dashLink').href = '/buyer-dashboard';
+    }
+  } else {
+    document.getElementById('guestBanner').style.display = 'block';
+    document.getElementById('sidebarName').textContent = 'Guest';
+    document.getElementById('sidebarRole').textContent = 'Not signed in';
+  }
+
+  function logout() {
+    localStorage.removeItem('ih_token');
+    localStorage.removeItem('ih_user');
+    window.location.href = '/login';
+  }
+
+  function setIndustry(industry, el) {
+    activeIndustry = industry;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderIdeas();
+  }
+
+  let searchTimer;
+  function handleSearch() {
+    searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(renderIdeas, 300);
+  }
+
+  function getLevel(level) {
+    const map = { 1: { label: 'Concept', cls: 'badge-level1' }, 2: { label: 'Prototype', cls: 'badge-level2' }, 3: { label: 'Market Ready', cls: 'badge-level3' } };
+    return map[level] || map[1];
+  }
+
+  function formatPrice(p) {
+    if (p >= 1000) return '$' + (p / 1000).toFixed(1) + 'k';
+    return '$' + p;
+  }
+
+  function renderIdeas() {
+    const sort = document.getElementById('sortSelect').value;
+    let filtered = allIdeas.filter(idea => {
+      const matchIndustry = activeIndustry === 'all' || idea.industry === activeIndustry;
+      const matchSearch = !searchTerm || idea.title?.toLowerCase().includes(searchTerm) || idea.summary?.toLowerCase().includes(searchTerm) || idea.industry?.toLowerCase().includes(searchTerm);
+      return matchIndustry && matchSearch;
+    });
+
+    if (sort === 'price_low') filtered.sort((a, b) => a.price - b.price);
+    else if (sort === 'price_high') filtered.sort((a, b) => b.price - a.price);
+    else if (sort === 'views') filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+    else filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    document.getElementById('statsBar').innerHTML = `<div>Showing <span>${filtered.length}</span> of <span>${allIdeas.length}</span> ideas</div>`;
+
+    const grid = document.getElementById('ideasGrid');
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No ideas found — try a different search or filter</div></div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(idea => {
+      const lvl = getLevel(idea.level);
+      return `
+        <a class="idea-card" href="/idea/${idea.id}">
+          <div class="card-top">
+            <div class="card-icon">${idea.icon || '💡'}</div>
+            <div class="card-badges">
+              <span class="badge ${lvl.cls}">${lvl.label}</span>
+              ${idea.has_patent ? '<span class="badge badge-patent">📋 Patent</span>' : ''}
+            </div>
+          </div>
+          <div class="card-title">${idea.title}</div>
+          <div class="card-summary">${idea.summary || idea.description || 'No description available'}</div>
+          <div class="card-industry">${idea.industry || 'General'}</div>
+          <div class="card-footer">
+            <div class="card-price">${formatPrice(idea.price)}</div>
+            <div class="card-meta">
+              <div class="card-meta-item">👁 ${idea.views || 0}</div>
+              <button class="view-btn" onclick="event.preventDefault(); window.location.href='/idea/${idea.id}'">View →</button>
+            </div>
+          </div>
+        </a>
+      `;
+    }).join('');
+  }
+
+  async function loadIdeas() {
+    try {
+      const res = await fetch(`${API_URL}/api/ideas`);
+      allIdeas = await res.json();
+      renderIdeas();
+    } catch (err) {
+      document.getElementById('ideasGrid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">Failed to load ideas. Please refresh.</div></div>`;
+    }
+  }
+
+  loadIdeas();
+</script>
+</body>
+</html>
