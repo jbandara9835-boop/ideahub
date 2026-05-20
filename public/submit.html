@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Submit Idea — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842;
+    --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8;
+    --muted: #6e6b65;
+    --error: #ff6b6b;
+    --success: #6ee7b7;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 220px; height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 1.5rem 1rem;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 2.5rem; padding: 0 0.5rem;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+
+  .nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.6rem 0.75rem; border-radius: 8px;
+    font-size: 14px; font-weight: 500; color: var(--muted);
+    cursor: pointer; transition: all 0.15s;
+    text-decoration: none; border: none; background: none;
+    width: 100%; text-align: left;
+  }
+
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .nav-item.active { color: var(--accent); background: var(--accent-dim); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.75rem; border-radius: 10px;
+    border: 1px solid var(--border); margin-top: auto;
+  }
+
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent-dim); border: 1px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; color: var(--accent); flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--muted); }
+
+  .logout-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; padding: 4px; font-size: 16px; transition: color 0.2s;
+  }
+  .logout-btn:hover { color: var(--error); }
+
+  /* ── MAIN ── */
+  .main { margin-left: 220px; padding: 2rem 2.5rem; max-width: 1100px; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .back-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.5rem 0.9rem;
+    color: var(--muted); font-size: 13px; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .back-btn:hover { color: var(--text); border-color: var(--border-hover); }
+
+  .page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+
+  /* ── FORM LAYOUT ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+  }
+
+  .form-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .field { margin-bottom: 1.25rem; }
+
+  label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: var(--muted); margin-bottom: 0.4rem;
+    letter-spacing: 0.4px; text-transform: uppercase;
+  }
+
+  input[type=text], input[type=number], textarea, select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    appearance: none;
+  }
+
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px; cursor: pointer;
+  }
+
+  select option { background: #16161a; color: var(--text); }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── LEVEL SELECTOR ── */
+  .level-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+
+  .level-option {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.75rem 0.5rem; cursor: pointer;
+    transition: all 0.15s; text-align: center;
+  }
+
+  .level-option:hover { border-color: var(--border-hover); }
+  .level-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .level-option input { display: none; }
+  .level-emoji { font-size: 20px; display: block; margin-bottom: 4px; }
+  .level-name { font-size: 12px; font-weight: 500; display: block; }
+  .level-desc { font-size: 10px; color: var(--muted); display: block; margin-top: 2px; }
+
+  /* ── TOGGLE ── */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 14px; }
+  .toggle-sub { font-size: 12px; color: var(--muted); }
+
+  .toggle {
+    position: relative; width: 40px; height: 22px;
+    background: var(--border); border-radius: 11px;
+    cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  }
+
+  .toggle.on { background: var(--accent); }
+
+  .toggle-knob {
+    position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: white; border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle.on .toggle-knob { transform: translateX(18px); }
+
+  /* ── PREVIEW CARD ── */
+  .preview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: sticky; top: 2rem;
+  }
+
+  .preview-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .idea-preview {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .preview-icon { font-size: 28px; margin-bottom: 0.75rem; display: block; }
+
+  .preview-idea-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 600;
+    margin-bottom: 0.5rem; line-height: 1.3;
+    color: var(--text);
+  }
+
+  .preview-idea-title.empty { color: var(--muted); font-style: italic; }
+
+  .preview-summary {
+    font-size: 13px; color: var(--muted); line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .preview-tags {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem;
+  }
+
+  .preview-tag {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 11px; color: var(--muted);
+  }
+
+  .preview-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700; color: var(--accent);
+  }
+
+  /* ── SUBMIT BTN ── */
+  .submit-btn {
+    width: 100%; background: var(--accent); color: #0d0d0f;
+    border: none; border-radius: 10px; padding: 0.9rem;
+    font-size: 15px; font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer; margin-top: 1.25rem;
+    transition: opacity 0.2s, transform 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: #0d0d0f;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 8px; padding: 0.6rem 0.9rem;
+    font-size: 13px; color: var(--error); margin-top: 1rem; display: none;
+  }
+
+  .error-msg.show { display: block; }
+
+  .success-msg {
+    background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.3);
+    border-radius: 8px; padding: 0.75rem 1rem;
+    font-size: 14px; color: var(--success); margin-top: 1rem;
+    text-align: center; display: none;
+  }
+
+  .success-msg.show { display: block; }
+
+  .tips {
+    margin-top: 1.5rem;
+    background: var(--accent-dim);
+    border: 1px solid rgba(245,200,66,0.2);
+    border-radius: 10px; padding: 1rem;
+  }
+
+  .tips-title { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
+  .tips ul { padding-left: 1rem; }
+  .tips li { font-size: 12px; color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
+
+  @media (max-width: 900px) {
+    .sidebar { width: 60px; padding: 1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display: none; }
+    .logo { justify-content: center; }
+    .nav-item { justify-content: center; padding: 0.6rem; }
+    .user-card { justify-content: center; padding: 0.5rem; }
+    .main { margin-left: 60px; padding: 1.5rem; }
+    .form-grid { grid-template-columns: 1fr; }
+    .preview-card { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>
+    </div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="/dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
+    <a class="nav-item active" href="/submit"><span class="nav-icon">✚</span><span>Submit Idea</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name" id="sidebarName">Loading...</div>
+      <div class="user-role" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <a class="back-btn" href="/dashboard">← Back</a>
+    <div class="page-title">Submit an Idea</div>
+  </div>
+
+  <div class="form-grid">
+    <!-- LEFT: FORM -->
+    <div>
+      <!-- Basic Info -->
+      <div class="form-card" style="margin-bottom: 20px;">
+        <div class="form-section-title">Basic Information</div>
+
+        <div class="field">
+          <label for="title">Idea Title *</label>
+          <input type="text" id="title" placeholder="e.g. AI-powered meal planner for busy families" maxlength="100" oninput="updatePreview()" />
+        </div>
+
+        <div class="field">
+          <label for="summary">Short Summary *</label>
+          <input type="text" id="summary" placeholder="One sentence that explains your idea" maxlength="150" oninput="updatePreview()" />
+        </div>
+
+        <div class="field">
+          <label for="desc">Full Description</label>
+          <textarea id="desc" placeholder="Describe your idea in detail — the problem it solves, how it works, target market..." rows="5"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="industry">Industry *</label>
+            <select id="industry" onchange="updatePreview()">
+              <option value="">Select industry</option>
+              <option>Technology</option>
+              <option>Health & Wellness</option>
+              <option>Education</option>
+              <option>Finance</option>
+              <option>Food & Beverage</option>
+              <option>E-commerce</option>
+              <option>Entertainment</option>
+              <option>Real Estate</option>
+              <option>Travel</option>
+              <option>Environment</option>
+              <option>Agriculture</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="ideaType">Idea Type</label>
+            <select id="ideaType">
+              <option>New Business Idea</option>
+              <option>Product Concept</option>
+              <option>App / Software</option>
+              <option>Service Model</option>
+              <option>Invention</option>
+              <option>Social Enterprise</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="form-card" style="margin-bottom: 20px;">
+        <div class="form-section-title">Pricing & Visibility</div>
+
+        <div class="row">
+          <div class="field">
+            <label for="price">Price (USD) *</label>
+            <input type="number" id="price" placeholder="500" min="1" oninput="updatePreview()" />
+          </div>
+          <div class="field">
+            <label for="visibility">Who can see it?</label>
+            <select id="visibility">
+              <option value="1">Everyone</option>
+              <option value="2">Verified buyers only</option>
+              <option value="3">Private (invite only)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Development Level</label>
+          <div class="level-grid">
+            <label class="level-option selected" id="level1">
+              <input type="radio" name="level" value="1" checked />
+              <span class="level-emoji">💡</span>
+              <span class="level-name">Concept</span>
+              <span class="level-desc">Just an idea</span>
+            </label>
+            <label class="level-option" id="level2">
+              <input type="radio" name="level" value="2" />
+              <span class="level-emoji">📐</span>
+              <span class="level-name">Prototype</span>
+              <span class="level-desc">Early stage</span>
+            </label>
+            <label class="level-option" id="level3">
+              <input type="radio" name="level" value="3" />
+              <span class="level-emoji">🚀</span>
+              <span class="level-name">Market Ready</span>
+              <span class="level-desc">Ready to launch</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div class="form-card">
+        <div class="form-section-title">Extra Options</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Has Patent</div>
+            <div class="toggle-sub">This idea has a registered or pending patent</div>
+          </div>
+          <div class="toggle" id="patentToggle" onclick="toggleOption('patent')">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div class="field" id="patentNumberField" style="display:none; margin-top: 1rem;">
+          <label for="patentNumber">Patent Number</label>
+          <input type="text" id="patentNumber" placeholder="e.g. US10,123,456" />
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg">🎉 Idea submitted successfully! Redirecting to dashboard...</div>
+
+        <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText">Submit Idea</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: PREVIEW + TIPS -->
+    <div>
+      <div class="preview-card">
+        <div class="preview-title">Live Preview</div>
+        <div class="idea-preview">
+          <span class="preview-icon">💡</span>
+          <div class="preview-idea-title empty" id="previewTitle">Your idea title will appear here</div>
+          <div class="preview-summary" id="previewSummary">Your summary will appear here...</div>
+          <div class="preview-tags">
+            <span class="preview-tag" id="previewIndustry">Industry</span>
+            <span class="preview-tag" id="previewLevel">Concept</span>
+          </div>
+          <div class="preview-price" id="previewPrice">$0</div>
+        </div>
+
+        <div class="tips">
+          <div class="tips-title">💡 Tips for a great listing</div>
+          <ul>
+            <li>Be specific — vague ideas get fewer inquiries</li>
+            <li>Explain the problem it solves clearly</li>
+            <li>Price fairly — research similar ideas</li>
+            <li>Add as much detail as possible</li>
+            <li>Patents increase buyer confidence</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  if (!token || !user) window.location.href = '/login';
+
+  if (user) {
+    const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+    document.getElementById('sidebarAvatar').textContent = initials || '?';
+    document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
+  }
+
+  function logout() {
+    localStorage.removeItem('ih_token');
+    localStorage.removeItem('ih_user');
+    window.location.href = '/login';
+  }
+
+  // Level selector
+  document.querySelectorAll('.level-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.level-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      updatePreview();
+    });
+  });
+
+  const levelNames = { '1': 'Concept', '2': 'Prototype', '3': 'Market Ready' };
+
+  function updatePreview() {
+    const title = document.getElementById('title').value;
+    const summary = document.getElementById('summary').value;
+    const industry = document.getElementById('industry').value;
+    const price = document.getElementById('price').value;
+    const level = document.querySelector('input[name="level"]:checked')?.value || '1';
+
+    const titleEl = document.getElementById('previewTitle');
+    titleEl.textContent = title || 'Your idea title will appear here';
+    titleEl.classList.toggle('empty', !title);
+
+    document.getElementById('previewSummary').textContent = summary || 'Your summary will appear here...';
+    document.getElementById('previewIndustry').textContent = industry || 'Industry';
+    document.getElementById('previewLevel').textContent = levelNames[level] || 'Concept';
+    document.getElementById('previewPrice').textContent = price ? '$' + parseInt(price).toLocaleString() : '$0';
+  }
+
+  let patentOn = false;
+  function toggleOption(opt) {
+    if (opt === 'patent') {
+      patentOn = !patentOn;
+      document.getElementById('patentToggle').classList.toggle('on', patentOn);
+      document.getElementById('patentNumberField').style.display = patentOn ? 'block' : 'none';
+    }
+  }
+
+  async function handleSubmit() {
+    const title = document.getElementById('title').value.trim();
+    const summary = document.getElementById('summary').value.trim();
+    const desc = document.getElementById('desc').value.trim();
+    const industry = document.getElementById('industry').value;
+    const ideaType = document.getElementById('ideaType').value;
+    const price = document.getElementById('price').value;
+    const visibility = document.getElementById('visibility').value;
+    const level = document.querySelector('input[name="level"]:checked')?.value || '1';
+    const hasPatent = patentOn;
+    const patentNumber = document.getElementById('patentNumber').value.trim();
+
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    errorMsg.classList.remove('show');
+    successMsg.classList.remove('show');
+
+    if (!title) { errorMsg.textContent = 'Please enter an idea title.'; errorMsg.classList.add('show'); return; }
+    if (!summary) { errorMsg.textContent = 'Please enter a short summary.'; errorMsg.classList.add('show'); return; }
+    if (!industry) { errorMsg.textContent = 'Please select an industry.'; errorMsg.classList.add('show'); return; }
+    if (!price || parseInt(price) < 1) { errorMsg.textContent = 'Please enter a valid price.'; errorMsg.classList.add('show'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Submitting...';
+
+    try {
+      const res = await fetch(`${API_URL}/api/ideas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, price, visibility, level, hasPatent, patentNumber })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit idea');
+
+      successMsg.classList.add('show');
+      btnText.textContent = 'Submitted!';
+
+      setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
+
+    } catch (err) {
+      errorMsg.textContent = err.message || 'Something went wrong. Please try again.';
+      errorMsg.classList.add('show');
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = 'Submit Idea';
+    }
+  }
+</script>
+</body>
+</html>

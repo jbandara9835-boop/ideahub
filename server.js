@@ -25,6 +25,9 @@ app.get('/signup', (req, res) => {
 app.get('/dashboard', (req, res) => {
   res.sendFile(__dirname + '/public/dashboard.html');
 });
+app.get('/submit', (req, res) => {
+  res.sendFile(__dirname + '/public/submit.html');
+});
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
