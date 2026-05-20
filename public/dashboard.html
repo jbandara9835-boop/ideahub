@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.15);
+    --accent: #f5c842;
+    --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8;
+    --muted: #6e6b65;
+    --success: #6ee7b7;
+    --error: #ff6b6b;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 220px;
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700;
+  }
+
+  .nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    font-size: 14px; font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .nav-item.active { color: var(--accent); background: var(--accent-dim); }
+
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .nav-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--muted); }
+
+  .logout-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; padding: 4px; font-size: 16px;
+    transition: color 0.2s;
+  }
+  .logout-btn:hover { color: var(--error); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 220px;
+    padding: 2rem 2.5rem;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px; font-weight: 700; letter-spacing: -0.5px;
+  }
+
+  .page-subtitle { font-size: 14px; color: var(--muted); margin-top: 2px; }
+
+  .new-idea-btn {
+    background: var(--accent);
+    color: #0d0d0f;
+    border: none; border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: 14px; font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    display: flex; align-items: center; gap: 6px;
+    text-decoration: none;
+  }
+
+  .new-idea-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* ── STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--border-hover); }
+
+  .stat-label {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px; font-weight: 700;
+    letter-spacing: -1px;
+  }
+
+  .stat-value.accent { color: var(--accent); }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── IDEAS TABLE ── */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 600;
+  }
+
+  .ideas-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1fr 80px 80px 100px 100px;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .idea-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 80px 80px 100px 100px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.15s;
+    font-size: 14px;
+  }
+
+  .idea-row:last-child { border-bottom: none; }
+  .idea-row:hover { background: rgba(255,255,255,0.03); }
+
+  .idea-title-cell { display: flex; align-items: center; gap: 10px; }
+  .idea-icon { font-size: 20px; }
+  .idea-name { font-weight: 500; }
+  .idea-date { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+  }
+
+  .badge-live { background: rgba(110,231,183,0.15); color: var(--success); }
+  .badge-escrow { background: rgba(245,200,66,0.15); color: var(--accent); }
+  .badge-sold { background: rgba(255,107,107,0.15); color: var(--error); }
+  .badge-pending { background: rgba(110,110,180,0.15); color: #a0a0f0; }
+
+  .price-cell { font-weight: 500; }
+  .views-cell { color: var(--muted); }
+
+  .delete-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 16px; padding: 4px 8px;
+    border-radius: 6px; transition: all 0.2s;
+  }
+  .delete-btn:hover { color: var(--error); background: rgba(255,107,107,0.1); }
+
+  /* ── TRANSACTIONS ── */
+  .tx-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .tx-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .tx-row:last-child { border-bottom: none; }
+
+  .tx-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(110,231,183,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+
+  .tx-info { flex: 1; }
+  .tx-title { font-weight: 500; }
+  .tx-date { font-size: 12px; color: var(--muted); }
+  .tx-amount { font-weight: 600; color: var(--success); }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 1rem; }
+  .empty-text { font-size: 14px; }
+
+  /* ── LOADING ── */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem; color: var(--muted); font-size: 14px; gap: 10px;
+  }
+
+  .spin {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .sidebar { width: 60px; padding: 1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display: none; }
+    .logo { justify-content: center; }
+    .nav-item { justify-content: center; padding: 0.6rem; }
+    .user-card { justify-content: center; padding: 0.5rem; }
+    .main { margin-left: 60px; padding: 1.5rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .table-head, .idea-row { grid-template-columns: 2fr 1fr 80px 80px; }
+    .table-head > *:nth-child(5), .idea-row > *:nth-child(5),
+    .table-head > *:nth-child(6), .idea-row > *:nth-child(6) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>
+    </div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-item active" href="/dashboard">
+      <span class="nav-icon">⚡</span>
+      <span>Dashboard</span>
+    </a>
+    <a class="nav-item" href="/">
+      <span class="nav-icon">💡</span>
+      <span>Browse Ideas</span>
+    </a>
+    <a class="nav-item" href="/submit">
+      <span class="nav-icon">✚</span>
+      <span>Submit Idea</span>
+    </a>
+    <a class="nav-item" href="/profile">
+      <span class="nav-icon">👤</span>
+      <span>Profile</span>
+    </a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages">
+      <span class="nav-icon">💬</span>
+      <span>Messages</span>
+    </a>
+    <a class="nav-item" href="/transactions">
+      <span class="nav-icon">💸</span>
+      <span>Transactions</span>
+    </a>
+  </nav>
+
+  <div class="user-card">
+    <div class="avatar" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name" id="sidebarName">Loading...</div>
+      <div class="user-role" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+      <div class="page-subtitle">Here's what's happening with your ideas</div>
+    </div>
+    <a class="new-idea-btn" href="/submit">
+      <span>+</span> New Idea
+    </a>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Ideas Posted</div>
+      <div class="stat-value" id="statIdeas">—</div>
+      <div class="stat-sub">total ideas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Views</div>
+      <div class="stat-value" id="statViews">—</div>
+      <div class="stat-sub">across all ideas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Inquiries</div>
+      <div class="stat-value" id="statInquiries">—</div>
+      <div class="stat-sub">buyer interest</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Earnings</div>
+      <div class="stat-value accent" id="statEarnings">—</div>
+      <div class="stat-sub">total earned</div>
+    </div>
+  </div>
+
+  <!-- MY IDEAS -->
+  <div class="section-header">
+    <div class="section-title">My Ideas</div>
+  </div>
+
+  <div class="ideas-table">
+    <div class="table-head">
+      <div>Idea</div>
+      <div>Industry</div>
+      <div>Views</div>
+      <div>Price</div>
+      <div>Status</div>
+      <div>Action</div>
+    </div>
+    <div id="ideasBody">
+      <div class="loading"><div class="spin"></div> Loading ideas...</div>
+    </div>
+  </div>
+
+  <!-- RECENT TRANSACTIONS -->
+  <div class="section-header">
+    <div class="section-title">Recent Transactions</div>
+  </div>
+
+  <div class="tx-list" id="txList">
+    <div class="loading"><div class="spin"></div> Loading transactions...</div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  if (!token || !user) {
+    window.location.href = '/login';
+  }
+
+  function logout() {
+    localStorage.removeItem('ih_token');
+    localStorage.removeItem('ih_user');
+    window.location.href = '/login';
+  }
+
+  function formatDate(d) {
+    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function statusBadge(s) {
+    const map = { live: 'badge-live', escrow: 'badge-escrow', sold: 'badge-sold', pending: 'badge-pending' };
+    return `<span class="badge ${map[s] || 'badge-pending'}">${s}</span>`;
+  }
+
+  async function deleteIdea(id) {
+    if (!confirm('Delete this idea?')) return;
+    const res = await fetch(`${API_URL}/api/ideas/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) loadDashboard();
+  }
+
+  async function loadDashboard() {
+    try {
+      if (user) {
+        const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+        document.getElementById('sidebarAvatar').textContent = initials || '?';
+        document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
+        document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.firstName || 'there'} 👋`;
+      }
+
+      const res = await fetch(`${API_URL}/api/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 401) { logout(); return; }
+      const data = await res.json();
+
+      document.getElementById('statIdeas').textContent = data.ideasPosted ?? 0;
+      document.getElementById('statViews').textContent = data.totalViews ?? 0;
+      document.getElementById('statInquiries').textContent = data.inquiries ?? 0;
+      document.getElementById('statEarnings').textContent = '$' + (data.earnings ?? 0).toLocaleString();
+
+      const ideasBody = document.getElementById('ideasBody');
+      if (!data.ideas || data.ideas.length === 0) {
+        ideasBody.innerHTML = `<div class="empty"><div class="empty-icon">💡</div><div class="empty-text">No ideas yet — <a href="/submit" style="color:var(--accent)">post your first one!</a></div></div>`;
+      } else {
+        ideasBody.innerHTML = data.ideas.map(idea => `
+          <div class="idea-row">
+            <div class="idea-title-cell">
+              <span class="idea-icon">${idea.icon || '💡'}</span>
+              <div>
+                <div class="idea-name">${idea.title}</div>
+                <div class="idea-date">${formatDate(idea.created_at)}</div>
+              </div>
+            </div>
+            <div>${idea.industry || '—'}</div>
+            <div class="views-cell">${idea.views ?? 0}</div>
+            <div class="price-cell">$${idea.price?.toLocaleString() ?? 0}</div>
+            <div>${statusBadge(idea.status)}</div>
+            <div>
+              <button class="delete-btn" onclick="deleteIdea('${idea.id}')" title="Delete">🗑</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const txList = document.getElementById('txList');
+      if (!data.recentTransactions || data.recentTransactions.length === 0) {
+        txList.innerHTML = `<div class="empty"><div class="empty-icon">💸</div><div class="empty-text">No transactions yet</div></div>`;
+      } else {
+        txList.innerHTML = data.recentTransactions.map(tx => `
+          <div class="tx-row">
+            <div class="tx-icon">💰</div>
+            <div class="tx-info">
+              <div class="tx-title">${tx.idea_title}</div>
+              <div class="tx-date">${formatDate(tx.created_at)} · ${tx.status}</div>
+            </div>
+            <div class="tx-amount">+$${tx.amount?.toLocaleString()}</div>
+          </div>
+        `).join('');
+      }
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>

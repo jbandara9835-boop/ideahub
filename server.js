@@ -15,18 +15,16 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
-
 // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
-app.get('/login', (req, res) => {
-  res.sendFile(__dirname + '/public/login.html');
-});
 app.get('/login', (req, res) => {
   res.sendFile(__dirname + '/public/login.html');
 });
 app.get('/signup', (req, res) => {
   res.sendFile(__dirname + '/public/signup.html');
 });
-
+app.get('/dashboard', (req, res) => {
+  res.sendFile(__dirname + '/public/dashboard.html');
+});
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
