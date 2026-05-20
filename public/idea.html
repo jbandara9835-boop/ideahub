@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Idea — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+  }
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
+  .logout-btn:hover { color:var(--error); }
+
+  /* MAIN */
+  .main { margin-left:220px; padding:2rem 2.5rem; max-width:1100px; }
+
+  .topbar { display:flex; align-items:center; gap:12px; margin-bottom:2rem; }
+  .back-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.9rem; color:var(--muted); font-size:13px; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+  .back-btn:hover { color:var(--text); border-color:var(--border-hover); }
+  .breadcrumb { font-size:13px; color:var(--muted); }
+  .breadcrumb span { color:var(--text); }
+
+  /* LAYOUT */
+  .detail-grid { display:grid; grid-template-columns:1fr 320px; gap:24px; align-items:start; }
+
+  /* LEFT */
+  .idea-header { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; margin-bottom:20px; }
+  .idea-icon-lg { font-size:48px; margin-bottom:1rem; display:block; }
+  .idea-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.5px; line-height:1.2; margin-bottom:1rem; }
+  .idea-tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1.25rem; }
+
+  .badge { display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; }
+  .badge-industry { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--muted); }
+  .badge-level1 { background:rgba(110,231,183,0.15); color:var(--success); }
+  .badge-level2 { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .badge-level3 { background:rgba(96,165,250,0.15); color:#60a5fa; }
+  .badge-patent { background:rgba(167,139,250,0.15); color:#a78bfa; }
+  .badge-type { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--muted); }
+
+  .idea-summary { font-size:16px; color:var(--muted); line-height:1.6; padding:1rem; background:var(--surface2); border-radius:10px; border-left:3px solid var(--accent); }
+
+  .section-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
+  .section-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+
+  .idea-description { font-size:14px; line-height:1.8; color:var(--text); white-space:pre-wrap; }
+
+  .meta-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .meta-item { background:var(--surface2); border-radius:10px; padding:0.9rem; }
+  .meta-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; }
+  .meta-value { font-size:14px; font-weight:500; }
+
+  /* CREATOR CARD */
+  .creator-card { background:var(--surface2); border-radius:12px; padding:1.25rem; display:flex; align-items:center; gap:12px; }
+  .creator-avatar { width:48px; height:48px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:var(--accent); flex-shrink:0; }
+  .creator-info { flex:1; }
+  .creator-name { font-weight:600; font-size:15px; }
+  .creator-role { font-size:12px; color:var(--muted); margin-top:2px; }
+  .msg-creator-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 14px; font-size:12px; color:var(--text); cursor:pointer; transition:all 0.2s; }
+  .msg-creator-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* RIGHT STICKY */
+  .buy-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; position:sticky; top:2rem; }
+  .price-big { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; color:var(--accent); letter-spacing:-1px; margin-bottom:4px; }
+  .price-sub { font-size:13px; color:var(--muted); margin-bottom:1.5rem; }
+
+  .fee-breakdown { background:var(--surface2); border-radius:10px; padding:1rem; margin-bottom:1.25rem; }
+  .fee-row { display:flex; justify-content:space-between; font-size:13px; padding:4px 0; }
+  .fee-row.total { border-top:1px solid var(--border); margin-top:6px; padding-top:10px; font-weight:600; font-size:14px; }
+  .fee-row.total .fee-val { color:var(--accent); }
+
+  .buy-btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
+  .buy-btn:hover { opacity:0.9; transform:translateY(-1px); }
+  .buy-btn:active { transform:scale(0.98); }
+  .buy-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+  .contact-btn { width:100%; background:none; border:1px solid var(--border); border-radius:10px; padding:0.75rem; font-size:14px; font-weight:500; font-family:'DM Sans',sans-serif; color:var(--text); cursor:pointer; transition:all 0.2s; margin-bottom:1.25rem; }
+  .contact-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .buy-notes { font-size:12px; color:var(--muted); line-height:1.6; }
+  .buy-notes p { margin-bottom:4px; display:flex; align-items:center; gap:6px; }
+
+  /* MESSAGE MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:440px; animation:fadeUp 0.25s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:0.5rem; }
+  .modal-sub { font-size:13px; color:var(--muted); margin-bottom:1.25rem; }
+  .modal textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; resize:none; min-height:120px; line-height:1.6; transition:border-color 0.2s; }
+  .modal textarea:focus { border-color:var(--accent); }
+  .modal textarea::placeholder { color:var(--muted); }
+  .modal-actions { display:flex; gap:10px; margin-top:1rem; }
+  .modal-send { flex:1; background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.75rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; }
+  .modal-cancel { background:none; border:1px solid var(--border); border-radius:8px; padding:0.75rem 1.25rem; font-size:14px; color:var(--muted); cursor:pointer; }
+  .modal-cancel:hover { color:var(--text); }
+
+  .msg-success { color:var(--success); font-size:13px; margin-top:0.75rem; text-align:center; display:none; }
+  .msg-success.show { display:block; }
+  .msg-error { color:var(--error); font-size:13px; margin-top:0.75rem; display:none; }
+  .msg-error.show { display:block; }
+
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .loading-page { display:flex; align-items:center; justify-content:center; min-height:60vh; gap:12px; color:var(--muted); }
+  .spin2 { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .detail-grid { grid-template-columns:1fr; }
+    .buy-card { position:static; }
+    .meta-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item active" href="/browse"><span class="nav-icon">🔍</span><span>Browse Ideas</span></a>
+    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Guest</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <a class="back-btn" href="/browse">← Back</a>
+    <div class="breadcrumb">Browse / <span id="breadcrumbTitle">Loading...</span></div>
+  </div>
+  <div id="pageContent">
+    <div class="loading-page"><div class="spin2"></div> Loading idea...</div>
+  </div>
+</main>
+
+<!-- MESSAGE MODAL -->
+<div class="modal-overlay" id="msgModal">
+  <div class="modal">
+    <div class="modal-title">Contact Creator</div>
+    <div class="modal-sub" id="modalSub">Send a message about this idea</div>
+    <textarea id="msgText" placeholder="Hi, I'm interested in your idea. Can you tell me more about..."></textarea>
+    <div class="msg-error" id="msgError"></div>
+    <div class="msg-success" id="msgSuccess">Message sent! The creator will reply soon.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-send" id="sendMsgBtn" onclick="sendMessage()">
+        <span id="sendBtnText">Send Message</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  // Get idea ID from URL
+  const ideaId = window.location.pathname.split('/').pop();
+  let currentIdea = null;
+
+  if (user) {
+    const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+    document.getElementById('sidebarAvatar').textContent = initials || '?';
+    document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate' };
+    document.getElementById('sidebarRole').textContent = roleMap[user.role] || '—';
+    document.getElementById('dashLink').href = ['idea_creator','patent_seller'].includes(user.role) ? '/dashboard' : '/buyer-dashboard';
+  }
+
+  function logout() {
+    localStorage.removeItem('ih_token');
+    localStorage.removeItem('ih_user');
+    window.location.href = '/login';
+  }
+
+  function getLevelInfo(level) {
+    const map = { 1:{label:'Concept',cls:'badge-level1'}, 2:{label:'Prototype',cls:'badge-level2'}, 3:{label:'Market Ready',cls:'badge-level3'} };
+    return map[level] || map[1];
+  }
+
+  function formatPrice(p) { return '$' + (p || 0).toLocaleString(); }
+
+  function openModal() {
+    if (!token) { window.location.href = '/login'; return; }
+    document.getElementById('msgModal').classList.add('show');
+    document.getElementById('msgText').focus();
+    document.getElementById('msgSuccess').classList.remove('show');
+    document.getElementById('msgError').classList.remove('show');
+    document.getElementById('msgText').value = '';
+    document.getElementById('sendBtnText').textContent = 'Send Message';
+    document.getElementById('sendMsgBtn').disabled = false;
+  }
+
+  function closeModal() {
+    document.getElementById('msgModal').classList.remove('show');
+  }
+
+  document.getElementById('msgModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('msgModal')) closeModal();
+  });
+
+  async function sendMessage() {
+    const text = document.getElementById('msgText').value.trim();
+    const errorEl = document.getElementById('msgError');
+    const successEl = document.getElementById('msgSuccess');
+    errorEl.classList.remove('show');
+
+    if (!text) { errorEl.textContent = 'Please write a message.'; errorEl.classList.add('show'); return; }
+    if (!currentIdea) return;
+
+    document.getElementById('sendMsgBtn').disabled = true;
+    document.getElementById('sendBtnText').textContent = 'Sending...';
+
+    try {
+      const res = await fetch(`${API_URL}/api/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ toId: currentIdea.creator_id, text, ideaId: currentIdea.id })
+      });
+      if (!res.ok) throw new Error('Failed to send');
+      successEl.classList.add('show');
+      document.getElementById('sendBtnText').textContent = 'Sent!';
+      setTimeout(closeModal, 2000);
+    } catch (err) {
+      errorEl.textContent = 'Failed to send message. Please try again.';
+      errorEl.classList.add('show');
+      document.getElementById('sendMsgBtn').disabled = false;
+      document.getElementById('sendBtnText').textContent = 'Send Message';
+    }
+  }
+
+  async function handleBuy() {
+    if (!token) { window.location.href = '/login'; return; }
+    if (!currentIdea) return;
+    if (!confirm(`Purchase "${currentIdea.title}" for ${formatPrice(currentIdea.price)}?\n\nPayment will be held in escrow until you confirm delivery.`)) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/transactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ideaId: currentIdea.id, paymentMethod: 'card' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Purchase failed');
+      alert('Purchase successful! The idea is now in escrow. Go to Transactions to confirm delivery.');
+      window.location.href = '/transactions';
+    } catch (err) {
+      alert(err.message || 'Purchase failed. Please try again.');
+    }
+  }
+
+  async function loadIdea() {
+    try {
+      const res = await fetch(`${API_URL}/api/ideas/${ideaId}`);
+      if (!res.ok) throw new Error('Idea not found');
+      const idea = await res.json();
+      currentIdea = idea;
+
+      document.title = `${idea.title} — IdeaHub`;
+      document.getElementById('breadcrumbTitle').textContent = idea.title;
+
+      const lvl = getLevelInfo(idea.level);
+      const fee = Math.round((idea.price || 0) * 0.08);
+      const total = (idea.price || 0) + fee;
+      const creatorInitials = idea.creator_name ? idea.creator_name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) : '?';
+      const isOwner = user && user.id === idea.creator_id;
+
+      document.getElementById('pageContent').innerHTML = `
+        <div class="detail-grid">
+          <!-- LEFT -->
+          <div>
+            <div class="idea-header">
+              <span class="idea-icon-lg">${idea.icon || '💡'}</span>
+              <div class="idea-title">${idea.title}</div>
+              <div class="idea-tags">
+                <span class="badge badge-industry">${idea.industry || 'General'}</span>
+                <span class="badge ${lvl.cls}">${lvl.label}</span>
+                ${idea.idea_type ? `<span class="badge badge-type">${idea.idea_type}</span>` : ''}
+                ${idea.has_patent ? '<span class="badge badge-patent">📋 Patented</span>' : ''}
+              </div>
+              ${idea.summary ? `<div class="idea-summary">${idea.summary}</div>` : ''}
+            </div>
+
+            ${idea.description ? `
+            <div class="section-card">
+              <div class="section-title">📄 Full Description</div>
+              <div class="idea-description">${idea.description}</div>
+            </div>` : ''}
+
+            <div class="section-card">
+              <div class="section-title">📊 Idea Details</div>
+              <div class="meta-grid">
+                <div class="meta-item">
+                  <div class="meta-label">Industry</div>
+                  <div class="meta-value">${idea.industry || '—'}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Type</div>
+                  <div class="meta-value">${idea.idea_type || '—'}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Stage</div>
+                  <div class="meta-value">${lvl.label}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Views</div>
+                  <div class="meta-value">👁 ${idea.views || 0}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Patent</div>
+                  <div class="meta-value">${idea.has_patent ? '✅ Yes' : '❌ No'}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Status</div>
+                  <div class="meta-value" style="text-transform:capitalize">${idea.status || 'live'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-title">👤 About the Creator</div>
+              <div class="creator-card">
+                <div class="creator-avatar">${creatorInitials}</div>
+                <div class="creator-info">
+                  <div class="creator-name">${idea.creator_name || 'Anonymous'}</div>
+                  <div class="creator-role">Idea Creator</div>
+                </div>
+                ${!isOwner ? `<button class="msg-creator-btn" onclick="openModal()">💬 Message</button>` : '<span style="font-size:12px;color:var(--accent)">Your idea</span>'}
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <div class="buy-card">
+              <div class="price-big">${formatPrice(idea.price)}</div>
+              <div class="price-sub">One-time purchase · Full ownership transfer</div>
+
+              <div class="fee-breakdown">
+                <div class="fee-row"><span>Idea price</span><span>${formatPrice(idea.price)}</span></div>
+                <div class="fee-row"><span>Platform fee (8%)</span><span>$${fee.toLocaleString()}</span></div>
+                <div class="fee-row total"><span>Total</span><span class="fee-val">$${total.toLocaleString()}</span></div>
+              </div>
+
+              ${idea.status === 'live' && !isOwner ? `
+                <button class="buy-btn" onclick="handleBuy()">
+                  🛒 Purchase Idea
+                </button>
+                <button class="contact-btn" onclick="openModal()">
+                  💬 Contact Creator First
+                </button>
+              ` : isOwner ? `
+                <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your own idea</button>
+              ` : `
+                <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Not available</button>
+              `}
+
+              ${!token ? `
+                <div style="text-align:center;margin-bottom:1rem;">
+                  <a href="/login" style="color:var(--accent);font-size:13px;">Sign in to purchase</a>
+                </div>
+              ` : ''}
+
+              <div class="buy-notes">
+                <p>🔒 Secure escrow payment</p>
+                <p>✅ Full ownership transfer</p>
+                <p>💬 Direct creator contact</p>
+                <p>↩️ Dispute resolution available</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      document.getElementById('pageContent').innerHTML = `
+        <div style="text-align:center;padding:4rem;color:var(--muted);">
+          <div style="font-size:48px;margin-bottom:1rem;">😕</div>
+          <div style="font-size:16px;">Idea not found or no longer available.</div>
+          <a href="/browse" style="color:var(--accent);font-size:14px;margin-top:1rem;display:inline-block;">← Back to Browse</a>
+        </div>`;
+    }
+  }
+
+  loadIdea();
+</script>
+</body>
+</html>
