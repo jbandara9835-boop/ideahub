@@ -377,7 +377,464 @@ app.get('/api/dashboard', authMiddleware, async (req, res) => {
     recentTransactions: txRes.data || [],
   });
 });
+// ── IDEA REQUESTS ─────────────────────────────────────────────────────────────
 
+// GET all open requests (public browse)
+app.get('/api/requests', async (req, res) => {
+  let query = supabase
+    .from('idea_requests')
+    .select('*')
+    .in('status', ['open', 'proposals_received', 'shortlisting', 'pitching']);
+
+  if (req.query.industry && req.query.industry !== 'all') {
+    query = query.eq('industry', req.query.industry);
+  }
+  if (req.query.search) {
+    query = query.ilike('title', `%${req.query.search}%`);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+
+  // increment view count
+  if (data && data.length > 0) {
+    data.forEach(async (r) => {
+      await supabase.from('idea_requests').update({ view_count: (r.view_count || 0) + 1 }).eq('id', r.id);
+    });
+  }
+
+  res.json(data || []);
+});
+
+// GET single request
+app.get('/api/requests/:id', async (req, res) => {
+  const { data, error } = await supabase
+    .from('idea_requests')
+    .select('*')
+    .eq('id', req.params.id)
+    .single();
+
+  if (!data || error) return res.status(404).json({ error: 'Request not found' });
+  res.json(data);
+});
+
+// POST new idea request (investor only)
+app.post('/api/requests', authMiddleware, async (req, res) => {
+  const { title, problem, industry, budget_min, budget_max, deadline, requirements } = req.body;
+  if (!title || !problem) return res.status(400).json({ error: 'Title and problem description are required' });
+
+  const { data: investor } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+
+  const { data: request, error } = await supabase
+    .from('idea_requests')
+    .insert([{
+      investor_id: req.user.id,
+      investor_name: investor ? `${investor.first_name} ${investor.last_name}` : 'Anonymous',
+      title, problem, industry,
+      budget_min: budget_min || null,
+      budget_max: budget_max || null,
+      deadline: deadline || null,
+      requirements: requirements || '',
+      status: 'open',
+      proposal_count: 0,
+      view_count: 0
+    }])
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify all idea_creators about new request
+  const { data: creators } = await supabase
+    .from('users')
+    .select('id')
+    .in('role', ['idea_creator', 'patent_seller']);
+
+  if (creators && creators.length > 0) {
+    const notifications = creators.map(c => ({
+      user_id: c.id,
+      type: 'new_request',
+      title: '💰 New Investor Request',
+      message: `An investor needs ideas for: "${title}"`,
+      link: `/request/${request.id}`,
+      data: { request_id: request.id }
+    }));
+    await supabase.from('notifications').insert(notifications);
+  }
+
+  res.status(201).json(request);
+});
+
+// UPDATE request status
+app.put('/api/requests/:id/status', authMiddleware, async (req, res) => {
+  const { status } = req.body;
+  const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can update this' });
+
+  const { data, error } = await supabase
+    .from('idea_requests')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// GET my requests (as investor)
+app.get('/api/my-requests', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('idea_requests')
+    .select('*')
+    .eq('investor_id', req.user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// LOCK ESCROW for selected proposal
+app.post('/api/requests/:id/escrow', authMiddleware, async (req, res) => {
+  const { amount, proposal_id, creator_id } = req.body;
+  const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can lock escrow' });
+
+  const { data, error } = await supabase
+    .from('idea_requests')
+    .update({
+      status: 'in_escrow',
+      escrow_amount: amount,
+      escrow_locked_at: new Date().toISOString(),
+      selected_creator_id: creator_id,
+      selected_proposal_id: proposal_id,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify selected creator
+  await supabase.from('notifications').insert([{
+    user_id: creator_id,
+    type: 'escrow_locked',
+    title: '🔒 Escrow Locked!',
+    message: `The investor has locked $${amount} in escrow for your proposal. Please deliver your idea.`,
+    link: `/request/${req.params.id}`,
+    data: { request_id: req.params.id, amount }
+  }]);
+
+  res.json(data);
+});
+
+// MARK as delivered (creator)
+app.post('/api/requests/:id/deliver', authMiddleware, async (req, res) => {
+  const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  if (request.selected_creator_id !== req.user.id) return res.status(403).json({ error: 'Only the selected creator can mark as delivered' });
+
+  const { data, error } = await supabase
+    .from('idea_requests')
+    .update({ status: 'delivered', delivered_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify investor
+  await supabase.from('notifications').insert([{
+    user_id: request.investor_id,
+    type: 'delivered',
+    title: '📦 Idea Delivered!',
+    message: `The creator has delivered the idea for "${request.title}". Please review and confirm.`,
+    link: `/request/${req.params.id}`,
+    data: { request_id: req.params.id }
+  }]);
+
+  res.json(data);
+});
+
+// CONFIRM delivery & release escrow (investor)
+app.post('/api/requests/:id/confirm', authMiddleware, async (req, res) => {
+  const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can confirm' });
+
+  const { data, error } = await supabase
+    .from('idea_requests')
+    .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Update creator earnings
+  if (request.selected_creator_id && request.escrow_amount) {
+    const { data: creator } = await supabase.from('users').select('earnings').eq('id', request.selected_creator_id).single();
+    await supabase.from('users').update({ earnings: (creator?.earnings || 0) + request.escrow_amount }).eq('id', request.selected_creator_id);
+  }
+
+  // Notify creator
+  await supabase.from('notifications').insert([{
+    user_id: request.selected_creator_id,
+    type: 'completed',
+    title: '💰 Payment Released!',
+    message: `The investor confirmed delivery. $${request.escrow_amount} has been added to your earnings!`,
+    link: `/request/${req.params.id}`,
+    data: { request_id: req.params.id, amount: request.escrow_amount }
+  }]);
+
+  res.json(data);
+});
+
+// DISPUTE a request
+app.post('/api/requests/:id/dispute', authMiddleware, async (req, res) => {
+  const { reason } = req.body;
+  const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can dispute' });
+
+  const { data, error } = await supabase
+    .from('idea_requests')
+    .update({ status: 'disputed', disputed_at: new Date().toISOString(), dispute_reason: reason, updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ── PROPOSALS ─────────────────────────────────────────────────────────────────
+
+// GET all proposals for a request
+app.get('/api/requests/:id/proposals', authMiddleware, async (req, res) => {
+  const { data: request } = await supabase.from('idea_requests').select('investor_id').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can view all proposals' });
+
+  const { data, error } = await supabase
+    .from('idea_proposals')
+    .select('*, creator:creator_id(id, first_name, last_name, role, bio, earnings)')
+    .eq('request_id', req.params.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// GET my proposal for a request (creator)
+app.get('/api/requests/:id/my-proposal', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('idea_proposals')
+    .select('*')
+    .eq('request_id', req.params.id)
+    .eq('creator_id', req.user.id)
+    .single();
+
+  if (error && error.code !== 'PGRST116') return res.status(500).json({ error: error.message });
+  res.json(data || null);
+});
+
+// SUBMIT a proposal (creator)
+app.post('/api/requests/:id/proposals', authMiddleware, async (req, res) => {
+  const { title, summary, approach, proposed_price, delivery_days } = req.body;
+  if (!title || !summary) return res.status(400).json({ error: 'Title and summary are required' });
+
+  const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  if (!['open', 'proposals_received'].includes(request.status)) return res.status(400).json({ error: 'This request is no longer accepting proposals' });
+
+  const { data: creator } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+
+  const { data, error } = await supabase
+    .from('idea_proposals')
+    .insert([{
+      request_id: parseInt(req.params.id),
+      creator_id: req.user.id,
+      creator_name: creator ? `${creator.first_name} ${creator.last_name}` : 'Anonymous',
+      title, summary, approach,
+      proposed_price: proposed_price || null,
+      delivery_days: delivery_days || null,
+      status: 'pending'
+    }])
+    .select().single();
+
+  if (error) {
+    if (error.code === '23505') return res.status(400).json({ error: 'You have already submitted a proposal for this request' });
+    return res.status(500).json({ error: error.message });
+  }
+
+  // Update request status
+  await supabase.from('idea_requests').update({ status: 'proposals_received', updated_at: new Date().toISOString() }).eq('id', req.params.id);
+
+  // Notify investor
+  await supabase.from('notifications').insert([{
+    user_id: request.investor_id,
+    type: 'proposal_received',
+    title: '📝 New Proposal Received!',
+    message: `${creator?.first_name || 'A creator'} submitted a proposal for "${request.title}"`,
+    link: `/request/${req.params.id}`,
+    data: { request_id: req.params.id, proposal_id: data.id }
+  }]);
+
+  res.status(201).json(data);
+});
+
+// UPDATE proposal status (investor shortlists / invites / rejects)
+app.put('/api/proposals/:id/status', authMiddleware, async (req, res) => {
+  const { status } = req.body;
+  const { data: proposal } = await supabase.from('idea_proposals').select('*, request:request_id(investor_id, title)').eq('id', req.params.id).single();
+  if (!proposal) return res.status(404).json({ error: 'Proposal not found' });
+  if (proposal.request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can update proposal status' });
+
+  const updateData = { status, updated_at: new Date().toISOString() };
+  if (status === 'invited_to_pitch') updateData.pitch_requested_at = new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from('idea_proposals')
+    .update(updateData)
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify creator
+  const notifMap = {
+    shortlisted: { title: '⭐ You\'ve been shortlisted!', msg: `Your proposal for "${proposal.request.title}" has been shortlisted by the investor.` },
+    invited_to_pitch: { title: '🎤 Pitch Invitation!', msg: `You\'ve been invited to pitch your idea for "${proposal.request.title}". Check your messages!` },
+    rejected: { title: '❌ Proposal Not Selected', msg: `Your proposal for "${proposal.request.title}" was not selected this time.` },
+    selected: { title: '🏆 Your Proposal Was Selected!', msg: `Congratulations! The investor selected your proposal for "${proposal.request.title}". Escrow will be locked soon.` }
+  };
+
+  if (notifMap[status]) {
+    await supabase.from('notifications').insert([{
+      user_id: proposal.creator_id,
+      type: status,
+      title: notifMap[status].title,
+      message: notifMap[status].msg,
+      link: `/request/${proposal.request_id}`,
+      data: { request_id: proposal.request_id, proposal_id: proposal.id }
+    }]);
+  }
+
+  // If selected, update request
+  if (status === 'selected') {
+    await supabase.from('idea_requests').update({
+      status: 'agreed',
+      selected_creator_id: proposal.creator_id,
+      selected_proposal_id: proposal.id,
+      updated_at: new Date().toISOString()
+    }).eq('id', proposal.request_id);
+  }
+
+  res.json(data);
+});
+
+// ── REQUEST MESSAGES ──────────────────────────────────────────────────────────
+
+// GET messages for a request between investor and specific creator
+app.get('/api/requests/:id/messages/:creatorId', authMiddleware, async (req, res) => {
+  const myId = req.user.id;
+  const otherId = parseInt(req.params.creatorId);
+
+  const { data, error } = await supabase
+    .from('request_messages')
+    .select('*')
+    .eq('request_id', req.params.id)
+    .or(`and(from_id.eq.${myId},to_id.eq.${otherId}),and(from_id.eq.${otherId},to_id.eq.${myId})`)
+    .order('created_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Mark as read
+  await supabase.from('request_messages').update({ is_read: true }).eq('request_id', req.params.id).eq('to_id', myId);
+
+  res.json(data || []);
+});
+
+// POST message in a request
+app.post('/api/requests/:id/messages', authMiddleware, async (req, res) => {
+  const { to_id, text, proposal_id } = req.body;
+  if (!to_id || !text) return res.status(400).json({ error: 'to_id and text required' });
+
+  const { data, error } = await supabase
+    .from('request_messages')
+    .insert([{
+      request_id: parseInt(req.params.id),
+      proposal_id: proposal_id || null,
+      from_id: req.user.id,
+      to_id: parseInt(to_id),
+      text
+    }])
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify recipient
+  const { data: sender } = await supabase.from('users').select('first_name').eq('id', req.user.id).single();
+  await supabase.from('notifications').insert([{
+    user_id: parseInt(to_id),
+    type: 'message',
+    title: '💬 New Message',
+    message: `${sender?.first_name || 'Someone'} sent you a message about a request`,
+    link: `/request/${req.params.id}`,
+    data: { request_id: req.params.id }
+  }]);
+
+  res.status(201).json(data);
+});
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+
+// GET my notifications
+app.get('/api/notifications', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// MARK notification as read
+app.put('/api/notifications/:id/read', authMiddleware, async (req, res) => {
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+// MARK ALL notifications as read
+app.put('/api/notifications/read-all', authMiddleware, async (req, res) => {
+  const { error } = await supabase
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('user_id', req.user.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+// GET unread notification count
+app.get('/api/notifications/unread-count', authMiddleware, async (req, res) => {
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', req.user.id)
+    .eq('is_read', false);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ count: count || 0 });
+});
 // ── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
