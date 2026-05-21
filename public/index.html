@@ -468,9 +468,8 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
       // Get user count
       const testRes = await fetch(`${API_URL}/api/test`);
       const testData = await testRes.json();
-      if (testData.data?.[0]?.count) {
-        document.getElementById('statUsers').textContent = testData.data[0].count + '+';
-      }
+      const userCount = testData.data?.[0]?.count || 0;
+      document.getElementById('statUsers').textContent = userCount + '+';
       document.getElementById('statCountries').textContent = '10+';
     } catch(e) {}
   }
