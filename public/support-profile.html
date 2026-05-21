@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Support Profile — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --purple: #a78bfa; --blue: #60a5fa; --pink: #f472b6;
+  }
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
+  .logout-btn:hover { color:var(--error); }
+
+  /* MAIN */
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+  .topbar { display:flex; align-items:center; gap:12px; margin-bottom:2rem; }
+  .back-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.9rem; color:var(--muted); font-size:13px; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+  .back-btn:hover { color:var(--text); border-color:var(--border-hover); }
+  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; letter-spacing:-0.5px; }
+
+  /* LAYOUT */
+  .profile-grid { display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start; }
+
+  /* LEFT CARD */
+  .profile-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; text-align:center; position:sticky; top:2rem; }
+  .avatar-lg { width:80px; height:80px; border-radius:50%; background:var(--accent-dim); border:2px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--accent); margin:0 auto 1rem; }
+  .profile-name { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:4px; }
+  .profile-email { font-size:13px; color:var(--muted); margin-bottom:1rem; }
+
+  .role-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; margin-bottom:1.25rem; }
+  .role-badge.virtual_manager { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); }
+  .role-badge.patent_attorney { background:rgba(96,165,250,0.15); color:var(--blue); border:1px solid rgba(96,165,250,0.3); }
+  .role-badge.corporate_services { background:rgba(244,114,182,0.15); color:var(--pink); border:1px solid rgba(244,114,182,0.3); }
+
+  .verified-banner { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.25); border-radius:10px; padding:0.75rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--success); }
+  .pending-banner { background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.25); border-radius:10px; padding:0.75rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--accent); }
+
+  .stats-mini { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem; }
+  .stat-mini { background:var(--surface2); border-radius:10px; padding:0.75rem; }
+  .stat-mini-val { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--accent); }
+  .stat-mini-label { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  .stars-display { display:flex; align-items:center; justify-content:center; gap:4px; font-size:20px; margin-bottom:4px; }
+  .stars-count { font-size:12px; color:var(--muted); }
+
+  /* FORM CARDS */
+  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; margin-bottom:20px; }
+  .form-section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+
+  .field { margin-bottom:1.25rem; }
+  label.lbl { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; letter-spacing:0.4px; text-transform:uppercase; }
+
+  input[type=text], input[type=number], textarea, select {
+    width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px;
+    padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text);
+    outline:none; transition:border-color 0.2s, background 0.2s; appearance:none;
+  }
+  textarea { resize:vertical; min-height:90px; line-height:1.6; }
+  select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px; cursor:pointer; }
+  select option { background:#16161a; color:var(--text); }
+  input:focus, textarea:focus, select:focus { border-color:var(--accent); background:var(--accent-dim); }
+  input::placeholder, textarea::placeholder { color:var(--muted); }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* AVAILABILITY TOGGLE */
+  .avail-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .avail-option { border:1px solid var(--border); border-radius:10px; padding:0.75rem; cursor:pointer; text-align:center; transition:all 0.15s; }
+  .avail-option:hover { border-color:var(--border-hover); }
+  .avail-option.selected.available { border-color:var(--success); background:rgba(110,231,183,0.1); }
+  .avail-option.selected.busy { border-color:var(--accent); background:rgba(245,200,66,0.1); }
+  .avail-option.selected.unavailable { border-color:var(--error); background:rgba(255,107,107,0.1); }
+  .avail-option input { display:none; }
+  .avail-emoji { font-size:20px; display:block; margin-bottom:4px; }
+  .avail-name { font-size:12px; font-weight:500; }
+
+  /* COUNTRY TAGS */
+  .tag-input-wrap { display:flex; gap:8px; margin-bottom:8px; }
+  .tag-input-wrap input { flex:1; }
+  .add-tag-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0 14px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .tags-list { display:flex; flex-wrap:wrap; gap:6px; min-height:32px; }
+  .tag { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:12px; display:flex; align-items:center; gap:6px; }
+  .tag-remove { cursor:pointer; color:var(--muted); font-size:14px; line-height:1; }
+  .tag-remove:hover { color:var(--error); }
+
+  /* LANGUAGES */
+  .lang-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .lang-chip { border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-size:12px; cursor:pointer; transition:all 0.15s; }
+  .lang-chip:hover { border-color:var(--border-hover); }
+  .lang-chip.selected { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+
+  /* CERTIFICATES */
+  .cert-upload-area { border:2px dashed var(--border); border-radius:12px; padding:2rem; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:1rem; }
+  .cert-upload-area:hover { border-color:var(--accent); background:var(--accent-dim); }
+  .cert-upload-area.dragover { border-color:var(--accent); background:var(--accent-dim); }
+  .upload-icon { font-size:32px; margin-bottom:0.75rem; display:block; }
+  .upload-text { font-size:14px; font-weight:500; margin-bottom:4px; }
+  .upload-sub { font-size:12px; color:var(--muted); }
+  #certFileInput { display:none; }
+
+  .cert-form { background:var(--surface2); border-radius:12px; padding:1.25rem; margin-bottom:1rem; display:none; }
+  .cert-form.show { display:block; }
+
+  .cert-list { display:flex; flex-direction:column; gap:10px; }
+  .cert-item { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:1rem 1.25rem; display:flex; align-items:center; gap:12px; }
+  .cert-icon { font-size:24px; flex-shrink:0; }
+  .cert-info { flex:1; min-width:0; }
+  .cert-title { font-size:14px; font-weight:500; }
+  .cert-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+  .cert-status { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; flex-shrink:0; }
+  .cert-status.pending { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .cert-status.approved { background:rgba(110,231,183,0.15); color:var(--success); }
+  .cert-status.rejected { background:rgba(255,107,107,0.15); color:var(--error); }
+  .cert-delete { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; padding:4px; transition:color 0.2s; }
+  .cert-delete:hover { color:var(--error); }
+
+  /* RATINGS */
+  .rating-item { padding:1rem 0; border-bottom:1px solid var(--border); }
+  .rating-item:last-child { border-bottom:none; }
+  .rating-header { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .rating-stars { color:var(--accent); font-size:14px; }
+  .rating-name { font-size:13px; font-weight:500; }
+  .rating-date { font-size:11px; color:var(--muted); margin-left:auto; }
+  .rating-review { font-size:13px; color:var(--muted); line-height:1.5; }
+
+  /* BUTTONS */
+  .save-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.85rem 2rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; gap:8px; }
+  .save-btn:hover { opacity:0.9; transform:translateY(-1px); }
+  .save-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .msg { border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; margin-top:1rem; display:none; }
+  .msg.show { display:block; }
+  .msg.error { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--error); }
+  .msg.success { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.3); color:var(--success); }
+
+  .upload-progress { background:var(--surface2); border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:13px; display:none; align-items:center; gap:10px; }
+  .upload-progress.show { display:flex; }
+  .progress-bar-wrap { flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+  .progress-bar { height:100%; background:var(--accent); border-radius:3px; transition:width 0.3s; width:0%; }
+
+  .empty { text-align:center; padding:2rem; color:var(--muted); font-size:13px; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .profile-grid { grid-template-columns:1fr; }
+    .profile-card { position:static; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="/support-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/browse"><span class="nav-icon">🔍</span><span>Browse Ideas</span></a>
+    <a class="nav-item active" href="/support-profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <a class="back-btn" href="/support-dashboard">← Back</a>
+    <div class="page-title">Support Profile</div>
+  </div>
+
+  <div class="profile-grid">
+    <!-- LEFT -->
+    <div>
+      <div class="profile-card">
+        <div class="avatar-lg" id="avatarLg">?</div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <div class="profile-email" id="profileEmail">—</div>
+        <div id="roleBadgeEl"></div>
+        <div id="verifiedBannerEl"></div>
+        <div class="stats-mini">
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="statJobs">0</div>
+            <div class="stat-mini-label">Jobs Done</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="statEarnings">$0</div>
+            <div class="stat-mini-label">Earned</div>
+          </div>
+        </div>
+        <div class="stars-display" id="starsDisplay">⭐⭐⭐⭐⭐</div>
+        <div class="stars-count" id="starsCount">No ratings yet</div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <!-- PROFESSIONAL INFO -->
+      <div class="form-card">
+        <div class="form-section-title">🧑‍💼 Professional Information</div>
+        <div class="field">
+          <label class="lbl">Tagline</label>
+          <input type="text" id="tagline" placeholder="e.g. 10+ years in IP Law, 50+ patents filed" maxlength="100" />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label class="lbl">Hourly Rate (USD)</label>
+            <input type="number" id="hourly_rate" placeholder="50" min="1" />
+          </div>
+          <div class="field">
+            <label class="lbl">Experience (years)</label>
+            <input type="number" id="experience_years" placeholder="5" min="0" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Availability</label>
+          <div class="avail-grid">
+            <label class="avail-option selected available" id="avail_available" onclick="setAvail('available')">
+              <input type="radio" name="availability" value="available" checked />
+              <span class="avail-emoji">🟢</span>
+              <span class="avail-name">Available</span>
+            </label>
+            <label class="avail-option" id="avail_busy" onclick="setAvail('busy')">
+              <input type="radio" name="availability" value="busy" />
+              <span class="avail-emoji">🟡</span>
+              <span class="avail-name">Busy</span>
+            </label>
+            <label class="avail-option" id="avail_unavailable" onclick="setAvail('unavailable')">
+              <input type="radio" name="availability" value="unavailable" />
+              <span class="avail-emoji">🔴</span>
+              <span class="avail-name">Unavailable</span>
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Languages</label>
+          <div class="lang-chips" id="langChips">
+            ${['English','Sinhala','Tamil','Hindi','Arabic','French','German','Spanish','Mandarin','Japanese'].map(l =>
+              `<div class="lang-chip" onclick="toggleLang(this)" data-lang="${l}">${l}</div>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- COUNTRY RESTRICTIONS -->
+      <div class="form-card">
+        <div class="form-section-title">🌍 Service Area & Restrictions</div>
+        <div class="field">
+          <label class="lbl">Home Country</label>
+          <select id="home_country">
+            <option value="">Select your country</option>
+            ${['Sri Lanka','United States','United Kingdom','India','Australia','Canada','Germany','France','Singapore','UAE','Pakistan','Bangladesh','Malaysia','South Africa','Nigeria','Kenya','Brazil','Other'].map(c =>
+              `<option value="${c}">${c}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl">Service Type</label>
+          <select id="service_type" onchange="updateServiceType()">
+            <option value="worldwide">🌍 Worldwide — I serve everyone</option>
+            <option value="specific_countries">✅ Specific Countries — I only serve these countries</option>
+            <option value="restricted_countries">🚫 Restricted Countries — I cannot serve these countries</option>
+          </select>
+        </div>
+
+        <div id="allowedSection" style="display:none;">
+          <div class="field">
+            <label class="lbl">Countries I serve</label>
+            <div class="tag-input-wrap">
+              <input type="text" id="allowedInput" placeholder="Type a country and press Add" />
+              <button class="add-tag-btn" onclick="addTag('allowed')">Add</button>
+            </div>
+            <div class="tags-list" id="allowedTags"></div>
+          </div>
+        </div>
+
+        <div id="restrictedSection" style="display:none;">
+          <div class="field">
+            <label class="lbl">Countries I cannot serve</label>
+            <div class="tag-input-wrap">
+              <input type="text" id="restrictedInput" placeholder="Type a country and press Add" />
+              <button class="add-tag-btn" onclick="addTag('restricted')">Add</button>
+            </div>
+            <div class="tags-list" id="restrictedTags"></div>
+          </div>
+        </div>
+
+        <div class="msg error" id="profileError"></div>
+        <div class="msg success" id="profileSuccess">Profile saved successfully! ✓</div>
+        <div style="display:flex; justify-content:flex-end; margin-top:0.5rem;">
+          <button class="save-btn" id="saveBtn" onclick="saveProfile()">
+            <div class="spinner" id="saveSpinner"></div>
+            <span id="saveBtnText">Save Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CERTIFICATES -->
+      <div class="form-card">
+        <div class="form-section-title">📜 Qualifications & Certificates</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Upload your qualification certificates. Our team will review and verify them within 2-3 business days.</p>
+
+        <div class="cert-upload-area" onclick="document.getElementById('certFileInput').click()" id="dropZone">
+          <span class="upload-icon">📄</span>
+          <div class="upload-text">Click to upload or drag & drop</div>
+          <div class="upload-sub">PDF, JPG or PNG — Max 5MB</div>
+        </div>
+        <input type="file" id="certFileInput" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(this)" />
+
+        <div class="upload-progress" id="uploadProgress">
+          <span>Uploading...</span>
+          <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+          <span id="progressPct">0%</span>
+        </div>
+
+        <div class="cert-form" id="certForm">
+          <div class="row" style="margin-bottom:12px;">
+            <div class="field" style="margin-bottom:0;">
+              <label class="lbl">Certificate Title *</label>
+              <input type="text" id="certTitle" placeholder="e.g. Bar License, MBA" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label class="lbl">Issuing Organization</label>
+              <input type="text" id="certIssuer" placeholder="e.g. Harvard University" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field" style="margin-bottom:0;">
+              <label class="lbl">Year Issued</label>
+              <input type="number" id="certYear" placeholder="2020" min="1950" max="2025" />
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;">
+              <button onclick="submitCertificate()" style="flex:1;background:var(--accent);color:#0d0d0f;border:none;border-radius:8px;padding:0.75rem;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Submit</button>
+              <button onclick="cancelCert()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;font-size:13px;color:var(--muted);cursor:pointer;">Cancel</button>
+            </div>
+          </div>
+          <div style="margin-top:0.75rem;font-size:12px;color:var(--muted);" id="certFileName"></div>
+        </div>
+
+        <div class="cert-list" id="certList">
+          <div class="empty">No certificates uploaded yet</div>
+        </div>
+      </div>
+
+      <!-- RATINGS -->
+      <div class="form-card">
+        <div class="form-section-title">⭐ My Ratings & Reviews</div>
+        <div id="ratingsList">
+          <div class="empty">No ratings yet — complete jobs to get reviews</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  const SUPPORT_ROLES = ['virtual_manager', 'patent_attorney', 'corporate_services'];
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
+
+  if (!token || !user) window.location.href = '/login';
+  if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/profile';
+
+  let selectedLangs = [];
+  let allowedCountries = [];
+  let restrictedCountries = [];
+  let pendingFileUrl = null;
+  let pendingFileName = null;
+
+  // Setup sidebar
+  const initials = (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '');
+  document.getElementById('sidebarAvatar').textContent = initials || '?';
+  document.getElementById('sidebarName').textContent = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+  document.getElementById('sidebarRole').textContent = roleMap[user?.role] || '—';
+
+  const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+  document.getElementById('avatarLg').textContent = initials || '?';
+  document.getElementById('profileName').textContent = fullName;
+  document.getElementById('profileEmail').textContent = user?.email || '';
+
+  const role = user?.role || 'virtual_manager';
+  document.getElementById('roleBadgeEl').innerHTML = `<div class="role-badge ${role}" style="margin-bottom:1rem;">${roleEmoji[role]} ${roleMap[role]}</div>`;
+
+  function logout() {
+    localStorage.removeItem('ih_token');
+    localStorage.removeItem('ih_user');
+    window.location.href = '/login';
+  }
+
+  function setAvail(val) {
+    ['available','busy','unavailable'].forEach(v => {
+      const el = document.getElementById(`avail_${v}`);
+      el.classList.remove('selected', 'available', 'busy', 'unavailable');
+    });
+    const el = document.getElementById(`avail_${val}`);
+    el.classList.add('selected', val);
+    el.querySelector('input').checked = true;
+  }
+
+  function toggleLang(el) {
+    const lang = el.dataset.lang;
+    if (selectedLangs.includes(lang)) {
+      selectedLangs = selectedLangs.filter(l => l !== lang);
+      el.classList.remove('selected');
+    } else {
+      selectedLangs.push(lang);
+      el.classList.add('selected');
+    }
+  }
+
+  function updateServiceType() {
+    const val = document.getElementById('service_type').value;
+    document.getElementById('allowedSection').style.display = val === 'specific_countries' ? 'block' : 'none';
+    document.getElementById('restrictedSection').style.display = val === 'restricted_countries' ? 'block' : 'none';
+  }
+
+  function addTag(type) {
+    const input = document.getElementById(type === 'allowed' ? 'allowedInput' : 'restrictedInput');
+    const val = input.value.trim();
+    if (!val) return;
+    const arr = type === 'allowed' ? allowedCountries : restrictedCountries;
+    if (arr.includes(val)) { input.value = ''; return; }
+    arr.push(val);
+    renderTags(type);
+    input.value = '';
+  }
+
+  function removeTag(type, val) {
+    if (type === 'allowed') allowedCountries = allowedCountries.filter(c => c !== val);
+    else restrictedCountries = restrictedCountries.filter(c => c !== val);
+    renderTags(type);
+  }
+
+  function renderTags(type) {
+    const arr = type === 'allowed' ? allowedCountries : restrictedCountries;
+    const el = document.getElementById(type === 'allowed' ? 'allowedTags' : 'restrictedTags');
+    el.innerHTML = arr.map(c => `<div class="tag">${c}<span class="tag-remove" onclick="removeTag('${type}','${c}')">×</span></div>`).join('');
+  }
+
+  document.getElementById('allowedInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTag('allowed'); } });
+  document.getElementById('restrictedInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTag('restricted'); } });
+
+  // Drag and drop
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  function handleFileSelect(input) { if (input.files[0]) handleFile(input.files[0]); }
+
+  async function handleFile(file) {
+    if (file.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); return; }
+
+    const progress = document.getElementById('uploadProgress');
+    const bar = document.getElementById('progressBar');
+    const pct = document.getElementById('progressPct');
+    progress.classList.add('show');
+    bar.style.width = '0%';
+    pct.textContent = '0%';
+
+    try {
+      // Get signed upload URL from backend
+      const urlRes = await fetch(`${API_URL}/api/certificates/upload-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ fileName: file.name, fileType: file.type })
+      });
+      const { uploadUrl, filePath } = await urlRes.json();
+
+      // Simulate progress
+      let p = 0;
+      const interval = setInterval(() => {
+        p = Math.min(p + 10, 90);
+        bar.style.width = p + '%';
+        pct.textContent = p + '%';
+      }, 100);
+
+      // Upload to Supabase storage
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file
+      });
+
+      clearInterval(interval);
+      bar.style.width = '100%';
+      pct.textContent = '100%';
+
+      setTimeout(() => progress.classList.remove('show'), 1000);
+
+      pendingFileUrl = filePath;
+      pendingFileName = file.name;
+      document.getElementById('certFileName').textContent = `📎 ${file.name}`;
+      document.getElementById('certForm').classList.add('show');
+
+    } catch (err) {
+      progress.classList.remove('show');
+      alert('Upload failed. Please try again.');
+    }
+  }
+
+  function cancelCert() {
+    pendingFileUrl = null;
+    pendingFileName = null;
+    document.getElementById('certForm').classList.remove('show');
+    document.getElementById('certTitle').value = '';
+    document.getElementById('certIssuer').value = '';
+    document.getElementById('certYear').value = '';
+    document.getElementById('certFileInput').value = '';
+  }
+
+  async function submitCertificate() {
+    const title = document.getElementById('certTitle').value.trim();
+    const issuer = document.getElementById('certIssuer').value.trim();
+    const issued_year = parseInt(document.getElementById('certYear').value);
+
+    if (!title) { alert('Please enter a certificate title.'); return; }
+    if (!pendingFileUrl) { alert('Please upload a file first.'); return; }
+
+    try {
+      const res = await fetch(`${API_URL}/api/certificates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title, issuer, issued_year, file_url: pendingFileUrl, file_name: pendingFileName })
+      });
+      if (!res.ok) throw new Error('Failed to submit');
+      cancelCert();
+      loadCertificates();
+    } catch (err) {
+      alert('Failed to submit certificate. Please try again.');
+    }
+  }
+
+  async function deleteCert(id) {
+    if (!confirm('Delete this certificate?')) return;
+    await fetch(`${API_URL}/api/certificates/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    loadCertificates();
+  }
+
+  async function loadCertificates() {
+    const res = await fetch(`${API_URL}/api/certificates`, { headers: { Authorization: `Bearer ${token}` } });
+    const certs = await res.json();
+    const list = document.getElementById('certList');
+
+    if (!certs.length) { list.innerHTML = '<div class="empty">No certificates uploaded yet</div>'; return; }
+
+    list.innerHTML = certs.map(c => `
+      <div class="cert-item">
+        <div class="cert-icon">${c.file_name?.endsWith('.pdf') ? '📄' : '🖼️'}</div>
+        <div class="cert-info">
+          <div class="cert-title">${c.title}</div>
+          <div class="cert-meta">${c.issuer || 'Unknown issuer'} ${c.issued_year ? '· ' + c.issued_year : ''} · ${c.file_name || ''}</div>
+          ${c.status === 'rejected' && c.reject_reason ? `<div style="font-size:11px;color:var(--error);margin-top:3px;">Reason: ${c.reject_reason}</div>` : ''}
+        </div>
+        <span class="cert-status ${c.status}">${c.status === 'pending' ? '⏳ Pending' : c.status === 'approved' ? '✅ Verified' : '❌ Rejected'}</span>
+        <button class="cert-delete" onclick="deleteCert(${c.id})" title="Delete">🗑</button>
+      </div>
+    `).join('');
+  }
+
+  async function loadRatings() {
+    const res = await fetch(`${API_URL}/api/ratings/${user.id}`);
+    const ratings = await res.json();
+    const list = document.getElementById('ratingsList');
+
+    if (!ratings.length) { list.innerHTML = '<div class="empty">No ratings yet — complete jobs to get reviews</div>'; return; }
+
+    const avg = (ratings.reduce((s, r) => s + r.stars, 0) / ratings.length).toFixed(1);
+    document.getElementById('starsDisplay').innerHTML = '⭐'.repeat(Math.round(avg)) + `<span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-left:6px;">${avg}</span>`;
+    document.getElementById('starsCount').textContent = `${ratings.length} review${ratings.length !== 1 ? 's' : ''}`;
+
+    list.innerHTML = ratings.map(r => `
+      <div class="rating-item">
+        <div class="rating-header">
+          <div class="rating-stars">${'⭐'.repeat(r.stars)}</div>
+          <div class="rating-name">${r.rater?.first_name || 'Anonymous'} ${r.rater?.last_name || ''}</div>
+          <div class="rating-date">${new Date(r.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</div>
+        </div>
+        ${r.review ? `<div class="rating-review">"${r.review}"</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  async function loadProfile() {
+    try {
+      const res = await fetch(`${API_URL}/api/support/profile`, { headers: { Authorization: `Bearer ${token}` } });
+      const profile = await res.json();
+
+      if (profile) {
+        document.getElementById('tagline').value = profile.tagline || '';
+        document.getElementById('hourly_rate').value = profile.hourly_rate || '';
+        document.getElementById('experience_years').value = profile.experience_years || '';
+        document.getElementById('home_country').value = profile.home_country || '';
+        document.getElementById('service_type').value = profile.service_type || 'worldwide';
+        updateServiceType();
+
+        if (profile.availability) setAvail(profile.availability);
+        if (profile.languages) {
+          selectedLangs = profile.languages;
+          document.querySelectorAll('.lang-chip').forEach(el => {
+            if (selectedLangs.includes(el.dataset.lang)) el.classList.add('selected');
+          });
+        }
+        if (profile.allowed_countries) { allowedCountries = profile.allowed_countries; renderTags('allowed'); }
+        if (profile.restricted_countries) { restrictedCountries = profile.restricted_countries; renderTags('restricted'); }
+
+        document.getElementById('statJobs').textContent = profile.completed_jobs || 0;
+        document.getElementById('statEarnings').textContent = '$' + (profile.total_earnings || 0).toLocaleString();
+
+        if (profile.is_verified) {
+          document.getElementById('verifiedBannerEl').innerHTML = `<div class="verified-banner">✅ Verified Professional</div>`;
+        } else {
+          document.getElementById('verifiedBannerEl').innerHTML = `<div class="pending-banner">⏳ Verification Pending</div>`;
+        }
+      }
+    } catch (err) { console.error(err); }
+  }
+
+  async function saveProfile() {
+    const tagline = document.getElementById('tagline').value.trim();
+    const hourly_rate = parseFloat(document.getElementById('hourly_rate').value) || null;
+    const experience_years = parseInt(document.getElementById('experience_years').value) || 0;
+    const home_country = document.getElementById('home_country').value;
+    const service_type = document.getElementById('service_type').value;
+    const availability = document.querySelector('input[name="availability"]:checked')?.value || 'available';
+
+    const btn = document.getElementById('saveBtn');
+    const spinner = document.getElementById('saveSpinner');
+    const btnText = document.getElementById('saveBtnText');
+    const errorEl = document.getElementById('profileError');
+    const successEl = document.getElementById('profileSuccess');
+    errorEl.classList.remove('show');
+    successEl.classList.remove('show');
+
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Saving...';
+
+    try {
+      const res = await fetch(`${API_URL}/api/support/profile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tagline, hourly_rate, availability, experience_years, languages: selectedLangs, home_country, service_type, allowed_countries: allowedCountries, restricted_countries: restrictedCountries })
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      successEl.classList.add('show');
+      setTimeout(() => successEl.classList.remove('show'), 3000);
+    } catch (err) {
+      errorEl.textContent = err.message || 'Something went wrong.';
+      errorEl.classList.add('show');
+    } finally {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Save Profile';
+    }
+  }
+
+  loadProfile();
+  loadCertificates();
+  loadRatings();
+</script>
+</body>
+</html>
