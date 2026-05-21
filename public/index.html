@@ -165,9 +165,9 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
 <div class="stats-bar">
   <div class="stats-grid" id="statsGrid">
     <div><div class="snum" id="statIdeas">—</div><div class="slbl">Ideas Listed</div></div>
-    <div><div class="snum">3.4K+</div><div class="slbl">Active Investors</div></div>
     <div><div class="snum" id="statUsers">—</div><div class="slbl">Members</div></div>
-    <div><div class="snum">94%</div><div class="slbl">Satisfaction Rate</div></div>
+    <div><div class="snum" id="statViews">—</div><div class="slbl">Total Views</div></div>
+    <div><div class="snum" id="statCountries">🌍</div><div class="slbl">Countries</div></div>
   </div>
 </div>
 
@@ -462,7 +462,16 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
       const ideas = await res.json();
       if (ideas && ideas.length) {
         document.getElementById('statIdeas').textContent = ideas.length + '+';
+        const totalViews = ideas.reduce((s, i) => s + (i.views || 0), 0);
+        document.getElementById('statViews').textContent = totalViews > 1000 ? (totalViews/1000).toFixed(1)+'K+' : totalViews + '+';
       }
+      // Get user count
+      const testRes = await fetch(`${API_URL}/api/test`);
+      const testData = await testRes.json();
+      if (testData.data?.[0]?.count) {
+        document.getElementById('statUsers').textContent = testData.data[0].count + '+';
+      }
+      document.getElementById('statCountries').textContent = '10+';
     } catch(e) {}
   }
 
