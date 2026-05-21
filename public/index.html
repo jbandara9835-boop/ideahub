@@ -448,6 +448,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
       document.getElementById('statIdeas').textContent = ideas.length + '+';
         const totalViews = ideas.reduce((s, i) => s + (i.views || 0), 0);
         document.getElementById('statViews').textContent = totalViews > 0 ? totalViews.toLocaleString() + '+' : '0';
+        document.getElementById('statUsers').textContent = '4+';
 
     } catch (err) {
       document.getElementById('ideasGrid').innerHTML = `
