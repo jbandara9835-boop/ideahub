@@ -244,7 +244,14 @@
     const lastName = document.getElementById('lastName').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const role = document.querySelector('input[name="role"]:checked').value;
+    // Auto-select role from URL param
+const urlRole = new URLSearchParams(window.location.search).get('role');
+if (urlRole) {
+  document.querySelectorAll('.role-card').forEach(c => {
+    c.classList.remove('selected');
+    if (c.dataset.role === urlRole) c.classList.add('selected');
+  });
+}
 
     const errorMsg = document.getElementById('errorMsg');
     const successMsg = document.getElementById('successMsg');
