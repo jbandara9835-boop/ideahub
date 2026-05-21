@@ -49,6 +49,9 @@ app.get('/buyer-dashboard', (req, res) => {
 app.get('/support-profile', (req, res) => {
   res.sendFile(__dirname + '/public/support-profile.html');
 });
+app.get('/find-support', (req, res) => {
+  res.sendFile(__dirname + '/public/find-support.html');
+});
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
