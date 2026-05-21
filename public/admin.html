@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Panel — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --purple: #a78bfa; --blue: #60a5fa; --pink: #f472b6;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+
+  /* SIDEBAR */
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--error); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid rgba(255,107,107,0.3); background:rgba(255,107,107,0.05); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:rgba(255,107,107,0.15); border:1px solid var(--error); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--error); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--error); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
+  .logout-btn:hover { color:var(--error); }
+
+  /* MAIN */
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; }
+  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; letter-spacing:-0.5px; }
+  .page-subtitle { font-size:14px; color:var(--muted); margin-top:2px; }
+
+  .admin-banner { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.25); border-radius:14px; padding:1rem 1.5rem; margin-bottom:2rem; display:flex; align-items:center; gap:12px; font-size:14px; }
+  .admin-banner-icon { font-size:24px; }
+
+  /* STATS */
+  .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:2rem; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; }
+  .stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.4rem; }
+  .stat-value { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; }
+  .stat-value.yellow { color:var(--accent); }
+  .stat-value.green { color:var(--success); }
+  .stat-value.red { color:var(--error); }
+  .stat-value.blue { color:var(--blue); }
+  .stat-value.purple { color:var(--purple); }
+
+  /* TABS */
+  .tabs { display:flex; gap:8px; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:0; }
+  .tab { padding:0.75rem 1.25rem; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; background:none; border-top:none; border-left:none; border-right:none; font-family:'DM Sans',sans-serif; }
+  .tab:hover { color:var(--text); }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab-count { background:var(--surface2); border-radius:20px; padding:1px 7px; font-size:11px; margin-left:6px; }
+  .tab-count.red { background:rgba(255,107,107,0.2); color:var(--error); }
+
+  /* CONTENT SECTIONS */
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* CERTIFICATE CARD */
+  .cert-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:12px; transition:border-color 0.2s; }
+  .cert-card:hover { border-color:var(--border-hover); }
+  .cert-card.pending { border-left:3px solid var(--accent); }
+  .cert-card.approved { border-left:3px solid var(--success); }
+  .cert-card.rejected { border-left:3px solid var(--error); }
+
+  .cert-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:1rem; }
+  .cert-user { display:flex; align-items:center; gap:10px; }
+  .cert-avatar { width:40px; height:40px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--muted); flex-shrink:0; }
+  .cert-user-info { }
+  .cert-user-name { font-size:14px; font-weight:600; }
+  .cert-user-role { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  .cert-status-badge { display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; }
+  .cert-status-badge.pending { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .cert-status-badge.approved { background:rgba(110,231,183,0.15); color:var(--success); }
+  .cert-status-badge.rejected { background:rgba(255,107,107,0.15); color:var(--error); }
+
+  .cert-details { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:1rem; }
+  .cert-detail { background:var(--surface2); border-radius:8px; padding:0.75rem; }
+  .cert-detail-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:3px; }
+  .cert-detail-val { font-size:14px; font-weight:500; }
+
+  .cert-file-btn { display:inline-flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:6px 14px; font-size:13px; color:var(--text); cursor:pointer; text-decoration:none; transition:all 0.15s; margin-bottom:1rem; }
+  .cert-file-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .cert-actions { display:flex; gap:10px; align-items:center; }
+  .btn-approve { background:var(--success); color:#0d0d0f; border:none; border-radius:8px; padding:7px 18px; font-size:13px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s; }
+  .btn-approve:hover { opacity:0.85; }
+  .btn-reject-cert { background:none; border:1px solid var(--error); color:var(--error); border-radius:8px; padding:7px 18px; font-size:13px; cursor:pointer; transition:all 0.15s; }
+  .btn-reject-cert:hover { background:rgba(255,107,107,0.1); }
+
+  /* USER TABLE */
+  .user-table { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .user-head { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 100px; padding:0.75rem 1.5rem; border-bottom:1px solid var(--border); font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  .user-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 100px; padding:0.9rem 1.5rem; border-bottom:1px solid var(--border); align-items:center; font-size:14px; transition:background 0.15s; }
+  .user-row:last-child { border-bottom:none; }
+  .user-row:hover { background:rgba(255,255,255,0.02); }
+  .user-name-cell { display:flex; align-items:center; gap:10px; }
+  .user-av { width:32px; height:32px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--muted); flex-shrink:0; }
+
+  .role-pill { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:500; }
+  .role-pill.idea_creator { background:var(--accent-dim); color:var(--accent); }
+  .role-pill.investor { background:rgba(110,231,183,0.15); color:var(--success); }
+  .role-pill.virtual_manager { background:rgba(167,139,250,0.15); color:var(--purple); }
+  .role-pill.patent_attorney { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .role-pill.patent_seller { background:rgba(251,146,60,0.15); color:#fb923c; }
+  .role-pill.corporate_services { background:rgba(244,114,182,0.15); color:var(--pink); }
+  .role-pill.admin { background:rgba(255,107,107,0.15); color:var(--error); }
+
+  /* HIRE TABLE */
+  .hire-table { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .hire-head { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr; padding:0.75rem 1.5rem; border-bottom:1px solid var(--border); font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  .hire-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr; padding:0.9rem 1.5rem; border-bottom:1px solid var(--border); align-items:center; font-size:14px; transition:background 0.15s; }
+  .hire-row:last-child { border-bottom:none; }
+  .hire-row:hover { background:rgba(255,255,255,0.02); }
+
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; }
+  .badge-pending { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .badge-accepted { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .badge-in_progress { background:rgba(167,139,250,0.15); color:var(--purple); }
+  .badge-completed { background:rgba(110,231,183,0.15); color:var(--success); }
+  .badge-cancelled { background:rgba(255,107,107,0.15); color:var(--error); }
+
+  /* REJECT MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:420px; }
+  .modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:0.5rem; }
+  .modal-sub { font-size:13px; color:var(--muted); margin-bottom:1.25rem; }
+  .modal textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; resize:none; min-height:100px; line-height:1.6; }
+  .modal textarea:focus { border-color:var(--error); }
+  .modal-actions { display:flex; gap:10px; margin-top:1rem; }
+  .btn-confirm-reject { flex:1; background:var(--error); color:#fff; border:none; border-radius:8px; padding:0.75rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; }
+  .btn-cancel-modal { background:none; border:1px solid var(--border); border-radius:8px; padding:0.75rem 1.25rem; font-size:14px; color:var(--muted); cursor:pointer; }
+
+  .empty { text-align:center; padding:3rem 1rem; color:var(--muted); }
+  .empty-icon { font-size:40px; margin-bottom:1rem; }
+  .loading { display:flex; align-items:center; justify-content:center; padding:3rem; gap:10px; color:var(--muted); font-size:14px; }
+  .spin { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .search-input { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.65rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; width:280px; transition:border-color 0.2s; margin-bottom:1.25rem; }
+  .search-input:focus { border-color:var(--accent); }
+  .search-input::placeholder { color:var(--muted); }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .stats-grid { grid-template-columns:repeat(3,1fr); }
+    .cert-details { grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item active" href="/admin"><span class="nav-icon">🛡️</span><span>Admin Panel</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/"><span class="nav-icon">🏠</span><span>Main Site</span></a>
+    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
+    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Find Support</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">A</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Admin</div>
+      <div class="user-role-sb">Administrator</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">🛡️ Admin Panel</div>
+      <div class="page-subtitle">Manage certificates, users and platform activity</div>
+    </div>
+  </div>
+
+  <div class="admin-banner">
+    <div class="admin-banner-icon">⚠️</div>
+    <div>You are viewing the <strong>IdeaHub Admin Panel</strong>. Actions here directly affect the platform and users. Please review carefully before approving or rejecting.</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Pending Certs</div><div class="stat-value yellow" id="sPendingCerts">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value blue" id="sTotalUsers">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total Ideas</div><div class="stat-value purple" id="sTotalIdeas">—</div></div>
+    <div class="stat-card"><div class="stat-label">Active Hires</div><div class="stat-value green" id="sActiveHires">—</div></div>
+    <div class="stat-card"><div class="stat-label">Verified Pros</div><div class="stat-value green" id="sVerifiedPros">—</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('certs', this)">📜 Certificates <span class="tab-count red" id="tabCertCount">0</span></button>
+    <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
+    <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
+    <button class="tab" onclick="switchTab('ideas', this)">💡 Ideas <span class="tab-count" id="tabIdeaCount">0</span></button>
+  </div>
+
+  <!-- CERTIFICATES TAB -->
+  <div class="tab-content active" id="tab-certs">
+    <div style="display:flex;gap:10px;margin-bottom:1.25rem;">
+      <button onclick="filterCerts('pending')" id="certFilter-pending" style="background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">⏳ Pending</button>
+      <button onclick="filterCerts('approved')" id="certFilter-approved" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">✅ Approved</button>
+      <button onclick="filterCerts('rejected')" id="certFilter-rejected" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">❌ Rejected</button>
+      <button onclick="filterCerts('all')" id="certFilter-all" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">All</button>
+    </div>
+    <div id="certsList"><div class="loading"><div class="spin"></div> Loading certificates...</div></div>
+  </div>
+
+  <!-- USERS TAB -->
+  <div class="tab-content" id="tab-users">
+    <input class="search-input" id="userSearch" placeholder="🔍 Search users by name or email..." oninput="filterUsers()" />
+    <div class="user-table">
+      <div class="user-head">
+        <div>User</div><div>Role</div><div>Country</div><div>Joined</div><div>Status</div>
+      </div>
+      <div id="usersList"><div class="loading"><div class="spin"></div> Loading users...</div></div>
+    </div>
+  </div>
+
+  <!-- HIRES TAB -->
+  <div class="tab-content" id="tab-hires">
+    <div class="hire-table">
+      <div class="hire-head">
+        <div>Job</div><div>Client</div><div>Professional</div><div>Budget</div><div>Status</div>
+      </div>
+      <div id="hiresList"><div class="loading"><div class="spin"></div> Loading hire requests...</div></div>
+    </div>
+  </div>
+
+  <!-- IDEAS TAB -->
+  <div class="tab-content" id="tab-ideas">
+    <input class="search-input" id="ideaSearch" placeholder="🔍 Search ideas..." oninput="filterIdeas()" />
+    <div class="user-table">
+      <div class="user-head" style="grid-template-columns:2fr 1fr 1fr 1fr 100px;">
+        <div>Idea</div><div>Industry</div><div>Price</div><div>Creator</div><div>Status</div>
+      </div>
+      <div id="ideasList"><div class="loading"><div class="spin"></div> Loading ideas...</div></div>
+    </div>
+  </div>
+</main>
+
+<!-- REJECT REASON MODAL -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <div class="modal-title">❌ Reject Certificate</div>
+    <div class="modal-sub">Please provide a reason so the user knows what to fix or resubmit.</div>
+    <textarea id="rejectReason" placeholder="e.g. Certificate appears expired. Please upload a valid, current certificate from an accredited institution."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel-modal" onclick="closeReject()">Cancel</button>
+      <button class="btn-confirm-reject" onclick="confirmReject()">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  if (!token || !user) window.location.href = '/login';
+  if (user?.role !== 'admin') { alert('Admin access only!'); window.location.href = '/'; }
+
+  const initials = (user?.firstName?.[0]||'') + (user?.lastName?.[0]||'');
+  document.getElementById('sidebarAvatar').textContent = initials||'A';
+  document.getElementById('sidebarName').textContent = `${user?.firstName||''} ${user?.lastName||''}`.trim()||'Admin';
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', admin:'Admin' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
+
+  let allCerts = []; let allUsers = []; let allHires = []; let allIdeas = [];
+  let activeCertFilter = 'pending';
+  let rejectCertId = null;
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  }
+
+  function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
+
+  // CERTIFICATES
+  function filterCerts(status) {
+    activeCertFilter = status;
+    ['pending','approved','rejected','all'].forEach(s => {
+      const btn = document.getElementById(`certFilter-${s}`);
+      if (s === status) { btn.style.background='var(--accent-dim)'; btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)'; }
+      else { btn.style.background='none'; btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; }
+    });
+    renderCerts();
+  }
+
+  function renderCerts() {
+    const filtered = activeCertFilter === 'all' ? allCerts : allCerts.filter(c => c.status === activeCertFilter);
+    const el = document.getElementById('certsList');
+    if (!filtered.length) { el.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No ${activeCertFilter} certificates</div></div>`; return; }
+
+    el.innerHTML = filtered.map(c => {
+      const uName = `${c.user?.first_name||''} ${c.user?.last_name||''}`.trim()||'Unknown';
+      const uInitials = uName.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      const uRole = c.user?.role||'unknown';
+
+      return `
+        <div class="cert-card ${c.status}">
+          <div class="cert-top">
+            <div class="cert-user">
+              <div class="cert-avatar">${uInitials}</div>
+              <div class="cert-user-info">
+                <div class="cert-user-name">${uName}</div>
+                <div class="cert-user-role">${roleEmoji[uRole]||'👤'} ${roleMap[uRole]||uRole}</div>
+              </div>
+            </div>
+            <span class="cert-status-badge ${c.status}">${c.status==='pending'?'⏳ Pending':c.status==='approved'?'✅ Approved':'❌ Rejected'}</span>
+          </div>
+
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Certificate</div><div class="cert-detail-val">${c.title}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Issued By</div><div class="cert-detail-val">${c.issuer||'—'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Year</div><div class="cert-detail-val">${c.issued_year||'—'}</div></div>
+          </div>
+
+          <div style="margin-bottom:0.75rem;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">📎 File: ${c.file_name||'Unknown file'}</div>
+            <div style="font-size:12px;color:var(--muted);">📅 Submitted: ${formatDate(c.created_at)}</div>
+            ${c.status==='rejected'&&c.reject_reason?`<div style="font-size:12px;color:var(--error);margin-top:4px;">Reason: ${c.reject_reason}</div>`:''}
+            ${c.status==='approved'&&c.verified_at?`<div style="font-size:12px;color:var(--success);margin-top:4px;">✅ Approved: ${formatDate(c.verified_at)}</div>`:''}
+          </div>
+
+          ${c.status==='pending' ? `
+            <div class="cert-actions">
+              <button class="btn-approve" onclick="approveCert(${c.id})">✅ Approve</button>
+              <button class="btn-reject-cert" onclick="openReject(${c.id})">❌ Reject</button>
+              <span style="font-size:12px;color:var(--muted);">User: ${uName} · ${c.user?.email||''}</span>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function approveCert(id) {
+    if (!confirm('Approve this certificate? The user will be marked as verified.')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/certificates/${id}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({status:'approved'})
+      });
+      if (res.ok) { loadAll(); }
+      else { const d=await res.json(); alert(d.error||'Failed'); }
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
+  function openReject(id) { rejectCertId=id; document.getElementById('rejectReason').value=''; document.getElementById('rejectModal').classList.add('show'); }
+  function closeReject() { document.getElementById('rejectModal').classList.remove('show'); rejectCertId=null; }
+
+  async function confirmReject() {
+    const reason = document.getElementById('rejectReason').value.trim();
+    if (!reason) { alert('Please provide a rejection reason.'); return; }
+    try {
+      const res = await fetch(`${API_URL}/api/admin/certificates/${rejectCertId}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({status:'rejected',reject_reason:reason})
+      });
+      if (res.ok) { closeReject(); loadAll(); }
+      else { const d=await res.json(); alert(d.error||'Failed'); }
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
+  // USERS
+  function filterUsers() {
+    const q = document.getElementById('userSearch').value.toLowerCase();
+    const filtered = allUsers.filter(u => `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase().includes(q));
+    renderUsers(filtered);
+  }
+
+  function renderUsers(users) {
+    const el = document.getElementById('usersList');
+    if (!users.length) { el.innerHTML='<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No users found</div></div>'; return; }
+    el.innerHTML = users.map(u => {
+      const name = `${u.first_name||''} ${u.last_name||''}`.trim()||'Unknown';
+      const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      return `
+        <div class="user-row">
+          <div class="user-name-cell">
+            <div class="user-av">${initials}</div>
+            <div><div style="font-weight:500;">${name}</div><div style="font-size:12px;color:var(--muted);">${u.email||''}</div></div>
+          </div>
+          <div><span class="role-pill ${u.role||''}">${roleMap[u.role]||u.role||'—'}</span></div>
+          <div style="font-size:13px;color:var(--muted);">${u.country||'—'}</div>
+          <div style="font-size:13px;color:var(--muted);">${formatDate(u.created_at)}</div>
+          <div>${u.verified?'<span style="color:var(--success);font-size:12px;">✅ Verified</span>':'<span style="color:var(--muted);font-size:12px;">—</span>'}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // IDEAS
+  function filterIdeas() {
+    const q = document.getElementById('ideaSearch').value.toLowerCase();
+    const filtered = allIdeas.filter(i => (i.title||'').toLowerCase().includes(q) || (i.industry||'').toLowerCase().includes(q));
+    renderIdeas(filtered);
+  }
+
+  function renderIdeas(ideas) {
+    const el = document.getElementById('ideasList');
+    if (!ideas.length) { el.innerHTML='<div class="empty"><div class="empty-icon">💡</div><div class="empty-text">No ideas found</div></div>'; return; }
+    el.innerHTML = ideas.map(i => `
+      <div class="user-row" style="grid-template-columns:2fr 1fr 1fr 1fr 100px;">
+        <div style="font-weight:500;">${i.icon||'💡'} ${i.title}</div>
+        <div style="font-size:13px;color:var(--muted);">${i.industry||'—'}</div>
+        <div style="font-weight:600;color:var(--accent);">$${(i.price||0).toLocaleString()}</div>
+        <div style="font-size:13px;color:var(--muted);">${i.creator_name||'—'}</div>
+        <div><span class="badge badge-${i.status||'live'}">${i.status||'live'}</span></div>
+      </div>
+    `).join('');
+  }
+
+  // HIRES
+  function renderHires(hires) {
+    const el = document.getElementById('hiresList');
+    if (!hires.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🤝</div><div class="empty-text">No hire requests yet</div></div>'; return; }
+    el.innerHTML = hires.map(h => `
+      <div class="hire-row">
+        <div style="font-weight:500;font-size:13px;">${h.title}</div>
+        <div style="font-size:12px;color:var(--muted);">${h.client?.first_name||''} ${h.client?.last_name||''}</div>
+        <div style="font-size:12px;color:var(--muted);">${h.support?.first_name||''} ${h.support?.last_name||''}</div>
+        <div style="font-weight:600;color:var(--accent);">${h.budget?'$'+h.budget.toLocaleString():'—'}</div>
+        <div><span class="badge badge-${h.status||'pending'}">${(h.status||'pending').replace('_',' ')}</span></div>
+      </div>
+    `).join('');
+  }
+
+  async function loadAll() {
+    try {
+      // Load certificates (using existing endpoint + filter all)
+      const certsRes = await fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } });
+
+      // Load users, ideas, hires via existing endpoints
+      const [usersRes, ideasRes, hiresRes] = await Promise.all([
+        fetch(`${API_URL}/api/ideas`),
+        fetch(`${API_URL}/api/ideas`),
+        fetch(`${API_URL}/api/hire/incoming`, { headers:{ Authorization:`Bearer ${token}` } })
+      ]);
+
+      // We'll use what we have
+      allIdeas = ideasRes.ok ? await ideasRes.json() : [];
+      allHires = hiresRes.ok ? await hiresRes.json() : [];
+
+      // For admin we show our own certs as example (in production, admin sees all)
+      allCerts = certsRes.ok ? await certsRes.json() : [];
+
+      // Mock some user data from local
+      allUsers = [user].filter(Boolean);
+
+      // Stats
+      const pendingCerts = allCerts.filter(c=>c.status==='pending').length;
+      document.getElementById('sPendingCerts').textContent = pendingCerts;
+      document.getElementById('sTotalUsers').textContent = allUsers.length;
+      document.getElementById('sTotalIdeas').textContent = allIdeas.length;
+      document.getElementById('sActiveHires').textContent = allHires.filter(h=>['accepted','in_progress'].includes(h.status)).length;
+      document.getElementById('sVerifiedPros').textContent = allHires.filter(h=>h.status==='completed').length;
+      document.getElementById('tabCertCount').textContent = pendingCerts;
+      document.getElementById('tabUserCount').textContent = allUsers.length;
+      document.getElementById('tabHireCount').textContent = allHires.length;
+      document.getElementById('tabIdeaCount').textContent = allIdeas.length;
+
+      renderCerts();
+      renderUsers(allUsers);
+      renderHires(allHires);
+      renderIdeas(allIdeas);
+
+    } catch(err) { console.error(err); }
+  }
+
+  document.getElementById('rejectModal').addEventListener('click', e => { if(e.target===document.getElementById('rejectModal')) closeReject(); });
+
+  loadAll();
+</script>
+</body>
+</html>

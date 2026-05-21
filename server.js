@@ -52,6 +52,12 @@ app.get('/support-profile', (req, res) => {
 app.get('/find-support', (req, res) => {
   res.sendFile(__dirname + '/public/find-support.html');
 });
+app.get('/support-dashboard', (req, res) => {
+  res.sendFile(__dirname + '/public/support-dashboard.html');
+});
+app.get('/admin', (req, res) => {
+  res.sendFile(__dirname + '/public/admin.html');
+});
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
