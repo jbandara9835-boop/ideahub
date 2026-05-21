@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Support Dashboard — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --purple: #a78bfa; --blue: #60a5fa; --pink: #f472b6;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
+  .logout-btn:hover { color:var(--error); }
+
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; letter-spacing:-0.5px; }
+  .page-subtitle { font-size:14px; color:var(--muted); margin-top:2px; }
+
+  .role-banner { display:flex; align-items:center; gap:12px; padding:1rem 1.5rem; border-radius:14px; margin-bottom:2rem; border:1px solid; }
+  .role-banner.virtual_manager { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.25); }
+  .role-banner.patent_attorney { background:rgba(96,165,250,0.08); border-color:rgba(96,165,250,0.25); }
+  .role-banner.corporate_services { background:rgba(244,114,182,0.08); border-color:rgba(244,114,182,0.25); }
+  .role-banner-icon { font-size:32px; }
+  .role-banner-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .role-banner-sub { font-size:13px; color:var(--muted); margin-top:2px; }
+  .verified-pill { margin-left:auto; display:flex; align-items:center; gap:6px; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:500; }
+  .verified-pill.yes { background:rgba(110,231,183,0.15); color:var(--success); border:1px solid rgba(110,231,183,0.3); }
+  .verified-pill.no { background:rgba(245,200,66,0.1); color:var(--accent); border:1px solid rgba(245,200,66,0.3); }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:2rem; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.5rem; }
+  .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; }
+  .stat-value { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; letter-spacing:-1px; }
+  .stat-value.green { color:var(--success); }
+  .stat-value.yellow { color:var(--accent); }
+  .stat-value.purple { color:var(--purple); }
+  .stat-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+  .section-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); }
+  .section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; }
+  .section-link { font-size:12px; color:var(--accent); text-decoration:none; cursor:pointer; }
+
+  .job-row { padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
+  .job-row:last-child { border-bottom:none; }
+  .job-row:hover { background:rgba(255,255,255,0.02); }
+  .job-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px; }
+  .job-title { font-size:14px; font-weight:500; }
+  .job-meta { font-size:12px; color:var(--muted); margin-bottom:8px; }
+  .job-actions { display:flex; gap:8px; }
+
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; }
+  .badge-pending { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .badge-accepted { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .badge-in_progress { background:rgba(167,139,250,0.15); color:var(--purple); }
+  .badge-completed { background:rgba(110,231,183,0.15); color:var(--success); }
+  .badge-cancelled { background:rgba(255,107,107,0.15); color:var(--error); }
+
+  .btn-accept { background:var(--success); color:#0d0d0f; border:none; border-radius:6px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+  .btn-reject { background:none; border:1px solid var(--error); color:var(--error); border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-complete { background:var(--accent); color:#0d0d0f; border:none; border-radius:6px; padding:5px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+  .btn-msg { background:none; border:1px solid var(--border); color:var(--text); border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-msg:hover { border-color:var(--accent); color:var(--accent); }
+
+  .client-info { display:flex; align-items:center; gap:8px; }
+  .client-avatar { width:28px; height:28px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--muted); flex-shrink:0; }
+  .client-name { font-size:12px; color:var(--muted); }
+
+  .budget-pill { background:var(--accent-dim); color:var(--accent); border-radius:20px; padding:2px 8px; font-size:11px; font-weight:600; }
+
+  .empty { text-align:center; padding:2.5rem 1rem; color:var(--muted); }
+  .empty-icon { font-size:32px; margin-bottom:0.75rem; }
+  .empty-text { font-size:13px; }
+
+  .loading { display:flex; align-items:center; justify-content:center; padding:2.5rem; color:var(--muted); gap:10px; font-size:13px; }
+  .spin { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* JOB CHAT MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; width:100%; max-width:520px; max-height:80vh; display:flex; flex-direction:column; animation:fadeUp 0.25s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .modal-head { padding:1.25rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-head-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .modal-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px; }
+  .chat-msgs { flex:1; overflow-y:auto; padding:1rem 1.5rem; display:flex; flex-direction:column; gap:10px; min-height:200px; }
+  .msg-bubble { max-width:70%; }
+  .msg-bubble.me { align-self:flex-end; }
+  .msg-bubble.them { align-self:flex-start; }
+  .bubble { padding:0.6rem 0.9rem; border-radius:14px; font-size:14px; line-height:1.5; }
+  .me .bubble { background:var(--accent); color:#0d0d0f; border-bottom-right-radius:4px; }
+  .them .bubble { background:var(--surface2); color:var(--text); border-bottom-left-radius:4px; }
+  .bubble-time { font-size:10px; color:var(--muted); margin-top:3px; text-align:right; }
+  .chat-input-row { padding:1rem 1.5rem; border-top:1px solid var(--border); display:flex; gap:8px; }
+  .chat-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:0.65rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; }
+  .chat-input:focus { border-color:var(--accent); }
+  .chat-send { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0 14px; cursor:pointer; font-size:18px; }
+
+  /* RATE MODAL */
+  .rate-modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:400px; animation:fadeUp 0.25s ease; }
+  .rate-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:0.5rem; }
+  .stars-row { display:flex; gap:8px; margin:1rem 0; }
+  .star-btn { font-size:32px; cursor:pointer; transition:transform 0.15s; background:none; border:none; filter:grayscale(1); }
+  .star-btn.active { filter:none; transform:scale(1.1); }
+  .rate-review { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; resize:none; min-height:80px; margin-bottom:1rem; }
+  .rate-review:focus { border-color:var(--accent); }
+  .rate-btns { display:flex; gap:10px; }
+  .rate-submit { flex:1; background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.75rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; }
+  .rate-cancel { background:none; border:1px solid var(--border); border-radius:8px; padding:0.75rem 1.25rem; font-size:14px; color:var(--muted); cursor:pointer; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .two-col { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item active" href="/support-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
+    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Find Support</span></a>
+    <a class="nav-item" href="/support-profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+      <div class="page-subtitle">Manage your jobs and grow your reputation</div>
+    </div>
+  </div>
+
+  <div id="roleBanner"></div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Pending Requests</div>
+      <div class="stat-value yellow" id="statPending">—</div>
+      <div class="stat-sub">awaiting response</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Jobs</div>
+      <div class="stat-value purple" id="statActive">—</div>
+      <div class="stat-sub">in progress</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed Jobs</div>
+      <div class="stat-value green" id="statCompleted">—</div>
+      <div class="stat-sub">all time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Rating</div>
+      <div class="stat-value yellow" id="statRating">—</div>
+      <div class="stat-sub">from clients</div>
+    </div>
+  </div>
+
+  <!-- PENDING REQUESTS -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title">📬 Pending Hire Requests</div>
+    </div>
+    <div id="pendingList"><div class="loading"><div class="spin"></div> Loading...</div></div>
+  </div>
+
+  <!-- ACTIVE + COMPLETED -->
+  <div class="two-col">
+    <div class="section-card" style="margin-bottom:0;">
+      <div class="section-header">
+        <div class="section-title">⚡ Active Jobs</div>
+      </div>
+      <div id="activeList"><div class="loading"><div class="spin"></div> Loading...</div></div>
+    </div>
+    <div class="section-card" style="margin-bottom:0;">
+      <div class="section-header">
+        <div class="section-title">✅ Completed Jobs</div>
+      </div>
+      <div id="completedList"><div class="loading"><div class="spin"></div> Loading...</div></div>
+    </div>
+  </div>
+</main>
+
+<!-- CHAT MODAL -->
+<div class="modal-overlay" id="chatModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title" id="chatTitle">Job Chat</div>
+      <button class="modal-close" onclick="closeChat()">×</button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="handleChatKey(event)" />
+      <button class="chat-send" onclick="sendChatMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- RATE MODAL -->
+<div class="modal-overlay" id="rateModal">
+  <div class="rate-modal">
+    <div class="rate-title">Rate this job</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:0.5rem;">How was your experience with the client?</p>
+    <div class="stars-row" id="starsRow">
+      <button class="star-btn" onclick="setStar(1)">⭐</button>
+      <button class="star-btn" onclick="setStar(2)">⭐</button>
+      <button class="star-btn" onclick="setStar(3)">⭐</button>
+      <button class="star-btn" onclick="setStar(4)">⭐</button>
+      <button class="star-btn" onclick="setStar(5)">⭐</button>
+    </div>
+    <textarea class="rate-review" id="rateReview" placeholder="Write a review (optional)..."></textarea>
+    <div class="rate-btns">
+      <button class="rate-cancel" onclick="closeRate()">Cancel</button>
+      <button class="rate-submit" onclick="submitRate()">Submit Rating</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  const SUPPORT_ROLES = ['virtual_manager','patent_attorney','corporate_services'];
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
+  const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Provide business solutions and partnerships' };
+
+  if (!token || !user) window.location.href = '/login';
+  if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/dashboard';
+
+  const initials = (user?.firstName?.[0]||'') + (user?.lastName?.[0]||'');
+  document.getElementById('sidebarAvatar').textContent = initials||'?';
+  document.getElementById('sidebarName').textContent = `${user?.firstName||''} ${user?.lastName||''}`.trim();
+  document.getElementById('sidebarRole').textContent = roleMap[user?.role]||'—';
+  document.getElementById('welcomeTitle').textContent = `Welcome back, ${user?.firstName||'there'} 👋`;
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+
+  function formatDate(d) { return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  function formatTime(d) {
+    const diff = Date.now()-new Date(d);
+    if (diff<60000) return 'just now';
+    if (diff<3600000) return Math.floor(diff/60000)+'m ago';
+    if (diff<86400000) return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return new Date(d).toLocaleDateString([],{month:'short',day:'numeric'});
+  }
+
+  let activeChatId = null;
+  let selectedStars = 0;
+  let rateHireId = null;
+  let rateClientId = null;
+
+  function clientInitials(hire) {
+    const name = `${hire.client?.first_name||''} ${hire.client?.last_name||''}`.trim();
+    return name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
+  }
+
+  function clientName(hire) {
+    return `${hire.client?.first_name||''} ${hire.client?.last_name||''}`.trim()||'Client';
+  }
+
+  function jobCard(hire, showActions) {
+    const badge = `<span class="badge badge-${hire.status}">${hire.status.replace('_',' ')}</span>`;
+    const ci = clientInitials(hire);
+    const cn = clientName(hire);
+    return `
+      <div class="job-row">
+        <div class="job-top">
+          <div class="job-title">${hire.title}</div>
+          ${badge}
+        </div>
+        <div class="job-meta">
+          ${hire.description ? `<div style="margin-bottom:4px;color:var(--muted);font-size:12px;">${hire.description.slice(0,80)}${hire.description.length>80?'...':''}</div>` : ''}
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="client-info">
+              <div class="client-avatar">${ci}</div>
+              <span class="client-name">by ${cn}</span>
+            </div>
+            ${hire.budget ? `<span class="budget-pill">$${hire.budget.toLocaleString()}</span>` : ''}
+            ${hire.deadline ? `<span style="font-size:11px;color:var(--muted);">📅 ${formatDate(hire.deadline)}</span>` : ''}
+            ${hire.country_warning ? `<span style="font-size:11px;color:var(--accent);">⚠️ Country restriction noted</span>` : ''}
+          </div>
+        </div>
+        ${showActions ? `
+        <div class="job-actions">
+          ${hire.status==='pending' ? `
+            <button class="btn-accept" onclick="updateStatus(${hire.id},'accepted')">Accept</button>
+            <button class="btn-reject" onclick="updateStatus(${hire.id},'cancelled')">Decline</button>
+          ` : ''}
+          ${hire.status==='accepted' ? `
+            <button class="btn-complete" onclick="updateStatus(${hire.id},'in_progress')">Start Job</button>
+          ` : ''}
+          ${hire.status==='in_progress' ? `
+            <button class="btn-complete" onclick="updateStatus(${hire.id},'completed')">Mark Complete</button>
+          ` : ''}
+          ${hire.status==='completed' ? `
+            <span style="font-size:12px;color:var(--success);">✅ Completed ${formatDate(hire.completed_at)}</span>
+          ` : ''}
+          <button class="btn-msg" onclick="openChat(${hire.id},'${hire.title.replace(/'/g,"\\'")}')">💬 Chat</button>
+        </div>` : ''}
+      </div>
+    `;
+  }
+
+  async function updateStatus(id, status) {
+    const confirmMap = { accepted:'Accept this job?', cancelled:'Decline this request?', in_progress:'Start this job?', completed:'Mark as completed? Client will be notified to confirm.' };
+    if (!confirm(confirmMap[status]||'Update status?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/hire/${id}/status`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({status})
+      });
+      if (res.ok) loadDashboard();
+    } catch(e) { alert('Failed to update.'); }
+  }
+
+  async function openChat(hireId, title) {
+    activeChatId = hireId;
+    document.getElementById('chatTitle').textContent = title;
+    document.getElementById('chatModal').classList.add('show');
+    loadChatMsgs();
+  }
+
+  function closeChat() { document.getElementById('chatModal').classList.remove('show'); activeChatId=null; }
+  document.getElementById('chatModal').addEventListener('click', e => { if(e.target===document.getElementById('chatModal')) closeChat(); });
+
+  async function loadChatMsgs() {
+    if(!activeChatId) return;
+    try {
+      const res = await fetch(`${API_URL}/api/hire/${activeChatId}/messages`,{headers:{Authorization:`Bearer ${token}`}});
+      const msgs = await res.json();
+      const el = document.getElementById('chatMsgs');
+      if(!msgs.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">No messages yet. Say hello!</div>';return;}
+      el.innerHTML = msgs.map(m=>{
+        const isMe = m.from_id===user.id;
+        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${m.text}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
+      }).join('');
+      el.scrollTop=el.scrollHeight;
+    }catch(e){}
+  }
+
+  function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMsg();}}
+
+  async function sendChatMsg(){
+    const input=document.getElementById('chatInput');
+    const text=input.value.trim();
+    if(!text||!activeChatId) return;
+    input.value='';
+    try{
+      await fetch(`${API_URL}/api/hire/${activeChatId}/messages`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({text})
+      });
+      loadChatMsgs();
+    }catch(e){}
+  }
+
+  function setStar(n){
+    selectedStars=n;
+    document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('active',i<n));
+  }
+
+  function openRate(hireId, clientId){
+    rateHireId=hireId; rateClientId=clientId;
+    selectedStars=0;
+    document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('rateReview').value='';
+    document.getElementById('rateModal').classList.add('show');
+  }
+
+  function closeRate(){document.getElementById('rateModal').classList.remove('show');}
+
+  async function submitRate(){
+    if(!selectedStars){alert('Please select a star rating.');return;}
+    try{
+      const res=await fetch(`${API_URL}/api/ratings`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({hire_id:rateHireId,rated_user_id:rateClientId,stars:selectedStars,review:document.getElementById('rateReview').value.trim()})
+      });
+      if(res.ok){closeRate();alert('Rating submitted!');}
+      else{const d=await res.json();alert(d.error||'Failed to submit.');}
+    }catch(e){alert('Something went wrong.');}
+  }
+
+  async function loadDashboard(){
+    try{
+      const [hireRes, profileRes] = await Promise.all([
+        fetch(`${API_URL}/api/hire/incoming`,{headers:{Authorization:`Bearer ${token}`}}),
+        fetch(`${API_URL}/api/support/profile`,{headers:{Authorization:`Bearer ${token}`}})
+      ]);
+
+      const hires = hireRes.ok ? await hireRes.json() : [];
+      const profile = profileRes.ok ? await profileRes.json() : null;
+
+      const role = user?.role||'virtual_manager';
+      document.getElementById('roleBanner').innerHTML = `
+        <div class="role-banner ${role}">
+          <div class="role-banner-icon">${roleEmoji[role]}</div>
+          <div>
+            <div class="role-banner-title">${roleMap[role]}</div>
+            <div class="role-banner-sub">${roleDesc[role]}</div>
+          </div>
+          <div class="verified-pill ${profile?.is_verified?'yes':'no'}">
+            ${profile?.is_verified?'✅ Verified':'⏳ Pending Verification'}
+          </div>
+        </div>`;
+
+      const pending = hires.filter(h=>h.status==='pending');
+      const active = hires.filter(h=>['accepted','in_progress'].includes(h.status));
+      const completed = hires.filter(h=>h.status==='completed');
+
+      document.getElementById('statPending').textContent = pending.length;
+      document.getElementById('statActive').textContent = active.length;
+      document.getElementById('statCompleted').textContent = completed.length;
+      document.getElementById('statRating').textContent = profile?.avg_rating ? '⭐ '+profile.avg_rating : '—';
+
+      const renderList = (el, list, actions) => {
+        if(!list.length){
+          el.innerHTML=`<div class="empty"><div class="empty-icon">${actions?'📭':'🎉'}</div><div class="empty-text">${actions?'No requests yet':'No jobs here yet'}</div></div>`;
+        } else {
+          el.innerHTML=list.map(h=>jobCard(h,actions)).join('');
+        }
+      };
+
+      renderList(document.getElementById('pendingList'), pending, true);
+      renderList(document.getElementById('activeList'), active, true);
+      renderList(document.getElementById('completedList'), completed, false);
+
+    }catch(err){console.error(err);}
+  }
+
+  loadDashboard();
+  setInterval(loadChatMsgs, 10000);
+</script>
+</body>
+</html>
