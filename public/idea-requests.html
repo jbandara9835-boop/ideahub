@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Idea Requests — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --blue: #60a5fa; --purple: #a78bfa;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
+  .logout-btn:hover { color:var(--error); }
+
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+
+  .hero { margin-bottom:2rem; }
+  .hero-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.5px; margin-bottom:0.4rem; }
+  .hero-title span { color:var(--accent); }
+  .hero-sub { font-size:15px; color:var(--muted); }
+
+  .post-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.75rem 1.5rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .post-btn:hover { opacity:0.85; }
+
+  .filter-row { display:flex; gap:10px; margin-bottom:1.5rem; align-items:center; flex-wrap:wrap; }
+  .search-wrap { flex:1; min-width:200px; position:relative; }
+  .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+  .search-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.7rem 1rem 0.7rem 2.5rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
+  .search-input:focus { border-color:var(--accent); }
+  .search-input::placeholder { color:var(--muted); }
+  .filter-chip { background:none; border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--muted); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .filter-chip:hover { color:var(--text); border-color:var(--border-hover); }
+  .filter-chip.active { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+
+  .stats-bar { font-size:13px; color:var(--muted); margin-bottom:1.25rem; }
+  .stats-bar span { color:var(--text); font-weight:500; }
+
+  .requests-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; }
+
+  .request-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; transition:all 0.2s; position:relative; overflow:hidden; cursor:pointer; text-decoration:none; display:block; color:var(--text); }
+  .request-card:hover { border-color:var(--border-hover); transform:translateY(-3px); }
+  .request-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), var(--success)); opacity:0; transition:opacity 0.2s; }
+  .request-card:hover::before { opacity:1; }
+
+  .card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:0.75rem; gap:10px; }
+  .card-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; line-height:1.3; flex:1; }
+
+  .status-badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; flex-shrink:0; }
+  .status-open { background:rgba(110,231,183,0.15); color:var(--success); }
+  .status-proposals_received { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .status-shortlisting { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .status-pitching { background:rgba(167,139,250,0.15); color:var(--purple); }
+
+  .card-problem { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+  .card-meta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:1rem; }
+  .meta-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); }
+
+  .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid var(--border); }
+  .budget-range { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--accent); }
+  .proposal-count { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:4px; }
+
+  .industry-tag { display:inline-flex; align-items:center; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:20px; padding:3px 10px; font-size:11px; color:var(--muted); }
+
+  .empty { text-align:center; padding:4rem 1rem; color:var(--muted); grid-column:1/-1; }
+  .empty-icon { font-size:48px; margin-bottom:1rem; }
+  .loading { display:flex; align-items:center; justify-content:center; padding:4rem; gap:10px; color:var(--muted); font-size:14px; grid-column:1/-1; }
+  .spin { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:12px; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .requests-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
+    <a class="nav-item active" href="/idea-requests"><span class="nav-icon">🎯</span><span>Idea Requests</span></a>
+    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Find Support</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="hero">
+      <div class="hero-title">Investor <span>Requests</span></div>
+      <div class="hero-sub">Investors posting problems — creators submitting solutions</div>
+    </div>
+    <div id="actionBtn"></div>
+  </div>
+
+  <div class="filter-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="Search requests..." oninput="handleSearch()" />
+    </div>
+    <button class="filter-chip active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-chip" onclick="setFilter('Technology', this)">💻 Tech</button>
+    <button class="filter-chip" onclick="setFilter('Finance', this)">💰 Finance</button>
+    <button class="filter-chip" onclick="setFilter('Health & Wellness', this)">🏥 Health</button>
+    <button class="filter-chip" onclick="setFilter('Education', this)">📚 Education</button>
+    <button class="filter-chip" onclick="setFilter('E-commerce', this)">🛒 E-commerce</button>
+  </div>
+
+  <div class="stats-bar" id="statsBar">Loading requests...</div>
+  <div class="requests-grid" id="requestsGrid">
+    <div class="loading"><div class="spin"></div> Loading requests...</div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate' };
+  const creatorRoles = ['idea_creator', 'patent_seller'];
+  const investorRoles = ['investor', 'corporate_services'];
+
+  if (user) {
+    const initials = (user.firstName?.[0]||'') + (user.lastName?.[0]||'');
+    document.getElementById('sidebarAvatar').textContent = initials||'?';
+    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    document.getElementById('sidebarRole').textContent = roleMap[user.role]||'—';
+    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : investorRoles.includes(user.role) ? '/buyer-dashboard' : '/support-dashboard';
+
+    // Show post button for investors
+    if (investorRoles.includes(user.role)) {
+      document.getElementById('actionBtn').innerHTML = `<a class="post-btn" href="/post-request">+ Post a Request</a>`;
+    }
+    // Show "submit proposal" hint for creators
+    if (creatorRoles.includes(user.role)) {
+      document.getElementById('actionBtn').innerHTML = `<div style="font-size:13px;color:var(--muted);">💡 Click any request to submit your proposal</div>`;
+    }
+  } else {
+    document.getElementById('actionBtn').innerHTML = `<a class="post-btn" href="/login">Login to Post a Request</a>`;
+  }
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+
+  let allRequests = [];
+  let activeFilter = 'all';
+  let searchTerm = '';
+
+  function setFilter(filter, el) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderGrid();
+  }
+
+  let searchTimer;
+  function handleSearch() {
+    searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(renderGrid, 300);
+  }
+
+  function formatBudget(min, max) {
+    if (!min && !max) return 'Budget open';
+    if (min && max) return `$${min.toLocaleString()} — $${max.toLocaleString()}`;
+    if (min) return `From $${min.toLocaleString()}`;
+    return `Up to $${max.toLocaleString()}`;
+  }
+
+  function formatDate(d) {
+    if (!d) return null;
+    const date = new Date(d);
+    const diff = date - new Date();
+    const days = Math.ceil(diff / (1000*60*60*24));
+    if (days < 0) return 'Deadline passed';
+    if (days === 0) return 'Due today';
+    if (days === 1) return 'Due tomorrow';
+    return `${days} days left`;
+  }
+
+  function timeAgo(d) {
+    const diff = Date.now() - new Date(d);
+    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+    return Math.floor(diff/86400000) + 'd ago';
+  }
+
+  function statusLabel(s) {
+    const map = { open:'Open', proposals_received:'Proposals In', shortlisting:'Shortlisting', pitching:'Pitching' };
+    return map[s] || s;
+  }
+
+  function renderGrid() {
+    let filtered = allRequests.filter(r => {
+      if (activeFilter !== 'all' && r.industry !== activeFilter) return false;
+      if (searchTerm && !r.title.toLowerCase().includes(searchTerm) && !(r.problem||'').toLowerCase().includes(searchTerm)) return false;
+      return true;
+    });
+
+    document.getElementById('statsBar').innerHTML = `Showing <span>${filtered.length}</span> of <span>${allRequests.length}</span> requests`;
+
+    const grid = document.getElementById('requestsGrid');
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text" style="font-size:14px;">No requests found</div></div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(r => `
+      <a class="request-card" href="/request/${r.id}">
+        <div class="card-top">
+          <div class="card-title">${r.title}</div>
+          <span class="status-badge status-${r.status}">${statusLabel(r.status)}</span>
+        </div>
+        <div class="card-problem">${r.problem}</div>
+        <div class="card-meta">
+          ${r.industry ? `<div class="meta-item"><span class="industry-tag">${r.industry}</span></div>` : ''}
+          ${r.deadline ? `<div class="meta-item">📅 ${formatDate(r.deadline)}</div>` : ''}
+          <div class="meta-item">🕐 ${timeAgo(r.created_at)}</div>
+          <div class="meta-item">by ${r.investor_name || 'Anonymous'}</div>
+        </div>
+        <div class="card-footer">
+          <div class="budget-range">${formatBudget(r.budget_min, r.budget_max)}</div>
+          <div class="proposal-count">📝 ${r.proposal_count || 0} proposal${r.proposal_count !== 1 ? 's' : ''}</div>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  async function loadRequests() {
+    try {
+      const res = await fetch(`${API_URL}/api/requests`);
+      allRequests = await res.json();
+      renderGrid();
+    } catch(err) {
+      document.getElementById('requestsGrid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div style="font-size:14px;color:var(--muted);">Failed to load. Please refresh.</div></div>`;
+    }
+  }
+
+  loadRequests();
+</script>
+</body>
+</html>

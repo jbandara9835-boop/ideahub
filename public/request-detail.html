@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Request — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --blue: #60a5fa; --purple: #a78bfa;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
+  .logout-btn:hover { color:var(--error); }
+
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+  .topbar { display:flex; align-items:center; gap:12px; margin-bottom:2rem; }
+  .back-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.9rem; color:var(--muted); font-size:13px; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+  .back-btn:hover { color:var(--text); border-color:var(--border-hover); }
+
+  .detail-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; align-items:start; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
+  .card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+
+  .request-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px; margin-bottom:0.75rem; }
+  .request-meta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:1.25rem; }
+  .meta-pill { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:12px; color:var(--muted); }
+  .request-problem { font-size:14px; line-height:1.8; color:var(--text); margin-bottom:1rem; }
+  .request-requirements { font-size:13px; line-height:1.7; color:var(--muted); background:var(--surface2); border-radius:10px; padding:1rem; border-left:3px solid var(--accent); }
+
+  .status-badge { display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; }
+  .status-open { background:rgba(110,231,183,0.15); color:var(--success); }
+  .status-proposals_received { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .status-shortlisting { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .status-pitching { background:rgba(167,139,250,0.15); color:var(--purple); }
+  .status-agreed { background:rgba(110,231,183,0.15); color:var(--success); }
+  .status-in_escrow { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .status-delivered { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .status-completed { background:rgba(110,231,183,0.15); color:var(--success); }
+  .status-disputed { background:rgba(255,107,107,0.15); color:var(--error); }
+
+  /* PROPOSAL FORM */
+  .field { margin-bottom:1.1rem; }
+  label.lbl { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; letter-spacing:0.4px; text-transform:uppercase; }
+  input, textarea, select { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
+  textarea { resize:vertical; min-height:90px; line-height:1.6; }
+  input:focus, textarea:focus { border-color:var(--accent); background:var(--accent-dim); }
+  input::placeholder, textarea::placeholder { color:var(--muted); }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .btn-primary { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.85rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .btn-secondary { background:none; border:1px solid var(--border); border-radius:10px; padding:0.75rem; font-size:14px; color:var(--text); cursor:pointer; transition:all 0.2s; width:100%; margin-top:8px; }
+  .btn-secondary:hover { border-color:var(--border-hover); }
+  .btn-sm { padding:6px 14px; font-size:12px; border-radius:8px; width:auto; }
+
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .msg { border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; margin-top:0.75rem; display:none; }
+  .msg.show { display:block; }
+  .msg.error { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--error); }
+  .msg.success { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.3); color:var(--success); }
+
+  /* PROPOSALS LIST */
+  .proposal-item { padding:1.25rem; border:1px solid var(--border); border-radius:12px; margin-bottom:12px; transition:border-color 0.2s; }
+  .proposal-item:hover { border-color:var(--border-hover); }
+  .proposal-item.shortlisted { border-color:var(--accent); background:var(--accent-dim); }
+  .proposal-item.selected { border-color:var(--success); background:rgba(110,231,183,0.05); }
+  .proposal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:0.75rem; }
+  .proposal-creator { display:flex; align-items:center; gap:10px; }
+  .creator-av { width:36px; height:36px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--muted); flex-shrink:0; }
+  .creator-name { font-weight:600; font-size:14px; }
+  .creator-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+  .proposal-title { font-weight:600; font-size:14px; margin-bottom:0.5rem; }
+  .proposal-summary { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:0.75rem; }
+  .proposal-footer { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .price-tag { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--accent); }
+  .days-tag { font-size:12px; color:var(--muted); }
+  .proposal-actions { display:flex; gap:8px; margin-left:auto; }
+  .btn-shortlist { background:var(--accent-dim); border:1px solid var(--accent); color:var(--accent); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; transition:all 0.15s; }
+  .btn-shortlist:hover { background:var(--accent); color:#0d0d0f; }
+  .btn-invite { background:rgba(96,165,250,0.15); border:1px solid rgba(96,165,250,0.3); color:var(--blue); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-select { background:rgba(110,231,183,0.15); border:1px solid rgba(110,231,183,0.3); color:var(--success); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-reject { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--error); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-chat { background:none; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-chat:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* CHAT */
+  .chat-area { display:flex; flex-direction:column; height:400px; }
+  .chat-msgs { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:10px; }
+  .msg-bubble { max-width:75%; }
+  .msg-bubble.me { align-self:flex-end; }
+  .msg-bubble.them { align-self:flex-start; }
+  .bubble { padding:0.6rem 0.9rem; border-radius:14px; font-size:14px; line-height:1.5; word-break:break-word; }
+  .me .bubble { background:var(--accent); color:#0d0d0f; border-bottom-right-radius:4px; }
+  .them .bubble { background:var(--surface2); color:var(--text); border-bottom-left-radius:4px; }
+  .bubble-time { font-size:10px; color:var(--muted); margin-top:3px; text-align:right; }
+  .chat-input-row { padding:0.75rem; border-top:1px solid var(--border); display:flex; gap:8px; }
+  .chat-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:0.65rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; }
+  .chat-input:focus { border-color:var(--accent); }
+  .chat-send { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0 14px; cursor:pointer; font-size:18px; flex-shrink:0; }
+
+  /* ESCROW */
+  .escrow-box { background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); border-radius:12px; padding:1.25rem; margin-bottom:1rem; }
+  .escrow-amount { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--accent); margin-bottom:4px; }
+  .escrow-note { font-size:12px; color:var(--muted); }
+
+  .loading-page { display:flex; align-items:center; justify-content:center; min-height:60vh; gap:12px; color:var(--muted); }
+  .spin2 { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .detail-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
+    <a class="nav-item active" href="/idea-requests"><span class="nav-icon">🎯</span><span>Idea Requests</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <a class="back-btn" href="/idea-requests">← Back</a>
+  </div>
+  <div id="pageContent">
+    <div class="loading-page"><div class="spin2"></div> Loading request...</div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  const requestId = window.location.pathname.split('/').pop();
+
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate' };
+  const creatorRoles = ['idea_creator','patent_seller'];
+  const investorRoles = ['investor','corporate_services'];
+
+  let currentRequest = null;
+  let activeChatCreatorId = null;
+
+  if (user) {
+    const initials = (user.firstName?.[0]||'') + (user.lastName?.[0]||'');
+    document.getElementById('sidebarAvatar').textContent = initials||'?';
+    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    document.getElementById('sidebarRole').textContent = roleMap[user.role]||'—';
+    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : investorRoles.includes(user.role) ? '/buyer-dashboard' : '/support-dashboard';
+  }
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+
+  function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
+  function timeAgo(d) {
+    const diff = Date.now()-new Date(d);
+    if (diff<3600000) return Math.floor(diff/60000)+'m ago';
+    if (diff<86400000) return Math.floor(diff/3600000)+'h ago';
+    return Math.floor(diff/86400000)+'d ago';
+  }
+  function formatTime(d) {
+    const diff = Date.now()-new Date(d);
+    if (diff<60000) return 'just now';
+    if (diff<3600000) return Math.floor(diff/60000)+'m ago';
+    return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function statusLabel(s) {
+    const map = { open:'Open', proposals_received:'Proposals In', shortlisting:'Shortlisting', pitching:'Pitching', agreed:'Agreed', in_escrow:'In Escrow 🔒', delivered:'Delivered', completed:'Completed ✅', disputed:'Disputed ⚠️' };
+    return map[s]||s;
+  }
+
+  async function updateProposalStatus(proposalId, status, creatorId) {
+    const confirmMap = { shortlisted:'Shortlist this proposal?', invited_to_pitch:'Invite this creator to pitch? They will be notified.', selected:'Select this creator? Escrow will be required next.', rejected:'Reject this proposal?' };
+    if (!confirm(confirmMap[status]||'Update?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/proposals/${proposalId}/status`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({status})
+      });
+      if (res.ok) loadPage();
+    } catch(e) { alert('Failed to update.'); }
+  }
+
+  async function lockEscrow(proposalId, creatorId, amount) {
+    const confirmed = confirm(`Lock $${amount} in escrow for this creator? They will be notified to deliver the idea.`);
+    if (!confirmed) return;
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/escrow`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({amount, proposal_id:proposalId, creator_id:creatorId})
+      });
+      if (res.ok) loadPage();
+    } catch(e) { alert('Failed to lock escrow.'); }
+  }
+
+  async function markDelivered() {
+    if (!confirm('Mark as delivered? The investor will be notified to review and confirm.')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/deliver`, {
+        method:'POST', headers:{Authorization:`Bearer ${token}`}
+      });
+      if (res.ok) loadPage();
+    } catch(e) { alert('Failed.'); }
+  }
+
+  async function confirmDelivery() {
+    if (!confirm('Confirm delivery and release payment to the creator?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/confirm`, {
+        method:'POST', headers:{Authorization:`Bearer ${token}`}
+      });
+      if (res.ok) { alert('Payment released! 🎉'); loadPage(); }
+    } catch(e) { alert('Failed.'); }
+  }
+
+  async function raiseDispute() {
+    const reason = prompt('Describe the issue:');
+    if (!reason) return;
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/dispute`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({reason})
+      });
+      if (res.ok) loadPage();
+    } catch(e) { alert('Failed.'); }
+  }
+
+  // CHAT
+  async function openChat(creatorId, creatorName) {
+    activeChatCreatorId = creatorId;
+    document.getElementById('chatSection').style.display = 'block';
+    document.getElementById('chatHeading').textContent = `💬 Pitch Chat with ${creatorName}`;
+    loadChat();
+    document.getElementById('chatSection').scrollIntoView({behavior:'smooth'});
+  }
+
+  async function loadChat() {
+    if (!activeChatCreatorId) return;
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/messages/${activeChatCreatorId}`, {
+        headers:{Authorization:`Bearer ${token}`}
+      });
+      const msgs = await res.json();
+      const el = document.getElementById('chatMsgs');
+      if (!msgs.length) { el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">No messages yet. Start the pitch!</div>'; return; }
+      el.innerHTML = msgs.map(m => {
+        const isMe = m.from_id === user?.id;
+        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${m.text}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    } catch(e) {}
+  }
+
+  function handleChatKey(e) { if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendChat(); } }
+
+  async function sendChat() {
+    const input = document.getElementById('chatInputField');
+    const text = input.value.trim();
+    if (!text || !activeChatCreatorId) return;
+    input.value = '';
+    try {
+      await fetch(`${API_URL}/api/requests/${requestId}/messages`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({to_id:activeChatCreatorId, text})
+      });
+      loadChat();
+    } catch(e) {}
+  }
+
+  // SUBMIT PROPOSAL
+  async function submitProposal() {
+    const title = document.getElementById('propTitle')?.value.trim();
+    const summary = document.getElementById('propSummary')?.value.trim();
+    const approach = document.getElementById('propApproach')?.value.trim();
+    const proposed_price = parseFloat(document.getElementById('propPrice')?.value)||null;
+    const delivery_days = parseInt(document.getElementById('propDays')?.value)||null;
+
+    if (!title||!summary) { alert('Please fill in title and summary.'); return; }
+
+    const btn = document.getElementById('propBtn');
+    btn.disabled = true; btn.textContent = 'Submitting...';
+
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/proposals`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({title,summary,approach,proposed_price,delivery_days})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error||'Failed');
+      alert('Proposal submitted! The investor has been notified. 🎉');
+      loadPage();
+    } catch(err) {
+      alert(err.message||'Something went wrong.');
+      btn.disabled = false; btn.textContent = 'Submit Proposal';
+    }
+  }
+
+  async function loadPage() {
+    try {
+      const reqRes = await fetch(`${API_URL}/api/requests/${requestId}`);
+      if (!reqRes.ok) throw new Error('Not found');
+      currentRequest = await reqRes.json();
+
+      const isInvestor = user && currentRequest.investor_id === user.id;
+      const isCreator = user && creatorRoles.includes(user.role);
+      const isSelectedCreator = user && currentRequest.selected_creator_id === user.id;
+
+      // Load proposals if investor
+      let proposals = [];
+      let myProposal = null;
+      if (isInvestor && token) {
+        const pRes = await fetch(`${API_URL}/api/requests/${requestId}/proposals`, {headers:{Authorization:`Bearer ${token}`}});
+        if (pRes.ok) proposals = await pRes.json();
+      }
+      if (isCreator && token) {
+        const mpRes = await fetch(`${API_URL}/api/requests/${requestId}/my-proposal`, {headers:{Authorization:`Bearer ${token}`}});
+        if (mpRes.ok) myProposal = await mpRes.json();
+      }
+
+      const r = currentRequest;
+      const budget = r.budget_min && r.budget_max ? `$${r.budget_min.toLocaleString()} — $${r.budget_max.toLocaleString()}` : r.budget_max ? `Up to $${r.budget_max.toLocaleString()}` : r.budget_min ? `From $${r.budget_min.toLocaleString()}` : 'Budget open';
+
+      document.getElementById('pageContent').innerHTML = `
+        <div class="detail-grid">
+          <!-- LEFT -->
+          <div>
+            <!-- REQUEST HEADER -->
+            <div class="card">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:1rem;">
+                <div class="request-title">${r.title}</div>
+                <span class="status-badge status-${r.status}">${statusLabel(r.status)}</span>
+              </div>
+              <div class="request-meta">
+                ${r.industry ? `<span class="meta-pill">🏭 ${r.industry}</span>` : ''}
+                <span class="meta-pill">👤 ${r.investor_name||'Anonymous'}</span>
+                <span class="meta-pill">🕐 ${timeAgo(r.created_at)}</span>
+                ${r.deadline ? `<span class="meta-pill">📅 Deadline: ${formatDate(r.deadline)}</span>` : ''}
+                <span class="meta-pill">📝 ${r.proposal_count||0} proposals</span>
+              </div>
+              <div class="request-problem">${r.problem}</div>
+              ${r.requirements ? `<div class="request-requirements"><strong style="color:var(--accent);font-size:12px;display:block;margin-bottom:6px;">📋 Requirements</strong>${r.requirements}</div>` : ''}
+            </div>
+
+            <!-- ESCROW STATUS (if in escrow/delivered/completed) -->
+            ${['in_escrow','delivered','completed'].includes(r.status) ? `
+            <div class="card">
+              <div class="card-title">🔒 Escrow Status</div>
+              <div class="escrow-box">
+                <div class="escrow-amount">$${(r.escrow_amount||0).toLocaleString()}</div>
+                <div class="escrow-note">
+                  ${r.status==='in_escrow' ? 'Locked in escrow — waiting for idea delivery' : ''}
+                  ${r.status==='delivered' ? 'Idea delivered — investor reviewing' : ''}
+                  ${r.status==='completed' ? 'Payment released to creator ✅' : ''}
+                </div>
+              </div>
+              ${r.status==='in_escrow' && isSelectedCreator ? `<button class="btn-primary" onclick="markDelivered()">📦 Mark as Delivered</button>` : ''}
+              ${r.status==='delivered' && isInvestor ? `
+                <div style="display:flex;gap:10px;">
+                  <button class="btn-primary" style="background:var(--success);color:#0d0d0f;" onclick="confirmDelivery()">✅ Confirm & Release Payment</button>
+                  <button class="btn-secondary" style="color:var(--error);border-color:var(--error);" onclick="raiseDispute()">⚠️ Dispute</button>
+                </div>` : ''}
+            </div>` : ''}
+
+            <!-- PROPOSALS (investor view) -->
+            ${isInvestor && proposals.length > 0 ? `
+            <div class="card">
+              <div class="card-title">📝 Proposals (${proposals.length})</div>
+              ${proposals.map(p => {
+                const initials = (p.creator?.first_name?.[0]||'') + (p.creator?.last_name?.[0]||'');
+                const name = `${p.creator?.first_name||''} ${p.creator?.last_name||''}`.trim()||p.creator_name||'Creator';
+                return `
+                <div class="proposal-item ${p.status==='shortlisted'?'shortlisted':''} ${p.status==='selected'?'selected':''}">
+                  <div class="proposal-header">
+                    <div class="proposal-creator">
+                      <div class="creator-av">${initials||'?'}</div>
+                      <div>
+                        <div class="creator-name">${name}</div>
+                        <div class="creator-sub">${timeAgo(p.created_at)} · ${p.status}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="proposal-title">${p.title}</div>
+                  <div class="proposal-summary">${p.summary}</div>
+                  ${p.approach ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;line-height:1.6;">${p.approach}</div>` : ''}
+                  <div class="proposal-footer">
+                    ${p.proposed_price ? `<span class="price-tag">$${p.proposed_price.toLocaleString()}</span>` : ''}
+                    ${p.delivery_days ? `<span class="days-tag">⏱ ${p.delivery_days} days</span>` : ''}
+                    <div class="proposal-actions">
+                      ${p.status==='pending' ? `<button class="btn-shortlist" onclick="updateProposalStatus(${p.id},'shortlisted',${p.creator_id})">⭐ Shortlist</button>` : ''}
+                      ${['pending','shortlisted'].includes(p.status) ? `<button class="btn-invite" onclick="updateProposalStatus(${p.id},'invited_to_pitch',${p.creator_id})">🎤 Invite to Pitch</button>` : ''}
+                      ${['shortlisted','invited_to_pitch'].includes(p.status) ? `<button class="btn-select" onclick="updateProposalStatus(${p.id},'selected',${p.creator_id})">🏆 Select</button>` : ''}
+                      ${p.status==='selected' && r.status==='agreed' ? `<button class="btn-primary btn-sm" onclick="lockEscrow(${p.id},${p.creator_id},${p.proposed_price||r.budget_max||0})" style="background:var(--accent);">🔒 Lock Escrow</button>` : ''}
+                      ${!['rejected','selected'].includes(p.status) ? `<button class="btn-reject" onclick="updateProposalStatus(${p.id},'rejected',${p.creator_id})">✕</button>` : ''}
+                      <button class="btn-chat" onclick="openChat(${p.creator_id},'${name}')">💬 Chat</button>
+                    </div>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>` : ''}
+
+            ${isInvestor && proposals.length === 0 ? `
+            <div class="card" style="text-align:center;padding:3rem;">
+              <div style="font-size:40px;margin-bottom:1rem;">📭</div>
+              <div style="font-size:14px;color:var(--muted);">No proposals yet — creators will be notified and start submitting soon!</div>
+            </div>` : ''}
+
+            <!-- CHAT SECTION -->
+            <div class="card" id="chatSection" style="display:none;">
+              <div class="card-title" id="chatHeading">💬 Pitch Chat</div>
+              <div class="chat-area">
+                <div class="chat-msgs" id="chatMsgs"></div>
+                <div class="chat-input-row">
+                  <input class="chat-input" id="chatInputField" placeholder="Type your message..." onkeydown="handleChatKey(event)" />
+                  <button class="chat-send" onclick="sendChat()">➤</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT SIDEBAR -->
+          <div>
+            <!-- BUDGET CARD -->
+            <div class="card">
+              <div class="card-title">💰 Budget</div>
+              <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--accent);margin-bottom:4px;">${budget}</div>
+              <div style="font-size:12px;color:var(--muted);">Offered by investor</div>
+            </div>
+
+            <!-- CREATOR: SUBMIT PROPOSAL -->
+            ${isCreator && !isInvestor ? `
+            <div class="card">
+              ${myProposal ? `
+                <div class="card-title">Your Proposal</div>
+                <div style="background:var(--surface2);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                  <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${myProposal.title}</div>
+                  <div style="font-size:13px;color:var(--muted);">${myProposal.summary}</div>
+                  <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+                    <span class="status-badge status-${myProposal.status}" style="font-size:11px;">${myProposal.status}</span>
+                    ${myProposal.proposed_price ? `<span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent);">$${myProposal.proposed_price.toLocaleString()}</span>` : ''}
+                  </div>
+                </div>
+                ${myProposal.status==='invited_to_pitch' ? `
+                  <div style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13px;color:var(--blue);">
+                    🎤 You've been invited to pitch! Send a message to the investor below.
+                  </div>
+                  <button class="btn-primary" onclick="openChat(${r.investor_id},'Investor')">💬 Start Pitch Chat</button>
+                ` : ''}
+                ${myProposal.status==='selected' ? `
+                  <div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;font-size:13px;color:var(--success);">
+                    🏆 Your proposal was selected! Waiting for investor to lock escrow.
+                  </div>
+                ` : ''}
+                ${r.status==='in_escrow' && isSelectedCreator ? `
+                  <div style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:10px;padding:1rem;margin-top:1rem;font-size:13px;color:var(--accent);">
+                    🔒 $${(r.escrow_amount||0).toLocaleString()} is locked in escrow. Deliver your idea and mark as delivered.
+                  </div>
+                ` : ''}
+              ` : `
+                <div class="card-title">Submit Your Proposal</div>
+                ${['open','proposals_received'].includes(r.status) ? `
+                  <div class="field">
+                    <label class="lbl">Proposal Title *</label>
+                    <input type="text" id="propTitle" placeholder="Your solution title" />
+                  </div>
+                  <div class="field">
+                    <label class="lbl">Your Approach *</label>
+                    <textarea id="propSummary" placeholder="Briefly explain your idea and why it's the right solution..." style="min-height:80px;"></textarea>
+                  </div>
+                  <div class="field">
+                    <label class="lbl">Detailed Approach</label>
+                    <textarea id="propApproach" placeholder="Go deeper — how would this work? What makes it unique?" style="min-height:80px;"></textarea>
+                  </div>
+                  <div class="row">
+                    <div class="field">
+                      <label class="lbl">Your Price (USD)</label>
+                      <input type="number" id="propPrice" placeholder="1000" min="0" />
+                    </div>
+                    <div class="field">
+                      <label class="lbl">Delivery (days)</label>
+                      <input type="number" id="propDays" placeholder="7" min="1" />
+                    </div>
+                  </div>
+                  ${!token ? `<a href="/login" class="btn-primary" style="text-align:center;display:block;text-decoration:none;">Login to Submit</a>` : `
+                  <button class="btn-primary" id="propBtn" onclick="submitProposal()">Submit Proposal →</button>`}
+                ` : `<div style="text-align:center;padding:1rem;color:var(--muted);font-size:13px;">This request is no longer accepting proposals.</div>`}
+              `}
+            </div>` : ''}
+
+            <!-- NOT LOGGED IN -->
+            ${!user ? `
+            <div class="card" style="text-align:center;">
+              <div style="font-size:32px;margin-bottom:1rem;">💡</div>
+              <div style="font-size:14px;margin-bottom:1rem;">Sign in to submit a proposal</div>
+              <a href="/login" class="btn-primary" style="text-align:center;display:block;text-decoration:none;">Sign In →</a>
+            </div>` : ''}
+          </div>
+        </div>
+      `;
+
+      // Auto open chat if creator is invited to pitch
+      if (isCreator && myProposal?.status === 'invited_to_pitch') {
+        openChat(r.investor_id, 'Investor');
+      }
+
+    } catch(err) {
+      document.getElementById('pageContent').innerHTML = `
+        <div style="text-align:center;padding:4rem;color:var(--muted);">
+          <div style="font-size:48px;margin-bottom:1rem;">😕</div>
+          <div>Request not found.</div>
+          <a href="/idea-requests" style="color:var(--accent);margin-top:1rem;display:inline-block;">← Back to Requests</a>
+        </div>`;
+    }
+  }
+
+  loadPage();
+  setInterval(() => { if (activeChatCreatorId) loadChat(); }, 10000);
+</script>
+</body>
+</html>

@@ -49,6 +49,15 @@ app.get('/buyer-dashboard', (req, res) => {
 app.get('/support-profile', (req, res) => {
   res.sendFile(__dirname + '/public/support-profile.html');
 });
+app.get('/idea-requests', (req, res) => {
+  res.sendFile(__dirname + '/public/idea-requests.html');
+});
+app.get('/post-request', (req, res) => {
+  res.sendFile(__dirname + '/public/post-request.html');
+});
+app.get('/request/:id', (req, res) => {
+  res.sendFile(__dirname + '/public/request-detail.html');
+});
 app.get('/find-support', (req, res) => {
   res.sendFile(__dirname + '/public/find-support.html');
 });
