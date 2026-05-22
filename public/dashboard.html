@@ -203,7 +203,7 @@
 
   .table-head {
     display: grid;
-    grid-template-columns: 2fr 1fr 80px 80px 100px 100px;
+    grid-template-columns: 2fr 1fr 80px 80px 100px 100px 100px 100px;
     padding: 0.75rem 1.5rem;
     border-bottom: 1px solid var(--border);
     font-size: 12px; color: var(--muted);
@@ -212,7 +212,7 @@
 
   .idea-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 80px 80px 100px 100px;
+    grid-template-columns: 2fr 1fr 80px 80px 100px 100px 100px;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border);
     align-items: center;
@@ -415,6 +415,7 @@
       <div>Industry</div>
       <div>Views</div>
       <div>Price</div>
+      <div>Earnings</div>
       <div>Status</div>
       <div>Action</div>
     </div>
@@ -456,7 +457,9 @@
     const map = { live: 'badge-live', escrow: 'badge-escrow', sold: 'badge-sold', pending: 'badge-pending' };
     return `<span class="badge ${map[s] || 'badge-pending'}">${s}</span>`;
   }
-
+function editIdea(id) {
+    window.location.href = `/submit?edit=${id}`;
+  }
   async function deleteIdea(id) {
     if (!confirm('Delete this idea?')) return;
     const res = await fetch(`${API_URL}/api/ideas/${id}`, {
