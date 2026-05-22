@@ -844,6 +844,359 @@ app.get('/api/notifications/unread-count', authMiddleware, async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   res.json({ count: count || 0 });
 });
+// ── BUSINESS LISTINGS ─────────────────────────────────────────────────────────
+
+// GET all active business listings (public browse)
+app.get('/api/businesses', async (req, res) => {
+  let query = supabase
+    .from('business_listings')
+    .select('*')
+    .eq('status', 'active');
+
+  if (req.query.industry && req.query.industry !== 'all') {
+    query = query.eq('industry', req.query.industry);
+  }
+  if (req.query.type) {
+    query = query.contains('expansion_types', [req.query.type]);
+  }
+  if (req.query.search) {
+    query = query.ilike('business_name', `%${req.query.search}%`);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// GET single business listing
+app.get('/api/businesses/:id', async (req, res) => {
+  const { data, error } = await supabase
+    .from('business_listings')
+    .select('*')
+    .eq('id', req.params.id)
+    .single();
+
+  if (!data || error) return res.status(404).json({ error: 'Business not found' });
+
+  // increment view count
+  await supabase.from('business_listings').update({ view_count: (data.view_count || 0) + 1 }).eq('id', data.id);
+
+  res.json(data);
+});
+
+// POST new business listing (business owner)
+app.post('/api/businesses', authMiddleware, async (req, res) => {
+  const { business_name, tagline, description, industry, founded_year, country, city, website, expansion_types, annual_revenue, employees, locations, investment_min, investment_max, territories, requirements } = req.body;
+
+  if (!business_name || !description) return res.status(400).json({ error: 'Business name and description are required' });
+
+  const { data: owner } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+
+  const { data, error } = await supabase
+    .from('business_listings')
+    .insert([{
+      owner_id: req.user.id,
+      owner_name: owner ? `${owner.first_name} ${owner.last_name}` : 'Anonymous',
+      business_name, tagline, description, industry,
+      founded_year: founded_year || null,
+      country, city, website,
+      expansion_types: expansion_types || [],
+      annual_revenue, employees,
+      locations: locations || 1,
+      investment_min: investment_min || null,
+      investment_max: investment_max || null,
+      territories: territories || [],
+      requirements: requirements || '',
+      status: 'active'
+    }])
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+// UPDATE business listing
+app.put('/api/businesses/:id', authMiddleware, async (req, res) => {
+  const { data: listing } = await supabase.from('business_listings').select('owner_id').eq('id', req.params.id).single();
+  if (!listing) return res.status(404).json({ error: 'Business not found' });
+  if (listing.owner_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+  const { business_name, tagline, description, industry, founded_year, country, city, website, expansion_types, annual_revenue, employees, locations, investment_min, investment_max, territories, requirements, status } = req.body;
+
+  const { data, error } = await supabase
+    .from('business_listings')
+    .update({ business_name, tagline, description, industry, founded_year, country, city, website, expansion_types, annual_revenue, employees, locations, investment_min, investment_max, territories, requirements, status, updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// DELETE business listing
+app.delete('/api/businesses/:id', authMiddleware, async (req, res) => {
+  const { data: listing } = await supabase.from('business_listings').select('owner_id').eq('id', req.params.id).single();
+  if (!listing) return res.status(404).json({ error: 'Not found' });
+  if (listing.owner_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+  const { error } = await supabase.from('business_listings').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Listing deleted' });
+});
+
+// GET my business listings
+app.get('/api/my-businesses', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('business_listings')
+    .select('*')
+    .eq('owner_id', req.user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// ── EXPANSION APPLICATIONS ────────────────────────────────────────────────────
+
+// GET all applications for a listing (owner only)
+app.get('/api/businesses/:id/applications', authMiddleware, async (req, res) => {
+  const { data: listing } = await supabase.from('business_listings').select('owner_id').eq('id', req.params.id).single();
+  if (!listing) return res.status(404).json({ error: 'Not found' });
+  if (listing.owner_id !== req.user.id) return res.status(403).json({ error: 'Only the owner can view applications' });
+
+  const { data, error } = await supabase
+    .from('expansion_applications')
+    .select('*, investor:investor_id(id, first_name, last_name, role, country, bio)')
+    .eq('listing_id', req.params.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// GET my application for a listing
+app.get('/api/businesses/:id/my-application', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('expansion_applications')
+    .select('*')
+    .eq('listing_id', req.params.id)
+    .eq('investor_id', req.user.id)
+    .single();
+
+  if (error && error.code !== 'PGRST116') return res.status(500).json({ error: error.message });
+  res.json(data || null);
+});
+
+// SUBMIT application (investor)
+app.post('/api/businesses/:id/apply', authMiddleware, async (req, res) => {
+  const { expansion_type, message, investment_capacity, territory, background } = req.body;
+  if (!expansion_type || !message) return res.status(400).json({ error: 'Expansion type and message are required' });
+
+  const { data: listing } = await supabase.from('business_listings').select('*').eq('id', req.params.id).single();
+  if (!listing) return res.status(404).json({ error: 'Business not found' });
+  if (listing.status !== 'active') return res.status(400).json({ error: 'This listing is no longer active' });
+  if (listing.owner_id === req.user.id) return res.status(400).json({ error: 'You cannot apply to your own listing' });
+
+  const { data: investor } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+
+  const { data, error } = await supabase
+    .from('expansion_applications')
+    .insert([{
+      listing_id: parseInt(req.params.id),
+      investor_id: req.user.id,
+      investor_name: investor ? `${investor.first_name} ${investor.last_name}` : 'Anonymous',
+      expansion_type, message, investment_capacity, territory, background,
+      status: 'pending'
+    }])
+    .select().single();
+
+  if (error) {
+    if (error.code === '23505') return res.status(400).json({ error: 'You have already applied to this listing' });
+    return res.status(500).json({ error: error.message });
+  }
+
+  // Notify business owner
+  await supabase.from('notifications').insert([{
+    user_id: listing.owner_id,
+    type: 'new_application',
+    title: '📋 New Expansion Application!',
+    message: `${investor?.first_name || 'An investor'} applied for ${expansion_type} of "${listing.business_name}"`,
+    link: `/business/${req.params.id}`,
+    data: { listing_id: req.params.id, application_id: data.id }
+  }]);
+
+  res.status(201).json(data);
+});
+
+// UPDATE application status (owner)
+app.put('/api/expansion-applications/:id/status', authMiddleware, async (req, res) => {
+  const { status, meetup_type, meetup_date, meetup_location, meetup_notes } = req.body;
+
+  const { data: app } = await supabase
+    .from('expansion_applications')
+    .select('*, listing:listing_id(owner_id, business_name)')
+    .eq('id', req.params.id).single();
+
+  if (!app) return res.status(404).json({ error: 'Application not found' });
+  if (app.listing.owner_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+  const updateData = { status, updated_at: new Date().toISOString() };
+  if (meetup_type) updateData.meetup_type = meetup_type;
+  if (meetup_date) updateData.meetup_date = meetup_date;
+  if (meetup_location) updateData.meetup_location = meetup_location;
+  if (meetup_notes) updateData.meetup_notes = meetup_notes;
+
+  const { data, error } = await supabase
+    .from('expansion_applications')
+    .update(updateData)
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify investor
+  const notifMap = {
+    reviewed: { title: '👀 Application Reviewed', msg: `Your application for "${app.listing.business_name}" has been reviewed.` },
+    shortlisted: { title: '⭐ You\'ve Been Shortlisted!', msg: `Your expansion application for "${app.listing.business_name}" was shortlisted!` },
+    meetup_scheduled: { title: '📅 Meetup Scheduled!', msg: `A meetup has been scheduled for "${app.listing.business_name}". Check the details in your application.` },
+    negotiating: { title: '🤝 Negotiation Started', msg: `The business owner wants to negotiate terms for "${app.listing.business_name}".` },
+    agreed: { title: '🎉 Agreement Reached!', msg: `Congratulations! You\'ve reached an agreement with "${app.listing.business_name}".` },
+    rejected: { title: '❌ Application Not Selected', msg: `Your application for "${app.listing.business_name}" was not selected this time.` }
+  };
+
+  if (notifMap[status]) {
+    await supabase.from('notifications').insert([{
+      user_id: app.investor_id,
+      type: status,
+      title: notifMap[status].title,
+      message: notifMap[status].msg,
+      link: `/business/${app.listing_id}`,
+      data: { listing_id: app.listing_id, application_id: app.id }
+    }]);
+  }
+
+  res.json(data);
+});
+
+// GET my applications as investor
+app.get('/api/my-expansion-applications', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase
+    .from('expansion_applications')
+    .select('*, listing:listing_id(id, business_name, industry, country, expansion_types)')
+    .eq('investor_id', req.user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// ── EXPANSION MESSAGES ────────────────────────────────────────────────────────
+
+// GET messages for an application
+app.get('/api/expansion-applications/:id/messages', authMiddleware, async (req, res) => {
+  const { data: app } = await supabase
+    .from('expansion_applications')
+    .select('investor_id, listing:listing_id(owner_id)')
+    .eq('id', req.params.id).single();
+
+  if (!app) return res.status(404).json({ error: 'Not found' });
+  if (app.investor_id !== req.user.id && app.listing.owner_id !== req.user.id) {
+    return res.status(403).json({ error: 'Not authorized' });
+  }
+
+  const { data, error } = await supabase
+    .from('expansion_messages')
+    .select('*')
+    .eq('application_id', req.params.id)
+    .order('created_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Mark as read
+  await supabase.from('expansion_messages').update({ is_read: true }).eq('application_id', req.params.id).eq('to_id', req.user.id);
+
+  res.json(data || []);
+});
+
+// POST message in an application
+app.post('/api/expansion-applications/:id/messages', authMiddleware, async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'Message text required' });
+
+  const { data: app } = await supabase
+    .from('expansion_applications')
+    .select('investor_id, listing_id, listing:listing_id(owner_id, business_name)')
+    .eq('id', req.params.id).single();
+
+  if (!app) return res.status(404).json({ error: 'Not found' });
+
+  const isOwner = app.listing.owner_id === req.user.id;
+  const isInvestor = app.investor_id === req.user.id;
+  if (!isOwner && !isInvestor) return res.status(403).json({ error: 'Not authorized' });
+
+  const toId = isOwner ? app.investor_id : app.listing.owner_id;
+
+  const { data, error } = await supabase
+    .from('expansion_messages')
+    .insert([{
+      listing_id: app.listing_id,
+      application_id: parseInt(req.params.id),
+      from_id: req.user.id,
+      to_id: toId,
+      text
+    }])
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify recipient
+  const { data: sender } = await supabase.from('users').select('first_name').eq('id', req.user.id).single();
+  await supabase.from('notifications').insert([{
+    user_id: toId,
+    type: 'message',
+    title: '💬 New Message',
+    message: `${sender?.first_name || 'Someone'} sent you a message about "${app.listing.business_name}"`,
+    link: `/business/${app.listing_id}`,
+    data: { listing_id: app.listing_id, application_id: app.id }
+  }]);
+
+  res.status(201).json(data);
+});
+
+// ── EXPANSION RATINGS ─────────────────────────────────────────────────────────
+
+// SUBMIT rating after meetup
+app.post('/api/expansion-ratings', authMiddleware, async (req, res) => {
+  const { application_id, rated_user_id, stars, review } = req.body;
+  if (!application_id || !rated_user_id || !stars) return res.status(400).json({ error: 'application_id, rated_user_id and stars required' });
+  if (stars < 1 || stars > 5) return res.status(400).json({ error: 'Stars must be 1-5' });
+
+  const { data: app } = await supabase.from('expansion_applications').select('*').eq('id', application_id).single();
+  if (!app) return res.status(404).json({ error: 'Application not found' });
+
+  const { data, error } = await supabase
+    .from('expansion_ratings')
+    .insert([{ application_id, rated_user_id, rater_user_id: req.user.id, stars, review }])
+    .select().single();
+
+  if (error) {
+    if (error.code === '23505') return res.status(400).json({ error: 'You have already rated this' });
+    return res.status(500).json({ error: error.message });
+  }
+  res.status(201).json(data);
+});
+
+// GET ratings for a user
+app.get('/api/expansion-ratings/:userId', async (req, res) => {
+  const { data, error } = await supabase
+    .from('expansion_ratings')
+    .select('*, rater:rater_user_id(first_name, last_name)')
+    .eq('rated_user_id', req.params.userId)
+    .order('created_at', { ascending: false });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
 // ── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
