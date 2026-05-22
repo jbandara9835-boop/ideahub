@@ -58,6 +58,10 @@ app.get('/post-request', (req, res) => {
 app.get('/request/:id', (req, res) => {
   res.sendFile(__dirname + '/public/request-detail.html');
 });
+app.get('/businesses', (req, res) => res.sendFile(__dirname + '/public/businesses.html'));
+app.get('/list-business', (req, res) => res.sendFile(__dirname + '/public/list-business.html'));
+app.get('/business/:id', (req, res) => res.sendFile(__dirname + '/public/business-detail.html'));
+app.get('/business-dashboard', (req, res) => res.sendFile(__dirname + '/public/business-dashboard.html'));
 app.get('/find-support', (req, res) => {
   res.sendFile(__dirname + '/public/find-support.html');
 });
