@@ -93,6 +93,8 @@
   .role-card[data-role="patent_seller"].selected .role-check { background:#fb923c; }
   .role-card[data-role="corporate_services"].selected { border-color:#f472b6; background:rgba(244,114,182,0.1); }
   .role-card[data-role="corporate_services"].selected .role-check { background:#f472b6; }
+  .role-card[data-role="business_owner"].selected { border-color:#fb923c; background:rgba(251,146,60,0.1); }
+  .role-card[data-role="business_owner"].selected .role-check { background:#fb923c; }
 
   .error-msg { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; color:var(--error); margin-bottom:1rem; display:none; }
   .error-msg.show { display:block; }
@@ -208,6 +210,13 @@
       <span class="role-name">Corporate</span>
       <span class="role-desc">Business solutions</span>
     </label>
+    <label class="role-card" data-role="business_owner" onclick="selectRole(this)">
+      <input type="radio" name="role" value="business_owner" />
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🏭</span>
+      <span class="role-name">Business Owner</span>
+      <span class="role-desc">Expand your business</span>
+    </label>
   </div>
 
   <button class="btn" id="signupBtn" onclick="handleSignup()">
@@ -238,6 +247,7 @@
   });
 
   const CREATOR_ROLES = ['idea_creator', 'patent_seller'];
+      const BUSINESS_ROLES = ['business_owner'];
 
   async function handleSignup() {
     const firstName = document.getElementById('firstName').value.trim();
@@ -285,7 +295,7 @@ if (urlRole) {
       btnText.textContent = 'Success!';
 
       setTimeout(() => {
-        window.location.href = CREATOR_ROLES.includes(role) ? '/dashboard' : '/browse';
+        window.location.href = CREATOR_ROLES.includes(role) ? '/dashboard' : BUSINESS_ROLES.includes(role) ? '/business-dashboard' : '/browse';
       }, 1000);
 
     } catch (err) {

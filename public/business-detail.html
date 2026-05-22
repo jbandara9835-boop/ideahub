@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --blue: #60a5fa; --purple: #a78bfa; --orange: #fb923c;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; }
+  .logout-btn:hover { color:var(--error); }
+
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+  .topbar { display:flex; align-items:center; gap:12px; margin-bottom:2rem; }
+  .back-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.9rem; color:var(--muted); font-size:13px; text-decoration:none; transition:all 0.2s; }
+  .back-btn:hover { color:var(--text); border-color:var(--border-hover); }
+
+  .detail-grid { display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
+  .card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+
+  .biz-header { display:flex; align-items:flex-start; gap:16px; margin-bottom:1.25rem; }
+  .biz-logo-lg { width:64px; height:64px; border-radius:14px; background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'Syne',sans-serif; }
+  .biz-name-lg { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px; margin-bottom:4px; }
+  .biz-tagline-lg { font-size:14px; color:var(--muted); margin-bottom:0.75rem; }
+
+  .type-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; margin-right:6px; margin-bottom:6px; }
+  .type-franchise { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .type-license { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .type-joint_venture { background:rgba(110,231,183,0.15); color:var(--success); }
+  .type-distribution { background:rgba(251,146,60,0.15); color:var(--orange); }
+  .type-white_label { background:rgba(167,139,250,0.15); color:var(--purple); }
+
+  .meta-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:1.25rem; }
+  .meta-item { background:var(--surface2); border-radius:10px; padding:0.9rem; }
+  .meta-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; }
+  .meta-value { font-size:14px; font-weight:500; }
+
+  .biz-description { font-size:14px; line-height:1.8; color:var(--text); }
+  .requirements-box { background:var(--surface2); border-radius:10px; padding:1rem; border-left:3px solid var(--accent); font-size:13px; color:var(--muted); line-height:1.7; }
+
+  /* APPLY FORM */
+  .field { margin-bottom:1rem; }
+  label.lbl { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; letter-spacing:0.4px; text-transform:uppercase; }
+  input, textarea, select { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
+  textarea { resize:vertical; min-height:80px; line-height:1.6; }
+  select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px; cursor:pointer; }
+  select option { background:#16161a; }
+  input:focus, textarea:focus, select:focus { border-color:var(--accent); background:var(--accent-dim); }
+  input::placeholder, textarea::placeholder { color:var(--muted); }
+
+  .btn-primary { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.85rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity 0.2s; }
+  .btn-primary:hover { opacity:0.9; }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .msg { border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; margin-top:0.75rem; display:none; }
+  .msg.show { display:block; }
+  .msg.error { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--error); }
+  .msg.success { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.3); color:var(--success); }
+
+  /* CHAT */
+  .chat-area { display:flex; flex-direction:column; height:380px; }
+  .chat-msgs { flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:10px; }
+  .msg-bubble { max-width:75%; }
+  .msg-bubble.me { align-self:flex-end; }
+  .msg-bubble.them { align-self:flex-start; }
+  .bubble { padding:0.6rem 0.9rem; border-radius:14px; font-size:14px; line-height:1.5; }
+  .me .bubble { background:var(--accent); color:#0d0d0f; border-bottom-right-radius:4px; }
+  .them .bubble { background:var(--surface2); color:var(--text); border-bottom-left-radius:4px; }
+  .bubble-time { font-size:10px; color:var(--muted); margin-top:3px; text-align:right; }
+  .chat-input-row { padding:0.75rem; border-top:1px solid var(--border); display:flex; gap:8px; }
+  .chat-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:0.65rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; }
+  .chat-input:focus { border-color:var(--accent); }
+  .chat-send { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0 14px; cursor:pointer; font-size:18px; }
+
+  .loading-page { display:flex; align-items:center; justify-content:center; min-height:60vh; gap:12px; color:var(--muted); }
+  .spin2 { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .detail-grid { grid-template-columns:1fr; }
+    .meta-grid { grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item active" href="/businesses"><span class="nav-icon">🏭</span><span>Businesses</span></a>
+    <a class="nav-item" href="/idea-requests"><span class="nav-icon">🎯</span><span>Idea Requests</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <a class="back-btn" href="/businesses">← Back</a>
+  </div>
+  <div id="pageContent">
+    <div class="loading-page"><div class="spin2"></div> Loading...</div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  const bizId = window.location.pathname.split('/').pop();
+
+  const typeConfig = {
+    franchise: { label:'Franchise', emoji:'📦', cls:'type-franchise' },
+    license: { label:'License', emoji:'📜', cls:'type-license' },
+    joint_venture: { label:'Joint Venture', emoji:'🤝', cls:'type-joint_venture' },
+    distribution: { label:'Distribution', emoji:'🌍', cls:'type-distribution' },
+    white_label: { label:'White Label', emoji:'💻', cls:'type-white_label' }
+  };
+
+  const creatorRoles = ['idea_creator','patent_seller'];
+  const supportRoles = ['virtual_manager','patent_attorney','corporate_services'];
+
+  if (user) {
+    const initials = (user.firstName?.[0]||'') + (user.lastName?.[0]||'');
+    document.getElementById('sidebarAvatar').textContent = initials||'?';
+    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    document.getElementById('sidebarRole').textContent = user.role||'—';
+    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : supportRoles.includes(user.role) ? '/support-dashboard' : user.role==='business_owner' ? '/business-dashboard' : '/buyer-dashboard';
+  }
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+  function formatTime(d) {
+    const diff = Date.now()-new Date(d);
+    if (diff<60000) return 'just now';
+    if (diff<3600000) return Math.floor(diff/60000)+'m ago';
+    return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  }
+
+  let currentBiz = null;
+  let myApplication = null;
+  let activeAppId = null;
+
+  async function submitApplication() {
+    const expansion_type = document.getElementById('appType')?.value;
+    const message = document.getElementById('appMessage')?.value.trim();
+    const investment_capacity = document.getElementById('appInvestment')?.value.trim();
+    const territory = document.getElementById('appTerritory')?.value.trim();
+    const background = document.getElementById('appBackground')?.value.trim();
+
+    if (!expansion_type || !message) { alert('Please select expansion type and write a message.'); return; }
+
+    const btn = document.getElementById('applyBtn');
+    btn.disabled = true; btn.textContent = 'Submitting...';
+
+    try {
+      const res = await fetch(`${API_URL}/api/businesses/${bizId}/apply`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({expansion_type,message,investment_capacity,territory,background})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error||'Failed');
+      alert('Application submitted! The business owner has been notified. 🎉');
+      loadPage();
+    } catch(err) {
+      alert(err.message||'Something went wrong.');
+      btn.disabled = false; btn.textContent = 'Submit Application →';
+    }
+  }
+
+  async function loadChat(appId) {
+    activeAppId = appId;
+    try {
+      const res = await fetch(`${API_URL}/api/expansion-applications/${appId}/messages`, {headers:{Authorization:`Bearer ${token}`}});
+      const msgs = await res.json();
+      const el = document.getElementById('chatMsgs');
+      if (!msgs.length) { el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">No messages yet. Start the conversation!</div>'; return; }
+      el.innerHTML = msgs.map(m => {
+        const isMe = m.from_id === user?.id;
+        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${m.text}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    } catch(e) {}
+  }
+
+  function handleChatKey(e) { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();} }
+
+  async function sendChat() {
+    if (!activeAppId) return;
+    const input = document.getElementById('chatInputField');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    try {
+      await fetch(`${API_URL}/api/expansion-applications/${activeAppId}/messages`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({text})
+      });
+      loadChat(activeAppId);
+    } catch(e) {}
+  }
+
+  async function loadPage() {
+    try {
+      const bizRes = await fetch(`${API_URL}/api/businesses/${bizId}`);
+      if (!bizRes.ok) throw new Error('Not found');
+      currentBiz = await bizRes.json();
+
+      const isOwner = user && currentBiz.owner_id === user.id;
+      const canApply = user && !isOwner;
+
+      if (canApply && token) {
+        const appRes = await fetch(`${API_URL}/api/businesses/${bizId}/my-application`, {headers:{Authorization:`Bearer ${token}`}});
+        if (appRes.ok) myApplication = await appRes.json();
+      }
+
+      const b = currentBiz;
+      const initials = b.business_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const types = (b.expansion_types||[]);
+
+      document.title = `${b.business_name} — IdeaHub`;
+
+      document.getElementById('pageContent').innerHTML = `
+        <div class="detail-grid">
+          <!-- LEFT -->
+          <div>
+            <div class="card">
+              <div class="biz-header">
+                <div class="biz-logo-lg">${initials}</div>
+                <div>
+                  <div class="biz-name-lg">${b.business_name}</div>
+                  <div class="biz-tagline-lg">${b.tagline||''}</div>
+                  <div>${types.map(t=>`<span class="type-pill ${typeConfig[t]?.cls||''}">${typeConfig[t]?.emoji||'•'} ${typeConfig[t]?.label||t}</span>`).join('')}</div>
+                </div>
+              </div>
+
+              <div class="meta-grid">
+                <div class="meta-item"><div class="meta-label">Industry</div><div class="meta-value">${b.industry||'—'}</div></div>
+                <div class="meta-item"><div class="meta-label">Location</div><div class="meta-value">${b.city?b.city+', ':''}${b.country||'—'}</div></div>
+                <div class="meta-item"><div class="meta-label">Founded</div><div class="meta-value">${b.founded_year||'—'}</div></div>
+                <div class="meta-item"><div class="meta-label">Revenue</div><div class="meta-value">${b.annual_revenue||'—'}</div></div>
+                <div class="meta-item"><div class="meta-label">Employees</div><div class="meta-value">${b.employees||'—'}</div></div>
+                <div class="meta-item"><div class="meta-label">Locations</div><div class="meta-value">${b.locations||1}</div></div>
+              </div>
+
+              <div class="biz-description">${b.description}</div>
+            </div>
+
+            ${b.requirements ? `
+            <div class="card">
+              <div class="card-title">📋 Partner Requirements</div>
+              <div class="requirements-box">${b.requirements}</div>
+            </div>` : ''}
+
+            ${b.territories?.length ? `
+            <div class="card">
+              <div class="card-title">🌍 Target Territories</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                ${b.territories.map(t=>`<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;">${t}</span>`).join('')}
+              </div>
+            </div>` : ''}
+
+            <!-- CHAT SECTION -->
+            ${myApplication && token ? `
+            <div class="card" id="chatCard">
+              <div class="card-title">💬 Negotiation Chat</div>
+              <div class="chat-area">
+                <div class="chat-msgs" id="chatMsgs"><div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">Loading messages...</div></div>
+                <div class="chat-input-row">
+                  <input class="chat-input" id="chatInputField" placeholder="Type your message..." onkeydown="handleChatKey(event)" />
+                  <button class="chat-send" onclick="sendChat()">➤</button>
+                </div>
+              </div>
+            </div>` : ''}
+          </div>
+
+          <!-- RIGHT -->
+          <div>
+            <!-- INVESTMENT CARD -->
+            <div class="card">
+              <div class="card-title">💰 Investment Range</div>
+              <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;">
+                ${b.investment_min&&b.investment_max ? `$${b.investment_min.toLocaleString()} — $${b.investment_max.toLocaleString()}` : b.investment_min ? `From $${b.investment_min.toLocaleString()}` : b.investment_max ? `Up to $${b.investment_max.toLocaleString()}` : 'Negotiable'}
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Required investment range</div>
+              <div style="font-size:13px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:0.75rem;">
+                📋 ${b.application_count||0} investor${b.application_count!==1?'s':''} applied · 👁 ${b.view_count||0} views
+              </div>
+            </div>
+
+            <!-- APPLY FORM -->
+            ${canApply ? `
+            <div class="card">
+              ${myApplication ? `
+                <div class="card-title">Your Application</div>
+                <div style="background:var(--surface2);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                  <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${myApplication.expansion_type?.replace('_',' ')} Interest</div>
+                  <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">${myApplication.message}</div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);">${myApplication.status}</span>
+                  </div>
+                </div>
+                ${['shortlisted','meetup_scheduled','negotiating'].includes(myApplication.status) ? `
+                  <div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13px;color:var(--success);">
+                    ${myApplication.status==='meetup_scheduled' ? `📅 Meetup scheduled!<br><strong>${myApplication.meetup_type==='virtual'?'Virtual':'In-person'}</strong> · ${myApplication.meetup_date ? new Date(myApplication.meetup_date).toLocaleDateString() : 'Date TBD'}<br>${myApplication.meetup_location||''}` : myApplication.status==='negotiating' ? '🤝 Negotiation in progress. Use the chat below.' : '⭐ You\'ve been shortlisted! The owner will be in touch.'}
+                  </div>` : ''}
+                ${myApplication.status==='agreed' ? `
+                  <div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;font-size:13px;color:var(--success);">
+                    🎉 Agreement reached! Please proceed with your legal team to finalize the deal.
+                  </div>` : ''}
+              ` : `
+                <div class="card-title">Apply for Expansion</div>
+                <div class="field">
+                  <label class="lbl">Expansion Type *</label>
+                  <select id="appType">
+                    <option value="">Select type</option>
+                    ${types.map(t=>`<option value="${t}">${typeConfig[t]?.emoji} ${typeConfig[t]?.label||t}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="lbl">Your Message *</label>
+                  <textarea id="appMessage" placeholder="Introduce yourself and explain your interest in this business..."></textarea>
+                </div>
+                <div class="field">
+                  <label class="lbl">Investment Capacity</label>
+                  <input type="text" id="appInvestment" placeholder="e.g. $50,000 - $100,000" />
+                </div>
+                <div class="field">
+                  <label class="lbl">Target Territory</label>
+                  <input type="text" id="appTerritory" placeholder="e.g. Southern Sri Lanka" />
+                </div>
+                <div class="field">
+                  <label class="lbl">Your Background</label>
+                  <textarea id="appBackground" placeholder="Your business experience, relevant skills..." style="min-height:70px;"></textarea>
+                </div>
+                ${!token ? `<a href="/login" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.85rem;font-weight:700;text-decoration:none;">Login to Apply</a>` : `
+                <button class="btn-primary" id="applyBtn" onclick="submitApplication()">Submit Application →</button>`}
+                <p style="font-size:11px;color:var(--muted);margin-top:0.75rem;text-align:center;">No payment required — this is a connection platform</p>
+              `}
+            </div>` : isOwner ? `
+            <div class="card" style="text-align:center;">
+              <div style="font-size:32px;margin-bottom:1rem;">🏢</div>
+              <div style="font-size:14px;margin-bottom:1rem;">This is your listing</div>
+              <a href="/business-dashboard" style="display:block;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.75rem;font-weight:700;text-decoration:none;text-align:center;">Manage Applications →</a>
+            </div>` : ''}
+          </div>
+        </div>
+      `;
+
+      // Load chat if application exists
+      if (myApplication?.id) {
+        activeAppId = myApplication.id;
+        setTimeout(() => loadChat(myApplication.id), 500);
+      }
+
+    } catch(err) {
+      document.getElementById('pageContent').innerHTML = `<div style="text-align:center;padding:4rem;color:var(--muted);"><div style="font-size:48px;margin-bottom:1rem;">😕</div><div>Business not found.</div><a href="/businesses" style="color:var(--accent);margin-top:1rem;display:inline-block;">← Back to Businesses</a></div>`;
+    }
+  }
+
+  loadPage();
+  setInterval(() => { if (activeAppId) loadChat(activeAppId); }, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Dashboard — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --blue: #60a5fa; --purple: #a78bfa; --orange: #fb923c;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; }
+  .logout-btn:hover { color:var(--error); }
+
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; }
+  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; }
+  .page-sub { font-size:14px; color:var(--muted); margin-top:2px; }
+  .new-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; }
+  .new-btn:hover { opacity:0.9; }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:2rem; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.5rem; }
+  .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; }
+  .stat-value { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; }
+  .stat-value.yellow { color:var(--accent); }
+  .stat-value.green { color:var(--success); }
+  .stat-value.blue { color:var(--blue); }
+
+  .section-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); }
+  .section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; }
+
+  .listing-row { display:flex; align-items:center; gap:14px; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
+  .listing-row:last-child { border-bottom:none; }
+  .listing-row:hover { background:rgba(255,255,255,0.02); }
+  .listing-logo { width:40px; height:40px; border-radius:10px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'Syne',sans-serif; }
+  .listing-info { flex:1; min-width:0; }
+  .listing-name { font-weight:600; font-size:14px; }
+  .listing-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+  .listing-actions { display:flex; gap:8px; }
+  .btn-view { background:none; border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--text); cursor:pointer; text-decoration:none; }
+  .btn-view:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-apps { background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); border-radius:8px; padding:5px 12px; font-size:12px; color:var(--accent); cursor:pointer; }
+
+  .app-row { padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
+  .app-row:last-child { border-bottom:none; }
+  .app-row:hover { background:rgba(255,255,255,0.02); }
+  .app-header { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:0.5rem; }
+  .app-investor { display:flex; align-items:center; gap:10px; }
+  .investor-av { width:36px; height:36px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--muted); flex-shrink:0; }
+  .investor-name { font-weight:600; font-size:14px; }
+  .investor-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+  .app-message { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:0.75rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .app-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; }
+  .badge-pending { background:rgba(110,110,180,0.15); color:#a0a0f0; }
+  .badge-shortlisted { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .badge-meetup_scheduled { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .badge-negotiating { background:rgba(167,139,250,0.15); color:var(--purple); }
+  .badge-agreed { background:rgba(110,231,183,0.15); color:var(--success); }
+  .badge-rejected { background:rgba(255,107,107,0.15); color:var(--error); }
+
+  .btn-shortlist { background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); color:var(--accent); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-meetup { background:rgba(96,165,250,0.15); border:1px solid rgba(96,165,250,0.3); color:var(--blue); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-agree { background:rgba(110,231,183,0.15); border:1px solid rgba(110,231,183,0.3); color:var(--success); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-reject { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--error); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .btn-chat { background:none; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; }
+
+  .empty { text-align:center; padding:2.5rem; color:var(--muted); }
+  .loading { display:flex; align-items:center; justify-content:center; padding:2.5rem; gap:10px; color:var(--muted); font-size:13px; }
+  .spin { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item active" href="/business-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/businesses"><span class="nav-icon">🏭</span><span>Browse</span></a>
+    <a class="nav-item" href="/list-business"><span class="nav-icon">➕</span><span>List Business</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb">Business Owner</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+      <div class="page-sub">Manage your business expansion listings</div>
+    </div>
+    <a class="new-btn" href="/list-business">+ List Business</a>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">My Listings</div><div class="stat-value yellow" id="statListings">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total Applications</div><div class="stat-value blue" id="statApps">—</div></div>
+    <div class="stat-card"><div class="stat-label">Shortlisted</div><div class="stat-value yellow" id="statShortlisted">—</div></div>
+    <div class="stat-card"><div class="stat-label">Agreements</div><div class="stat-value green" id="statAgreed">—</div></div>
+  </div>
+
+  <!-- MY LISTINGS -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title">🏢 My Business Listings</div>
+      <a href="/list-business" style="font-size:12px;color:var(--accent);text-decoration:none;">+ Add New</a>
+    </div>
+    <div id="listingsList"><div class="loading"><div class="spin"></div> Loading...</div></div>
+  </div>
+
+  <!-- ALL APPLICATIONS -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title">📋 Incoming Applications</div>
+    </div>
+    <div id="applicationsList"><div class="loading"><div class="spin"></div> Loading...</div></div>
+  </div>
+</main>
+
+<!-- MEETUP MODAL -->
+<div id="meetupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:440px;">
+    <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:0.5rem;">📅 Schedule Meetup</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Set a meetup time with this investor</p>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Meetup Type</label>
+      <select id="meetupType" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;appearance:none;">
+        <option value="virtual">🖥 Virtual (Video Call)</option>
+        <option value="physical">🏢 In-Person Meeting</option>
+      </select>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Date & Time</label>
+      <input type="datetime-local" id="meetupDate" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" />
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Location / Meeting Link</label>
+      <input type="text" id="meetupLocation" placeholder="e.g. Zoom link or office address" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" />
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeMeetup()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:0.75rem 1.25rem;font-size:14px;color:var(--muted);cursor:pointer;">Cancel</button>
+      <button onclick="confirmMeetup()" style="flex:1;background:var(--accent);color:#0d0d0f;border:none;border-radius:8px;padding:0.75rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Schedule Meetup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  if (!token || !user) window.location.href = '/login';
+
+  if (user) {
+    const initials = (user.firstName?.[0]||'') + (user.lastName?.[0]||'');
+    document.getElementById('sidebarAvatar').textContent = initials||'?';
+    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.firstName||'there'} 👋`;
+  }
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+  function timeAgo(d) {
+    const diff = Date.now()-new Date(d);
+    if (diff<3600000) return Math.floor(diff/60000)+'m ago';
+    if (diff<86400000) return Math.floor(diff/3600000)+'h ago';
+    return Math.floor(diff/86400000)+'d ago';
+  }
+
+  let pendingMeetupAppId = null;
+
+  function openMeetup(appId) { pendingMeetupAppId = appId; document.getElementById('meetupOverlay').style.display='flex'; }
+  function closeMeetup() { document.getElementById('meetupOverlay').style.display='none'; pendingMeetupAppId=null; }
+
+  async function confirmMeetup() {
+    const meetup_type = document.getElementById('meetupType').value;
+    const meetup_date = document.getElementById('meetupDate').value;
+    const meetup_location = document.getElementById('meetupLocation').value.trim();
+    if (!meetup_date) { alert('Please select a date and time.'); return; }
+    try {
+      const res = await fetch(`${API_URL}/api/expansion-applications/${pendingMeetupAppId}/status`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({status:'meetup_scheduled',meetup_type,meetup_date,meetup_location})
+      });
+      if (res.ok) { closeMeetup(); loadDashboard(); }
+    } catch(e) { alert('Failed.'); }
+  }
+
+  async function updateAppStatus(appId, status) {
+    const confirmMap = { shortlisted:'Shortlist this investor?', negotiating:'Start negotiation?', agreed:'Mark as agreed? This means you\'ve reached a deal!', rejected:'Reject this application?' };
+    if (!confirm(confirmMap[status]||'Update?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/expansion-applications/${appId}/status`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({status})
+      });
+      if (res.ok) loadDashboard();
+    } catch(e) { alert('Failed.'); }
+  }
+
+  async function loadDashboard() {
+    try {
+      const bizRes = await fetch(`${API_URL}/api/my-businesses`, {headers:{Authorization:`Bearer ${token}`}});
+      const businesses = bizRes.ok ? await bizRes.json() : [];
+
+      // Load all applications for all listings
+      let allApps = [];
+      for (const biz of businesses) {
+        const appsRes = await fetch(`${API_URL}/api/businesses/${biz.id}/applications`, {headers:{Authorization:`Bearer ${token}`}});
+        if (appsRes.ok) {
+          const apps = await appsRes.json();
+          allApps = [...allApps, ...apps.map(a => ({...a, biz_name: biz.business_name, biz_id: biz.id}))];
+        }
+      }
+
+      // Stats
+      document.getElementById('statListings').textContent = businesses.length;
+      document.getElementById('statApps').textContent = allApps.length;
+      document.getElementById('statShortlisted').textContent = allApps.filter(a=>a.status==='shortlisted').length;
+      document.getElementById('statAgreed').textContent = allApps.filter(a=>a.status==='agreed').length;
+
+      // Listings
+      const listingsEl = document.getElementById('listingsList');
+      if (businesses.length === 0) {
+        listingsEl.innerHTML = `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem;">🏢</div><div style="font-size:13px;">No listings yet</div><a href="/list-business" style="color:var(--accent);font-size:13px;margin-top:0.5rem;display:inline-block;">List your first business →</a></div>`;
+      } else {
+        listingsEl.innerHTML = businesses.map(b => {
+          const initials = b.business_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+          return `
+          <div class="listing-row">
+            <div class="listing-logo">${initials}</div>
+            <div class="listing-info">
+              <div class="listing-name">${b.business_name}</div>
+              <div class="listing-meta">${b.industry||'—'} · ${b.country||'—'} · ${b.application_count||0} applications · ${b.view_count||0} views</div>
+            </div>
+            <div class="listing-actions">
+              <a class="btn-view" href="/business/${b.id}">View</a>
+              <span class="btn-apps">${b.application_count||0} Apps</span>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      // Applications
+      const appsEl = document.getElementById('applicationsList');
+      if (allApps.length === 0) {
+        appsEl.innerHTML = `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem;">📭</div><div style="font-size:13px;">No applications yet</div></div>`;
+      } else {
+        appsEl.innerHTML = allApps.map(app => {
+          const name = `${app.investor?.first_name||''} ${app.investor?.last_name||''}`.trim()||app.investor_name||'Investor';
+          const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+          return `
+          <div class="app-row">
+            <div class="app-header">
+              <div class="app-investor">
+                <div class="investor-av">${initials}</div>
+                <div>
+                  <div class="investor-name">${name}</div>
+                  <div class="investor-sub">${app.expansion_type?.replace('_',' ')} · ${app.biz_name} · ${timeAgo(app.created_at)}</div>
+                </div>
+              </div>
+              <span class="badge badge-${app.status}">${app.status.replace('_',' ')}</span>
+            </div>
+            <div class="app-message">${app.message||'—'}</div>
+            ${app.investment_capacity ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;">💰 ${app.investment_capacity} · 📍 ${app.territory||'—'}</div>` : ''}
+            <div class="app-actions">
+              ${app.status==='pending' ? `<button class="btn-shortlist" onclick="updateAppStatus(${app.id},'shortlisted')">⭐ Shortlist</button>` : ''}
+              ${['pending','shortlisted'].includes(app.status) ? `<button class="btn-meetup" onclick="openMeetup(${app.id})">📅 Schedule Meetup</button>` : ''}
+              ${app.status==='meetup_scheduled' ? `<button class="btn-meetup" onclick="updateAppStatus(${app.id},'negotiating')">🤝 Start Negotiating</button>` : ''}
+              ${app.status==='negotiating' ? `<button class="btn-agree" onclick="updateAppStatus(${app.id},'agreed')">🎉 Mark as Agreed</button>` : ''}
+              ${!['rejected','agreed'].includes(app.status) ? `<button class="btn-reject" onclick="updateAppStatus(${app.id},'rejected')">✕ Reject</button>` : ''}
+              <a class="btn-chat" href="/business/${app.biz_id}">💬 Chat</a>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+    } catch(err) { console.error(err); }
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>

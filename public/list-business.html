@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>List Your Business — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --blue: #60a5fa; --orange: #fb923c; --purple: #a78bfa;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; }
+  .logout-btn:hover { color:var(--error); }
+
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+  .topbar { display:flex; align-items:center; gap:12px; margin-bottom:2rem; }
+  .back-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.9rem; color:var(--muted); font-size:13px; text-decoration:none; transition:all 0.2s; }
+  .back-btn:hover { color:var(--text); border-color:var(--border-hover); }
+  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; }
+
+  .form-grid { display:grid; grid-template-columns:1fr 300px; gap:24px; align-items:start; }
+  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; margin-bottom:20px; }
+  .form-section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  .field { margin-bottom:1.1rem; }
+  label.lbl { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; letter-spacing:0.4px; text-transform:uppercase; }
+  input, textarea, select { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
+  textarea { resize:vertical; min-height:100px; line-height:1.6; }
+  select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px; cursor:pointer; }
+  select option { background:#16161a; }
+  input:focus, textarea:focus, select:focus { border-color:var(--accent); background:var(--accent-dim); }
+  input::placeholder, textarea::placeholder { color:var(--muted); }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* EXPANSION TYPE SELECTOR */
+  .exp-types-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .exp-type-option { border:1px solid var(--border); border-radius:10px; padding:0.75rem; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:10px; }
+  .exp-type-option:hover { border-color:var(--border-hover); }
+  .exp-type-option.selected { border-color:var(--accent); background:var(--accent-dim); }
+  .exp-type-option input { display:none; }
+  .exp-type-emoji { font-size:20px; flex-shrink:0; }
+  .exp-type-name { font-size:13px; font-weight:500; }
+  .exp-type-desc { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  /* PREVIEW */
+  .preview-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; position:sticky; top:2rem; }
+  .preview-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  .preview-box { background:var(--surface2); border-radius:12px; padding:1.25rem; }
+  .preview-biz-name { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:4px; }
+  .preview-biz-name.empty { color:var(--muted); font-style:italic; font-weight:400; }
+  .preview-tagline { font-size:13px; color:var(--muted); margin-bottom:0.75rem; }
+  .preview-investment { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--accent); margin-top:0.75rem; }
+
+  .submit-btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .submit-btn:hover { opacity:0.9; }
+  .submit-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .msg { border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; margin-top:1rem; display:none; }
+  .msg.show { display:block; }
+  .msg.error { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--error); }
+  .msg.success { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.3); color:var(--success); }
+
+  .tips { margin-top:1.5rem; background:var(--accent-dim); border:1px solid rgba(245,200,66,0.2); border-radius:10px; padding:1rem; }
+  .tips-title { font-size:12px; font-weight:600; color:var(--accent); margin-bottom:0.5rem; }
+  .tips ul { padding-left:1rem; }
+  .tips li { font-size:12px; color:var(--muted); margin-bottom:4px; line-height:1.5; }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .form-grid { grid-template-columns:1fr; }
+    .preview-card { position:static; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="/business-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/businesses"><span class="nav-icon">🏭</span><span>Businesses</span></a>
+    <a class="nav-item active" href="/list-business"><span class="nav-icon">➕</span><span>List Business</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <a class="back-btn" href="/businesses">← Back</a>
+    <div class="page-title">List Your Business</div>
+  </div>
+
+  <div class="form-grid">
+    <div>
+      <!-- BASIC INFO -->
+      <div class="form-card">
+        <div class="form-section-title">🏢 Business Information</div>
+        <div class="field">
+          <label class="lbl">Business Name *</label>
+          <input type="text" id="business_name" placeholder="e.g. FreshBite Restaurant Chain" oninput="updatePreview()" />
+        </div>
+        <div class="field">
+          <label class="lbl">Tagline</label>
+          <input type="text" id="tagline" placeholder="One line that describes your business" maxlength="100" oninput="updatePreview()" />
+        </div>
+        <div class="field">
+          <label class="lbl">Business Description *</label>
+          <textarea id="description" placeholder="Describe your business — what it does, its history, achievements, and why it's a great expansion opportunity..."></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label class="lbl">Industry *</label>
+            <select id="industry">
+              <option value="">Select industry</option>
+              <option>Food & Beverage</option><option>Retail</option><option>Technology</option>
+              <option>Health & Wellness</option><option>Education</option><option>Finance</option>
+              <option>Real Estate</option><option>Entertainment</option><option>Logistics</option>
+              <option>Manufacturing</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="lbl">Founded Year</label>
+            <input type="number" id="founded_year" placeholder="2015" min="1900" max="2025" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label class="lbl">Country *</label>
+            <select id="country">
+              <option value="">Select country</option>
+              <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
+              <option>India</option><option>Australia</option><option>Canada</option>
+              <option>Singapore</option><option>UAE</option><option>Germany</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="lbl">City</label>
+            <input type="text" id="city" placeholder="Colombo" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Website</label>
+          <input type="text" id="website" placeholder="https://yourbusiness.com" />
+        </div>
+      </div>
+
+      <!-- BUSINESS METRICS -->
+      <div class="form-card">
+        <div class="form-section-title">📊 Business Metrics</div>
+        <div class="row">
+          <div class="field">
+            <label class="lbl">Annual Revenue</label>
+            <select id="annual_revenue">
+              <option value="">Select range</option>
+              <option>Under $100K</option><option>$100K - $500K</option>
+              <option>$500K - $1M</option><option>$1M - $5M</option>
+              <option>$5M - $20M</option><option>$20M+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="lbl">Number of Employees</label>
+            <select id="employees">
+              <option value="">Select range</option>
+              <option>1-10</option><option>10-50</option><option>50-200</option>
+              <option>200-500</option><option>500+</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Current Number of Locations</label>
+          <input type="number" id="locations" placeholder="1" min="1" />
+        </div>
+      </div>
+
+      <!-- EXPANSION DETAILS -->
+      <div class="form-card">
+        <div class="form-section-title">🚀 Expansion Opportunity</div>
+        <div class="field">
+          <label class="lbl">Expansion Types * (select all that apply)</label>
+          <div class="exp-types-grid">
+            <label class="exp-type-option" data-type="franchise" onclick="toggleType(this)">
+              <input type="checkbox" value="franchise" />
+              <span class="exp-type-emoji">📦</span>
+              <div><div class="exp-type-name">Franchise</div><div class="exp-type-desc">Full model replication</div></div>
+            </label>
+            <label class="exp-type-option" data-type="license" onclick="toggleType(this)">
+              <input type="checkbox" value="license" />
+              <span class="exp-type-emoji">📜</span>
+              <div><div class="exp-type-name">License</div><div class="exp-type-desc">Use brand/IP only</div></div>
+            </label>
+            <label class="exp-type-option" data-type="joint_venture" onclick="toggleType(this)">
+              <input type="checkbox" value="joint_venture" />
+              <span class="exp-type-emoji">🤝</span>
+              <div><div class="exp-type-name">Joint Venture</div><div class="exp-type-desc">Equity partnership</div></div>
+            </label>
+            <label class="exp-type-option" data-type="distribution" onclick="toggleType(this)">
+              <input type="checkbox" value="distribution" />
+              <span class="exp-type-emoji">🌍</span>
+              <div><div class="exp-type-name">Distribution</div><div class="exp-type-desc">Sell in new territory</div></div>
+            </label>
+            <label class="exp-type-option" data-type="white_label" onclick="toggleType(this)">
+              <input type="checkbox" value="white_label" />
+              <span class="exp-type-emoji">💻</span>
+              <div><div class="exp-type-name">White Label</div><div class="exp-type-desc">Resell under own brand</div></div>
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label class="lbl">Min Investment (USD)</label>
+            <input type="number" id="investment_min" placeholder="10000" min="0" oninput="updatePreview()" />
+          </div>
+          <div class="field">
+            <label class="lbl">Max Investment (USD)</label>
+            <input type="number" id="investment_max" placeholder="100000" min="0" oninput="updatePreview()" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Target Territories</label>
+          <input type="text" id="territories" placeholder="e.g. South Asia, Southeast Asia, Middle East (comma separated)" />
+        </div>
+        <div class="field">
+          <label class="lbl">Partner Requirements</label>
+          <textarea id="requirements" placeholder="What do you look for in an expansion partner? Experience, capital, local connections..." style="min-height:80px;"></textarea>
+        </div>
+
+        <div class="msg error" id="errorMsg"></div>
+        <div class="msg success" id="successMsg">🎉 Business listed successfully! Redirecting...</div>
+
+        <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText">List My Business →</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div>
+      <div class="preview-card">
+        <div class="preview-title">Live Preview</div>
+        <div class="preview-box">
+          <div class="preview-biz-name empty" id="previewName">Your business name</div>
+          <div class="preview-tagline" id="previewTagline">Tagline here...</div>
+          <div id="previewTypes" style="display:flex;gap:6px;flex-wrap:wrap;margin:0.75rem 0;"></div>
+          <div class="preview-investment" id="previewInvestment">Negotiable</div>
+        </div>
+        <div class="tips">
+          <div class="tips-title">💡 Tips for a great listing</div>
+          <ul>
+            <li>Be specific about what makes your business unique</li>
+            <li>Include real revenue and growth numbers</li>
+            <li>Clearly explain what the partner gets</li>
+            <li>Set realistic investment ranges</li>
+            <li>Mention support you'll provide to partners</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  if (!token || !user) window.location.href = '/login';
+
+  if (user) {
+    const initials = (user.firstName?.[0]||'') + (user.lastName?.[0]||'');
+    document.getElementById('sidebarAvatar').textContent = initials||'?';
+    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    document.getElementById('sidebarRole').textContent = user.role||'—';
+  }
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+
+  let selectedTypes = [];
+
+  const typeConfig = {
+    franchise: { label:'Franchise', emoji:'📦' },
+    license: { label:'License', emoji:'📜' },
+    joint_venture: { label:'Joint Venture', emoji:'🤝' },
+    distribution: { label:'Distribution', emoji:'🌍' },
+    white_label: { label:'White Label', emoji:'💻' }
+  };
+
+  function toggleType(el) {
+    const type = el.dataset.type;
+    const cb = el.querySelector('input');
+    if (selectedTypes.includes(type)) {
+      selectedTypes = selectedTypes.filter(t => t !== type);
+      el.classList.remove('selected');
+      cb.checked = false;
+    } else {
+      selectedTypes.push(type);
+      el.classList.add('selected');
+      cb.checked = true;
+    }
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const name = document.getElementById('business_name').value;
+    const tagline = document.getElementById('tagline').value;
+    const min = document.getElementById('investment_min').value;
+    const max = document.getElementById('investment_max').value;
+
+    const nameEl = document.getElementById('previewName');
+    nameEl.textContent = name || 'Your business name';
+    nameEl.classList.toggle('empty', !name);
+    document.getElementById('previewTagline').textContent = tagline || 'Tagline here...';
+
+    const typesEl = document.getElementById('previewTypes');
+    typesEl.innerHTML = selectedTypes.map(t => `<span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--accent);">${typeConfig[t]?.emoji} ${typeConfig[t]?.label}</span>`).join('');
+
+    if (min && max) document.getElementById('previewInvestment').textContent = `$${parseInt(min).toLocaleString()} — $${parseInt(max).toLocaleString()}`;
+    else if (min) document.getElementById('previewInvestment').textContent = `From $${parseInt(min).toLocaleString()}`;
+    else if (max) document.getElementById('previewInvestment').textContent = `Up to $${parseInt(max).toLocaleString()}`;
+    else document.getElementById('previewInvestment').textContent = 'Negotiable';
+  }
+
+  async function handleSubmit() {
+    const business_name = document.getElementById('business_name').value.trim();
+    const tagline = document.getElementById('tagline').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const industry = document.getElementById('industry').value;
+    const founded_year = parseInt(document.getElementById('founded_year').value)||null;
+    const country = document.getElementById('country').value;
+    const city = document.getElementById('city').value.trim();
+    const website = document.getElementById('website').value.trim();
+    const annual_revenue = document.getElementById('annual_revenue').value;
+    const employees = document.getElementById('employees').value;
+    const locations = parseInt(document.getElementById('locations').value)||1;
+    const investment_min = parseFloat(document.getElementById('investment_min').value)||null;
+    const investment_max = parseFloat(document.getElementById('investment_max').value)||null;
+    const territories = document.getElementById('territories').value.split(',').map(t=>t.trim()).filter(Boolean);
+    const requirements = document.getElementById('requirements').value.trim();
+
+    const errorEl = document.getElementById('errorMsg');
+    const successEl = document.getElementById('successMsg');
+    errorEl.classList.remove('show'); successEl.classList.remove('show');
+
+    if (!business_name) { errorEl.textContent = 'Please enter your business name.'; errorEl.classList.add('show'); return; }
+    if (!description) { errorEl.textContent = 'Please describe your business.'; errorEl.classList.add('show'); return; }
+    if (!industry) { errorEl.textContent = 'Please select an industry.'; errorEl.classList.add('show'); return; }
+    if (!country) { errorEl.textContent = 'Please select your country.'; errorEl.classList.add('show'); return; }
+    if (selectedTypes.length === 0) { errorEl.textContent = 'Please select at least one expansion type.'; errorEl.classList.add('show'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Listing...';
+
+    try {
+      const res = await fetch(`${API_URL}/api/businesses`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+        body: JSON.stringify({ business_name, tagline, description, industry, founded_year, country, city, website, expansion_types: selectedTypes, annual_revenue, employees, locations, investment_min, investment_max, territories, requirements })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error||'Failed');
+      successEl.classList.add('show');
+      btnText.textContent = 'Listed!';
+      setTimeout(() => window.location.href = '/business-dashboard', 1500);
+    } catch(err) {
+      errorEl.textContent = err.message||'Something went wrong.';
+      errorEl.classList.add('show');
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'List My Business →';
+    }
+  }
+</script>
+</body>
+</html>

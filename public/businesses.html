@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Expansion — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --blue: #60a5fa; --purple: #a78bfa; --pink: #f472b6; --orange: #fb923c;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; }
+  .logout-btn:hover { color:var(--error); }
+
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+
+  .topbar { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:12px; }
+  .hero-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.5px; margin-bottom:0.4rem; }
+  .hero-title span { color:var(--accent); }
+  .hero-sub { font-size:15px; color:var(--muted); }
+  .list-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.75rem 1.5rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .list-btn:hover { opacity:0.85; }
+
+  /* TYPE TABS */
+  .type-tabs { display:flex; gap:8px; margin-bottom:1.5rem; flex-wrap:wrap; }
+  .type-tab { display:flex; align-items:center; gap:6px; padding:7px 16px; border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:13px; font-weight:500; color:var(--muted); background:none; font-family:'DM Sans',sans-serif; }
+  .type-tab:hover { border-color:var(--border-hover); color:var(--text); }
+  .type-tab.active { border-color:var(--accent); background:var(--accent-dim); color:var(--accent); }
+
+  /* FILTERS */
+  .filter-row { display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; }
+  .search-wrap { flex:1; min-width:200px; position:relative; }
+  .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
+  .search-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.7rem 1rem 0.7rem 2.5rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
+  .search-input:focus { border-color:var(--accent); }
+  .search-input::placeholder { color:var(--muted); }
+  .filter-select { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.7rem 1rem; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--muted); outline:none; cursor:pointer; }
+
+  .stats-bar { font-size:13px; color:var(--muted); margin-bottom:1.25rem; }
+  .stats-bar span { color:var(--text); font-weight:500; }
+
+  /* GRID */
+  .businesses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
+
+  /* BUSINESS CARD */
+  .biz-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:all 0.2s; text-decoration:none; display:block; color:var(--text); }
+  .biz-card:hover { border-color:var(--border-hover); transform:translateY(-3px); }
+
+  .biz-card-top { padding:1.5rem; }
+  .biz-header { display:flex; align-items:flex-start; gap:14px; margin-bottom:1rem; }
+  .biz-logo { width:52px; height:52px; border-radius:12px; background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'Syne',sans-serif; }
+  .biz-name { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:3px; }
+  .biz-tagline { font-size:12px; color:var(--muted); }
+
+  .biz-desc { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+  .expansion-types { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+  .type-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; }
+  .type-franchise { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .type-license { background:rgba(96,165,250,0.15); color:var(--blue); }
+  .type-joint_venture { background:rgba(110,231,183,0.15); color:var(--success); }
+  .type-distribution { background:rgba(251,146,60,0.15); color:var(--orange); }
+  .type-white_label { background:rgba(167,139,250,0.15); color:var(--purple); }
+
+  .biz-meta { display:flex; gap:12px; flex-wrap:wrap; }
+  .biz-meta-item { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:4px; }
+
+  .biz-card-footer { padding:1rem 1.5rem; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); }
+  .investment-range { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--accent); }
+  .apps-count { font-size:12px; color:var(--muted); }
+
+  .empty { text-align:center; padding:4rem 1rem; color:var(--muted); grid-column:1/-1; }
+  .empty-icon { font-size:48px; margin-bottom:1rem; }
+  .loading { display:flex; align-items:center; justify-content:center; padding:4rem; gap:10px; color:var(--muted); font-size:14px; grid-column:1/-1; }
+  .spin { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .businesses-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
+    <a class="nav-item" href="/idea-requests"><span class="nav-icon">🎯</span><span>Idea Requests</span></a>
+    <a class="nav-item active" href="/businesses"><span class="nav-icon">🏭</span><span>Businesses</span></a>
+    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Find Support</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <div class="nav-divider"></div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
+  </nav>
+  <div class="user-card">
+    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">✕</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="hero-title">Business <span>Expansion</span></div>
+      <div class="hero-sub">Franchise, license or partner with established businesses worldwide</div>
+    </div>
+    <div id="actionBtn"></div>
+  </div>
+
+  <!-- TYPE TABS -->
+  <div class="type-tabs">
+    <button class="type-tab active" onclick="setType('all',this)">🌟 All Types</button>
+    <button class="type-tab" onclick="setType('franchise',this)">📦 Franchise</button>
+    <button class="type-tab" onclick="setType('license',this)">📜 License</button>
+    <button class="type-tab" onclick="setType('joint_venture',this)">🤝 Joint Venture</button>
+    <button class="type-tab" onclick="setType('distribution',this)">🌍 Distribution</button>
+    <button class="type-tab" onclick="setType('white_label',this)">💻 White Label</button>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="Search businesses..." oninput="handleSearch()" />
+    </div>
+    <select class="filter-select" id="industryFilter" onchange="renderGrid()">
+      <option value="">All Industries</option>
+      <option>Technology</option><option>Food & Beverage</option><option>Retail</option>
+      <option>Health & Wellness</option><option>Education</option><option>Finance</option>
+      <option>Real Estate</option><option>Entertainment</option><option>Other</option>
+    </select>
+    <select class="filter-select" id="countryFilter" onchange="renderGrid()">
+      <option value="">All Countries</option>
+      <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
+      <option>India</option><option>Australia</option><option>Singapore</option><option>UAE</option>
+    </select>
+  </div>
+
+  <div class="stats-bar" id="statsBar">Loading businesses...</div>
+  <div class="businesses-grid" id="bizGrid">
+    <div class="loading"><div class="spin"></div> Loading...</div>
+  </div>
+</main>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+  const creatorRoles = ['idea_creator','patent_seller'];
+  const supportRoles = ['virtual_manager','patent_attorney','corporate_services'];
+
+  if (user) {
+    const initials = (user.firstName?.[0]||'') + (user.lastName?.[0]||'');
+    document.getElementById('sidebarAvatar').textContent = initials||'?';
+    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    document.getElementById('sidebarRole').textContent = roleMap[user.role]||'—';
+    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : supportRoles.includes(user.role) ? '/support-dashboard' : user.role === 'business_owner' ? '/business-dashboard' : '/buyer-dashboard';
+
+    if (user.role === 'business_owner') {
+      document.getElementById('actionBtn').innerHTML = `<a class="list-btn" href="/list-business">+ List Your Business</a>`;
+    }
+  }
+
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+
+  let allBusinesses = [];
+  let activeType = 'all';
+  let searchTerm = '';
+
+  const typeConfig = {
+    franchise: { label:'Franchise', emoji:'📦', cls:'type-franchise' },
+    license: { label:'License', emoji:'📜', cls:'type-license' },
+    joint_venture: { label:'Joint Venture', emoji:'🤝', cls:'type-joint_venture' },
+    distribution: { label:'Distribution', emoji:'🌍', cls:'type-distribution' },
+    white_label: { label:'White Label', emoji:'💻', cls:'type-white_label' }
+  };
+
+  function setType(type, el) {
+    activeType = type;
+    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderGrid();
+  }
+
+  let searchTimer;
+  function handleSearch() {
+    searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(renderGrid, 300);
+  }
+
+  function formatInvestment(min, max) {
+    if (!min && !max) return 'Negotiable';
+    if (min && max) return `$${min.toLocaleString()} — $${max.toLocaleString()}`;
+    if (min) return `From $${min.toLocaleString()}`;
+    return `Up to $${max.toLocaleString()}`;
+  }
+
+  function renderGrid() {
+    const industry = document.getElementById('industryFilter').value;
+    const country = document.getElementById('countryFilter').value;
+
+    let filtered = allBusinesses.filter(b => {
+      if (activeType !== 'all' && !(b.expansion_types||[]).includes(activeType)) return false;
+      if (industry && b.industry !== industry) return false;
+      if (country && b.country !== country) return false;
+      if (searchTerm && !b.business_name.toLowerCase().includes(searchTerm) && !(b.tagline||'').toLowerCase().includes(searchTerm)) return false;
+      return true;
+    });
+
+    document.getElementById('statsBar').innerHTML = `Showing <span>${filtered.length}</span> of <span>${allBusinesses.length}</span> businesses`;
+
+    const grid = document.getElementById('bizGrid');
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">🏭</div><div style="font-size:14px;">No businesses found</div></div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(b => {
+      const initials = b.business_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const types = (b.expansion_types||[]).slice(0,3);
+      return `
+        <a class="biz-card" href="/business/${b.id}">
+          <div class="biz-card-top">
+            <div class="biz-header">
+              <div class="biz-logo">${initials}</div>
+              <div>
+                <div class="biz-name">${b.business_name}</div>
+                <div class="biz-tagline">${b.tagline || b.industry || '—'}</div>
+              </div>
+            </div>
+            <div class="biz-desc">${b.description}</div>
+            <div class="expansion-types">
+              ${types.map(t => `<span class="type-pill type-${t}">${typeConfig[t]?.emoji||'•'} ${typeConfig[t]?.label||t}</span>`).join('')}
+            </div>
+            <div class="biz-meta">
+              ${b.country ? `<span class="biz-meta-item">📍 ${b.city ? b.city+', ' : ''}${b.country}</span>` : ''}
+              ${b.employees ? `<span class="biz-meta-item">👥 ${b.employees}</span>` : ''}
+              ${b.founded_year ? `<span class="biz-meta-item">📅 Est. ${b.founded_year}</span>` : ''}
+            </div>
+          </div>
+          <div class="biz-card-footer">
+            <div class="investment-range">${formatInvestment(b.investment_min, b.investment_max)}</div>
+            <div class="apps-count">📋 ${b.application_count||0} applications</div>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
+  async function loadBusinesses() {
+    try {
+      const res = await fetch(`${API_URL}/api/businesses`);
+      allBusinesses = await res.json();
+      renderGrid();
+    } catch(e) {
+      document.getElementById('bizGrid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div style="font-size:14px;color:var(--muted);">Failed to load. Please refresh.</div></div>`;
+    }
+  }
+
+  loadBusinesses();
+</script>
+</body>
+</html>
