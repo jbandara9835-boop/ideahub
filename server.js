@@ -317,6 +317,30 @@ app.put('/api/ideas/:id', authMiddleware, async (req, res) => {
   res.json(idea);
 });
 
+// GET public user profile
+app.get('/api/users/:id/public', async (req, res) => {
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id, first_name, last_name, role, tagline, avatar_url, city, country, created_at, is_verified')
+    .eq('id', req.params.id)
+    .single();
+
+  if (error || !user) return res.status(404).json({ error: 'User not found' });
+
+  const { data: specializations } = await supabase
+    .from('user_specializations')
+    .select('*')
+    .eq('user_id', req.params.id);
+
+  const { data: ideas } = await supabase
+    .from('ideas')
+    .select('id, title, price, views, status')
+    .eq('creator_id', req.params.id)
+    .eq('status', 'live');
+
+  res.json({ ...user, specializations: specializations || [], ideas: ideas || [] });
+});
+
 // GET my ideas
 app.get('/api/my-ideas', authMiddleware, async (req, res) => {
   const { data, error } = await supabase

@@ -364,13 +364,13 @@
 
             <div class="section-card">
               <div class="section-title">👤 About the Creator</div>
-              <div class="creator-card">
+              <div class="creator-card" onclick="window.location.href='/public-profile?id=${idea.creator_id}'" style="cursor:pointer;">
                 <div class="creator-avatar">${creatorInitials}</div>
                 <div class="creator-info">
                   <div class="creator-name">${idea.creator_name || 'Anonymous'}</div>
                   <div class="creator-role">Idea Creator</div>
                 </div>
-                ${!isOwner ? `<button class="msg-creator-btn" onclick="openModal()">💬 Message</button>` : '<span style="font-size:12px;color:var(--accent)">Your idea</span>'}
+                ${!isOwner ? `<button class="msg-creator-btn" onclick="event.stopPropagation();openModal()">💬 Message</button>` : '<span style="font-size:12px;color:var(--accent)">Your idea</span>'}
               </div>
             </div>
           </div>
