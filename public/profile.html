@@ -176,27 +176,25 @@
           <div class="field"><label class="lbl">Middle Name</label><input type="text" id="middleName" /></div>
           <div class="field"><label class="lbl">Last Name *</label><input type="text" id="lastName" oninput="updateCard()" /></div>
         </div>
-        <div class="row2">
-          <div class="field">
-            <label class="lbl">Country</label>
-            <select id="country" onchange="updateStates()">
-              <option value="">Select country</option>
-              <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
-              <option>India</option><option>Australia</option><option>Canada</option><option>Singapore</option>
-              <option>UAE</option><option>Germany</option><option>France</option><option>Japan</option>
-              <option>China</option><option>Brazil</option><option>South Africa</option>
-              <option>Pakistan</option><option>Bangladesh</option><option>Other</option>
-            </select>
-          </div>
-          <div class="field"><label class="lbl">Postal Code</label><input type="text" id="postalCode" placeholder="10100" /></div>
+        <div class="field">
+          <label class="lbl">Country</label>
+          <select id="country" onchange="updateStates()">
+            <option value="">Select country</option>
+            <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
+            <option>India</option><option>Australia</option><option>Canada</option><option>Singapore</option>
+            <option>UAE</option><option>Germany</option><option>France</option><option>Japan</option>
+            <option>China</option><option>Brazil</option><option>South Africa</option>
+            <option>Pakistan</option><option>Bangladesh</option><option>Other</option>
+          </select>
         </div>
         <div class="field"><label class="lbl">Address Line 1</label><input type="text" id="addressLine1" placeholder="Street address" /></div>
         <div class="field"><label class="lbl">Address Line 2</label><input type="text" id="addressLine2" placeholder="Apartment, suite, etc." /></div>
-        <div class="row2">
+        <div class="row3">
           <div class="field"><label class="lbl">City</label><input type="text" id="city" placeholder="Colombo" /></div>
           <div class="field"><label class="lbl">State / Province</label>
             <select id="state"><option value="">Select state/province</option></select>
           </div>
+          <div class="field"><label class="lbl">Postal Code</label><input type="text" id="postalCode" placeholder="10100" /></div>
         </div>
         <div class="row2">
           <div class="field">
@@ -413,24 +411,47 @@ function updateStates() {
     }).filter(Boolean);
   }
 
+  let pendingAvatarBase64 = null;
+
   async function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 2*1024*1024) { alert('Image must be under 2MB'); return; }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      document.getElementById('avatarDisplay').innerHTML = `<img src="${ev.target.result}" alt="avatar" />`;
-      const sb = document.getElementById('sidebarAvatar');
-      sb.innerHTML = `<img src="${ev.target.result}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      const base64 = ev.target.result;
+      document.getElementById('avatarDisplay').innerHTML = `<img src="${base64}" alt="avatar" />`;
+      document.getElementById('sidebarAvatar').innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      document.getElementById('avatarInitials').style.display = 'none';
       updateCompletion();
     };
     reader.readAsDataURL(file);
+
+    // Upload to server
     try {
-      const fd = new FormData(); fd.append('avatar', file);
-      const res = await fetch(`${API_URL}/api/profile/avatar`, { method:'POST', headers:{Authorization:`Bearer ${token}`}, body:fd });
+      const fd = new FormData();
+      fd.append('avatar', file);
+      const res = await fetch(`${API_URL}/api/profile/avatar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
       const data = await res.json();
-      if (data.url) { const u=JSON.parse(localStorage.getItem('ih_user')||'{}'); u.avatarUrl=data.url; localStorage.setItem('ih_user',JSON.stringify(u)); }
-    } catch(err) { console.error('Avatar upload failed'); }
+      if (data.url) {
+        const u = JSON.parse(localStorage.getItem('ih_user')||'{}');
+        u.avatarUrl = data.url;
+        localStorage.setItem('ih_user', JSON.stringify(u));
+        // Update avatar display with real URL
+        document.getElementById('avatarDisplay').innerHTML = `<img src="${data.url}" alt="avatar" />`;
+        document.getElementById('sidebarAvatar').innerHTML = `<img src="${data.url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      } else {
+        console.error('Avatar upload error:', data.error);
+        alert('Avatar upload failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch(err) {
+      console.error('Avatar upload failed:', err);
+      alert('Avatar upload failed. Check Railway logs.');
+    }
   }
 
   async function loadProfile() {
