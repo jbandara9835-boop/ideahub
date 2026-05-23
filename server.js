@@ -161,8 +161,15 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
     .single();
 
   if (!user || error) return res.status(404).json({ error: 'User not found' });
+
+  const { data: specs } = await supabase
+    .from('user_specializations')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .order('created_at', { ascending: true });
+
   const { password: _, ...safeUser } = user;
-  res.json({ ...safeUser, firstName: user.first_name, lastName: user.last_name });
+  res.json({ ...safeUser, firstName: user.first_name, lastName: user.last_name, specializations: specs || [] });
 });
 
 // UPDATE profile
