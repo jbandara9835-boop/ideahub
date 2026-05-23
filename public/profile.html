@@ -310,8 +310,6 @@
   const navLinks = { idea_creator:[['⚡','Dashboard','/dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['➕','Submit','/submit'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], investor:[['⚡','Dashboard','/buyer-dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['🏭','Businesses','/businesses'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], business_owner:[['⚡','Dashboard','/business-dashboard'],['🏭','Businesses','/businesses'],['➕','List Business','/list-business'],['👤','Profile','/profile'],['💬','Messages','/messages']] };
   const defaultNav = [['⚡','Dashboard','/dashboard'],['🤝','Find Support','/find-support'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']];
 
-  const navItems = navLinks[user?.role] || defaultNav;
-  document.getElementById('sidebarNav').innerHTML = navItems.map(([icon,label,href]) => `<a class="nav-item ${href==='/profile'?'active':''}" href="${href}"><span class="nav-icon">${icon}</span><span>${label}</span></a>`).join('');
   document.getElementById('backBtn').href = dashMap[user?.role] || '/dashboard';
 
   const howOptions = ['Education (Degree/Diploma)','Family Background','Vocational Training','Favourite Subject','Self-taught','Professional Experience','Research & Study','Mentorship','Online Courses','Work Experience','Other'];
