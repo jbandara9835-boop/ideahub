@@ -85,6 +85,7 @@
   .nav-icon { font-size: 16px; width: 20px; text-align: center; }
 
   .nav-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+  .nav-section-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 0.75rem 0.75rem 0.25rem; }
 
   .user-card {
     display: flex; align-items: center; gap: 10px;
@@ -330,31 +331,26 @@
   </div>
 
   <nav class="nav">
+    <div class="nav-section-label">My Account</div>
     <a class="nav-item active" href="/dashboard">
-      <span class="nav-icon">⚡</span>
-      <span>Dashboard</span>
-    </a>
-    <a class="nav-item" href="/browse">
-      <span class="nav-icon">💡</span>
-      <span>Browse Ideas</span>
-    </a>
-    <a class="nav-item" href="/idea-requests"><span class="nav-icon">🎯</span><span>Idea Requests</span></a>
-<a class="nav-item" href="/submit">
-      <span class="nav-icon">✚</span>
-      <span>Submit Idea</span>
+      <span class="nav-icon">⚡</span><span>Dashboard</span>
     </a>
     <a class="nav-item" href="/profile">
-      <span class="nav-icon">👤</span>
-      <span>Profile</span>
+      <span class="nav-icon">👤</span><span>My Profile</span>
     </a>
-    <div class="nav-divider"></div>
+    <div class="nav-section-label">Marketplace</div>
+    <a class="nav-item" href="/browse">
+      <span class="nav-icon">🔍</span><span>Browse Ideas</span>
+    </a>
+    <a class="nav-item" href="/idea-requests">
+      <span class="nav-icon">🎯</span><span>Investor Requests</span>
+    </a>
+    <div class="nav-section-label">Activity</div>
     <a class="nav-item" href="/messages">
-      <span class="nav-icon">💬</span>
-      <span>Messages</span>
+      <span class="nav-icon">💬</span><span>Messages</span>
     </a>
     <a class="nav-item" href="/transactions">
-      <span class="nav-icon">💸</span>
-      <span>Transactions</span>
+      <span class="nav-icon">💸</span><span>Transactions</span>
     </a>
   </nav>
 
