@@ -257,12 +257,7 @@ if (avatarUrl) {
     const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate' };
     document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role || '—';
 
-    const creatorRoles = ['idea_creator', 'patent_seller'];
-    if (creatorRoles.includes(user.role)) {
-      document.getElementById('dashLink').href = '/dashboard';
-    } else {
-      document.getElementById('dashLink').href = '/buyer-dashboard';
-    }
+    // dashboard link handled by renderSidebar
   } else {
     document.getElementById('guestBanner').style.display = 'block';
     document.getElementById('sidebarName').textContent = 'Guest';
