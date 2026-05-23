@@ -176,16 +176,6 @@
           <div class="field"><label class="lbl">Middle Name</label><input type="text" id="middleName" /></div>
           <div class="field"><label class="lbl">Last Name *</label><input type="text" id="lastName" oninput="updateCard()" /></div>
         </div>
-        <div class="field"><label class="lbl">Address Line 1</label><input type="text" id="addressLine1" placeholder="Street address" /></div>
-        <div class="field"><label class="lbl">Address Line 2</label><input type="text" id="addressLine2" placeholder="Apartment, suite, etc." /></div>
-        <div class="row2">
-          <div class="field"><label class="lbl">City</label><input type="text" id="city" placeholder="Colombo" /></div>
-          <div class="field"><label class="lbl">State / Province</label>
-<select id="state">
-  <option value="">Select state/province</option>
-</select>
-</div>
-        </div>
         <div class="row2">
           <div class="field">
             <label class="lbl">Country</label>
@@ -199,6 +189,14 @@
             </select>
           </div>
           <div class="field"><label class="lbl">Postal Code</label><input type="text" id="postalCode" placeholder="10100" /></div>
+        </div>
+        <div class="field"><label class="lbl">Address Line 1</label><input type="text" id="addressLine1" placeholder="Street address" /></div>
+        <div class="field"><label class="lbl">Address Line 2</label><input type="text" id="addressLine2" placeholder="Apartment, suite, etc." /></div>
+        <div class="row2">
+          <div class="field"><label class="lbl">City</label><input type="text" id="city" placeholder="Colombo" /></div>
+          <div class="field"><label class="lbl">State / Province</label>
+            <select id="state"><option value="">Select state/province</option></select>
+          </div>
         </div>
         <div class="row2">
           <div class="field">
@@ -449,6 +447,7 @@ function updateStates() {
       document.getElementById('city').value = data.city||'';
       document.getElementById('state').value = data.state||'';
       document.getElementById('country').value = data.country||'';
+      if (data.country) { updateStates(); document.getElementById('state').value = data.state||''; }
       document.getElementById('postalCode').value = data.postal_code||'';
       document.getElementById('phone').value = data.phone||'';
       document.getElementById('email').value = data.email||'';
@@ -458,6 +457,7 @@ function updateStates() {
       if (data.avatar_url) {
         document.getElementById('avatarDisplay').innerHTML=`<img src="${data.avatar_url}" alt="avatar" />`;
         document.getElementById('sidebarAvatar').innerHTML=`<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        document.getElementById('avatarInitials').style.display='none';
       }
       const fn=data.first_name||''; const ln=data.last_name||'';
       const initials=(fn[0]||'')+(ln[0]||'');
