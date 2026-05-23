@@ -541,25 +541,40 @@
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
   const editId = new URLSearchParams(window.location.search).get('edit');
   if (editId) {
-    document.querySelector('.page-title') && (document.querySelector('.page-title').textContent = 'Edit Idea');
-    fetch(`${API_URL}/api/ideas/${editId}`)
-      .then(r => r.json())
-      .then(idea => {
-        document.getElementById('title').value = idea.title || '';
-        document.getElementById('summary').value = idea.summary || '';
-        document.getElementById('description').value = idea.description || '';
-        document.getElementById('industry').value = idea.industry || '';
-        document.getElementById('idea_type').value = idea.idea_type || '';
-        document.getElementById('price').value = idea.price || '';
-        document.getElementById('level').value = idea.level || '1';
-        document.getElementById('visibility').value = idea.visibility || '1';
-        if (idea.icon) {
-          document.querySelectorAll('.icon-option').forEach(el => {
-            if (el.dataset.icon === idea.icon) el.click();
-          });
-        }
-      }).catch(e => console.error(e));
-  }
+  document.querySelector('.page-title').textContent = 'Edit Idea';
+  document.getElementById('btnText').textContent = 'Save Changes';
+
+  fetch(`${API_URL}/api/ideas/${editId}`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('ih_token')}` }
+  })
+    .then(r => r.json())
+    .then(idea => {
+      document.getElementById('title').value      = idea.title       || '';
+      document.getElementById('summary').value    = idea.summary     || '';
+      document.getElementById('desc').value       = idea.description || '';
+      document.getElementById('industry').value   = idea.industry    || '';
+      document.getElementById('ideaType').value   = idea.idea_type   || '';
+      document.getElementById('price').value      = idea.price       || '';
+      document.getElementById('visibility').value = idea.visibility  || '1';
+
+      const lvl = String(idea.level || '1');
+      document.querySelectorAll('input[name="level"]').forEach(r => {
+        r.checked = (r.value === lvl);
+      });
+      document.querySelectorAll('.level-option').forEach(o => o.classList.remove('selected'));
+      const checkedRadio = document.querySelector(`input[name="level"][value="${lvl}"]`);
+      if (checkedRadio) checkedRadio.closest('.level-option').classList.add('selected');
+
+      if (idea.has_patent) {
+        patentOn = false;
+        toggleOption('patent');
+        document.getElementById('patentNumber').value = idea.patent_number || '';
+      }
+
+      updatePreview();
+    })
+    .catch(e => console.error('Edit load failed:', e));
+}
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
