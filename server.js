@@ -1201,6 +1201,21 @@ app.get('/api/expansion-ratings/:userId', async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   res.json(data || []);
 });
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
+
+app.post('/api/profile/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  const ext = req.file.mimetype.split('/')[1];
+  const fileName = `avatar-${req.user.id}-${Date.now()}.${ext}`;
+  try {
+    const { error } = await supabase.storage.from('avatars').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+    if (error) return res.status(500).json({ error: error.message });
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+    await supabase.from('users').update({ avatar_url: urlData.publicUrl }).eq('id', req.user.id);
+    res.json({ url: urlData.publicUrl });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
 // ── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -3,216 +3,274 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Profile — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<title>My Profile — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0d0d0f;
-    --surface: #16161a;
-    --surface2: #1e1e24;
-    --border: rgba(255,255,255,0.08);
-    --border-hover: rgba(255,255,255,0.18);
-    --accent: #f5c842;
-    --accent-dim: rgba(245,200,66,0.12);
-    --text: #f0ede8;
-    --muted: #6e6b65;
-    --error: #ff6b6b;
-    --success: #6ee7b7;
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
   }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
+  .avatar-sm img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+  .user-info { flex:1; min-width:0; }
+  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-role-sb { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; }
+  .logout-btn:hover { color:var(--error); }
 
-  body {
-    background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text);
-    min-height: 100vh;
-  }
+  .main { margin-left:220px; padding:2rem 2.5rem; }
+  .topbar { display:flex; align-items:center; gap:12px; margin-bottom:2rem; }
+  .back-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.9rem; color:var(--muted); font-size:13px; text-decoration:none; }
+  .back-btn:hover { color:var(--text); }
+  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; }
 
-  .sidebar {
-    position: fixed; top: 0; left: 0;
-    width: 220px; height: 100vh;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    padding: 1.5rem 1rem; z-index: 100;
-  }
+  .profile-grid { display:grid; grid-template-columns:280px 1fr; gap:24px; align-items:start; }
 
-  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2.5rem; padding: 0 0.5rem; }
-  .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
-  .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .profile-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; text-align:center; position:sticky; top:2rem; }
+  .avatar-wrap { position:relative; display:inline-block; margin-bottom:1rem; }
+  .avatar-lg { width:100px; height:100px; border-radius:50%; background:var(--accent-dim); border:3px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:700; color:var(--accent); font-family:'Syne',sans-serif; overflow:hidden; cursor:pointer; margin:0 auto; }
+  .avatar-lg img { width:100%; height:100%; object-fit:cover; }
+  .avatar-edit-btn { position:absolute; bottom:2px; right:2px; width:28px; height:28px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; border:2px solid var(--bg); }
+  #avatarInput { display:none; }
+  .profile-name { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:4px; }
+  .profile-tagline { font-size:13px; color:var(--muted); margin-bottom:0.75rem; min-height:20px; }
+  .profile-role { display:inline-flex; align-items:center; gap:5px; background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); color:var(--accent); font-size:12px; padding:4px 12px; border-radius:20px; margin-bottom:1rem; }
+  .stars-row { display:flex; gap:4px; justify-content:center; margin-bottom:1rem; }
+  .star { font-size:20px; color:var(--muted); }
+  .star.filled { color:var(--accent); }
+  .completion-bar-wrap { margin-bottom:1rem; }
+  .completion-label { font-size:12px; color:var(--muted); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .completion-bar { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+  .completion-fill { height:100%; background:var(--accent); border-radius:3px; transition:width 0.5s; }
+  .verify-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:500; margin-bottom:1rem; }
+  .verify-unverified { background:rgba(110,110,180,0.15); color:#a0a0f0; border:1px solid rgba(110,110,180,0.3); }
+  .verify-pending { background:rgba(245,200,66,0.15); color:var(--accent); border:1px solid rgba(245,200,66,0.3); }
+  .verify-verified { background:rgba(110,231,183,0.15); color:var(--success); border:1px solid rgba(110,231,183,0.3); }
 
-  .nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; }
-  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-  .nav-item.active { color: var(--accent); background: var(--accent-dim); }
-  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
-  .nav-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
+  .form-section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  .field { margin-bottom:1.1rem; }
+  label.lbl { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; letter-spacing:0.4px; text-transform:uppercase; }
+  input, textarea, select { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
+  textarea { resize:vertical; line-height:1.6; }
+  select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px; cursor:pointer; }
+  select option { background:#16161a; }
+  input:focus, textarea:focus, select:focus { border-color:var(--accent); background:var(--accent-dim); }
+  input::placeholder, textarea::placeholder { color:var(--muted); }
+  input[readonly] { opacity:0.6; cursor:not-allowed; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  .char-count { font-size:11px; color:var(--muted); text-align:right; margin-top:3px; }
+  .char-count.warn { color:var(--accent); }
 
-  .user-card { display: flex; align-items: center; gap: 10px; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border); margin-top: auto; }
-  .avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
-  .user-info { flex: 1; min-width: 0; }
-  .user-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-role { font-size: 11px; color: var(--muted); }
-  .logout-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 16px; transition: color 0.2s; }
-  .logout-btn:hover { color: var(--error); }
+  .spec-table { border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:0.75rem; }
+  .spec-head { display:grid; grid-template-columns:1fr 1fr 40px; background:var(--surface2); padding:0.6rem 1rem; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:500; }
+  .spec-row { display:grid; grid-template-columns:1fr 1fr 40px; padding:0.5rem 0.75rem; border-top:1px solid var(--border); align-items:center; gap:8px; }
+  .spec-row input, .spec-row select { padding:0.5rem 0.75rem; font-size:13px; margin:0; }
+  .spec-row select { padding-right:28px; background-position:right 8px center; }
+  .spec-delete { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; padding:4px; }
+  .spec-delete:hover { color:var(--error); }
+  .add-spec-btn { background:none; border:1px dashed var(--border); border-radius:8px; padding:0.6rem; font-size:13px; color:var(--muted); cursor:pointer; width:100%; transition:all 0.2s; }
+  .add-spec-btn:hover { border-color:var(--accent); color:var(--accent); }
 
-  .main { margin-left: 220px; padding: 2rem 2.5rem; }
+  .save-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.85rem 2rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .save-btn:hover { opacity:0.9; }
+  .save-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .verify-btn { background:none; border:1px solid var(--success); color:var(--success); border-radius:10px; padding:0.75rem 1.5rem; font-size:14px; font-weight:600; cursor:pointer; width:100%; margin-top:0.75rem; }
+  .verify-btn:hover { background:rgba(110,231,183,0.1); }
+  .verify-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .msg { border-radius:8px; padding:0.65rem 1rem; font-size:13px; margin-top:1rem; display:none; }
+  .msg.show { display:block; }
+  .msg.error { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--error); }
+  .msg.success { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.3); color:var(--success); }
+  .tip { font-size:11px; color:var(--muted); margin-top:3px; }
 
-  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
-  .back-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; color: var(--muted); font-size: 13px; cursor: pointer; text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-  .back-btn:hover { color: var(--text); border-color: var(--border-hover); }
-  .page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
-
-  .profile-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
-
-  /* LEFT CARD */
-  .profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; text-align: center; position: sticky; top: 2rem; }
-
-  .avatar-lg {
-    width: 90px; height: 90px; border-radius: 50%;
-    background: var(--accent-dim); border: 2px solid var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 32px; font-weight: 700; color: var(--accent);
-    margin: 0 auto 1rem;
-  }
-
-  .profile-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-  .profile-email { font-size: 13px; color: var(--muted); margin-bottom: 1rem; }
-
-  .profile-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--accent-dim); border: 1px solid rgba(245,200,66,0.3);
-    border-radius: 20px; padding: 4px 14px;
-    font-size: 12px; font-weight: 500; color: var(--accent);
-    margin-bottom: 1.5rem;
-  }
-
-  .profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
-  .pstat { background: var(--surface2); border-radius: 10px; padding: 0.75rem; }
-  .pstat-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--accent); }
-  .pstat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .verified-badge { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0.75rem; background: var(--surface2); border-radius: 10px; }
-  .verified-badge.yes { color: var(--success); }
-
-  /* RIGHT FORM */
-  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 20px; }
-  .form-section-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
-
-  .field { margin-bottom: 1.25rem; }
-  label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 0.4rem; letter-spacing: 0.4px; text-transform: uppercase; }
-
-  input[type=text], input[type=tel], textarea, select {
-    width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s, background 0.2s; appearance: none;
-  }
-
-  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
-  select option { background: #16161a; color: var(--text); }
-  input:focus, textarea:focus, select:focus { border-color: var(--accent); background: var(--accent-dim); }
-  input::placeholder, textarea::placeholder { color: var(--muted); }
-
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .spec-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-  .spec-tag {
-    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-    border-radius: 20px; padding: 5px 12px; font-size: 12px;
-    cursor: pointer; transition: all 0.15s; user-select: none;
-  }
-  .spec-tag:hover { border-color: var(--border-hover); }
-  .spec-tag.selected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-
-  .save-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 10px; padding: 0.85rem 2rem; font-size: 15px; font-weight: 600; font-family: 'Syne', sans-serif; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; gap: 8px; }
-  .save-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-  .save-btn:active { transform: scale(0.98); }
-  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #0d0d0f; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .msg { border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 13px; margin-top: 1rem; display: none; }
-  .msg.show { display: block; }
-  .msg.error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: var(--error); }
-  .msg.success { background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.3); color: var(--success); }
-
-  .loading-overlay { display: flex; align-items: center; justify-content: center; padding: 3rem; color: var(--muted); gap: 10px; font-size: 14px; }
-  .spin2 { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-
-  @media (max-width: 900px) {
-    .sidebar { width: 60px; padding: 1rem 0.5rem; }
-    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display: none; }
-    .logo { justify-content: center; }
-    .nav-item { justify-content: center; padding: 0.6rem; }
-    .user-card { justify-content: center; padding: 0.5rem; }
-    .main { margin-left: 60px; padding: 1.5rem; }
-    .profile-grid { grid-template-columns: 1fr; }
-    .profile-card { position: static; }
+  @media (max-width:900px) {
+    .sidebar { width:60px; padding:1rem 0.5rem; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo { justify-content:center; }
+    .nav-item { justify-content:center; padding:0.6rem; }
+    .user-card { justify-content:center; padding:0.5rem; }
+    .main { margin-left:60px; padding:1.5rem; }
+    .profile-grid { grid-template-columns:1fr; }
+    .profile-card { position:static; }
+    .row3 { grid-template-columns:1fr 1fr; }
   }
 </style>
 </head>
 <body>
-
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
+    <a href="/" style="text-decoration:none;color:inherit;"><span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">IdeaHub</span></a>
   </div>
-  <nav class="nav">
-    <a class="nav-item" href="/dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
-    <a class="nav-item" href="/submit"><span class="nav-icon">✚</span><span>Submit Idea</span></a>
-    <a class="nav-item active" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
-  </nav>
+  <nav class="nav" id="sidebarNav"></nav>
   <div class="user-card">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
+    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
     <div class="user-info">
-      <div class="user-name" id="sidebarName">Loading...</div>
-      <div class="user-role" id="sidebarRole">—</div>
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
     </div>
-    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+    <button class="logout-btn" onclick="logout()">✕</button>
   </div>
 </aside>
 
 <main class="main">
   <div class="topbar">
-    <a class="back-btn" href="/dashboard">← Back</a>
+    <a class="back-btn" id="backBtn" href="/dashboard">← Back</a>
     <div class="page-title">My Profile</div>
   </div>
 
   <div class="profile-grid">
-    <!-- LEFT -->
-    <div class="profile-card">
-      <div class="avatar-lg" id="avatarLg">?</div>
-      <div class="profile-name" id="profileName">Loading...</div>
-      <div class="profile-email" id="profileEmail">—</div>
-      <div class="profile-badge" id="profileBadge">💡 Idea Creator</div>
-
-      <div class="profile-stats">
-        <div class="pstat">
-          <div class="pstat-val" id="statIdeas">0</div>
-          <div class="pstat-label">Ideas</div>
+    <div>
+      <div class="profile-card">
+        <div class="avatar-wrap">
+          <div class="avatar-lg" id="avatarDisplay" onclick="document.getElementById('avatarInput').click()">
+            <span id="avatarInitials">?</span>
+          </div>
+          <div class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()">📷</div>
+          <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="handleAvatarUpload(event)" />
         </div>
-        <div class="pstat">
-          <div class="pstat-val" id="statEarnings">$0</div>
-          <div class="pstat-label">Earned</div>
+        <div class="profile-name" id="cardName">Your Name</div>
+        <div class="profile-tagline" id="cardTagline">Add a tagline...</div>
+        <div class="profile-role" id="cardRole">Member</div>
+        <div class="stars-row" id="starsRow">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
         </div>
-      </div>
-
-      <div class="verified-badge" id="verifiedBadge">
-        ○ Not verified
+        <div class="completion-bar-wrap">
+          <div class="completion-label"><span>Profile completion</span><span id="completionPct">0%</span></div>
+          <div class="completion-bar"><div class="completion-fill" id="completionFill" style="width:0%"></div></div>
+        </div>
+        <div class="verify-badge verify-unverified" id="verifyBadge">⚪ Not Verified</div>
       </div>
     </div>
 
-    <!-- RIGHT -->
     <div>
-      <div id="formArea">
-        <div class="loading-overlay"><div class="spin2"></div> Loading profile...</div>
+      <!-- PERSONAL -->
+      <div class="form-card">
+        <div class="form-section-title">👤 Personal Information</div>
+        <div class="field">
+          <label class="lbl">Tagline <span style="color:var(--muted);font-size:10px;text-transform:none;">(max 30 chars — e.g. "Expert in Chemistry")</span></label>
+          <input type="text" id="tagline" placeholder='Expert in Chemistry' maxlength="30" oninput="updateTaglineCount();updateCard();" />
+          <div class="char-count" id="taglineCount">0 / 30</div>
+        </div>
+        <div class="row3">
+          <div class="field"><label class="lbl">First Name *</label><input type="text" id="firstName" oninput="updateCard()" /></div>
+          <div class="field"><label class="lbl">Middle Name</label><input type="text" id="middleName" /></div>
+          <div class="field"><label class="lbl">Last Name *</label><input type="text" id="lastName" oninput="updateCard()" /></div>
+        </div>
+        <div class="field"><label class="lbl">Address Line 1</label><input type="text" id="addressLine1" placeholder="Street address" /></div>
+        <div class="field"><label class="lbl">Address Line 2</label><input type="text" id="addressLine2" placeholder="Apartment, suite, etc." /></div>
+        <div class="row2">
+          <div class="field"><label class="lbl">City</label><input type="text" id="city" placeholder="Colombo" /></div>
+          <div class="field"><label class="lbl">State / Province</label><input type="text" id="state" placeholder="Western Province" /></div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label class="lbl">Country</label>
+            <select id="country">
+              <option value="">Select country</option>
+              <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
+              <option>India</option><option>Australia</option><option>Canada</option><option>Singapore</option>
+              <option>UAE</option><option>Germany</option><option>France</option><option>Japan</option>
+              <option>China</option><option>Brazil</option><option>South Africa</option>
+              <option>Pakistan</option><option>Bangladesh</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Postal Code</label><input type="text" id="postalCode" placeholder="10100" /></div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label class="lbl">Phone Number</label>
+            <input type="tel" id="phone" placeholder="+94 77 123 4567" />
+            <div class="tip">📱 SMS verification coming soon</div>
+          </div>
+          <div class="field">
+            <label class="lbl">Email</label>
+            <input type="email" id="email" readonly />
+            <div class="tip">📧 Email verification coming soon</div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Bio <span style="color:var(--muted);font-size:10px;text-transform:none;">(max 500 chars)</span></label>
+          <textarea id="bio" rows="4" placeholder="Tell buyers about yourself, your background and expertise..." maxlength="500" oninput="updateBioCount()"></textarea>
+          <div class="char-count" id="bioCount">0 / 500</div>
+        </div>
+      </div>
+
+      <!-- PROFESSIONAL -->
+      <div class="form-card">
+        <div class="form-section-title">🎓 Professional Details</div>
+        <div class="row2">
+          <div class="field">
+            <label class="lbl">Expert Area</label>
+            <select id="expertArea">
+              <option value="">Select your main area</option>
+              <optgroup label="Sciences"><option>Biology</option><option>Chemistry</option><option>Physics</option><option>Mathematics</option><option>Environmental Science</option><option>Geology</option></optgroup>
+              <optgroup label="Technology"><option>Computer Science</option><option>Software Engineering</option><option>Artificial Intelligence</option><option>Cybersecurity</option><option>Data Science</option><option>Electronics</option><option>Robotics</option></optgroup>
+              <optgroup label="Business"><option>Business Administration</option><option>Finance</option><option>Marketing</option><option>Accounting</option><option>Economics</option><option>Entrepreneurship</option><option>Supply Chain</option><option>Human Resources</option></optgroup>
+              <optgroup label="Health"><option>Medicine</option><option>Pharmacy</option><option>Nursing</option><option>Psychology</option><option>Nutrition</option><option>Public Health</option></optgroup>
+              <optgroup label="Arts & Humanities"><option>Design</option><option>Architecture</option><option>Literature</option><option>History</option><option>Philosophy</option><option>Languages</option></optgroup>
+              <optgroup label="Engineering"><option>Civil Engineering</option><option>Mechanical Engineering</option><option>Electrical Engineering</option><option>Chemical Engineering</option><option>Aerospace Engineering</option></optgroup>
+              <optgroup label="Legal & Social"><option>Law</option><option>Political Science</option><option>Sociology</option><option>Education</option><option>Social Work</option></optgroup>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="lbl">Highest Qualification</label>
+            <select id="qualification">
+              <option value="">Select qualification</option>
+              <option>High School</option><option>Diploma</option><option>Bachelor's Degree</option>
+              <option>Master's Degree</option><option>PhD</option><option>Self-taught</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Specializations</label>
+          <div class="spec-table">
+            <div class="spec-head"><div>Subject / Area</div><div>How You Specialized</div><div></div></div>
+            <div id="specRows"></div>
+          </div>
+          <button class="add-spec-btn" onclick="addSpecRow()">+ Add Specialization</button>
+        </div>
+      </div>
+
+      <!-- SAVE -->
+      <div class="form-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Save your profile</div>
+            <div style="font-size:12px;color:var(--muted);">Complete your profile to earn your first ⭐ star rating</div>
+          </div>
+          <button class="save-btn" id="saveBtn" onclick="saveProfile()">
+            <div class="spinner" id="saveSpinner"></div>
+            <span id="saveBtnText">Save Changes</span>
+          </button>
+        </div>
+        <div class="msg error" id="errorMsg"></div>
+        <div class="msg success" id="successMsg"></div>
+        <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Profile Verification</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;">Submit your profile for admin verification. Requires at least 60% profile completion.</div>
+          <button class="verify-btn" id="verifyBtn" onclick="submitVerification()">✅ Submit for Verification</button>
+        </div>
       </div>
     </div>
   </div>
@@ -221,189 +279,224 @@
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
   const token = localStorage.getItem('ih_token');
-  const cachedUser = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  if (!token || !user) window.location.href = '/login';
 
-  if (!token || !cachedUser) window.location.href = '/login';
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+  const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
+  const navLinks = { idea_creator:[['⚡','Dashboard','/dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['➕','Submit','/submit'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], investor:[['⚡','Dashboard','/buyer-dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['🏭','Businesses','/businesses'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], business_owner:[['⚡','Dashboard','/business-dashboard'],['🏭','Businesses','/businesses'],['➕','List Business','/list-business'],['👤','Profile','/profile'],['💬','Messages','/messages']] };
+  const defaultNav = [['⚡','Dashboard','/dashboard'],['🤝','Find Support','/find-support'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']];
 
-  function logout() {
-    localStorage.removeItem('ih_token');
-    localStorage.removeItem('ih_user');
-    window.location.href = '/login';
-  }
+  const navItems = navLinks[user?.role] || defaultNav;
+  document.getElementById('sidebarNav').innerHTML = navItems.map(([icon,label,href]) => `<a class="nav-item ${href==='/profile'?'active':''}" href="${href}"><span class="nav-icon">${icon}</span><span>${label}</span></a>`).join('');
+  document.getElementById('backBtn').href = dashMap[user?.role] || '/dashboard';
 
-  const SPECIALIZATIONS = ['Technology', 'Health', 'Finance', 'Education', 'E-commerce', 'Food & Beverage', 'Real Estate', 'Travel', 'Environment', 'Agriculture', 'Entertainment', 'Social Impact'];
-  let selectedSpecs = [];
+  const howOptions = ['Education (Degree/Diploma)','Family Background','Vocational Training','Favourite Subject','Self-taught','Professional Experience','Research & Study','Mentorship','Online Courses','Work Experience','Other'];
+  let specRows = [];
+  let currentProfile = null;
 
-  function buildForm(user) {
-    const initials = (user.first_name?.[0] || user.firstName?.[0] || '') + (user.last_name?.[0] || user.lastName?.[0] || '');
-    const fullName = `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim();
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
 
-    document.getElementById('avatarLg').textContent = initials || '?';
-    document.getElementById('sidebarAvatar').textContent = initials || '?';
-    document.getElementById('profileName').textContent = fullName || 'No name';
-    document.getElementById('profileEmail').textContent = user.email || '';
+  function updateCard() {
+    const fn = document.getElementById('firstName').value||'';
+    const ln = document.getElementById('lastName').value||'';
+    const tl = document.getElementById('tagline').value||'';
+    const fullName = `${fn} ${ln}`.trim()||'Your Name';
+    document.getElementById('cardName').textContent = fullName;
+    document.getElementById('cardTagline').textContent = tl||'Add a tagline...';
+    const initials = (fn[0]||'')+(ln[0]||'');
+    document.getElementById('avatarInitials').textContent = initials||'?';
     document.getElementById('sidebarName').textContent = fullName;
-    document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
-    document.getElementById('profileBadge').textContent = user.role === 'idea_creator' ? '💡 Idea Creator' : '🔍 Investor';
-    document.getElementById('statEarnings').textContent = '$' + (user.earnings || 0).toLocaleString();
-
-    const vBadge = document.getElementById('verifiedBadge');
-    if (user.verified) { vBadge.textContent = '✓ Verified'; vBadge.classList.add('yes'); }
-
-    selectedSpecs = user.specializations || [];
-
-    document.getElementById('formArea').innerHTML = `
-      <div class="form-card">
-        <div class="form-section-title">Personal Information</div>
-        <div class="row">
-          <div class="field">
-            <label>First Name</label>
-            <input type="text" id="firstName" value="${user.first_name || user.firstName || ''}" placeholder="First name" />
-          </div>
-          <div class="field">
-            <label>Last Name</label>
-            <input type="text" id="lastName" value="${user.last_name || user.lastName || ''}" placeholder="Last name" />
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label>Country</label>
-            <select id="country">
-              <option value="">Select country</option>
-              ${['Sri Lanka','United States','United Kingdom','India','Australia','Canada','Germany','France','Singapore','UAE','Other'].map(c => `<option ${user.country === c ? 'selected' : ''}>${c}</option>`).join('')}
-            </select>
-          </div>
-          <div class="field">
-            <label>City</label>
-            <input type="text" id="city" value="${user.city || ''}" placeholder="Your city" />
-          </div>
-        </div>
-        <div class="field">
-          <label>Phone</label>
-          <input type="tel" id="phone" value="${user.phone || ''}" placeholder="+94 77 123 4567" />
-        </div>
-        <div class="field">
-          <label>Bio</label>
-          <textarea id="bio" placeholder="Tell buyers about yourself and your background...">${user.bio || ''}</textarea>
-        </div>
-      </div>
-
-      <div class="form-card">
-        <div class="form-section-title">Professional Details</div>
-        <div class="field">
-          <label>Qualification</label>
-          <select id="qual">
-            <option value="">Select qualification</option>
-            ${['High School','Diploma','Bachelor\'s Degree','Master\'s Degree','PhD','Self-taught','Other'].map(q => `<option ${user.qual === q ? 'selected' : ''}>${q}</option>`).join('')}
-          </select>
-        </div>
-        <div class="field">
-          <label>Specializations</label>
-          <div class="spec-grid" id="specGrid">
-            ${SPECIALIZATIONS.map(s => `
-              <div class="spec-tag ${selectedSpecs.includes(s) ? 'selected' : ''}" onclick="toggleSpec('${s}')">${s}</div>
-            `).join('')}
-          </div>
-        </div>
-
-        <div class="msg error" id="errorMsg"></div>
-        <div class="msg success" id="successMsg">Profile updated successfully! ✓</div>
-
-        <div style="display:flex; justify-content:flex-end; margin-top: 0.5rem;">
-          <button class="save-btn" id="saveBtn" onclick="handleSave()">
-            <div class="spinner" id="spinner"></div>
-            <span id="btnText">Save Changes</span>
-          </button>
-        </div>
-      </div>
-    `;
+    document.getElementById('sidebarAvatarText').textContent = initials||'?';
+    updateCompletion();
   }
 
-  function toggleSpec(s) {
-    if (selectedSpecs.includes(s)) {
-      selectedSpecs = selectedSpecs.filter(x => x !== s);
-    } else {
-      selectedSpecs.push(s);
-    }
-    document.querySelectorAll('.spec-tag').forEach(tag => {
-      tag.classList.toggle('selected', selectedSpecs.includes(tag.textContent));
-    });
+  function updateTaglineCount() {
+    const len = document.getElementById('tagline').value.length;
+    const el = document.getElementById('taglineCount');
+    el.textContent = `${len} / 30`;
+    el.className = 'char-count'+(len>=25?' warn':'');
+  }
+
+  function updateBioCount() {
+    const len = document.getElementById('bio').value.length;
+    const el = document.getElementById('bioCount');
+    el.textContent = `${len} / 500`;
+    el.className = 'char-count'+(len>=450?' warn':'');
+  }
+
+  function updateCompletion() {
+    const checks = [
+      document.getElementById('firstName').value,
+      document.getElementById('lastName').value,
+      document.getElementById('country').value,
+      document.getElementById('phone').value,
+      document.getElementById('bio').value,
+      document.getElementById('tagline').value,
+      document.getElementById('expertArea').value,
+      document.getElementById('qualification').value,
+      document.getElementById('city').value,
+      document.getElementById('addressLine1').value,
+    ];
+    const hasAvatar = !!document.getElementById('avatarDisplay').querySelector('img');
+    const hasSpecs = specRows.length > 0;
+    const filled = checks.filter(Boolean).length + (hasAvatar?1:0) + (hasSpecs?1:0);
+    const total = checks.length + 2;
+    const pct = Math.round((filled/total)*100);
+    document.getElementById('completionPct').textContent = pct+'%';
+    document.getElementById('completionFill').style.width = pct+'%';
+    return pct;
+  }
+
+  function updateStars(n) {
+    document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('filled', i<n));
+  }
+
+  function updateVerifyBadge(status) {
+    const badge = document.getElementById('verifyBadge');
+    const btn = document.getElementById('verifyBtn');
+    if (status==='verified') { badge.className='verify-badge verify-verified'; badge.textContent='✅ Verified'; btn.disabled=true; btn.textContent='✅ Already Verified'; }
+    else if (status==='pending') { badge.className='verify-badge verify-pending'; badge.textContent='⏳ Pending Review'; btn.disabled=true; btn.textContent='⏳ Verification Pending'; }
+    else { badge.className='verify-badge verify-unverified'; badge.textContent='⚪ Not Verified'; btn.disabled=false; btn.textContent='✅ Submit for Verification'; }
+  }
+
+  function addSpecRow(subject='', how='') {
+    const id = Date.now() + Math.random();
+    specRows.push(id);
+    const row = document.createElement('div');
+    row.className='spec-row'; row.id=`spec-${id}`;
+    row.innerHTML = `<input type="text" placeholder="e.g. Organic Chemistry" value="${subject}" oninput="updateCompletion()" /><select id="spec-how-${id}"><option value="">How specialized</option>${howOptions.map(o=>`<option ${o===how?'selected':''}>${o}</option>`).join('')}</select><button class="spec-delete" onclick="removeSpec(${id})">✕</button>`;
+    document.getElementById('specRows').appendChild(row);
+    updateCompletion();
+  }
+
+  function removeSpec(id) {
+    specRows = specRows.filter(r=>r!==id);
+    document.getElementById(`spec-${id}`)?.remove();
+    updateCompletion();
+  }
+
+  function getSpecs() {
+    return specRows.map(id => {
+      const row = document.getElementById(`spec-${id}`);
+      if (!row) return null;
+      const sub = row.querySelector('input')?.value.trim();
+      const how = row.querySelector('select')?.value;
+      return sub ? {subject:sub, how_specialized:how||''} : null;
+    }).filter(Boolean);
+  }
+
+  async function handleAvatarUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2*1024*1024) { alert('Image must be under 2MB'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('avatarDisplay').innerHTML = `<img src="${ev.target.result}" alt="avatar" />`;
+      const sb = document.getElementById('sidebarAvatar');
+      sb.innerHTML = `<img src="${ev.target.result}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      updateCompletion();
+    };
+    reader.readAsDataURL(file);
+    try {
+      const fd = new FormData(); fd.append('avatar', file);
+      const res = await fetch(`${API_URL}/api/profile/avatar`, { method:'POST', headers:{Authorization:`Bearer ${token}`}, body:fd });
+      const data = await res.json();
+      if (data.url) { const u=JSON.parse(localStorage.getItem('ih_user')||'{}'); u.avatarUrl=data.url; localStorage.setItem('ih_user',JSON.stringify(u)); }
+    } catch(err) { console.error('Avatar upload failed'); }
   }
 
   async function loadProfile() {
     try {
-      const res = await fetch(`${API_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.status === 401) { logout(); return; }
-      const user = await res.json();
-
-      const ideasRes = await fetch(`${API_URL}/api/my-ideas`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const ideas = await ideasRes.json();
-      document.getElementById('statIdeas').textContent = Array.isArray(ideas) ? ideas.length : 0;
-
-      buildForm(user);
-    } catch (err) {
-      document.getElementById('formArea').innerHTML = `<div style="color:var(--error);padding:2rem;">Failed to load profile. Please refresh.</div>`;
-    }
+      const res = await fetch(`${API_URL}/api/auth/me`, {headers:{Authorization:`Bearer ${token}`}});
+      const data = await res.json();
+      currentProfile = data;
+      document.getElementById('firstName').value = data.first_name||'';
+      document.getElementById('middleName').value = data.middle_name||'';
+      document.getElementById('lastName').value = data.last_name||'';
+      document.getElementById('tagline').value = data.tagline||'';
+      document.getElementById('addressLine1').value = data.address_line1||'';
+      document.getElementById('addressLine2').value = data.address_line2||'';
+      document.getElementById('city').value = data.city||'';
+      document.getElementById('state').value = data.state||'';
+      document.getElementById('country').value = data.country||'';
+      document.getElementById('postalCode').value = data.postal_code||'';
+      document.getElementById('phone').value = data.phone||'';
+      document.getElementById('email').value = data.email||'';
+      document.getElementById('bio').value = data.bio||'';
+      document.getElementById('expertArea').value = data.expert_area||'';
+      document.getElementById('qualification').value = data.qualification||'';
+      if (data.avatar_url) {
+        document.getElementById('avatarDisplay').innerHTML=`<img src="${data.avatar_url}" alt="avatar" />`;
+        document.getElementById('sidebarAvatar').innerHTML=`<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      }
+      const fn=data.first_name||''; const ln=data.last_name||'';
+      const initials=(fn[0]||'')+(ln[0]||'');
+      document.getElementById('avatarInitials').textContent=initials||'?';
+      document.getElementById('sidebarAvatarText').textContent=initials||'?';
+      document.getElementById('cardName').textContent=`${fn} ${ln}`.trim()||'Your Name';
+      document.getElementById('cardTagline').textContent=data.tagline||'Add a tagline...';
+      document.getElementById('cardRole').textContent=roleMap[data.role]||'Member';
+      document.getElementById('sidebarName').textContent=`${fn} ${ln}`.trim();
+      document.getElementById('sidebarRole').textContent=roleMap[data.role]||'—';
+      updateStars(data.profile_stars||0);
+      updateVerifyBadge(data.verification_status||'unverified');
+      if (data.specializations) data.specializations.forEach(s=>addSpecRow(s.subject,s.how_specialized));
+      updateTaglineCount(); updateBioCount(); updateCompletion();
+    } catch(e) { console.error(e); }
   }
 
-  async function handleSave() {
-    const firstName = document.getElementById('firstName').value.trim();
-    const lastName = document.getElementById('lastName').value.trim();
-    const country = document.getElementById('country').value;
-    const city = document.getElementById('city').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const bio = document.getElementById('bio').value.trim();
-    const qual = document.getElementById('qual').value;
-
-    const errorMsg = document.getElementById('errorMsg');
-    const successMsg = document.getElementById('successMsg');
-    errorMsg.classList.remove('show');
-    successMsg.classList.remove('show');
-
-    if (!firstName) { errorMsg.textContent = 'First name is required.'; errorMsg.classList.add('show'); return; }
-
-    const btn = document.getElementById('saveBtn');
-    const spinner = document.getElementById('spinner');
-    const btnText = document.getElementById('btnText');
-
-    btn.disabled = true;
-    spinner.style.display = 'block';
-    btnText.textContent = 'Saving...';
-
+  async function saveProfile() {
+    const fn=document.getElementById('firstName').value.trim();
+    const ln=document.getElementById('lastName').value.trim();
+    if (!fn||!ln) { showMsg('error','First and last name are required.'); return; }
+    const btn=document.getElementById('saveBtn');
+    const sp=document.getElementById('saveSpinner');
+    const bt=document.getElementById('saveBtnText');
+    btn.disabled=true; sp.style.display='block'; bt.textContent='Saving...';
     try {
-      const res = await fetch(`${API_URL}/api/auth/me`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ firstName, lastName, country, city, phone, bio, qual, specializations: selectedSpecs })
-      });
+      const pct=updateCompletion();
+      const payload = {
+        first_name:fn, middle_name:document.getElementById('middleName').value.trim(),
+        last_name:ln, tagline:document.getElementById('tagline').value.trim(),
+        address_line1:document.getElementById('addressLine1').value.trim(),
+        address_line2:document.getElementById('addressLine2').value.trim(),
+        city:document.getElementById('city').value.trim(), state:document.getElementById('state').value.trim(),
+        country:document.getElementById('country').value, postal_code:document.getElementById('postalCode').value.trim(),
+        phone:document.getElementById('phone').value.trim(), bio:document.getElementById('bio').value.trim(),
+        expert_area:document.getElementById('expertArea').value, qualification:document.getElementById('qualification').value,
+        specializations:getSpecs(), profile_complete: pct>=80,
+        profile_stars: pct>=80 && (currentProfile?.profile_stars||0)<1 ? 1 : (currentProfile?.profile_stars||0)
+      };
+      const res=await fetch(`${API_URL}/api/auth/me`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(payload)});
+      const data=await res.json();
+      if (!res.ok) throw new Error(data.error||'Failed');
+      if (pct>=80 && (currentProfile?.profile_stars||0)<1) {
+        updateStars(1);
+        showMsg('success','✅ Profile saved! You earned your first ⭐ star!');
+      } else { showMsg('success','✅ Profile saved successfully!'); }
+      const u=JSON.parse(localStorage.getItem('ih_user')||'{}');
+      u.firstName=fn; u.lastName=ln; localStorage.setItem('ih_user',JSON.stringify(u));
+      currentProfile={...currentProfile,...payload};
+    } catch(err) { showMsg('error',err.message||'Something went wrong.'); }
+    finally { btn.disabled=false; sp.style.display='none'; bt.textContent='Save Changes'; }
+  }
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save');
+  async function submitVerification() {
+    if (updateCompletion()<60) { showMsg('error','Complete at least 60% of your profile first.'); return; }
+    if (!confirm('Submit for admin verification?')) return;
+    try {
+      await fetch(`${API_URL}/api/auth/me`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({verification_status:'pending',verification_submitted_at:new Date().toISOString()})});
+      updateVerifyBadge('pending');
+      showMsg('success','⏳ Submitted! Admin will review your profile.');
+    } catch(e) { showMsg('error','Failed to submit.'); }
+  }
 
-      localStorage.setItem('ih_user', JSON.stringify(data));
-
-      const fullName = `${firstName} ${lastName}`.trim();
-      document.getElementById('profileName').textContent = fullName;
-      document.getElementById('sidebarName').textContent = fullName;
-      const initials = (firstName[0] || '') + (lastName[0] || '');
-      document.getElementById('avatarLg').textContent = initials || '?';
-      document.getElementById('sidebarAvatar').textContent = initials || '?';
-
-      successMsg.classList.add('show');
-      setTimeout(() => successMsg.classList.remove('show'), 3000);
-
-    } catch (err) {
-      errorMsg.textContent = err.message || 'Something went wrong.';
-      errorMsg.classList.add('show');
-    } finally {
-      btn.disabled = false;
-      spinner.style.display = 'none';
-      btnText.textContent = 'Save Changes';
-    }
+  function showMsg(type, text) {
+    const el=document.getElementById(type==='error'?'errorMsg':'successMsg');
+    const other=document.getElementById(type==='error'?'successMsg':'errorMsg');
+    other.classList.remove('show'); el.textContent=text; el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'),5000);
   }
 
   loadProfile();
