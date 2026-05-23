@@ -197,7 +197,7 @@
     document.getElementById('sidebarAvatar').textContent = initials||'?';
     document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
     document.getElementById('sidebarRole').textContent = user.role||'—';
-    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : supportRoles.includes(user.role) ? '/support-dashboard' : user.role==='business_owner' ? '/business-dashboard' : '/buyer-dashboard';
+    // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : supportRoles.includes(user.role) ? '/support-dashboard' : user.role==='business_owner' ? '/business-dashboard' : '/buyer-dashboard';
   }
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }

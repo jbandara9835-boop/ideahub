@@ -196,7 +196,7 @@
     document.getElementById('sidebarAvatar').textContent = initials||'?';
     document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
     document.getElementById('sidebarRole').textContent = roleMap[user.role]||'—';
-    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : investorRoles.includes(user.role) ? '/buyer-dashboard' : '/support-dashboard';
+    // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : investorRoles.includes(user.role) ? '/buyer-dashboard' : '/support-dashboard';
 
     // Show post button for investors
     if (investorRoles.includes(user.role)) {

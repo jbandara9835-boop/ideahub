@@ -224,7 +224,7 @@
     document.getElementById('sidebarAvatar').textContent = initials||'?';
     document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
     document.getElementById('sidebarRole').textContent = roleMap[user.role]||'—';
-    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : investorRoles.includes(user.role) ? '/buyer-dashboard' : '/support-dashboard';
+    // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : investorRoles.includes(user.role) ? '/buyer-dashboard' : '/support-dashboard';
   }
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }

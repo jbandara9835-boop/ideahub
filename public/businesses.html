@@ -216,7 +216,7 @@
     document.getElementById('sidebarAvatar').textContent = initials||'?';
     document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
     document.getElementById('sidebarRole').textContent = roleMap[user.role]||'—';
-    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : supportRoles.includes(user.role) ? '/support-dashboard' : user.role === 'business_owner' ? '/business-dashboard' : '/buyer-dashboard';
+    // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : supportRoles.includes(user.role) ? '/support-dashboard' : user.role === 'business_owner' ? '/business-dashboard' : '/buyer-dashboard';
 
     if (user.role === 'business_owner') {
       document.getElementById('actionBtn').innerHTML = `<a class="list-btn" href="/list-business">+ List Your Business</a>`;

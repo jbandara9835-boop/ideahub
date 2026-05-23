@@ -336,7 +336,7 @@ if (avatarUrl) {
     document.getElementById('sidebarName').textContent = `${user.first_name || ''} ${user.Last_name || ''}`.trim();
     document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role || '—';
     const creatorRoles = ['idea_creator','patent_seller'];
-    document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : '/buyer-dashboard';
+    // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : '/buyer-dashboard';
   }
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href = '/login'; }
