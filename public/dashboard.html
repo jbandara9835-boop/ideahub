@@ -473,7 +473,11 @@ function editIdea(id) {
     try {
       if (user) {
         const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
-        document.getElementById('sidebarAvatar').textContent = initials || '?';
+        if (user.avatarUrl) {
+          document.getElementById('sidebarAvatar').innerHTML = `<img src="${user.avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        } else {
+          document.getElementById('sidebarAvatar').textContent = initials || '?';
+        }
         document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
         document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
         document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.firstName || 'there'} 👋`;
