@@ -290,6 +290,33 @@ app.post('/api/ideas', authMiddleware, async (req, res) => {
   res.status(201).json(idea);
 });
 
+// PUT update idea
+app.put('/api/ideas/:id', authMiddleware, async (req, res) => {
+  const { title, summary, desc, industry, ideaType, price, level, visibility, hasPatent, patentNumber } = req.body;
+  if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
+
+  const { data: idea, error } = await supabase
+    .from('ideas')
+    .update({
+      title, summary,
+      description: desc,
+      industry,
+      idea_type: ideaType || 'New Business Idea',
+      price: parseFloat(price),
+      level: parseInt(level) || 1,
+      visibility: parseInt(visibility) || 1,
+      has_patent: hasPatent || false,
+      patent_number: patentNumber || '',
+    })
+    .eq('id', req.params.id)
+    .eq('creator_id', req.user.id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(idea);
+});
+
 // GET my ideas
 app.get('/api/my-ideas', authMiddleware, async (req, res) => {
   const { data, error } = await supabase
