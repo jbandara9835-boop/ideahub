@@ -197,7 +197,6 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
   if (profile_stars !== undefined) updateData.profile_stars = profile_stars;
   if (verification_status !== undefined) updateData.verification_status = verification_status;
   if (verification_submitted_at !== undefined) updateData.verification_submitted_at = verification_submitted_at;
-  updateData.updated_at = new Date().toISOString();
 
   const { data: user, error } = await supabase
     .from('users')
