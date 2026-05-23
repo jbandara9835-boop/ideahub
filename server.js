@@ -174,16 +174,47 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
 
 // UPDATE profile
 app.put('/api/auth/me', authMiddleware, async (req, res) => {
-  const { firstName, lastName, country, city, bio, specializations, qual, phone } = req.body;
+  const { first_name, last_name, middle_name, tagline, bio, country, city, state, postal_code, address_line1, address_line2, phone, expert_area, qualification, specializations, profile_complete, profile_stars, verification_status, verification_submitted_at } = req.body;
+
+  const updateData = {};
+  if (first_name !== undefined) updateData.first_name = first_name;
+  if (last_name !== undefined) updateData.last_name = last_name;
+  if (middle_name !== undefined) updateData.middle_name = middle_name;
+  if (tagline !== undefined) updateData.tagline = tagline?.slice(0,30);
+  if (bio !== undefined) updateData.bio = bio?.slice(0,500);
+  if (country !== undefined) updateData.country = country;
+  if (city !== undefined) updateData.city = city;
+  if (state !== undefined) updateData.state = state;
+  if (postal_code !== undefined) updateData.postal_code = postal_code;
+  if (address_line1 !== undefined) updateData.address_line1 = address_line1;
+  if (address_line2 !== undefined) updateData.address_line2 = address_line2;
+  if (phone !== undefined) updateData.phone = phone;
+  if (expert_area !== undefined) updateData.expert_area = expert_area;
+  if (qualification !== undefined) updateData.qualification = qualification;
+  if (profile_complete !== undefined) updateData.profile_complete = profile_complete;
+  if (profile_stars !== undefined) updateData.profile_stars = profile_stars;
+  if (verification_status !== undefined) updateData.verification_status = verification_status;
+  if (verification_submitted_at !== undefined) updateData.verification_submitted_at = verification_submitted_at;
+  updateData.updated_at = new Date().toISOString();
 
   const { data: user, error } = await supabase
     .from('users')
-    .update({ first_name: firstName, last_name: lastName, country, city, bio, specializations, qual, phone })
+    .update(updateData)
     .eq('id', req.user.id)
     .select()
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
+
+  if (specializations && Array.isArray(specializations)) {
+    await supabase.from('user_specializations').delete().eq('user_id', req.user.id);
+    if (specializations.length > 0) {
+      await supabase.from('user_specializations').insert(
+        specializations.map(s => ({ user_id: req.user.id, subject: s.subject, how_specialized: s.how_specialized }))
+      );
+    }
+  }
+
   const { password: _, ...safeUser } = user;
   res.json({ ...safeUser, firstName: user.first_name, lastName: user.last_name });
 });
