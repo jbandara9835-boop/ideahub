@@ -539,6 +539,7 @@
 
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  let patentOn = false;
   const editId = new URLSearchParams(window.location.search).get('edit');
   if (editId) {
   document.querySelector('.page-title').textContent = 'Edit Idea';
@@ -621,7 +622,7 @@
     document.getElementById('previewPrice').textContent = price ? '$' + parseInt(price).toLocaleString() : '$0';
   }
 
-  let patentOn = false;
+  // (delete this line — we move it to the top)
   function toggleOption(opt) {
     if (opt === 'patent') {
       patentOn = !patentOn;
