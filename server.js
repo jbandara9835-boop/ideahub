@@ -64,6 +64,14 @@ app.get('/public-profile', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'public-profile.html'));
 });
 
+app.get('/idea', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'idea.html'));
+});
+
+app.get('/browse', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'browse.html'));
+});
+
 app.get('/public-profile', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'public-profile.html'));
 });
