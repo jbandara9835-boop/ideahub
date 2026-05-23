@@ -308,7 +308,7 @@ if (avatarUrl) {
             <div class="card-price">${formatPrice(idea.price)}</div>
             <div class="card-meta">
               <div class="card-meta-item">👁 ${idea.views || 0}</div>
-              <button class="view-btn" onclick="event.preventDefault(); window.location.href='/idea/${idea.id}'">View →</button>
+              <button class="view-btn" onclick="event.preventDefault(); window.location.href='/idea?id=${idea.id}'">View →</button>
             </div>
           </div>
         </a>
