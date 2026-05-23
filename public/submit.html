@@ -540,7 +540,7 @@
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
   let patentOn = false;
-  const editId = new URLSearchParams(window.location.search).get('edit');
+  const editId = new URLSearchParams(window.location.search).get('edit')?.split(':')[0];
   if (editId) {
   document.querySelector('.page-title').textContent = 'Edit Idea';
   document.getElementById('btnText').textContent = 'Save Changes';
