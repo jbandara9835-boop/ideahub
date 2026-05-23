@@ -417,9 +417,9 @@
       <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
     `;
   }
-  renderSidebar();
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  renderSidebar();
 
   const SUPPORT_ROLES = ['virtual_manager', 'patent_attorney', 'corporate_services'];
   const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };

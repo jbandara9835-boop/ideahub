@@ -235,9 +235,9 @@
       <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💸</span><span>Transactions</span></a>
     `;
   }
-  renderSidebar();
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  renderSidebar();
 
   let allIdeas = [];
   let activeIndustry = 'all';
