@@ -303,7 +303,13 @@
 
   if (user) {
     const initials = (user.first_name?.[0] || '') + (user.Last_name?.[0] || '');
-    document.getElementById('sidebarAvatar').textContent = initials || '?';
+    const avatarUrl = user.avatar_url || user.avatarUrl;
+const avatarEl = document.getElementById('sidebarAvatar');
+if (avatarUrl) {
+  avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+} else {
+  avatarEl.textContent = (user.first_name?.[0] || '?');
+}
     document.getElementById('sidebarName').textContent = `${user.first_name || ''} ${user.Last_name || ''}`.trim();
     document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role || '—';
     const creatorRoles = ['idea_creator','patent_seller'];
