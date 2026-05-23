@@ -203,7 +203,7 @@
 
   .table-head {
     display: grid;
-    grid-template-columns: 2fr 1fr 80px 80px 100px 100px 100px 100px;
+    grid-template-columns: 2fr 1fr 80px 90px 90px 80px 90px;
     padding: 0.75rem 1.5rem;
     border-bottom: 1px solid var(--border);
     font-size: 12px; color: var(--muted);
@@ -212,7 +212,7 @@
 
   .idea-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 80px 80px 100px 100px 100px;
+    grid-template-columns: 2fr 1fr 80px 90px 90px 80px 90px;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border);
     align-items: center;
@@ -522,7 +522,6 @@ if (avatarUrl) {
 <div style="display:flex;gap:6px;">
               <button class="delete-btn" onclick="editIdea('${idea.id}')" title="Edit" style="color:var(--accent);">✏️</button>
               <button class="delete-btn" onclick="deleteIdea('${idea.id}')" title="Delete">🗑</button>
-            </div>             
             </div>
           </div>
         `).join('');
