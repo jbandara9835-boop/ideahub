@@ -200,7 +200,7 @@
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
   // Get idea ID from URL
-  const ideaId = window.location.pathname.split('/').pop();
+  const ideaId = new URLSearchParams(window.location.search).get('id')?.split(':')[0];
   let currentIdea = null;
 
   if (user) {
