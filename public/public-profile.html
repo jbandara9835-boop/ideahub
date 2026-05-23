@@ -92,8 +92,12 @@
             <div class="hero-name">${user.first_name || ''} ${user.last_name || ''}</div>
             <div class="hero-role">${roleLabel}</div>
             ${user.tagline ? `<div class="hero-tagline">"${user.tagline}"</div>` : ''}
-            <div class="hero-meta">📍 ${[user.city, user.country].filter(Boolean).join(', ') || 'Location not set'} &nbsp;·&nbsp; Member since ${joinYear}</div>
-            ${user.is_verified ? '<div class="verified-badge">✅ Verified</div>' : ''}
+            <div class="hero-meta">📍 ${[user.city, user.state, user.country].filter(Boolean).join(', ') || 'Location not set'} &nbsp;·&nbsp; Member since ${joinYear}</div>
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+              ${user.is_verified ? '<div class="verified-badge">✅ Verified User</div>' : '<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted)">⏳ Unverified</div>'}
+              ${user.expert_area ? `<div style="display:inline-flex;align-items:center;gap:4px;background:var(--accent-dim);border:1px solid rgba(245,200,66,0.2);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--accent)">🎯 ${user.expert_area}</div>` : ''}
+              ${user.qualification ? `<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted)">🎓 ${user.qualification}</div>` : ''}
+            </div>
           </div>
         </div>
 
