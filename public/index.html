@@ -443,7 +443,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
     if (creatorRoles.includes(user.role)) dashUrl = '/dashboard';
     if (supportRoles.includes(user.role)) dashUrl = '/support-dashboard';
 
-    const avatarContent = user.avatarUrl 
+    const avatarContent = (user.avatarUrl || user.avatar_url) 
       ? `<img src="${user.avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
       : (initials || '?');
     document.getElementById('navActions').innerHTML = `

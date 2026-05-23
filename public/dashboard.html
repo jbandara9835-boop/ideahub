@@ -473,8 +473,8 @@ function editIdea(id) {
     try {
       if (user) {
         const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
-        if (user.avatarUrl) {
-          document.getElementById('sidebarAvatar').innerHTML = `<img src="${user.avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        if (user.avatarUrl || user.avatar_url) {
+          document.getElementById('sidebarAvatar').innerHTML = `<img src="${user.avatarUrl || user.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
         } else {
           document.getElementById('sidebarAvatar').textContent = initials || '?';
         }
