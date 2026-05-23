@@ -30,6 +30,10 @@ app.get('/dashboard', (req, res) => {
 app.get('/submit', (req, res) => {
   res.sendFile(__dirname + '/public/submit.html');
 });
+app.get('/public-profile', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'public-profile.html'));
+});
+
 app.get('/profile', (req, res) => {
   res.sendFile(__dirname + '/public/profile.html');
 });
