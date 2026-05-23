@@ -582,9 +582,9 @@
   if (!token || !user) window.location.href = '/login';
 
   if (user) {
-    const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+    const initials = (user.first_name?.[0] || '') + (user.Last_name?.[0] || '');
     document.getElementById('sidebarAvatar').textContent = initials || '?';
-    document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    document.getElementById('sidebarName').textContent = `${user.first_name || ''} ${user.Last_name || ''}`.trim();
     document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
   }
 

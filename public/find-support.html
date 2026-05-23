@@ -302,9 +302,9 @@
   const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
 
   if (user) {
-    const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+    const initials = (user.first_name?.[0] || '') + (user.Last_name?.[0] || '');
     document.getElementById('sidebarAvatar').textContent = initials || '?';
-    document.getElementById('sidebarName').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    document.getElementById('sidebarName').textContent = `${user.first_name || ''} ${user.Last_name || ''}`.trim();
     document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role || '—';
     const creatorRoles = ['idea_creator','patent_seller'];
     document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : '/buyer-dashboard';

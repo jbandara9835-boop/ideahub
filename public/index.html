@@ -436,7 +436,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
   if (user && token) {
-    const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+    const initials = (user.first_name?.[0] || '') + (user.Last_name?.[0] || '');
     const creatorRoles = ['idea_creator', 'patent_seller'];
     const supportRoles = ['virtual_manager', 'patent_attorney', 'corporate_services'];
     let dashUrl = '/buyer-dashboard';
