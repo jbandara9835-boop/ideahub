@@ -293,7 +293,7 @@ if (avatarUrl) {
     grid.innerHTML = filtered.map(idea => {
       const lvl = getLevel(idea.level);
       return `
-        <a class="idea-card" href="/idea/${idea.id}">
+        <a class="idea-card" href="/idea?id=${idea.id}">
           <div class="card-top">
             <div class="card-icon">${idea.icon || '💡'}</div>
             <div class="card-badges">
