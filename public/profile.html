@@ -390,7 +390,7 @@ function updateStates() {
     specRows.push(id);
     const row = document.createElement('div');
     row.className='spec-row'; row.id=`spec-${id}`;
-    row.innerHTML = `<input type="text" placeholder="e.g. Organic Chemistry" value="${subject}" oninput="updateCompletion()" /><select id="spec-how-${id}"><option value="">How specialized</option>${howOptions.map(o=>`<option ${o===how?'selected':''}>${o}</option>`).join('')}</select><button class="spec-delete" onclick="removeSpec(${id})">✕</button>`;
+    row.innerHTML = `<input type="text" id="spec-sub-${id}" placeholder="e.g. Organic Chemistry" value="${subject}" oninput="updateCompletion()" /><select id="spec-how-${id}"><option value="">How specialized</option>${howOptions.map(o=>`<option ${o===how?'selected':''}>${o}</option>`).join('')}</select><button class="spec-delete" onclick="removeSpec(${id})">✕</button>`;
     document.getElementById('specRows').appendChild(row);
     updateCompletion();
   }
@@ -403,11 +403,9 @@ function updateStates() {
 
   function getSpecs() {
     return specRows.map(id => {
-      const row = document.getElementById(`spec-${id}`);
-      if (!row) return null;
-      const sub = row.querySelector('input')?.value.trim();
-      const how = row.querySelector('select')?.value;
-      return sub ? {subject:sub, how_specialized:how||''} : null;
+      const sub = document.getElementById(`spec-sub-${id}`)?.value.trim();
+      const how = document.getElementById(`spec-how-${id}`)?.value || '';
+      return sub ? { subject: sub, how_specialized: how } : null;
     }).filter(Boolean);
   }
 
@@ -440,6 +438,7 @@ function updateStates() {
       if (data.url) {
         const u = JSON.parse(localStorage.getItem('ih_user')||'{}');
         u.avatarUrl = data.url;
+        u.avatar_url = data.url;
         localStorage.setItem('ih_user', JSON.stringify(u));
         // Update avatar display with real URL
         document.getElementById('avatarDisplay').innerHTML = `<img src="${data.url}" alt="avatar" />`;
@@ -479,6 +478,12 @@ function updateStates() {
         document.getElementById('avatarDisplay').innerHTML=`<img src="${data.avatar_url}" alt="avatar" />`;
         document.getElementById('sidebarAvatar').innerHTML=`<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
         document.getElementById('avatarInitials').style.display='none';
+      }
+      // Update localStorage with latest avatar
+      if (data.avatar_url) {
+        const u = JSON.parse(localStorage.getItem('ih_user')||'{}');
+        u.avatarUrl = data.avatar_url;
+        localStorage.setItem('ih_user', JSON.stringify(u));
       }
       const fn=data.first_name||''; const ln=data.last_name||'';
       const initials=(fn[0]||'')+(ln[0]||'');
