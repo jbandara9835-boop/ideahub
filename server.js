@@ -13,6 +13,35 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public', { etag: false, maxAge: 0 }));
 
+// GET public user profile
+app.get('/api/users/:id/public', async (req, res) => {
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id, first_name, last_name, role, tagline, avatar_url, city, state, country, bio, qualification, expert_area, created_at, verification_status')
+    .eq('id', req.params.id)
+    .single();
+
+  if (error || !user) return res.status(404).json({ error: 'User not found' });
+
+  const { data: specializations } = await supabase
+    .from('user_specializations')
+    .select('*')
+    .eq('user_id', req.params.id);
+
+  const { data: ideas } = await supabase
+    .from('ideas')
+    .select('id, title, price, views, status')
+    .eq('creator_id', req.params.id)
+    .eq('status', 'live');
+
+  res.json({
+    ...user,
+    is_verified: user.verification_status === 'verified',
+    specializations: specializations || [],
+    ideas: ideas || []
+  });
+});
+
 // ── SUPABASE CLIENT ──────────────────────────────────────────────────────────
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -31,6 +60,10 @@ app.get('/dashboard', (req, res) => {
 app.get('/submit', (req, res) => {
   res.sendFile(__dirname + '/public/submit.html');
 });
+app.get('/public-profile', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'public-profile.html'));
+});
+
 app.get('/public-profile', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'public-profile.html'));
 });
