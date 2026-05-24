@@ -164,65 +164,166 @@
     </div>
 
     <div>
-      <!-- PERSONAL -->
+      <!-- PERSONAL — shown to all roles -->
       <div class="form-card">
         <div class="form-section-title">👤 Personal Information</div>
-        <div class="field">
-          <label class="lbl">Tagline <span style="color:var(--muted);font-size:10px;text-transform:none;">(max 30 chars — e.g. "Expert in Chemistry")</span></label>
-          <input type="text" id="tagline" placeholder='Expert in Chemistry' maxlength="30" oninput="updateTaglineCount();updateCard();" />
-          <div class="char-count" id="taglineCount">0 / 30</div>
-        </div>
-        <div class="row3">
-          <div class="field"><label class="lbl">First Name *</label><input type="text" id="firstName" oninput="updateCard()" /></div>
-          <div class="field"><label class="lbl">Middle Name</label><input type="text" id="middleName" /></div>
-          <div class="field"><label class="lbl">Last Name *</label><input type="text" id="lastName" oninput="updateCard()" /></div>
-        </div>
-        <div class="field">
-          <label class="lbl">Country</label>
-          <select id="country" onchange="updateStates()">
-            <option value="">Select country</option>
-            <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
-            <option>India</option><option>Australia</option><option>Canada</option><option>Singapore</option>
-            <option>UAE</option><option>Germany</option><option>France</option><option>Japan</option>
-            <option>China</option><option>Brazil</option><option>South Africa</option>
-            <option>Pakistan</option><option>Bangladesh</option><option>Other</option>
-          </select>
-        </div>
-        <div class="field"><label class="lbl">Address Line 1</label><input type="text" id="addressLine1" placeholder="Street address" /></div>
-        <div class="field"><label class="lbl">Address Line 2</label><input type="text" id="addressLine2" placeholder="Apartment, suite, etc." /></div>
-        <div class="row3">
-          <div class="field"><label class="lbl">City</label><input type="text" id="city" placeholder="Colombo" /></div>
-          <div class="field"><label class="lbl">State / Province</label>
-            <select id="state"><option value="">Select state/province</option></select>
-          </div>
-          <div class="field"><label class="lbl">Postal Code</label><input type="text" id="postalCode" placeholder="10100" /></div>
-        </div>
-        <div class="row2">
-          <div class="field">
-            <label class="lbl">Phone Number</label>
-            <input type="tel" id="phone" placeholder="+94 77 123 4567" />
-            <div class="tip">📱 SMS verification coming soon</div>
+
+        <!-- Hidden fields still needed for save payload for non-investor roles -->
+        <input type="hidden" id="tagline" />
+        <input type="hidden" id="middleName" />
+        <input type="hidden" id="addressLine1" />
+        <input type="hidden" id="addressLine2" />
+        <input type="hidden" id="city" />
+        <input type="hidden" id="postalCode" />
+        <input type="hidden" id="expertArea" />
+        <input type="hidden" id="qualification" />
+        <select id="state" style="display:none"><option value="">Select state/province</option></select>
+
+        <div id="investorFields" style="display:none">
+          <!-- INVESTOR SIMPLIFIED FORM -->
+          <div class="row2">
+            <div class="field"><label class="lbl">First Name *</label><input type="text" id="firstName" oninput="updateCard()" /></div>
+            <div class="field"><label class="lbl">Last Name *</label><input type="text" id="lastName" oninput="updateCard()" /></div>
           </div>
           <div class="field">
-            <label class="lbl">Email</label>
-            <input type="email" id="email" readonly />
-            <div class="tip">📧 Email verification coming soon</div>
+            <label class="lbl">Country</label>
+            <select id="country" onchange="updateStates()">
+              <option value="">Select country</option>
+              <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
+              <option>India</option><option>Australia</option><option>Canada</option><option>Singapore</option>
+              <option>UAE</option><option>Germany</option><option>France</option><option>Japan</option>
+              <option>China</option><option>Brazil</option><option>South Africa</option>
+              <option>Pakistan</option><option>Bangladesh</option><option>Other</option>
+            </select>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label class="lbl">Phone Number</label>
+              <input type="tel" id="phone" placeholder="+94 77 123 4567" />
+              <div class="tip">📱 SMS verification coming soon</div>
+            </div>
+            <div class="field">
+              <label class="lbl">Email</label>
+              <input type="email" id="email" readonly />
+              <div class="tip">📧 Email verification coming soon</div>
+            </div>
+          </div>
+          <!-- INVESTOR IDENTITY -->
+          <div class="field" style="margin-top:0.5rem;">
+            <label class="lbl">Investor Type</label>
+            <div style="display:flex;gap:12px;margin-top:6px;">
+              <label style="flex:1;border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;text-align:center;transition:all 0.2s;" id="typeIndividualCard" onclick="selectInvestorType('individual')">
+                <div style="font-size:24px;margin-bottom:6px;">👤</div>
+                <div style="font-size:13px;font-weight:600;">Individual</div>
+                <div style="font-size:11px;color:var(--muted);">Personal investor</div>
+              </label>
+              <label style="flex:1;border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;text-align:center;transition:all 0.2s;" id="typeCorporateCard" onclick="selectInvestorType('corporate')">
+                <div style="font-size:24px;margin-bottom:6px;">🏢</div>
+                <div style="font-size:13px;font-weight:600;">Corporate</div>
+                <div style="font-size:11px;color:var(--muted);">Company investor</div>
+              </label>
+            </div>
+            <input type="hidden" id="investorType" value="individual" />
+          </div>
+          <div id="corporateFields" style="display:none;">
+            <div class="row2">
+              <div class="field"><label class="lbl">Company Name</label><input type="text" id="companyName" placeholder="Acme Ventures Ltd." /></div>
+              <div class="field"><label class="lbl">Company Website</label><input type="text" id="companyWebsite" placeholder="https://acme.com" /></div>
+            </div>
+            <div class="field">
+              <label class="lbl">Industry</label>
+              <select id="companyIndustry">
+                <option value="">Select industry</option>
+                <option>FinTech</option><option>HealthTech</option><option>AgriTech</option><option>EdTech</option>
+                <option>E-Commerce</option><option>Real Estate</option><option>Manufacturing</option>
+                <option>Energy</option><option>Media & Entertainment</option><option>Logistics</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="lbl">Investment Interests</label>
+            <div id="interestTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">
+              ${['FinTech','HealthTech','AgriTech','EdTech','AI & ML','E-Commerce','CleanTech','Robotics','Real Estate','Logistics','SaaS','Other'].map(t=>`<span onclick="toggleInterest(this)" data-tag="${t}" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">${t}</span>`).join('')}
+            </div>
+            <input type="hidden" id="investmentInterests" value="" />
+          </div>
+          <div class="field">
+            <label class="lbl">Investment Range</label>
+            <select id="investmentRange">
+              <option value="">Select range</option>
+              <option>Under $1,000</option>
+              <option>$1,000 – $10,000</option>
+              <option>$10,000 – $50,000</option>
+              <option>$50,000 – $500,000</option>
+              <option>$500,000+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="lbl">Bio <span style="color:var(--muted);font-size:10px;text-transform:none;">(max 500 chars)</span></label>
+            <textarea id="bio" rows="3" placeholder="Tell idea creators about your investment focus..." maxlength="500" oninput="updateBioCount()"></textarea>
+            <div class="char-count" id="bioCount">0 / 500</div>
           </div>
         </div>
-        <div class="field">
-          <label class="lbl">Bio <span style="color:var(--muted);font-size:10px;text-transform:none;">(max 500 chars)</span></label>
-          <textarea id="bio" rows="4" placeholder="Tell buyers about yourself, your background and expertise..." maxlength="500" oninput="updateBioCount()"></textarea>
-          <div class="char-count" id="bioCount">0 / 500</div>
+
+        <div id="standardFields" style="display:none">
+          <!-- STANDARD FORM FOR ALL OTHER ROLES -->
+          <div class="field">
+            <label class="lbl">Tagline <span style="color:var(--muted);font-size:10px;text-transform:none;">(max 30 chars)</span></label>
+            <input type="text" id="taglineVisible" placeholder='Expert in Chemistry' maxlength="30" oninput="document.getElementById('tagline').value=this.value;updateTaglineCount();updateCard();" />
+            <div class="char-count" id="taglineCount">0 / 30</div>
+          </div>
+          <div class="row3">
+            <div class="field"><label class="lbl">First Name *</label><input type="text" id="firstName" oninput="updateCard()" /></div>
+            <div class="field"><label class="lbl">Middle Name</label><input type="text" id="middleNameVisible" oninput="document.getElementById('middleName').value=this.value" /></div>
+            <div class="field"><label class="lbl">Last Name *</label><input type="text" id="lastName" oninput="updateCard()" /></div>
+          </div>
+          <div class="field">
+            <label class="lbl">Country</label>
+            <select id="country" onchange="updateStates()">
+              <option value="">Select country</option>
+              <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
+              <option>India</option><option>Australia</option><option>Canada</option><option>Singapore</option>
+              <option>UAE</option><option>Germany</option><option>France</option><option>Japan</option>
+              <option>China</option><option>Brazil</option><option>South Africa</option>
+              <option>Pakistan</option><option>Bangladesh</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label class="lbl">Address Line 1</label><input type="text" id="addressLine1Visible" placeholder="Street address" oninput="document.getElementById('addressLine1').value=this.value" /></div>
+          <div class="field"><label class="lbl">Address Line 2</label><input type="text" id="addressLine2Visible" placeholder="Apartment, suite, etc." oninput="document.getElementById('addressLine2').value=this.value" /></div>
+          <div class="row3">
+            <div class="field"><label class="lbl">City</label><input type="text" id="cityVisible" placeholder="Colombo" oninput="document.getElementById('city').value=this.value" /></div>
+            <div class="field"><label class="lbl">State / Province</label>
+              <select id="stateVisible" onchange="document.getElementById('state').value=this.value"><option value="">Select state/province</option></select>
+            </div>
+            <div class="field"><label class="lbl">Postal Code</label><input type="text" id="postalCodeVisible" placeholder="10100" oninput="document.getElementById('postalCode').value=this.value" /></div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label class="lbl">Phone Number</label>
+              <input type="tel" id="phone" placeholder="+94 77 123 4567" />
+              <div class="tip">📱 SMS verification coming soon</div>
+            </div>
+            <div class="field">
+              <label class="lbl">Email</label>
+              <input type="email" id="email" readonly />
+              <div class="tip">📧 Email verification coming soon</div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="lbl">Bio <span style="color:var(--muted);font-size:10px;text-transform:none;">(max 500 chars)</span></label>
+            <textarea id="bio" rows="4" placeholder="Tell buyers about yourself, your background and expertise..." maxlength="500" oninput="updateBioCount()"></textarea>
+            <div class="char-count" id="bioCount">0 / 500</div>
+          </div>
         </div>
       </div>
 
-      <!-- PROFESSIONAL -->
-      <div class="form-card">
+      <!-- PROFESSIONAL — hidden for investors -->
+      <div class="form-card" id="professionalCard">
         <div class="form-section-title">🎓 Professional Details</div>
         <div class="row2">
           <div class="field">
             <label class="lbl">Expert Area</label>
-            <select id="expertArea">
+            <select id="expertAreaVisible" onchange="document.getElementById('expertArea').value=this.value">
               <option value="">Select your main area</option>
               <optgroup label="Sciences"><option>Biology</option><option>Chemistry</option><option>Physics</option><option>Mathematics</option><option>Environmental Science</option><option>Geology</option></optgroup>
               <optgroup label="Technology"><option>Computer Science</option><option>Software Engineering</option><option>Artificial Intelligence</option><option>Cybersecurity</option><option>Data Science</option><option>Electronics</option><option>Robotics</option></optgroup>
@@ -236,7 +337,7 @@
           </div>
           <div class="field">
             <label class="lbl">Highest Qualification</label>
-            <select id="qualification">
+            <select id="qualificationVisible" onchange="document.getElementById('qualification').value=this.value">
               <option value="">Select qualification</option>
               <option>High School</option><option>Diploma</option><option>Bachelor's Degree</option>
               <option>Master's Degree</option><option>PhD</option><option>Self-taught</option><option>Other</option>
@@ -320,6 +421,59 @@
   let currentProfile = null;
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+
+  const isInvestor = user?.role === 'investor';
+
+  function initRoleUI() {
+    if (isInvestor) {
+      document.getElementById('investorFields').style.display = 'block';
+      document.getElementById('standardFields').style.display = 'none';
+      document.getElementById('professionalCard').style.display = 'none';
+      document.getElementById('cardTagline').style.display = 'none';
+      selectInvestorType('individual');
+    } else {
+      document.getElementById('investorFields').style.display = 'none';
+      document.getElementById('standardFields').style.display = 'block';
+      document.getElementById('professionalCard').style.display = 'block';
+    }
+  }
+
+  function selectInvestorType(type) {
+    document.getElementById('investorType').value = type;
+    const indCard = document.getElementById('typeIndividualCard');
+    const corpCard = document.getElementById('typeCorporateCard');
+    const corpFields = document.getElementById('corporateFields');
+    if (type === 'individual') {
+      indCard.style.borderColor = 'var(--accent)';
+      indCard.style.background = 'var(--accent-dim)';
+      corpCard.style.borderColor = 'var(--border)';
+      corpCard.style.background = 'transparent';
+      corpFields.style.display = 'none';
+    } else {
+      corpCard.style.borderColor = 'var(--accent)';
+      corpCard.style.background = 'var(--accent-dim)';
+      indCard.style.borderColor = 'var(--border)';
+      indCard.style.background = 'transparent';
+      corpFields.style.display = 'block';
+    }
+  }
+
+  function toggleInterest(el) {
+    const active = el.style.borderColor === 'var(--accent)' || el.style.background !== '';
+    if (el.dataset.active === 'true') {
+      el.dataset.active = 'false';
+      el.style.borderColor = 'var(--border)';
+      el.style.background = 'transparent';
+      el.style.color = 'var(--text)';
+    } else {
+      el.dataset.active = 'true';
+      el.style.borderColor = 'var(--accent)';
+      el.style.background = 'var(--accent-dim)';
+      el.style.color = 'var(--accent)';
+    }
+    const selected = [...document.querySelectorAll('#interestTags span[data-active="true"]')].map(e=>e.dataset.tag);
+    document.getElementById('investmentInterests').value = selected.join(',');
+  }
 
   function updateCard() {
     const fn = document.getElementById('firstName').value||'';
@@ -594,6 +748,7 @@ function updateStates() {
     setTimeout(()=>el.classList.remove('show'),5000);
   }
 
+  initRoleUI();
   loadProfile();
 </script>
 </body>
