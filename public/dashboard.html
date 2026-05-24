@@ -508,14 +508,17 @@ function editIdea(id) {
           document.getElementById('sidebarAvatar').innerHTML = `<img src="${user.avatarUrl || user.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
         } else {
           const avatarUrl = user.avatar_url || user.avatarUrl;
-const avatarEl = document.getElementById('sidebarAvatar');
-if (avatarUrl) {
-  avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-} else {
-  avatarEl.textContent = (user.first_name?.[0] || '?');
-}
+      const avatarEl = document.getElementById('sidebarAvatar');
+      if (avatarEl) {
+        if (avatarUrl) {
+          avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        } else {
+          avatarEl.textContent = (user.first_name?.[0] || '?');
         }
-        document.getElementById('sidebarName').textContent = `${user.first_name || ''} ${user.Last_name || ''}`.trim();
+      }
+        }
+        const sbName = document.getElementById('sidebarName');
+      if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
         document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
         const starEl = document.getElementById('sidebarStars');
         if (starEl) {

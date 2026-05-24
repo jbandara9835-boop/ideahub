@@ -438,12 +438,14 @@
   // Setup sidebar
   const initials = (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '');
   const avatarUrl = user.avatar_url || user.avatarUrl;
-const avatarEl = document.getElementById('sidebarAvatar');
-if (avatarUrl) {
-  avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-} else {
-  avatarEl.textContent = (user.first_name?.[0] || '?');
-}
+      const avatarEl = document.getElementById('sidebarAvatar');
+      if (avatarEl) {
+        if (avatarUrl) {
+          avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        } else {
+          avatarEl.textContent = (user.first_name?.[0] || '?');
+        }
+      }
   document.getElementById('sidebarName').textContent = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   document.getElementById('sidebarRole').textContent = roleMap[user?.role] || '—';
 
