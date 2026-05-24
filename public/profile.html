@@ -243,7 +243,18 @@
           <div class="field">
             <label class="lbl">Investment Interests</label>
             <div id="interestTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">
-              ${['FinTech','HealthTech','AgriTech','EdTech','AI & ML','E-Commerce','CleanTech','Robotics','Real Estate','Logistics','SaaS','Other'].map(t=>`<span onclick="toggleInterest(this)" data-tag="${t}" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">${t}</span>`).join('')}
+              <span onclick="toggleInterest(this)" data-tag="FinTech" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">FinTech</span>
+              <span onclick="toggleInterest(this)" data-tag="HealthTech" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">HealthTech</span>
+              <span onclick="toggleInterest(this)" data-tag="AgriTech" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">AgriTech</span>
+              <span onclick="toggleInterest(this)" data-tag="EdTech" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">EdTech</span>
+              <span onclick="toggleInterest(this)" data-tag="AI & ML" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">AI & ML</span>
+              <span onclick="toggleInterest(this)" data-tag="E-Commerce" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">E-Commerce</span>
+              <span onclick="toggleInterest(this)" data-tag="CleanTech" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">CleanTech</span>
+              <span onclick="toggleInterest(this)" data-tag="Robotics" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">Robotics</span>
+              <span onclick="toggleInterest(this)" data-tag="Real Estate" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">Real Estate</span>
+              <span onclick="toggleInterest(this)" data-tag="Logistics" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">Logistics</span>
+              <span onclick="toggleInterest(this)" data-tag="SaaS" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">SaaS</span>
+              <span onclick="toggleInterest(this)" data-tag="Other" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;transition:all 0.2s;">Other</span>
             </div>
             <input type="hidden" id="investmentInterests" value="" />
           </div>
