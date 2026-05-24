@@ -281,7 +281,7 @@ app.post('/api/patents/verify', authMiddleware, async (req, res) => {
         title: 'Sri Lanka Patent (Manual Verification Required)',
         owner: 'Verify manually via SLIPO',
         status: 'Pending Manual Check',
-        manualUrl: `https://www.nipo.gov.lk/index.php/en/ip-services/patents/patent-search`
+        manualUrl: `https://www.nipo.gov.lk/index.php/en/ip-services/patents`
       });
     }
 
