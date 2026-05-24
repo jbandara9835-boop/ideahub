@@ -274,6 +274,17 @@ app.post('/api/patents/verify', authMiddleware, async (req, res) => {
   if (!patentNumber) return res.status(400).json({ error: 'Patent number required' });
 
   try {
+    // SLIPO — manual only, return link
+    if (jurisdiction === 'SLIPO') {
+      return res.json({
+        found: true,
+        title: 'Sri Lanka Patent (Manual Verification Required)',
+        owner: 'Verify manually via SLIPO',
+        status: 'Pending Manual Check',
+        manualUrl: `https://www.nipo.gov.lk/index.php/en/ip-services/patents/patent-search`
+      });
+    }
+
     // Search Google Patents
     const searchUrl = `https://patents.google.com/patent/${patentNumber.replace(/[,\s]/g, '')}`;
     const response = await fetch(searchUrl, {
