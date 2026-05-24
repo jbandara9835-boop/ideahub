@@ -72,6 +72,8 @@
     const path = window.location.pathname;
     const nav = document.querySelector('.nav');
     if (!nav) return;
+    const newIdeaBtn = document.getElementById('newIdeaBtn');
+    if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
       <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
