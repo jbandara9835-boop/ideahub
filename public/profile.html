@@ -500,8 +500,10 @@ function updateStates() {
       document.getElementById('qualification').value = data.qualification||'';
       if (data.avatar_url) {
         document.getElementById('avatarDisplay').innerHTML=`<img src="${data.avatar_url}" alt="avatar" />`;
-        document.getElementById('sidebarAvatar').innerHTML=`<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-        document.getElementById('avatarInitials').style.display='none';
+        const sbAv2 = document.getElementById('sidebarAvatar');
+        if (sbAv2) sbAv2.innerHTML=`<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        const ai2 = document.getElementById('avatarInitials');
+        if (ai2) ai2.style.display='none';
       }
       // Update localStorage with latest avatar
       if (data.avatar_url) {
