@@ -268,6 +268,40 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
 
 // ── IDEAS ─────────────────────────────────────────────────────────────────────
 
+// Verify patent number
+app.post('/api/patents/verify', authMiddleware, async (req, res) => {
+  const { patentNumber, jurisdiction } = req.body;
+  if (!patentNumber) return res.status(400).json({ error: 'Patent number required' });
+
+  try {
+    // Search Google Patents
+    const searchUrl = `https://patents.google.com/patent/${patentNumber.replace(/[,\s]/g, '')}`;
+    const response = await fetch(searchUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    
+    if (response.ok) {
+      const html = await response.text();
+      
+      // Extract title
+      const titleMatch = html.match(/<title>([^<]+)<\/title>/);
+      const title = titleMatch ? titleMatch[1].replace(' - Google Patents', '').trim() : 'Patent found';
+      
+      // Check if it's a valid patent page
+      const isValid = !html.includes('No results') && html.includes('patent') && title !== 'Google Patents';
+
+      if (isValid && !title.includes('Google Patents')) {
+        return res.json({ found: true, title, owner: 'See patent document', status: 'Active', url: searchUrl });
+      }
+    }
+    
+    res.json({ found: false });
+  } catch(err) {
+    console.error('Patent verify error:', err);
+    res.json({ found: false, error: err.message });
+  }
+});
+
 // Upload idea image
 app.post('/api/ideas/upload-image', authMiddleware, upload.single('image'), async (req, res) => {
   console.log('Image upload called, file:', req.file?.originalname, req.file?.mimetype, req.file?.size);

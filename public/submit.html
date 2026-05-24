@@ -506,9 +506,45 @@
             <div class="toggle-knob"></div>
           </div>
         </div>
-        <div class="field" id="patentNumberField" style="display:none; margin-top: 1rem;">
-          <label for="patentNumber">Patent Number</label>
-          <input type="text" id="patentNumber" placeholder="e.g. US10,123,456" />
+        <div id="patentNumberField" style="display:none; margin-top: 1rem;">
+          <div class="field">
+            <label for="patentJurisdiction">Patent Office / Jurisdiction</label>
+            <select id="patentJurisdiction">
+              <option value="USPTO">🇺🇸 USPTO — United States</option>
+              <option value="EPO">🇪🇺 EPO — European Patent Office</option>
+              <option value="UKIPO">🇬🇧 UK IPO — United Kingdom</option>
+              <option value="IPIndia">🇮🇳 IP India — India</option>
+              <option value="SLIPO">🇱🇰 SLIPO — Sri Lanka</option>
+              <option value="IP Australia">🇦🇺 IP Australia</option>
+              <option value="WIPO">🌍 WIPO — International (PCT)</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="patentNumber">Patent Number</label>
+            <input type="text" id="patentNumber" placeholder="e.g. US10,123,456" />
+          </div>
+          <button type="button" onclick="verifyPatent()" id="verifyPatentBtn" style="background:none;border:1px solid var(--accent);border-radius:8px;padding:0.6rem 1rem;font-size:13px;color:var(--accent);cursor:pointer;width:100%;margin-bottom:0.75rem;transition:all 0.2s;">🔍 Verify Patent Number</button>
+          <div id="patentVerifyResult" style="display:none;border-radius:8px;padding:0.75rem 1rem;font-size:13px;margin-bottom:0.75rem;"></div>
+
+          <!-- PROOF UPLOAD -->
+          <div id="patentProofSection" style="display:none;">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.75rem;">📄 Upload Proof of Ownership</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;">Upload your patent certificate and a government ID matching the owner name.</div>
+            <div class="field">
+              <label>Patent Certificate (PDF/Image)</label>
+              <input type="file" id="patentCertFile" accept=".pdf,image/*" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem;width:100%;color:var(--text);font-size:13px;" onchange="handlePatentFileUpload('cert', event)" />
+              <div id="patentCertStatus" style="font-size:12px;color:var(--muted);margin-top:4px;"></div>
+            </div>
+            <div class="field">
+              <label>Government ID (PDF/Image)</label>
+              <input type="file" id="patentIdFile" accept=".pdf,image/*" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem;width:100%;color:var(--text);font-size:13px;" onchange="handlePatentFileUpload('id', event)" />
+              <div id="patentIdStatus" style="font-size:12px;color:var(--muted);margin-top:4px;"></div>
+            </div>
+            <div style="background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);border-radius:8px;padding:0.75rem;font-size:12px;color:var(--muted);">
+              ⏳ After submission, admin will verify your documents within 1-2 business days. Your idea will show <strong style="color:var(--accent);">✅ Verified Patent</strong> once approved.
+            </div>
+          </div>
         </div>
 
         <div class="error-msg" id="errorMsg"></div>
@@ -729,6 +765,92 @@
   }
 
   // (delete this line — we move it to the top)
+  let patentVerified = false;
+  let patentCertUrl = '';
+  let patentIdUrl = '';
+
+  async function verifyPatent() {
+    const number = document.getElementById('patentNumber').value.trim();
+    const jurisdiction = document.getElementById('patentJurisdiction').value;
+    const resultEl = document.getElementById('patentVerifyResult');
+    const btn = document.getElementById('verifyPatentBtn');
+
+    if (!number) { 
+      resultEl.style.display = 'block';
+      resultEl.style.background = 'rgba(255,107,107,0.1)';
+      resultEl.style.border = '1px solid rgba(255,107,107,0.3)';
+      resultEl.style.color = 'var(--error)';
+      resultEl.textContent = '❌ Please enter a patent number first.';
+      return; 
+    }
+
+    btn.textContent = '🔍 Verifying...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${API_URL}/api/patents/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ patentNumber: number, jurisdiction })
+      });
+      const data = await res.json();
+
+      resultEl.style.display = 'block';
+
+      if (data.found) {
+        patentVerified = true;
+        resultEl.style.background = 'rgba(110,231,183,0.1)';
+        resultEl.style.border = '1px solid rgba(110,231,183,0.3)';
+        resultEl.style.color = 'var(--success)';
+        resultEl.innerHTML = `✅ Patent found!<br><strong>Title:</strong> ${data.title || 'N/A'}<br><strong>Owner:</strong> ${data.owner || 'N/A'}<br><strong>Status:</strong> ${data.status || 'N/A'}`;
+        document.getElementById('patentProofSection').style.display = 'block';
+      } else {
+        patentVerified = false;
+        resultEl.style.background = 'rgba(255,107,107,0.1)';
+        resultEl.style.border = '1px solid rgba(255,107,107,0.3)';
+        resultEl.style.color = 'var(--error)';
+        resultEl.textContent = '❌ Patent not found. Please check the number and jurisdiction.';
+        document.getElementById('patentProofSection').style.display = 'none';
+      }
+    } catch(err) {
+      resultEl.style.display = 'block';
+      resultEl.style.background = 'rgba(255,107,107,0.1)';
+      resultEl.style.border = '1px solid rgba(255,107,107,0.3)';
+      resultEl.style.color = 'var(--error)';
+      resultEl.textContent = '❌ Verification failed. Please try again.';
+    }
+
+    btn.textContent = '🔍 Verify Patent Number';
+    btn.disabled = false;
+  }
+
+  async function handlePatentFileUpload(type, e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const statusEl = document.getElementById(type === 'cert' ? 'patentCertStatus' : 'patentIdStatus');
+    statusEl.textContent = 'Uploading...';
+
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch(`${API_URL}/api/ideas/upload-image`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd
+      });
+      const data = await res.json();
+      if (data.url) {
+        if (type === 'cert') patentCertUrl = data.url;
+        else patentIdUrl = data.url;
+        statusEl.textContent = '✅ Uploaded successfully';
+        statusEl.style.color = 'var(--success)';
+      }
+    } catch(err) {
+      statusEl.textContent = '❌ Upload failed';
+      statusEl.style.color = 'var(--error)';
+    }
+  }
+
   function toggleOption(opt) {
     if (opt === 'patent') {
       patentOn = !patentOn;
@@ -774,7 +896,7 @@
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title, summary, desc, industry, ideaType, price, visibility, level, hasPatent, patentNumber, images: uploadedImages })
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, price, visibility, level, hasPatent, patentNumber, patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
       });
 
       const data = await res.json();
