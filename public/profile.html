@@ -513,8 +513,10 @@ function updateStates() {
       }
       const fn=data.first_name||''; const ln=data.last_name||'';
       const initials=(fn[0]||'')+(ln[0]||'');
-      document.getElementById('avatarInitials').textContent=initials||'?';
-      document.getElementById('sidebarAvatarText').textContent=initials||'?';
+      const aiEl=document.getElementById('avatarInitials');
+      if (aiEl) aiEl.textContent=initials||'?';
+      const satEl=document.getElementById('sidebarAvatarText');
+      if (satEl) satEl.textContent=initials||'?';
       document.getElementById('cardName').textContent=`${fn} ${ln}`.trim()||'Your Name';
       document.getElementById('cardTagline').textContent=data.tagline||'Add a tagline...';
       document.getElementById('cardRole').textContent=roleMap[data.role]||'Member';
