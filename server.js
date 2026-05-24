@@ -270,7 +270,7 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
 
 // GET all ideas
 app.get('/api/ideas', async (req, res) => {
-  let query = supabase.from('ideas').select('*').eq('status', 'live');
+  let query = supabase.from('ideas').select('*, creator:creator_id(tagline, avatar_url, profile_stars)').eq('status', 'live');
 
   if (req.query.industry && req.query.industry !== 'all') {
     query = query.eq('industry', req.query.industry);
