@@ -446,6 +446,57 @@ app.get('/api/users/:id/public', async (req, res) => {
   res.json({ ...user, specializations: specializations || [], ideas: ideas || [] });
 });
 
+// ADMIN approve patent
+app.put('/api/admin/ideas/:id/approve-patent', authMiddleware, async (req, res) => {
+  const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+
+  const { data, error } = await supabase
+    .from('ideas')
+    .update({ status: 'live', patent_verified: true })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify creator
+  await supabase.from('notifications').insert([{
+    user_id: data.creator_id,
+    type: 'patent_approved',
+    title: '✅ Patent Verified & Idea Live!',
+    message: `Your idea "${data.title}" has been verified and is now live on the marketplace.`,
+    link: `/idea?id=${data.id}`
+  }]);
+
+  res.json(data);
+});
+
+// ADMIN reject patent
+app.put('/api/admin/ideas/:id/reject-patent', authMiddleware, async (req, res) => {
+  const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+
+  const { reason } = req.body;
+  const { data, error } = await supabase
+    .from('ideas')
+    .update({ status: 'rejected' })
+    .eq('id', req.params.id)
+    .select().single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify creator
+  await supabase.from('notifications').insert([{
+    user_id: data.creator_id,
+    type: 'patent_rejected',
+    title: '❌ Patent Verification Failed',
+    message: `Your idea "${data.title}" was not approved. Reason: ${reason}`,
+    link: `/submit?edit=${data.id}`
+  }]);
+
+  res.json(data);
+});
+
 // GET my ideas
 app.get('/api/my-ideas', authMiddleware, async (req, res) => {
   const { data, error } = await supabase

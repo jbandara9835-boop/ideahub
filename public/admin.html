@@ -218,6 +218,7 @@
     <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
     <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
     <button class="tab" onclick="switchTab('ideas', this)">💡 Ideas <span class="tab-count" id="tabIdeaCount">0</span></button>
+    <button class="tab" onclick="switchTab('patents', this)">📋 Patent Review <span class="tab-count red" id="tabPatentCount">0</span></button>
   </div>
 
   <!-- CERTIFICATES TAB -->
@@ -250,6 +251,11 @@
       </div>
       <div id="hiresList"><div class="loading"><div class="spin"></div> Loading hire requests...</div></div>
     </div>
+  </div>
+
+  <!-- PATENT REVIEW TAB -->
+  <div class="tab-content" id="tab-patents">
+    <div id="patentsList"><div class="loading"><div class="spin"></div> Loading patent reviews...</div></div>
   </div>
 
   <!-- IDEAS TAB -->
@@ -485,6 +491,73 @@
     `).join('');
   }
 
+  function renderPatents(ideas) {
+    const el = document.getElementById('patentsList');
+    const pending = ideas.filter(i => i.status === 'under_review' && i.has_patent);
+    if (!pending.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No patent reviews pending</div></div>`;
+      return;
+    }
+    el.innerHTML = pending.map(i => `
+      <div class="cert-card pending" style="margin-bottom:12px;">
+        <div class="cert-top">
+          <div class="cert-user">
+            <div class="cert-avatar">${i.creator_name ? i.creator_name.split(' ').map(n=>n[0]).join('').toUpperCase() : '?'}</div>
+            <div class="cert-user-info">
+              <div class="cert-user-name">${i.title}</div>
+              <div class="cert-user-role">by ${i.creator_name || 'Unknown'}</div>
+            </div>
+          </div>
+          <span class="cert-status-badge pending">⏳ Under Review</span>
+        </div>
+
+        <div class="cert-details">
+          <div class="cert-detail"><div class="cert-detail-label">Industry</div><div class="cert-detail-val">${i.industry || '—'}</div></div>
+          <div class="cert-detail"><div class="cert-detail-label">Price</div><div class="cert-detail-val" style="color:var(--accent);">$${(i.price||0).toLocaleString()}</div></div>
+          <div class="cert-detail"><div class="cert-detail-label">Patent Number</div><div class="cert-detail-val">${i.patent_number || '—'}</div></div>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          ${i.patent_jurisdiction ? `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">🌍 Jurisdiction: ${i.patent_jurisdiction}</div>` : ''}
+          ${i.patent_cert_url ? `<a href="${i.patent_cert_url}" target="_blank" class="cert-file-btn">📄 View Patent Certificate</a>` : '<div style="font-size:12px;color:var(--error);">⚠️ No certificate uploaded</div>'}
+          ${i.patent_id_url ? `<a href="${i.patent_id_url}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Government ID</a>` : ''}
+        </div>
+
+        <div class="cert-actions">
+          <button class="btn-approve" onclick="approvePatent(${i.id})">✅ Approve & Go Live</button>
+          <button class="btn-reject-cert" onclick="rejectPatent(${i.id})">❌ Reject</button>
+          ${i.patent_number ? `<a href="https://patents.google.com/patent/${i.patent_number.replace(/[,\s]/g,'')}" target="_blank" style="font-size:12px;color:var(--accent);margin-left:8px;">🔍 Verify on Google Patents</a>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function approvePatent(ideaId) {
+    if (!confirm('Approve this patent and make the idea live?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/ideas/${ideaId}/approve-patent`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) { alert('✅ Idea approved and now live!'); loadAll(); }
+      else { const d = await res.json(); alert(d.error || 'Failed'); }
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
+  async function rejectPatent(ideaId) {
+    const reason = prompt('Rejection reason (shown to creator):');
+    if (!reason) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/ideas/${ideaId}/reject-patent`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason })
+      });
+      if (res.ok) { alert('❌ Idea rejected.'); loadAll(); }
+      else { const d = await res.json(); alert(d.error || 'Failed'); }
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
   async function loadAll() {
     try {
       // Load certificates (using existing endpoint + filter all)
@@ -523,6 +596,9 @@
       renderUsers(allUsers);
       renderHires(allHires);
       renderIdeas(allIdeas);
+      renderPatents(allIdeas);
+      const patentPending = allIdeas.filter(i => i.status === 'under_review' && i.has_patent).length;
+      document.getElementById('tabPatentCount').textContent = patentPending;
 
     } catch(err) { console.error(err); }
   }
