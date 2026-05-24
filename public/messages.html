@@ -239,7 +239,8 @@
       }
     const sbName = document.getElementById('sidebarName');
     if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
-    document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
+    const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+    document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role;
     const starElM = document.getElementById('sidebarStars');
     if (starElM) { const sm = user.profile_stars||0; starElM.innerHTML = [1,2,3,4,5].map(i=>`<span style="color:${i<=sm?'#f5c842':'#3a3a3a'}">★</span>`).join(''); }
   }
@@ -251,12 +252,18 @@
   }
 
   function formatTime(d) {
+    if (!d) return '';
     const date = new Date(d);
     const now = new Date();
     const diff = now - date;
-    if (diff < 60000) return 'just now';
+    if (diff < 30000) return 'just now';
     if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-    if (diff < 86400000) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const isToday = date.toDateString() === now.toDateString();
+    const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+    if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (isYesterday) return 'Yesterday';
+    if (diff < 7 * 86400000) return date.toLocaleDateString([], { weekday: 'short' });
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   }
 
@@ -278,11 +285,37 @@
     }
   }
 
-  function buildConversations() {
+  async function buildConversations() {
     const convMap = {};
-    allMessages.forEach(msg => {
+    const userCache = {};
+
+    for (const msg of allMessages) {
       const otherId = msg.from_id === myId ? msg.to_id : msg.from_id;
-      const otherName = msg.from_id === myId ? (msg.to_name || `User ${msg.to_id}`) : (msg.from_name || `User ${msg.from_id}`);
+
+      // Try name from message first, then fetch from API
+      let otherName = msg.from_id === myId
+        ? (msg.to_first_name ? `${msg.to_first_name} ${msg.to_last_name||''}`.trim() : msg.to_name || null)
+        : (msg.from_first_name ? `${msg.from_first_name} ${msg.from_last_name||''}`.trim() : msg.from_name || null);
+
+      if (!otherName) {
+        if (userCache[otherId]) {
+          otherName = userCache[otherId];
+        } else {
+          try {
+            const r = await fetch(`${API_URL}/api/users/${otherId}/public`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (r.ok) {
+              const u = await r.json();
+              otherName = `${u.first_name||''} ${u.last_name||''}`.trim() || `User ${otherId}`;
+            } else {
+              otherName = `User ${otherId}`;
+            }
+          } catch { otherName = `User ${otherId}`; }
+          userCache[otherId] = otherName;
+        }
+      }
+
       if (!convMap[otherId]) {
         convMap[otherId] = { id: otherId, name: otherName, messages: [], lastMsg: null };
       }
@@ -290,7 +323,7 @@
       if (!convMap[otherId].lastMsg || new Date(msg.created_at) > new Date(convMap[otherId].lastMsg.created_at)) {
         convMap[otherId].lastMsg = msg;
       }
-    });
+    }
 
     conversations = Object.values(convMap).sort((a, b) => new Date(b.lastMsg.created_at) - new Date(a.lastMsg.created_at));
     renderConvList();
