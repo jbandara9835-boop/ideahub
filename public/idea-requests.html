@@ -194,9 +194,14 @@
 
   if (user) {
     const initials = (user.first_name?.[0]||'') + (user.Last_name?.[0]||'');
-    document.getElementById('sidebarAvatar').textContent = initials||'?';
-    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    const avatarElR = document.getElementById('sidebarAvatar');
+    const avatarUrlR = user.avatar_url || user.avatarUrl;
+    if (avatarElR) { if (avatarUrlR) { avatarElR.innerHTML = `<img src="${avatarUrlR}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`; } else { avatarElR.textContent = initials||'?'; } }
+    const sbNameR = document.getElementById('sidebarName');
+    if (sbNameR) sbNameR.textContent = `${user.first_name||''} ${user.last_name||user.Last_name||''}`.trim();
     document.getElementById('sidebarRole').textContent = roleMap[user.role]||'—';
+    const starElR = document.getElementById('sidebarStars');
+    if (starElR) { const sr = user.profile_stars||0; starElR.innerHTML = [1,2,3,4,5].map(i=>`<span style="color:${i<=sr?'#f5c842':'#3a3a3a'}">★</span>`).join(''); }
     // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : investorRoles.includes(user.role) ? '/buyer-dashboard' : '/support-dashboard';
 
     // Show post button for investors

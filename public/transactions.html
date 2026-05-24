@@ -241,9 +241,10 @@
         }
       }
     const sbName = document.getElementById('sidebarName');
-      if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
-      // stars handled below
+    if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
     document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
+    const starElT = document.getElementById('sidebarStars');
+    if (starElT) { const st = user.profile_stars||0; starElT.innerHTML = [1,2,3,4,5].map(i=>`<span style="color:${i<=st?'#f5c842':'#3a3a3a'}">★</span>`).join(''); }
   }
 
   function logout() {
