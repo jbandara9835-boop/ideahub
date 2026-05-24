@@ -268,6 +268,19 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
 
 // ── IDEAS ─────────────────────────────────────────────────────────────────────
 
+// Upload idea image
+app.post('/api/ideas/upload-image', authMiddleware, upload.single('image'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  const ext = req.file.mimetype.split('/')[1];
+  const fileName = `idea-${req.user.id}-${Date.now()}.${ext}`;
+  try {
+    const { error } = await supabase.storage.from('idea-images').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+    if (error) return res.status(500).json({ error: error.message });
+    const { data: urlData } = supabase.storage.from('idea-images').getPublicUrl(fileName);
+    res.json({ url: urlData.publicUrl });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // GET all ideas
 app.get('/api/ideas', async (req, res) => {
   let query = supabase.from('ideas').select('*, creator:creator_id(tagline, avatar_url, profile_stars)').eq('status', 'live');
