@@ -380,7 +380,11 @@ app.post('/api/ideas', authMiddleware, async (req, res) => {
       images: req.body.images || [],
       creator_id: req.user.id,
       creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
-      status: 'live',
+      status: (hasPatent && patentCertUrl) ? 'under_review' : 'live',
+      patent_jurisdiction: req.body.patentJurisdiction || '',
+      patent_verified: false,
+      patent_cert_url: req.body.patentCertUrl || '',
+      patent_id_url: req.body.patentIdUrl || '',
       views: 0,
       inquiries: 0,
     }])

@@ -241,6 +241,8 @@
   .badge-escrow { background: rgba(245,200,66,0.15); color: var(--accent); }
   .badge-sold { background: rgba(255,107,107,0.15); color: var(--error); }
   .badge-pending { background: rgba(110,110,180,0.15); color: #a0a0f0; }
+  .badge-under_review { background: rgba(245,200,66,0.15); color: var(--accent); }
+  .badge-rejected { background: rgba(255,107,107,0.15); color: var(--error); }
 
   .price-cell { font-weight: 500; }
   .views-cell { color: var(--muted); }
@@ -488,8 +490,9 @@
   }
 
   function statusBadge(s) {
-    const map = { live: 'badge-live', escrow: 'badge-escrow', sold: 'badge-sold', pending: 'badge-pending' };
-    return `<span class="badge ${map[s] || 'badge-pending'}">${s}</span>`;
+    const map = { live: 'badge-live', escrow: 'badge-escrow', sold: 'badge-sold', pending: 'badge-pending', under_review: 'badge-under_review', rejected: 'badge-rejected' };
+    const labels = { live: 'Live', escrow: 'In Escrow', sold: 'Sold', pending: 'Pending', under_review: '⏳ Under Review', rejected: '❌ Rejected' };
+    return `<span class="badge ${map[s] || 'badge-pending'}">${labels[s] || s}</span>`;
   }
 function editIdea(id) {
     window.location.href = `/submit?edit=${id}`;
