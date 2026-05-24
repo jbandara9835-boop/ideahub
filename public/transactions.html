@@ -150,8 +150,8 @@
     <div class="page-title">💰 Wallet</div>
   </div>
 
-  <!-- WALLET BALANCE -->
-  <div style="background:linear-gradient(135deg,rgba(245,200,66,0.15),rgba(245,200,66,0.05));border:1px solid rgba(245,200,66,0.3);border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+  <!-- WALLET BALANCE — role based -->
+  <div id="creatorWalletHero" style="background:linear-gradient(135deg,rgba(245,200,66,0.15),rgba(245,200,66,0.05));border:1px solid rgba(245,200,66,0.3);border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
     <div>
       <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Available to Withdraw</div>
       <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent);" id="walletBalance">—</div>
@@ -160,8 +160,17 @@
     <button onclick="alert('Withdrawal feature coming soon! We are integrating Stripe payouts.')" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Withdraw Funds</button>
   </div>
 
+  <div id="investorWalletHero" style="display:none;background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(96,165,250,0.05));border:1px solid rgba(96,165,250,0.3);border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Total Invested</div>
+      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#60a5fa;" id="investorTotalSpent">—</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Across all purchases</div>
+    </div>
+    <button onclick="alert('Top-up feature coming soon! We are integrating Stripe payments.')" style="background:#60a5fa;color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Add Funds</button>
+  </div>
+
   <!-- STATS -->
-  <div class="stats-grid">
+  <div class="stats-grid" id="creatorStats">
     <div class="stat-card">
       <div class="stat-label">Total Earned</div>
       <div class="stat-value green" id="statEarned">—</div>
@@ -184,12 +193,42 @@
     </div>
   </div>
 
+  <div class="stats-grid" id="investorStats" style="display:none">
+    <div class="stat-card">
+      <div class="stat-label">Total Spent</div>
+      <div class="stat-value" style="color:#60a5fa;" id="investorStatSpent">—</div>
+      <div class="stat-sub">on purchases</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">In Escrow</div>
+      <div class="stat-value yellow" id="investorStatEscrow">—</div>
+      <div class="stat-sub">pending release</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed Deals</div>
+      <div class="stat-value green" id="investorStatCompleted">—</div>
+      <div class="stat-sub">confirmed purchases</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Transactions</div>
+      <div class="stat-value" id="investorStatTotal">—</div>
+      <div class="stat-sub">all time</div>
+    </div>
+  </div>
+
   <!-- FILTERS -->
-  <div class="filter-bar">
+  <div class="filter-bar" id="creatorFilters">
     <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
     <button class="filter-tab" onclick="setFilter('completed', this)">Completed</button>
     <button class="filter-tab" onclick="setFilter('escrow', this)">In Escrow</button>
     <button class="filter-tab" onclick="setFilter('sale', this)">Sales</button>
+    <button class="filter-tab" onclick="setFilter('purchase', this)">Purchases</button>
+  </div>
+
+  <div class="filter-bar" id="investorFilters" style="display:none">
+    <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-tab" onclick="setFilter('completed', this)">Completed</button>
+    <button class="filter-tab" onclick="setFilter('escrow', this)">In Escrow</button>
     <button class="filter-tab" onclick="setFilter('purchase', this)">Purchases</button>
   </div>
 
@@ -340,6 +379,19 @@
     }
   }
 
+  const isInvestor = user?.role === 'investor';
+
+  function initWalletUI() {
+    if (isInvestor) {
+      document.getElementById('creatorWalletHero').style.display = 'none';
+      document.getElementById('investorWalletHero').style.display = 'flex';
+      document.getElementById('creatorStats').style.display = 'none';
+      document.getElementById('investorStats').style.display = 'grid';
+      document.getElementById('creatorFilters').style.display = 'none';
+      document.getElementById('investorFilters').style.display = 'flex';
+    }
+  }
+
   async function loadTransactions() {
     try {
       const res = await fetch(`${API_URL}/api/transactions`, {
@@ -351,19 +403,32 @@
       const sales = allTx.filter(t => t.seller_id === myId && t.status === 'completed');
       const purchases = allTx.filter(t => t.buyer_id === myId);
       const escrow = allTx.filter(t => t.status === 'escrow');
+      const completed = allTx.filter(t => t.buyer_id === myId && t.status === 'completed');
 
-      const earned = sales.reduce((s, t) => s + (t.amount || 0), 0);
-      document.getElementById('statEarned').textContent = '$' + earned.toLocaleString();
-      document.getElementById('walletBalance').textContent = '$' + earned.toLocaleString();
-      document.getElementById('statSpent').textContent = '$' + purchases.reduce((s, t) => s + (t.total || 0), 0).toLocaleString();
-      document.getElementById('statEscrow').textContent = '$' + escrow.reduce((s, t) => s + (t.amount || 0), 0).toLocaleString();
-      document.getElementById('statTotal').textContent = allTx.length;
+      if (isInvestor) {
+        const totalSpent = purchases.reduce((s, t) => s + (t.total || t.amount || 0), 0);
+        const escrowAmt = escrow.filter(t => t.buyer_id === myId).reduce((s, t) => s + (t.amount || 0), 0);
+        document.getElementById('investorTotalSpent').textContent = '$' + totalSpent.toLocaleString();
+        document.getElementById('investorStatSpent').textContent = '$' + totalSpent.toLocaleString();
+        document.getElementById('investorStatEscrow').textContent = '$' + escrowAmt.toLocaleString();
+        document.getElementById('investorStatCompleted').textContent = completed.length;
+        document.getElementById('investorStatTotal').textContent = allTx.length;
+      } else {
+        const earned = sales.reduce((s, t) => s + (t.amount || 0), 0);
+        document.getElementById('statEarned').textContent = '$' + earned.toLocaleString();
+        document.getElementById('walletBalance').textContent = '$' + earned.toLocaleString();
+        document.getElementById('statSpent').textContent = '$' + purchases.reduce((s, t) => s + (t.total || 0), 0).toLocaleString();
+        document.getElementById('statEscrow').textContent = '$' + escrow.reduce((s, t) => s + (t.amount || 0), 0).toLocaleString();
+        document.getElementById('statTotal').textContent = allTx.length;
+      }
 
       renderTable();
     } catch (err) {
       document.getElementById('txBody').innerHTML = `<div style="padding:2rem;color:var(--error);font-size:13px;text-align:center;">Failed to load transactions.</div>`;
     }
   }
+
+  initWalletUI();
 
   loadTransactions();
 </script>
