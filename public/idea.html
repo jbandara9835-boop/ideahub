@@ -361,6 +361,17 @@ if (avatarUrl) {
                 ${idea.has_patent ? '<span class="badge badge-patent">📋 Patented</span>' : ''}
               </div>
               ${idea.summary ? `<div class="idea-summary">${idea.summary}</div>` : ''}
+            ${idea.images && idea.images.length > 0 ? `
+            <div style="margin-top:1.25rem;">
+              <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.5px;">📸 Product Images</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
+                ${idea.images.map(url => `
+                  <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1;cursor:pointer;" onclick="window.open('${url}','_blank')">
+                    <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+                  </div>
+                `).join('')}
+              </div>
+            </div>` : ''}
             </div>
 
             ${idea.description ? `
