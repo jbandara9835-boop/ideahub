@@ -324,7 +324,7 @@
   }
 
   function formatTime(d) {
-    const date = new Date(d);
+    const date = new Date(d + (d.endsWith('Z') ? '' : 'Z'));
     const diff = Date.now() - date;
     if (diff < 60000) return 'just now';
     if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
