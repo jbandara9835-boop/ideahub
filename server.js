@@ -270,13 +270,17 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
 
 // Upload idea image
 app.post('/api/ideas/upload-image', authMiddleware, upload.single('image'), async (req, res) => {
+  console.log('Image upload called, file:', req.file?.originalname, req.file?.mimetype, req.file?.size);
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const ext = req.file.mimetype.split('/')[1];
   const fileName = `idea-${req.user.id}-${Date.now()}.${ext}`;
+  console.log('Uploading to bucket idea-images:', fileName);
   try {
-    const { error } = await supabase.storage.from('idea-images').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+    const { data, error } = await supabase.storage.from('idea-images').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+    console.log('Upload result:', data, error);
     if (error) return res.status(500).json({ error: error.message });
     const { data: urlData } = supabase.storage.from('idea-images').getPublicUrl(fileName);
+    console.log('Public URL:', urlData.publicUrl);
     res.json({ url: urlData.publicUrl });
   } catch (err) { 
     console.error('Image upload error:', err);
