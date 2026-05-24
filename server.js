@@ -323,6 +323,7 @@ app.post('/api/ideas', authMiddleware, async (req, res) => {
       has_patent: hasPatent || false,
       patent_number: patentNumber || '',
       icon: '💡',
+      images: req.body.images || [],
       creator_id: req.user.id,
       creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
       status: 'live',

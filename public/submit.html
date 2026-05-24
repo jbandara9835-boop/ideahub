@@ -484,7 +484,19 @@
       <!-- Options -->
       <div class="form-card">
         <div class="form-section-title">Extra Options</div>
-        <div class="toggle-row">
+        <!-- IMAGE UPLOAD -->
+        <div class="form-section-title" style="margin-top:1.5rem;">📸 Product Images</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Upload photos of your product, prototype or mockups (max 5 images, 5MB each)</div>
+        
+        <div id="imagePreviewGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1rem;"></div>
+        
+        <label for="imageInput" style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed var(--border);border-radius:10px;padding:1rem;cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.2s;" id="imageUploadLabel">
+          <span>📷</span> Click to upload images
+        </label>
+        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:none;" onchange="handleImageUpload(event)" />
+        <div id="imageUploadStatus" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
+
+        <div class="toggle-row" style="margin-top:1.5rem;">
           <div>
             <div class="toggle-label">Has Patent</div>
             <div class="toggle-sub">This idea has a registered or pending patent</div>
@@ -564,6 +576,65 @@
   }
   renderSidebar();
   let patentOn = false;
+  let uploadedImages = [];
+
+  async function handleImageUpload(e) {
+    const files = Array.from(e.target.files);
+    const remaining = 5 - uploadedImages.length;
+    if (files.length > remaining) {
+      alert(`You can only upload ${remaining} more image(s). Max 5 total.`);
+      return;
+    }
+
+    const status = document.getElementById('imageUploadStatus');
+    status.textContent = 'Uploading...';
+
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`${file.name} is too large. Max 5MB per image.`);
+        continue;
+      }
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+        const res = await fetch(`${API_URL}/api/ideas/upload-image`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd
+        });
+        const data = await res.json();
+        if (data.url) {
+          uploadedImages.push(data.url);
+          renderImagePreviews();
+        }
+      } catch (err) {
+        console.error('Image upload failed:', err);
+      }
+    }
+
+    status.textContent = `${uploadedImages.length}/5 images uploaded`;
+    if (uploadedImages.length >= 5) {
+      document.getElementById('imageUploadLabel').style.display = 'none';
+    }
+    document.getElementById('imageInput').value = '';
+  }
+
+  function renderImagePreviews() {
+    const grid = document.getElementById('imagePreviewGrid');
+    grid.innerHTML = uploadedImages.map((url, i) => `
+      <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+        <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+        <button onclick="removeImage(${i})" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);border:none;color:white;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function removeImage(index) {
+    uploadedImages.splice(index, 1);
+    renderImagePreviews();
+    document.getElementById('imageUploadStatus').textContent = `${uploadedImages.length}/5 images uploaded`;
+    document.getElementById('imageUploadLabel').style.display = 'flex';
+  }
   const editId = new URLSearchParams(window.location.search).get('edit')?.split(':')[0];
   if (editId) {
   document.querySelector('.page-title').textContent = 'Edit Idea';
@@ -698,7 +769,7 @@ if (avatarUrl) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title, summary, desc, industry, ideaType, price, visibility, level, hasPatent, patentNumber })
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, price, visibility, level, hasPatent, patentNumber, images: uploadedImages })
       });
 
       const data = await res.json();
