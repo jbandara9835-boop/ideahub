@@ -803,7 +803,7 @@
         resultEl.style.color = 'var(--success)';
         const isSlipo = document.getElementById('patentJurisdiction').value === 'SLIPO';
         const verifyLink = isSlipo 
-          ? `<a href="${data.manualUrl}" target="_blank" style="color:var(--accent);">Search on SLIPO website →</a>`
+          ? `<a href="https://www.nipo.gov.lk" target="_blank" style="color:var(--accent);">Visit NIPO Sri Lanka →</a> &nbsp;·&nbsp; <a href="mailto:info@nipo.gov.lk" style="color:var(--muted);">Contact NIPO</a>`
           : `<a href="https://patents.google.com/patent/${document.getElementById('patentNumber').value.replace(/[,\s]/g,'')}" target="_blank" style="color:var(--accent);">View on Google Patents →</a>`;
         resultEl.innerHTML = `✅ Patent ${isSlipo ? 'registered' : 'found'}!<br><strong>Title:</strong> ${data.title || 'N/A'}<br><strong>Status:</strong> ${data.status} &nbsp;·&nbsp; ${verifyLink}<br><small style="color:var(--muted);margin-top:4px;display:block;">⚠️ Please upload proof documents below to verify you are the owner.</small>`;
         document.getElementById('patentProofSection').style.display = 'block';
