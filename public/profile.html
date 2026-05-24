@@ -514,8 +514,18 @@ function updateStates() {
       document.getElementById('cardName').textContent=`${fn} ${ln}`.trim()||'Your Name';
       document.getElementById('cardTagline').textContent=data.tagline||'Add a tagline...';
       document.getElementById('cardRole').textContent=roleMap[data.role]||'Member';
-      document.getElementById('sidebarName').textContent=`${fn} ${ln}`.trim();
-      document.getElementById('sidebarRole').textContent=roleMap[data.role]||'—';
+      const sbName = document.getElementById('sidebarName');
+      const sbRole = document.getElementById('sidebarRole');
+      if (sbName) sbName.textContent=`${fn} ${ln}`.trim();
+      if (sbRole) sbRole.textContent=roleMap[data.role]||'—';
+      // Update avatar
+      if (data.avatar_url) {
+        const sbAvatar = document.getElementById('sidebarAvatar');
+        if (sbAvatar) sbAvatar.innerHTML=`<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      }
+      // Update stars
+      const starEl = document.getElementById('sidebarStars');
+      if (starEl) starEl.innerHTML = [1,2,3,4,5].map(i=>`<span style="color:${i<=(data.profile_stars||0)?'#f5c842':'#3a3a3a'}">★</span>`).join('');
       updateStars(data.profile_stars||0);
       updateVerifyBadge(data.verification_status||'unverified');
       if (data.specializations) data.specializations.forEach(s=>addSpecRow(s.subject,s.how_specialized));
