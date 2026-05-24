@@ -253,7 +253,7 @@
 
   function formatTime(d) {
     if (!d) return '';
-    const date = new Date(d);
+    const date = new Date(d + (d.endsWith('Z') ? '' : 'Z'));
     const now = new Date();
     const diff = now - date;
     if (diff < 30000) return 'just now';
