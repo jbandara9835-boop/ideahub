@@ -278,7 +278,10 @@ app.post('/api/ideas/upload-image', authMiddleware, upload.single('image'), asyn
     if (error) return res.status(500).json({ error: error.message });
     const { data: urlData } = supabase.storage.from('idea-images').getPublicUrl(fileName);
     res.json({ url: urlData.publicUrl });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { 
+    console.error('Image upload error:', err);
+    res.status(500).json({ error: err.message }); 
+  }
 });
 
 // GET all ideas
