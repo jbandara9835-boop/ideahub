@@ -298,6 +298,8 @@
       }
     const sbName = document.getElementById('sidebarName');
       if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
+      const starEl = document.getElementById('sidebarStars');
+      if (starEl) starEl.innerHTML = [1,2,3,4,5].map(i=>`<span style="color:${i<=(user.profile_stars||0)?'#f5c842':'#3a3a3a'}">★</span>`).join('');
     document.getElementById('sidebarRole').textContent = roleMap[user.role] || '—';
     document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.firstName || 'there'} 👋`;
 
