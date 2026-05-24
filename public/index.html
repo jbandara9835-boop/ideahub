@@ -469,10 +469,15 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
     const avatarContent = (user.avatarUrl || user.avatar_url) 
       ? `<img src="${user.avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
       : (initials || '?');
+    const stars = user.profile_stars || 0;
+    const starHtml = [1,2,3,4,5].map(i => `<span style="color:${i<=stars?'#f5c842':'#3a3a3a'};font-size:10px;">★</span>`).join('');
     document.getElementById('navActions').innerHTML = `
       <a class="n-btn" href="${dashUrl}">Dashboard</a>
       <a class="n-btn" href="/messages">Messages</a>
-      <div class="nav-avatar" onclick="window.location.href='${dashUrl}'">${avatarContent}</div>
+      <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;" onclick="window.location.href='${dashUrl}'">
+        <div class="nav-avatar">${avatarContent}</div>
+        <div style="letter-spacing:1px;margin-top:2px;">${starHtml}</div>
+      </div>
       <button class="n-btn" onclick="logout()" style="color:var(--text-muted)">Log Out</button>
     `;
   }
@@ -505,7 +510,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
       const levelName = { 1:'Concept', 2:'Prototype', 3:'Market Ready' };
 
       grid.innerHTML = ideas.slice(0, 6).map(idea => `
-        <a class="ic" href="/idea/${idea.id}">
+        <a class="ic" href="/idea?id=${idea.id}">
           <div class="ic-top">
             <div class="ic-ico">${idea.icon || '💡'}</div>
             <div>
