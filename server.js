@@ -291,7 +291,7 @@ app.post('/api/patents/verify', authMiddleware, async (req, res) => {
       const isValid = !html.includes('No results') && html.includes('patent') && title !== 'Google Patents';
 
       if (isValid && !title.includes('Google Patents')) {
-        return res.json({ found: true, title, owner: 'See patent document', status: 'Active', url: searchUrl });
+        return res.json({ found: true, title, owner: 'See patent document', status: 'Active', url: searchUrl, googleUrl: `https://patents.google.com/?q=${patentNumber.replace(/[,\s]/g, '')}` });
       }
     }
     
