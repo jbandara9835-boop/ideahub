@@ -442,7 +442,8 @@ function updateStates() {
       const base64 = ev.target.result;
       document.getElementById('avatarDisplay').innerHTML = `<img src="${base64}" alt="avatar" />`;
       document.getElementById('sidebarAvatar').innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-      document.getElementById('avatarInitials').style.display = 'none';
+      const ai = document.getElementById('avatarInitials');
+      if (ai) ai.style.display = 'none';
       updateCompletion();
     };
     reader.readAsDataURL(file);
@@ -464,7 +465,8 @@ function updateStates() {
         localStorage.setItem('ih_user', JSON.stringify(u));
         // Update avatar display with real URL
         document.getElementById('avatarDisplay').innerHTML = `<img src="${data.url}" alt="avatar" />`;
-        document.getElementById('sidebarAvatar').innerHTML = `<img src="${data.url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        const sbAv = document.getElementById('sidebarAvatar');
+        if (sbAv) sbAv.innerHTML = `<img src="${data.url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
       } else {
         console.error('Avatar upload error:', data.error);
         alert('Avatar upload failed: ' + (data.error || 'Unknown error'));
