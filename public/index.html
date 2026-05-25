@@ -424,9 +424,44 @@ footer a:hover { color: var(--text); }
     <span>One platform. Infinite possibilities.</span>
   </p>
 
+  <div class="hero-search" style="width:100%;max-width:640px;margin-bottom:1.5rem;">
+    <div style="display:flex;background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;transition:border-color 0.2s;" id="searchWrap">
+      <select id="searchCategory" style="background:var(--surface2);border:none;border-right:1px solid var(--border);padding:0 1rem;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;min-width:120px;">
+        <option value="">All Areas</option>
+        <option value="FinTech">💳 FinTech</option>
+        <option value="HealthTech">🏥 HealthTech</option>
+        <option value="AgriTech">🌾 AgriTech</option>
+        <option value="EdTech">📚 EdTech</option>
+        <option value="AI">🤖 AI & ML</option>
+        <option value="CleanTech">♻️ CleanTech</option>
+        <option value="Robotics">🦾 Robotics</option>
+        <option value="SaaS">☁️ SaaS</option>
+        <option value="E-Commerce">🛒 E-Commerce</option>
+        <option value="Logistics">🚚 Logistics</option>
+        <option value="Real Estate">🏢 Real Estate</option>
+      </select>
+      <input
+        type="text" id="searchInput"
+        placeholder="Search ideas, industries, keywords..."
+        style="flex:1;background:none;border:none;padding:0.9rem 1rem;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
+        onkeydown="if(event.key==='Enter') doSearch()"
+      />
+      <button onclick="doSearch()" style="background:var(--accent);border:none;padding:0 1.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;color:#080809;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+        Search →
+      </button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+      <span style="font-size:12px;color:var(--muted);">Popular:</span>
+      <a onclick="quickSearch('FinTech')" style="font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;" >FinTech</a>
+      <a onclick="quickSearch('AI')" style="font-size:12px;color:var(--accent);cursor:pointer;">AI & ML</a>
+      <a onclick="quickSearch('HealthTech')" style="font-size:12px;color:var(--accent);cursor:pointer;">HealthTech</a>
+      <a onclick="quickSearch('SaaS')" style="font-size:12px;color:var(--accent);cursor:pointer;">SaaS</a>
+    </div>
+  </div>
+
   <div class="hero-actions">
     <a class="hero-btn-main" href="/browse">
-      🔍 Explore Ideas
+      🔍 Browse All Ideas
     </a>
     <a class="hero-btn-sec" href="/signup">
       ✦ Join Free — It's Quick
@@ -710,6 +745,30 @@ footer a:hover { color: var(--text); }
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Search functions
+  function doSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    const category = document.getElementById('searchCategory').value;
+    let url = '/browse?';
+    if (query) url += `search=${encodeURIComponent(query)}&`;
+    if (category) url += `category=${encodeURIComponent(category)}`;
+    window.location.href = url.replace(/[&?]$/, '');
+  }
+
+  function quickSearch(category) {
+    window.location.href = `/browse?category=${encodeURIComponent(category)}`;
+  }
+
+  // Focus glow effect
+  document.getElementById('searchInput')?.addEventListener('focus', () => {
+    document.getElementById('searchWrap').style.borderColor = 'rgba(245,200,66,0.5)';
+    document.getElementById('searchWrap').style.boxShadow = '0 0 0 3px rgba(245,200,66,0.1)';
+  });
+  document.getElementById('searchInput')?.addEventListener('blur', () => {
+    document.getElementById('searchWrap').style.borderColor = 'rgba(255,255,255,0.12)';
+    document.getElementById('searchWrap').style.boxShadow = 'none';
+  });
 
   loadStats();
   loadTrendingIdeas();
