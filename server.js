@@ -48,6 +48,9 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
+app.get('/discover', (req, res) => {
+  res.sendFile(__dirname + '/public/discover.html');
+});
 app.get('/login', (req, res) => {
   res.sendFile(__dirname + '/public/login.html');
 });
@@ -119,6 +122,33 @@ app.get('/support-dashboard', (req, res) => {
 app.get('/admin', (req, res) => {
   res.sendFile(__dirname + '/public/admin.html');
 });
+app.get('/api/stats/public', async (req, res) => {
+  const [ideasRes, usersRes, txRes] = await Promise.all([
+    supabase.from('ideas').select('*', { count: 'exact', head: true }).eq('status', 'live'),
+    supabase.from('users').select('*', { count: 'exact', head: true }),
+    supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+  ]);
+  res.json({ ideas: ideasRes.count || 0, users: usersRes.count || 0, deals: txRes.count || 0 });
+});
+
+app.get('/api/ideas/public', async (req, res) => {
+  const limit = parseInt(req.query.limit) || 6;
+  const { data, error } = await supabase
+    .from('ideas')
+    .select('id, title, summary, industry, price, views, creator_id, creator_name')
+    .eq('status', 'live')
+    .order('views', { ascending: false })
+    .limit(limit);
+  if (error) return res.status(500).json({ error: error.message });
+  const enriched = await Promise.all((data || []).map(async idea => {
+    const { data: creator } = await supabase
+      .from('users').select('first_name, last_name, avatar_url')
+      .eq('id', idea.creator_id).single();
+    return { ...idea, creator_first_name: creator?.first_name || '', creator_last_name: creator?.last_name || '', creator_avatar: creator?.avatar_url || null };
+  }));
+  res.json(enriched);
+});
+
 app.get('/api/test', async (req, res) => {
   try {
     const { data, error } = await supabase.from('users').select('count');
