@@ -51,6 +51,12 @@ const supabase = createClient(
 app.get('/discover', (req, res) => {
   res.sendFile(__dirname + '/public/discover.html');
 });
+app.get('/about', (req, res) => {
+  res.sendFile(__dirname + '/public/about.html');
+});
+app.get('/contact', (req, res) => {
+  res.sendFile(__dirname + '/public/contact.html');
+});
 app.get('/login', (req, res) => {
   res.sendFile(__dirname + '/public/login.html');
 });

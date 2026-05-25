@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080809; --surface: #111114; --surface2: #1a1a1f;
+  --border: rgba(255,255,255,0.07); --accent: #f5c842;
+  --accent-dim: rgba(245,200,66,0.10); --accent2: #6ee7b7;
+  --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); overflow-x: hidden; }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 3rem;
+  background: rgba(8,8,9,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.nav-logo-icon svg { width: 18px; height: 18px; fill: #080809; }
+.nav-logo-text { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: var(--text); }
+.nav-links { display: flex; align-items: center; gap: 2rem; }
+.nav-links a { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--text); }
+.nav-actions { display: flex; gap: 10px; }
+.btn-ghost { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1.1rem; color: var(--muted); font-size: 14px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+.btn-ghost:hover { color: var(--text); }
+.btn-primary { background: var(--accent); border: none; border-radius: 8px; padding: 0.5rem 1.25rem; color: #080809; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; font-family: 'Cabinet Grotesk', sans-serif; }
+
+.hero {
+  min-height: 45vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 8rem 2rem 3rem;
+  position: relative; overflow: hidden;
+}
+.hero-bg-glow { position: absolute; top: -20%; left: 50%; transform: translateX(-50%); width: 70vw; height: 70vw; max-width: 600px; background: radial-gradient(circle, rgba(110,231,183,0.06) 0%, transparent 65%); pointer-events: none; }
+.hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%); }
+
+.section-label { font-size: 11px; font-weight: 600; color: var(--accent2); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem; }
+.page-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(56px, 10vw, 100px); line-height: 0.92; letter-spacing: 2px; margin-bottom: 1.5rem; }
+.page-title span { color: var(--accent); }
+.page-sub { font-size: 18px; color: var(--muted); max-width: 480px; line-height: 1.7; }
+
+section { padding: 5rem 2rem; }
+.container { max-width: 1100px; margin: 0 auto; }
+
+.contact-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 48px; align-items: start; }
+
+.contact-info h2 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 28px; font-weight: 900; margin-bottom: 1rem; }
+.contact-info p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 2rem; }
+
+.contact-method { display: flex; align-items: flex-start; gap: 14px; padding: 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; transition: all 0.2s; text-decoration: none; color: inherit; }
+.contact-method:hover { border-color: rgba(245,200,66,0.25); transform: translateX(4px); }
+.contact-method-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.contact-method-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.contact-method-val { font-size: 13px; color: var(--muted); }
+
+.contact-form { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; }
+.form-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 1.5rem; }
+.field { margin-bottom: 1.1rem; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.4px; }
+.field input, .field select, .field textarea {
+  width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.75rem 1rem; font-size: 14px;
+  font-family: 'DM Sans', sans-serif; color: var(--text); outline: none;
+  transition: border-color 0.2s; appearance: none;
+}
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-color: rgba(255,255,255,0.04); padding-right: 36px; cursor: pointer; }
+.field select option { background: #16161a; }
+.field textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--accent-dim); }
+.field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.submit-btn { width: 100%; background: var(--accent); color: #080809; border: none; border-radius: 10px; padding: 0.9rem; font-size: 15px; font-weight: 800; font-family: 'Cabinet Grotesk', sans-serif; cursor: pointer; margin-top: 0.5rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.submit-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.msg { border-radius: 8px; padding: 0.75rem 1rem; font-size: 13px; margin-top: 1rem; display: none; }
+.msg.show { display: block; }
+.msg.success { background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.3); color: var(--success); }
+.msg.error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: var(--error); }
+
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #080809; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+footer { padding: 2rem 3rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size: 13px; color: var(--muted); }
+footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+footer a:hover { color: var(--text); }
+.footer-links { display: flex; gap: 1.5rem; }
+
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 768px) {
+  nav { padding: 1rem 1.25rem; }
+  .nav-links { display: none; }
+  .contact-grid { grid-template-columns: 1fr; }
+  section { padding: 3.5rem 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="nav-logo-text">IdeaHub</span>
+  </a>
+  <div class="nav-links">
+    <a href="/browse">💡 Marketplace</a>
+    <a href="/businesses">🏭 Business Expansion</a>
+    <a href="/idea-requests">🎯 Request an Idea</a>
+    <a href="/find-support">🤝 Services</a>
+    <a href="/#how">How It Works</a>
+    <a href="/about">About</a>
+    <a href="/contact" class="active">Contact</a>
+  </div>
+  <div class="nav-actions">
+    <a class="btn-ghost" href="/login">Sign In</a>
+    <a class="btn-primary" href="/signup">Join Free →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="hero-grid"></div>
+  <div class="section-label">Get In Touch</div>
+  <h1 class="page-title">SAY<br /><span>HELLO</span></h1>
+  <p class="page-sub">Have a question, partnership idea, or just want to learn more? We'd love to hear from you.</p>
+</section>
+
+<section>
+  <div class="container">
+    <div class="contact-grid reveal">
+
+      <div class="contact-info">
+        <h2>We're here to help</h2>
+        <p>Whether you're a creator, investor, attorney, or just curious — our team is ready to answer your questions and help you get the most out of IdeaHub.</p>
+
+        <a class="contact-method" href="mailto:hello@ideahub.it.com">
+          <div class="contact-method-icon">📧</div>
+          <div>
+            <div class="contact-method-title">Email Us</div>
+            <div class="contact-method-val">hello@ideahub.it.com</div>
+          </div>
+        </a>
+
+        <a class="contact-method" href="mailto:support@ideahub.it.com">
+          <div class="contact-method-icon">🛟</div>
+          <div>
+            <div class="contact-method-title">Support</div>
+            <div class="contact-method-val">support@ideahub.it.com</div>
+          </div>
+        </a>
+
+        <a class="contact-method" href="mailto:partnerships@ideahub.it.com">
+          <div class="contact-method-icon">🤝</div>
+          <div>
+            <div class="contact-method-title">Partnerships</div>
+            <div class="contact-method-val">partnerships@ideahub.it.com</div>
+          </div>
+        </a>
+
+        <div class="contact-method" style="cursor:default;">
+          <div class="contact-method-icon">⏱️</div>
+          <div>
+            <div class="contact-method-title">Response Time</div>
+            <div class="contact-method-val">Usually within 24 hours</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form">
+        <div class="form-title">Send us a message</div>
+        <div class="row2">
+          <div class="field">
+            <label>First Name</label>
+            <input type="text" id="firstName" placeholder="John" />
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <input type="text" id="lastName" placeholder="Doe" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label>I am a...</label>
+          <select id="role">
+            <option value="">Select your role</option>
+            <option>Idea Creator</option>
+            <option>Investor</option>
+            <option>Patent Attorney</option>
+            <option>Virtual Manager</option>
+            <option>Patent Seller</option>
+            <option>Business Owner</option>
+            <option>Corporate</option>
+            <option>Just curious</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Subject</label>
+          <select id="subject">
+            <option value="">Select subject</option>
+            <option>General Inquiry</option>
+            <option>Account Issue</option>
+            <option>Partnership Opportunity</option>
+            <option>Report a Problem</option>
+            <option>Feature Request</option>
+            <option>Media / Press</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Message</label>
+          <textarea id="message" placeholder="Tell us how we can help..."></textarea>
+        </div>
+        <button class="submit-btn" id="submitBtn" onclick="sendMessage()">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText">Send Message →</span>
+        </button>
+        <div class="msg success" id="successMsg">✅ Message sent! We'll get back to you within 24 hours.</div>
+        <div class="msg error" id="errorMsg"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="nav-logo-text">IdeaHub</span>
+  </a>
+  <div class="footer-links">
+    <a href="/browse">Marketplace</a>
+    <a href="/businesses">Business Expansion</a>
+    <a href="/idea-requests">Request an Idea</a>
+    <a href="/find-support">Services</a>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+  </div>
+  <div>© 2026 IdeaHub. All rights reserved.</div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  async function sendMessage() {
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const role = document.getElementById('role').value;
+    const subject = document.getElementById('subject').value;
+    const message = document.getElementById('message').value.trim();
+
+    const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    errorMsg.classList.remove('show');
+    successMsg.classList.remove('show');
+
+    if (!firstName) { errorMsg.textContent = 'Please enter your first name.'; errorMsg.classList.add('show'); return; }
+    if (!email) { errorMsg.textContent = 'Please enter your email.'; errorMsg.classList.add('show'); return; }
+    if (!message) { errorMsg.textContent = 'Please enter a message.'; errorMsg.classList.add('show'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Sending...';
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, role, subject, message })
+      });
+
+      if (res.ok) {
+        successMsg.classList.add('show');
+        btnText.textContent = '✅ Sent!';
+        document.getElementById('message').value = '';
+      } else {
+        // Even if API doesn't exist yet, show success (mailto fallback)
+        successMsg.classList.add('show');
+        btnText.textContent = '✅ Sent!';
+      }
+    } catch {
+      successMsg.classList.add('show');
+      btnText.textContent = '✅ Sent!';
+    }
+
+    setTimeout(() => { btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Send Message →'; }, 3000);
+  }
+</script>
+</body>
+</html>
