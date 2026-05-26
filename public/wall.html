@@ -113,7 +113,6 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   white-space: nowrap; z-index: 50;
 }
-.react-wrap:hover .react-bar,
 .react-wrap.open .react-bar { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
 .react-bar::after {
   content: ''; position: absolute; bottom: -6px; left: 16px;
@@ -632,12 +631,16 @@ async function loadTrending() {
 }
 
 function toggleReactBar(postId, e) {
-  // Just trigger setReaction with current or default
-  const current = userReactions[postId];
-  if (current) {
-    setReaction(postId, current);
-  }
+  e.stopPropagation();
+  document.querySelectorAll('.react-wrap.open').forEach(w => {
+    if (w.id !== `react-wrap-${postId}`) w.classList.remove('open');
+  });
+  document.getElementById(`react-wrap-${postId}`)?.classList.toggle('open');
 }
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.react-wrap.open').forEach(w => w.classList.remove('open'));
+});
 
 async function setReaction(postId, reaction) {
   // If same reaction clicked again — remove it
@@ -685,21 +688,12 @@ async function setReaction(postId, reaction) {
 }
 
 async function toggleLike(postId) {
-  // Default reaction when clicking the button directly (not from bar)
   const current = userReactions[postId];
   if (current) {
-    await setReaction(postId, current); // toggle off
+    await setReaction(postId, current);
   } else {
-    await setReaction(postId, 'brilliant'); // default
+    await setReaction(postId, 'brilliant');
   }
-  try {
-    const res = await fetch(`${API_URL}/api/wall/${postId}/like`, { method:'POST', headers:{ Authorization:`Bearer ${token}` } });
-    const data = await res.json();
-    const btn = document.getElementById(`like-btn-${postId}`);
-    const countEl = document.getElementById(`like-count-${postId}`);
-    if (data.liked) { likedPosts.add(postId); btn.classList.add('liked'); btn.innerHTML = `❤️ <span class="count" id="like-count-${postId}">${data.likes_count}</span>`; }
-    else { likedPosts.delete(postId); btn.classList.remove('liked'); btn.innerHTML = `🤍 <span class="count" id="like-count-${postId}">${data.likes_count}</span>`; }
-  } catch {}
 }
 
 async function toggleSave(postId) {
