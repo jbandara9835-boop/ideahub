@@ -1623,7 +1623,8 @@ app.delete('/api/wall/:id', authMiddleware, async (req, res) => {
 
 app.post('/api/wall/:id/like', authMiddleware, async (req, res) => {
   const postId = parseInt(req.params.id);
-  const { data: existing } = await supabase.from('wall_likes').select('id').eq('user_id', req.user.id).eq('post_id', postId).single();
+  const reaction = req.body?.reaction || 'brilliant';
+  const { data: existing } = await supabase.from('wall_likes').select('id, reaction').eq('user_id', req.user.id).eq('post_id', postId).single();
   if (existing) {
     await supabase.from('wall_likes').delete().eq('user_id', req.user.id).eq('post_id', postId);
     const { data: post } = await supabase.from('wall_posts').select('likes_count').eq('id', postId).single();
@@ -1631,11 +1632,11 @@ app.post('/api/wall/:id/like', authMiddleware, async (req, res) => {
     await supabase.from('wall_posts').update({ likes_count: newCount }).eq('id', postId);
     return res.json({ liked: false, likes_count: newCount });
   }
-  await supabase.from('wall_likes').insert([{ user_id: req.user.id, post_id: postId }]);
+  await supabase.from('wall_likes').insert([{ user_id: req.user.id, post_id: postId, reaction }]);
   const { data: post } = await supabase.from('wall_posts').select('likes_count').eq('id', postId).single();
   const newCount = (post?.likes_count || 0) + 1;
   await supabase.from('wall_posts').update({ likes_count: newCount }).eq('id', postId);
-  res.json({ liked: true, likes_count: newCount });
+  res.json({ liked: true, likes_count: newCount, reaction });
 });
 
 app.post('/api/wall/:id/save', authMiddleware, async (req, res) => {
