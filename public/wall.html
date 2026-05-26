@@ -545,7 +545,28 @@ async function loadTrending() {
 }
 
 async function toggleLike(postId) {
-  if (!user) { window.location.href = '/login'; return; }
+  if (!user) {
+    // Guest like — store in localStorage
+    const guestLikes = JSON.parse(localStorage.getItem('guest_likes') || '[]');
+    const btn = document.getElementById(`like-btn-${postId}`);
+    const countEl = document.getElementById(`like-count-${postId}`);
+    if (guestLikes.includes(postId)) {
+      // Unlike
+      const newLikes = guestLikes.filter(id => id !== postId);
+      localStorage.setItem('guest_likes', JSON.stringify(newLikes));
+      const newCount = Math.max(0, parseInt(countEl.textContent || 0) - 1);
+      btn.classList.remove('liked');
+      btn.innerHTML = `🤍 <span class="count" id="like-count-${postId}">${newCount}</span>`;
+    } else {
+      // Like
+      guestLikes.push(postId);
+      localStorage.setItem('guest_likes', JSON.stringify(guestLikes));
+      const newCount = parseInt(countEl.textContent || 0) + 1;
+      btn.classList.add('liked');
+      btn.innerHTML = `❤️ <span class="count" id="like-count-${postId}">${newCount}</span>`;
+    }
+    return;
+  }
   try {
     const res = await fetch(`${API_URL}/api/wall/${postId}/like`, { method:'POST', headers:{ Authorization:`Bearer ${token}` } });
     const data = await res.json();
@@ -705,7 +726,13 @@ async function submitPost() {
     if (!res.ok) { const d=await res.json(); throw new Error(d.error||'Failed'); }
     closePostModal();
     page=0; allPosts=[];
-    loadPosts(true);
+    // Restore guest likes on render
+  const guestLikes = JSON.parse(localStorage.getItem('guest_likes') || '[]');
+  guestLikes.forEach(postId => {
+    likedPosts.add(postId);
+  });
+
+loadPosts(true);
   } catch(err) { errEl.textContent=err.message; errEl.style.display='block'; }
   btn.disabled=false; sp.style.display='none'; bt.textContent='Share to IdeaWall ✦';
 }
