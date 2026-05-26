@@ -113,7 +113,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   white-space: nowrap; z-index: 50;
 }
-.react-wrap:hover .react-bar { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+.react-wrap.open .react-bar { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
 .react-bar::after {
   content: ''; position: absolute; bottom: -6px; left: 16px;
   width: 10px; height: 10px; background: var(--surface2);
@@ -521,26 +521,26 @@ function renderPost(post) {
       </div>
       ${mediaHtml}
       <div class="post-actions">
-        <div class="react-wrap">
-          <button class="action-btn" id="like-btn-${post.id}" onclick="toggleLike(${post.id})">
+        <div class="react-wrap" id="react-wrap-${post.id}">
+          <button class="action-btn" id="like-btn-${post.id}" onclick="toggleReactBar(${post.id}, event)">
             <div class="react-display" id="react-display-${post.id}">
               ${getReactDisplay(post.id, post.likes_count||0)}
             </div>
           </button>
           <div class="react-bar">
-            <button class="react-option ${userReactions[post.id]==='brilliant'?'selected':''}" onclick="setReaction(${post.id},'brilliant')">
+            <button class="react-option ${userReactions[post.id]==='brilliant'?'selected':''}" onclick="setReaction(${post.id},'brilliant');event.stopPropagation()">
               <span class="react-emoji">💡</span><span class="react-label">Brilliant!</span>
             </button>
-            <button class="react-option ${userReactions[post.id]==='hot'?'selected':''}" onclick="setReaction(${post.id},'hot')">
+            <button class="react-option ${userReactions[post.id]==='hot'?'selected':''}" onclick="setReaction(${post.id},'hot');event.stopPropagation()">
               <span class="react-emoji">🔥</span><span class="react-label">Hot!</span>
             </button>
-            <button class="react-option ${userReactions[post.id]==='invest'?'selected':''}" onclick="setReaction(${post.id},'invest')">
+            <button class="react-option ${userReactions[post.id]==='invest'?'selected':''}" onclick="setReaction(${post.id},'invest');event.stopPropagation()">
               <span class="react-emoji">🤝</span><span class="react-label">I'd invest</span>
             </button>
-            <button class="react-option ${userReactions[post.id]==='world'?'selected':''}" onclick="setReaction(${post.id},'world')">
+            <button class="react-option ${userReactions[post.id]==='world'?'selected':''}" onclick="setReaction(${post.id},'world');event.stopPropagation()">
               <span class="react-emoji">🌍</span><span class="react-label">World changer</span>
             </button>
-            <button class="react-option ${userReactions[post.id]==='needs_work'?'selected':''}" onclick="setReaction(${post.id},'needs_work')">
+            <button class="react-option ${userReactions[post.id]==='needs_work'?'selected':''}" onclick="setReaction(${post.id},'needs_work');event.stopPropagation()">
               <span class="react-emoji">👎</span><span class="react-label">Needs work</span>
             </button>
           </div>
@@ -625,6 +625,19 @@ async function loadTrending() {
       </div>`).join('');
   } catch {}
 }
+
+function toggleReactBar(postId, e) {
+  e.stopPropagation();
+  const wrap = document.getElementById(`react-wrap-${postId}`);
+  const isOpen = wrap.classList.contains('open');
+  // Close all others
+  document.querySelectorAll('.react-wrap.open').forEach(w => w.classList.remove('open'));
+  if (!isOpen) wrap.classList.add('open');
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.react-wrap.open').forEach(w => w.classList.remove('open'));
+});
 
 async function setReaction(postId, reaction) {
   // If same reaction clicked again — remove it
