@@ -180,13 +180,19 @@
     <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Marketplace</span></a>
     <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
   </nav>
-  <div class="user-card">
+  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
     <div class="avatar-sm" id="sidebarAvatar">A</div>
     <div class="user-info">
       <div class="user-name-sb" id="sidebarName">Admin</div>
       <div class="user-role-sb">Administrator</div>
     </div>
-    <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+    <span style="color:var(--muted);font-size:12px;">⋯</span>
+  </div>
+  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
+    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
+    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
+    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
   </div>
 </aside>
 
