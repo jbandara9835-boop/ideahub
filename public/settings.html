@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Settings — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+  --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+  --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+  --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+}
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+
+.sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 1.5rem 1rem; z-index: 100; }
+.logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2.5rem; padding: 0 0.5rem; }
+.logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
+.nav { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-item.active { color: var(--accent); background: var(--accent-dim); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-section-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 0.75rem 0.75rem 0.25rem; }
+.user-card { display: flex; align-items: center; gap: 10px; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border); margin-top: auto; cursor: pointer; }
+.avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); flex-shrink: 0; overflow: hidden; }
+.avatar-sm img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.user-info { flex: 1; min-width: 0; }
+.user-name-sb { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role-sb { font-size: 11px; color: var(--muted); }
+
+.main { margin-left: 220px; padding: 2rem 2.5rem; max-width: 1000px; }
+.topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
+.back-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; color: var(--muted); font-size: 13px; text-decoration: none; transition: all 0.2s; }
+.back-btn:hover { color: var(--text); }
+.page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+
+.settings-layout { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
+
+/* SETTINGS NAV */
+.settings-nav { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0.75rem; position: sticky; top: 2rem; }
+.settings-nav-item { display: flex; align-items: center; gap: 10px; padding: 0.65rem 0.75rem; border-radius: 8px; font-size: 14px; color: var(--muted); cursor: pointer; transition: all 0.15s; text-decoration: none; }
+.settings-nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.settings-nav-item.active { color: var(--accent); background: var(--accent-dim); font-weight: 500; }
+.settings-nav-icon { font-size: 16px; }
+
+/* SETTINGS CARDS */
+.settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; margin-bottom: 20px; }
+.settings-card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px; }
+.settings-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.4px; }
+.field input, .field select { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s; appearance: none; }
+.field input:focus, .field select:focus { border-color: var(--accent); background: var(--accent-dim); }
+.field input::placeholder { color: var(--muted); }
+.field input[readonly] { opacity: 0.5; cursor: not-allowed; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* TOGGLE ROW */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+.toggle-row:first-child { padding-top: 0; }
+.toggle-info { flex: 1; }
+.toggle-label { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.toggle-desc { font-size: 12px; color: var(--muted); }
+.toggle { position: relative; width: 42px; height: 24px; background: var(--border); border-radius: 12px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.toggle.on { background: var(--accent); }
+.toggle-knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle.on .toggle-knob { transform: translateX(18px); }
+
+/* SAVE BTN */
+.save-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 10px; padding: 0.75rem 1.75rem; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+.save-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.danger-btn { background: none; color: var(--error); border: 1px solid rgba(255,107,107,0.3); border-radius: 10px; padding: 0.75rem 1.75rem; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.danger-btn:hover { background: rgba(255,107,107,0.1); border-color: var(--error); }
+
+.msg { border-radius: 8px; padding: 0.65rem 1rem; font-size: 13px; margin-top: 1rem; display: none; }
+.msg.show { display: block; }
+.msg.success { background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.3); color: var(--success); }
+.msg.error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: var(--error); }
+
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #0d0d0f; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.info-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--muted); font-size: 13px; }
+.info-value { font-weight: 500; }
+
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-free { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(245,200,66,0.2); }
+.badge-verified { background: rgba(110,231,183,0.15); color: var(--success); border: 1px solid rgba(110,231,183,0.3); }
+.badge-unverified { background: rgba(110,110,180,0.15); color: #a0a0f0; border: 1px solid rgba(110,110,180,0.3); }
+
+@media (max-width: 900px) {
+  .sidebar { width: 60px; padding: 1rem 0.5rem; }
+  .nav-item span:not(.nav-icon), .user-info { display: none; }
+  .logo { justify-content: center; }
+  .nav-item { justify-content: center; padding: 0.6rem; }
+  .user-card { justify-content: center; padding: 0.5rem; }
+  .main { margin-left: 60px; padding: 1.5rem; }
+  .settings-layout { grid-template-columns: 1fr; }
+  .settings-nav { position: static; display: flex; flex-wrap: wrap; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <a href="/" style="text-decoration:none;color:inherit;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">IdeaHub</a>
+  </div>
+  <nav class="nav" id="sidebarNav"></nav>
+  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
+    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb" id="sidebarRole">—</div>
+    </div>
+    <span style="color:var(--muted);font-size:12px;">⋯</span>
+  </div>
+  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
+    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--accent);text-decoration:none;background:var(--accent-dim);">⚙️ Settings</a>
+    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
+    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <a class="back-btn" id="backBtn" href="/dashboard">← Back</a>
+    <div class="page-title">⚙️ Settings</div>
+  </div>
+
+  <div class="settings-layout">
+    <!-- SETTINGS NAV -->
+    <div class="settings-nav">
+      <a class="settings-nav-item active" onclick="showSection('account', this)"><span class="settings-nav-icon">👤</span> Account</a>
+      <a class="settings-nav-item" onclick="showSection('security', this)"><span class="settings-nav-icon">🔒</span> Security</a>
+      <a class="settings-nav-item" onclick="showSection('notifications', this)"><span class="settings-nav-icon">🔔</span> Notifications</a>
+      <a class="settings-nav-item" onclick="showSection('privacy', this)"><span class="settings-nav-icon">🛡️</span> Privacy</a>
+      <a class="settings-nav-item" onclick="showSection('appearance', this)"><span class="settings-nav-icon">🎨</span> Appearance</a>
+      <a class="settings-nav-item" onclick="showSection('danger', this)" style="color:var(--error);margin-top:0.5rem;"><span class="settings-nav-icon">⚠️</span> Danger Zone</a>
+    </div>
+
+    <!-- SETTINGS CONTENT -->
+    <div>
+
+      <!-- ACCOUNT -->
+      <div class="section active" id="section-account">
+        <div class="settings-card">
+          <div class="settings-card-title">👤 Account Information</div>
+          <div class="settings-card-sub">Your basic account details and plan</div>
+          <div class="info-row">
+            <span class="info-label">Full Name</span>
+            <span class="info-value" id="infoName">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value" id="infoEmail">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Role</span>
+            <span class="info-value" id="infoRole">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Plan</span>
+            <span class="badge badge-free">✦ Free Plan</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Verification</span>
+            <span id="infoBadge" class="badge badge-unverified">⚪ Not Verified</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Member Since</span>
+            <span class="info-value" id="infoJoined">—</span>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-title">✏️ Update Email</div>
+          <div class="settings-card-sub">Change the email address associated with your account</div>
+          <div class="field">
+            <label>Current Email</label>
+            <input type="email" id="currentEmail" readonly />
+          </div>
+          <div class="field">
+            <label>New Email</label>
+            <input type="email" id="newEmail" placeholder="newemail@example.com" />
+          </div>
+          <div class="field">
+            <label>Confirm Password</label>
+            <input type="password" id="emailPassword" placeholder="Enter your password to confirm" />
+          </div>
+          <div class="msg success" id="emailSuccess"></div>
+          <div class="msg error" id="emailError"></div>
+          <button class="save-btn" onclick="updateEmail()">
+            <div class="spinner" id="emailSpinner"></div>
+            <span id="emailBtnText">Update Email</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="section" id="section-security">
+        <div class="settings-card">
+          <div class="settings-card-title">🔒 Change Password</div>
+          <div class="settings-card-sub">Keep your account secure with a strong password</div>
+          <div class="field">
+            <label>Current Password</label>
+            <input type="password" id="currentPassword" placeholder="Enter current password" />
+          </div>
+          <div class="field">
+            <label>New Password</label>
+            <input type="password" id="newPassword" placeholder="At least 6 characters" />
+          </div>
+          <div class="field">
+            <label>Confirm New Password</label>
+            <input type="password" id="confirmPassword" placeholder="Repeat new password" />
+          </div>
+          <div class="msg success" id="pwSuccess"></div>
+          <div class="msg error" id="pwError"></div>
+          <button class="save-btn" onclick="changePassword()">
+            <div class="spinner" id="pwSpinner"></div>
+            <span id="pwBtnText">Change Password</span>
+          </button>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-title">🔐 Active Sessions</div>
+          <div class="settings-card-sub">Manage where you're logged in</div>
+          <div class="info-row">
+            <div>
+              <div class="info-value">Current Session</div>
+              <div class="info-label" style="margin-top:2px;">This device · Active now</div>
+            </div>
+            <span style="font-size:12px;color:var(--success);">● Active</span>
+          </div>
+          <div style="margin-top:1rem;">
+            <button class="danger-btn" onclick="logoutAll()">Log out all other sessions</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="section" id="section-notifications">
+        <div class="settings-card">
+          <div class="settings-card-title">🔔 Email Notifications</div>
+          <div class="settings-card-sub">Choose what emails you receive from IdeaHub</div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">New Messages</div>
+              <div class="toggle-desc">Get notified when someone sends you a message</div>
+            </div>
+            <div class="toggle on" id="notif-messages" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Transaction Updates</div>
+              <div class="toggle-desc">Escrow, confirmations and payment notifications</div>
+            </div>
+            <div class="toggle on" id="notif-transactions" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">New Investor Requests</div>
+              <div class="toggle-desc">When investors post new idea requests</div>
+            </div>
+            <div class="toggle on" id="notif-requests" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">IdeaWall Activity</div>
+              <div class="toggle-desc">Likes and comments on your IdeaWall posts</div>
+            </div>
+            <div class="toggle on" id="notif-wall" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Marketing & Updates</div>
+              <div class="toggle-desc">News, tips and product updates from IdeaHub</div>
+            </div>
+            <div class="toggle" id="notif-marketing" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div style="margin-top:1.25rem;">
+            <button class="save-btn" onclick="saveNotifications()">
+              <div class="spinner" id="notifSpinner"></div>
+              <span id="notifBtnText">Save Preferences</span>
+            </button>
+          </div>
+          <div class="msg success" id="notifSuccess"></div>
+        </div>
+      </div>
+
+      <!-- PRIVACY -->
+      <div class="section" id="section-privacy">
+        <div class="settings-card">
+          <div class="settings-card-title">🛡️ Privacy Settings</div>
+          <div class="settings-card-sub">Control who can see your profile and activity</div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Public Profile</div>
+              <div class="toggle-desc">Allow anyone to view your public profile page</div>
+            </div>
+            <div class="toggle on" id="priv-profile" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Show in Search Results</div>
+              <div class="toggle-desc">Appear in find support and marketplace searches</div>
+            </div>
+            <div class="toggle on" id="priv-search" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Show Star Rating</div>
+              <div class="toggle-desc">Display your star rating on your public profile</div>
+            </div>
+            <div class="toggle on" id="priv-stars" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Show IdeaWall Posts</div>
+              <div class="toggle-desc">Display your IdeaWall posts on your public profile</div>
+            </div>
+            <div class="toggle on" id="priv-wall" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div style="margin-top:1.25rem;">
+            <button class="save-btn" onclick="savePrivacy()">
+              <div class="spinner" id="privacySpinner"></div>
+              <span id="privacyBtnText">Save Privacy Settings</span>
+            </button>
+          </div>
+          <div class="msg success" id="privacySuccess"></div>
+        </div>
+      </div>
+
+      <!-- APPEARANCE -->
+      <div class="section" id="section-appearance">
+        <div class="settings-card">
+          <div class="settings-card-title">🎨 Appearance</div>
+          <div class="settings-card-sub">Customize how IdeaHub looks for you</div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Dark Mode</div>
+              <div class="toggle-desc">IdeaHub always uses dark mode for the best experience</div>
+            </div>
+            <div class="toggle on" style="opacity:0.5;cursor:not-allowed;"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">Compact View</div>
+              <div class="toggle-desc">Show more content with reduced spacing</div>
+            </div>
+            <div class="toggle" id="appear-compact" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="field" style="margin-top:1rem;">
+            <label>Language</label>
+            <select id="languageSelect">
+              <option value="en">🇬🇧 English</option>
+              <option value="si">🇱🇰 Sinhala (coming soon)</option>
+              <option value="ta">🇮🇳 Tamil (coming soon)</option>
+            </select>
+          </div>
+          <div style="margin-top:1.25rem;">
+            <button class="save-btn" onclick="saveAppearance()">Save Appearance</button>
+          </div>
+          <div class="msg success" id="appearSuccess" style="display:none;margin-top:1rem;">✅ Appearance preferences saved!</div>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div class="section" id="section-danger">
+        <div class="settings-card" style="border-color:rgba(255,107,107,0.2);">
+          <div class="settings-card-title" style="color:var(--error);">⚠️ Danger Zone</div>
+          <div class="settings-card-sub">These actions are permanent and cannot be undone</div>
+
+          <div style="padding:1.25rem;background:rgba(255,107,107,0.05);border:1px solid rgba(255,107,107,0.15);border-radius:12px;margin-bottom:1rem;">
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Deactivate Account</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Temporarily hide your profile and listings. You can reactivate at any time.</div>
+            <button class="danger-btn" onclick="deactivateAccount()">Deactivate Account</button>
+          </div>
+
+          <div style="padding:1.25rem;background:rgba(255,107,107,0.05);border:1px solid rgba(255,107,107,0.15);border-radius:12px;">
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Delete Account</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Permanently delete your account, all your ideas, and data. This cannot be undone.</div>
+            <button class="danger-btn" style="border-color:var(--error);background:rgba(255,107,107,0.1);" onclick="deleteAccount()">Delete My Account</button>
+          </div>
+
+          <div class="msg error" id="dangerError" style="margin-top:1rem;"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+const token = localStorage.getItem('ih_token');
+const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
+
+function renderSidebar() {
+  const path = window.location.pathname;
+  const nav = document.getElementById('sidebarNav');
+  if (!nav || !user) return;
+  nav.innerHTML = `
+    <div class="nav-section-label">My Account</div>
+    <a class="nav-item" href="${dashMap[user.role]||'/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+    <a class="nav-item active" href="/settings"><span class="nav-icon">⚙️</span><span>Settings</span></a>
+    <div class="nav-section-label">Marketplace</div>
+    <a class="nav-item" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
+    <a class="nav-item" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
+    <a class="nav-item" href="/wall"><span class="nav-icon">🧱</span><span>IdeaWall</span></a>
+    <div class="nav-section-label">Activity</div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+  `;
+}
+
+if (!token || !user) { window.location.href = '/login'; }
+else {
+  renderSidebar();
+  document.getElementById('backBtn').href = dashMap[user.role] || '/dashboard';
+  const avatarUrl = user.avatar_url || user.avatarUrl;
+  const avatarEl = document.getElementById('sidebarAvatar');
+  if (avatarEl) {
+    if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" />`;
+    else document.getElementById('sidebarAvatarText').textContent = user.first_name?.[0] || '?';
+  }
+  document.getElementById('sidebarName').textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
+  document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role;
+}
+
+function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href = '/login'; }
+
+function toggleUserMenu() {
+  const menu = document.getElementById('userMenu');
+  if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', (e) => {
+  const card = document.getElementById('userCard');
+  const menu = document.getElementById('userMenu');
+  if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
+});
+
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`section-${id}`).classList.add('active');
+  el.classList.add('active');
+}
+
+function toggleNotif(el) {
+  el.classList.toggle('on');
+}
+
+async function loadProfile() {
+  try {
+    const res = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    document.getElementById('infoName').textContent = `${data.first_name||''} ${data.last_name||''}`.trim() || '—';
+    document.getElementById('infoEmail').textContent = data.email || '—';
+    document.getElementById('infoRole').textContent = roleMap[data.role] || data.role || '—';
+    document.getElementById('infoJoined').textContent = data.created_at ? new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—';
+    document.getElementById('currentEmail').value = data.email || '';
+    const badge = document.getElementById('infoBadge');
+    if (data.verification_status === 'verified') { badge.className = 'badge badge-verified'; badge.textContent = '✅ Verified'; }
+    else if (data.verification_status === 'pending') { badge.className = 'badge badge-free'; badge.textContent = '⏳ Pending'; }
+    else { badge.className = 'badge badge-unverified'; badge.textContent = '⚪ Not Verified'; }
+  } catch(e) { console.error(e); }
+}
+
+async function updateEmail() {
+  const newEmail = document.getElementById('newEmail').value.trim();
+  const password = document.getElementById('emailPassword').value;
+  const errEl = document.getElementById('emailError');
+  const sucEl = document.getElementById('emailSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+  if (!newEmail) { errEl.textContent = 'Please enter a new email.'; errEl.classList.add('show'); return; }
+  if (!password) { errEl.textContent = 'Please enter your password.'; errEl.classList.add('show'); return; }
+  const btn = document.querySelector('#section-account .save-btn');
+  const sp = document.getElementById('emailSpinner');
+  const bt = document.getElementById('emailBtnText');
+  btn.disabled=true; sp.style.display='block'; bt.textContent='Updating...';
+  try {
+    const res = await fetch(`${API_URL}/api/auth/update-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ newEmail, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    sucEl.textContent = '✅ Email updated successfully!';
+    sucEl.classList.add('show');
+    document.getElementById('currentEmail').value = newEmail;
+    document.getElementById('newEmail').value = '';
+    document.getElementById('emailPassword').value = '';
+  } catch(err) { errEl.textContent = err.message; errEl.classList.add('show'); }
+  btn.disabled=false; sp.style.display='none'; bt.textContent='Update Email';
+}
+
+async function changePassword() {
+  const current = document.getElementById('currentPassword').value;
+  const newPw = document.getElementById('newPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
+  const errEl = document.getElementById('pwError');
+  const sucEl = document.getElementById('pwSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+  if (!current) { errEl.textContent = 'Enter your current password.'; errEl.classList.add('show'); return; }
+  if (!newPw || newPw.length < 6) { errEl.textContent = 'New password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+  if (newPw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
+  const btn = document.querySelector('#section-security .save-btn');
+  const sp = document.getElementById('pwSpinner');
+  const bt = document.getElementById('pwBtnText');
+  btn.disabled=true; sp.style.display='block'; bt.textContent='Changing...';
+  try {
+    const res = await fetch(`${API_URL}/api/auth/change-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ currentPassword: current, newPassword: newPw })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    sucEl.textContent = '✅ Password changed successfully!';
+    sucEl.classList.add('show');
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  } catch(err) { errEl.textContent = err.message; errEl.classList.add('show'); }
+  btn.disabled=false; sp.style.display='none'; bt.textContent='Change Password';
+}
+
+function saveNotifications() {
+  const sp = document.getElementById('notifSpinner');
+  const bt = document.getElementById('notifBtnText');
+  sp.style.display='block'; bt.textContent='Saving...';
+  setTimeout(() => {
+    sp.style.display='none'; bt.textContent='Save Preferences';
+    const el = document.getElementById('notifSuccess');
+    el.textContent = '✅ Notification preferences saved!';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }, 800);
+}
+
+function savePrivacy() {
+  const sp = document.getElementById('privacySpinner');
+  const bt = document.getElementById('privacyBtnText');
+  sp.style.display='block'; bt.textContent='Saving...';
+  setTimeout(() => {
+    sp.style.display='none'; bt.textContent='Save Privacy Settings';
+    const el = document.getElementById('privacySuccess');
+    el.textContent = '✅ Privacy settings saved!';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }, 800);
+}
+
+function saveAppearance() {
+  const el = document.getElementById('appearSuccess');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function logoutAll() {
+  if (confirm('Log out all other sessions?')) {
+    alert('All other sessions have been logged out.');
+  }
+}
+
+function deactivateAccount() {
+  if (confirm('Deactivate your account? Your profile and listings will be hidden until you log back in.')) {
+    alert('Account deactivation coming soon. Contact support@ideahub.it.com for now.');
+  }
+}
+
+function deleteAccount() {
+  const confirmed = prompt('Type DELETE to permanently delete your account:');
+  if (confirmed === 'DELETE') {
+    alert('Account deletion request received. Our team will process this within 24 hours. Contact support@ideahub.it.com if you have questions.');
+  } else if (confirmed !== null) {
+    const el = document.getElementById('dangerError');
+    el.textContent = 'You must type DELETE exactly to confirm.';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+}
+
+loadProfile();
+</script>
+</body>
+</html>

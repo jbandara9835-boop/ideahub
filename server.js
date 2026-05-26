@@ -124,6 +124,7 @@ app.get('/support-dashboard', (req, res) => {
   res.sendFile(__dirname + '/public/support-dashboard.html');
 });
 app.get('/wall', (req, res) => res.sendFile(__dirname + '/public/wall.html'));
+app.get('/settings', (req, res) => res.sendFile(__dirname + '/public/settings.html'));
 app.get('/admin', (req, res) => {
   res.sendFile(__dirname + '/public/admin.html');
 });
@@ -1523,6 +1524,36 @@ app.post('/api/profile/avatar', authMiddleware, upload.single('avatar'), async (
     res.json({ url: urlData.publicUrl });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+
+app.post('/api/auth/change-password', authMiddleware, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords required' });
+  if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  const { data: user } = await supabase.from('users').select('password').eq('id', req.user.id).single();
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const match = await bcrypt.compare(currentPassword, user.password);
+  if (!match) return res.status(400).json({ error: 'Current password is incorrect' });
+  const hashed = await bcrypt.hash(newPassword, 10);
+  const { error } = await supabase.from('users').update({ password: hashed }).eq('id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+app.post('/api/auth/update-email', authMiddleware, async (req, res) => {
+  const { newEmail, password } = req.body;
+  if (!newEmail || !password) return res.status(400).json({ error: 'Email and password required' });
+  const { data: user } = await supabase.from('users').select('password').eq('id', req.user.id).single();
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(400).json({ error: 'Incorrect password' });
+  const { data: existing } = await supabase.from('users').select('id').eq('email', newEmail).single();
+  if (existing) return res.status(400).json({ error: 'Email already in use' });
+  const { error } = await supabase.from('users').update({ email: newEmail }).eq('id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
 // ── IDEAWALL ──────────────────────────────────────────────────────────────────
 
 app.get('/api/wall', async (req, res) => {
