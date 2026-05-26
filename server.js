@@ -123,6 +123,7 @@ app.get('/find-support', (req, res) => {
 app.get('/support-dashboard', (req, res) => {
   res.sendFile(__dirname + '/public/support-dashboard.html');
 });
+app.get('/wall', (req, res) => res.sendFile(__dirname + '/public/wall.html'));
 app.get('/admin', (req, res) => {
   res.sendFile(__dirname + '/public/admin.html');
 });
@@ -437,6 +438,23 @@ app.post('/api/ideas', authMiddleware, async (req, res) => {
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
+
+  // Share to IdeaWall if requested
+  if (req.body.shareToWall && idea) {
+    await supabase.from('wall_posts').insert([{
+      user_id: req.user.id,
+      title: idea.title,
+      description: idea.summary || '',
+      category: 'Innovation',
+      media_url: (req.body.images && req.body.images[0]) || null,
+      media_type: 'image',
+      source_idea_id: idea.id,
+      is_from_idea: true,
+      likes_count: 0,
+      comments_count: 0
+    }]);
+  }
+
   res.status(201).json(idea);
 });
 
@@ -1505,6 +1523,129 @@ app.post('/api/profile/avatar', authMiddleware, upload.single('avatar'), async (
     res.json({ url: urlData.publicUrl });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+// ── IDEAWALL ──────────────────────────────────────────────────────────────────
+
+app.get('/api/wall', async (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = parseInt(req.query.offset) || 0;
+  const sort = req.query.sort || 'latest';
+  const category = req.query.category || null;
+
+  let query = supabase.from('wall_posts')
+    .select('*, users(id, first_name, last_name, role, avatar_url)')
+    .range(offset, offset + limit - 1);
+
+  if (category) query = query.eq('category', category);
+  if (sort === 'trending') query = query.order('likes_count', { ascending: false });
+  else query = query.order('created_at', { ascending: false });
+
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+
+  const posts = (data || []).map(p => ({
+    ...p,
+    first_name: p.users?.first_name,
+    last_name: p.users?.last_name,
+    role: p.users?.role,
+    avatar_url: p.users?.avatar_url,
+  }));
+
+  // Get liked/saved for logged in user
+  const token = req.headers.authorization?.split(' ')[1];
+  let liked = [], saved = [];
+  if (token) {
+    try {
+      const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET);
+      const postIds = posts.map(p => p.id);
+      if (postIds.length) {
+        const [likesRes, savesRes] = await Promise.all([
+          supabase.from('wall_likes').select('post_id').eq('user_id', decoded.id).in('post_id', postIds),
+          supabase.from('wall_saves').select('post_id').eq('user_id', decoded.id).in('post_id', postIds),
+        ]);
+        liked = (likesRes.data || []).map(l => l.post_id);
+        saved = (savesRes.data || []).map(s => s.post_id);
+      }
+    } catch {}
+  }
+
+  res.json({ posts, liked, saved });
+});
+
+app.post('/api/wall', authMiddleware, async (req, res) => {
+  const { title, description, category, media_url, media_type, source_idea_id, is_from_idea } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title is required' });
+  const { data, error } = await supabase.from('wall_posts').insert([{
+    user_id: req.user.id, title, description: description || null,
+    category: category || null, media_url: media_url || null,
+    media_type: media_type || 'image', source_idea_id: source_idea_id || null,
+    is_from_idea: is_from_idea || false, likes_count: 0, comments_count: 0
+  }]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+app.delete('/api/wall/:id', authMiddleware, async (req, res) => {
+  const { error } = await supabase.from('wall_posts').delete().eq('id', req.params.id).eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+app.post('/api/wall/:id/like', authMiddleware, async (req, res) => {
+  const postId = parseInt(req.params.id);
+  const { data: existing } = await supabase.from('wall_likes').select('id').eq('user_id', req.user.id).eq('post_id', postId).single();
+  if (existing) {
+    await supabase.from('wall_likes').delete().eq('user_id', req.user.id).eq('post_id', postId);
+    const { data: post } = await supabase.from('wall_posts').select('likes_count').eq('id', postId).single();
+    const newCount = Math.max(0, (post?.likes_count || 1) - 1);
+    await supabase.from('wall_posts').update({ likes_count: newCount }).eq('id', postId);
+    return res.json({ liked: false, likes_count: newCount });
+  }
+  await supabase.from('wall_likes').insert([{ user_id: req.user.id, post_id: postId }]);
+  const { data: post } = await supabase.from('wall_posts').select('likes_count').eq('id', postId).single();
+  const newCount = (post?.likes_count || 0) + 1;
+  await supabase.from('wall_posts').update({ likes_count: newCount }).eq('id', postId);
+  res.json({ liked: true, likes_count: newCount });
+});
+
+app.post('/api/wall/:id/save', authMiddleware, async (req, res) => {
+  const postId = parseInt(req.params.id);
+  const { data: existing } = await supabase.from('wall_saves').select('id').eq('user_id', req.user.id).eq('post_id', postId).single();
+  if (existing) {
+    await supabase.from('wall_saves').delete().eq('user_id', req.user.id).eq('post_id', postId);
+    return res.json({ saved: false });
+  }
+  await supabase.from('wall_saves').insert([{ user_id: req.user.id, post_id: postId }]);
+  res.json({ saved: true });
+});
+
+app.get('/api/wall/:id/comments', async (req, res) => {
+  const { data, error } = await supabase.from('wall_comments')
+    .select('*, users(first_name, last_name, avatar_url)')
+    .eq('post_id', req.params.id)
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  const comments = (data || []).map(c => ({
+    ...c, first_name: c.users?.first_name, last_name: c.users?.last_name, avatar_url: c.users?.avatar_url
+  }));
+  res.json(comments);
+});
+
+app.post('/api/wall/:id/comments', authMiddleware, async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'Text required' });
+  const postId = parseInt(req.params.id);
+  const { data, error } = await supabase.from('wall_comments').insert([{
+    user_id: req.user.id, post_id: postId, text
+  }]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  const { data: post } = await supabase.from('wall_posts').select('comments_count').eq('id', postId).single();
+  await supabase.from('wall_posts').update({ comments_count: (post?.comments_count || 0) + 1 }).eq('id', postId);
+  res.status(201).json(data);
+});
+
+// Handle shareToWall on idea submit — patch into POST /api/ideas
+// (handled inline in the ideas route via shareToWall flag)
+
 // ── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
