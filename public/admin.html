@@ -177,8 +177,8 @@
     <a class="nav-item active" href="/admin"><span class="nav-icon">🛡️</span><span>Admin Panel</span></a>
     <div class="nav-divider"></div>
     <a class="nav-item" href="/"><span class="nav-icon">🏠</span><span>Main Site</span></a>
-    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Browse Ideas</span></a>
-    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Find Support</span></a>
+    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Marketplace</span></a>
+    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
   </nav>
   <div class="user-card">
     <div class="avatar-sm" id="sidebarAvatar">A</div>
@@ -298,12 +298,12 @@
       <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Browse Ideas</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Investor Requests</span></a>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
       <div class="nav-section-label">Support</div>
       <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
       <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Find Support</span></a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
       <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
