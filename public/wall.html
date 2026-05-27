@@ -113,6 +113,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   white-space: nowrap; z-index: 50;
 }
+.react-wrap:hover .react-bar,
 .react-wrap.open .react-bar { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
 .react-bar::after {
   content: ''; position: absolute; bottom: -6px; left: 16px;
@@ -640,10 +641,6 @@ async function loadTrending() {
 
 function toggleReactBar(postId, e) {
   e.stopPropagation();
-  document.querySelectorAll('.react-wrap.open').forEach(w => {
-    if (w.id !== `react-wrap-${postId}`) w.classList.remove('open');
-  });
-  document.getElementById(`react-wrap-${postId}`)?.classList.toggle('open');
 }
 
 document.addEventListener('click', (e) => {
@@ -653,48 +650,39 @@ document.addEventListener('click', (e) => {
 });
 
 async function setReaction(postId, reaction) {
-  // If same reaction clicked again — remove it
   const current = userReactions[postId];
   const isRemoving = current === reaction;
+  const displayEl = document.getElementById(`react-display-${postId}`);
+  const countEl = displayEl?.querySelector('.react-total');
+  const currentCount = parseInt(countEl?.textContent || 0);
 
+  // ── INSTANT UI UPDATE — no waiting for API ──
+  if (isRemoving) {
+    delete userReactions[postId];
+    likedPosts.delete(postId);
+    if (displayEl) displayEl.innerHTML = `<span class="react-display-emoji">🤍</span><span class="react-total">${Math.max(0, currentCount - 1)}</span>`;
+  } else {
+    userReactions[postId] = reaction;
+    likedPosts.add(postId);
+    const newCount = current ? currentCount : currentCount + 1;
+    if (displayEl) displayEl.innerHTML = `<span class="react-display-emoji">${reactionEmojis[reaction]}</span><span class="react-total">${newCount}</span>`;
+  }
+
+  // Guest — localStorage only, no API
   if (!user) {
-    // Guest reaction via localStorage
     const guestReactions = JSON.parse(localStorage.getItem('guest_reactions') || '{}');
-    const displayEl = document.getElementById(`react-display-${postId}`);
-    const countEl = displayEl?.querySelector('.react-total');
-    const currentCount = parseInt(countEl?.textContent || 0);
-    if (isRemoving) {
-      delete guestReactions[postId];
-      delete userReactions[postId];
-      localStorage.setItem('guest_reactions', JSON.stringify(guestReactions));
-      if (displayEl) displayEl.innerHTML = `<span class="react-display-emoji">🤍</span><span class="react-total">${Math.max(0, currentCount-1)}</span>`;
-    } else {
-      guestReactions[postId] = reaction;
-      userReactions[postId] = reaction;
-      localStorage.setItem('guest_reactions', JSON.stringify(guestReactions));
-      if (displayEl) displayEl.innerHTML = `<span class="react-display-emoji">${reactionEmojis[reaction]}</span><span class="react-total">${current ? currentCount : currentCount+1}</span>`;
-    }
+    if (isRemoving) delete guestReactions[postId];
+    else guestReactions[postId] = reaction;
+    localStorage.setItem('guest_reactions', JSON.stringify(guestReactions));
     return;
   }
 
-  try {
-    const res = await fetch(`${API_URL}/api/wall/${postId}/like`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ reaction: isRemoving ? null : reaction })
-    });
-    const data = await res.json();
-    const displayEl = document.getElementById(`react-display-${postId}`);
-    if (data.liked) {
-      userReactions[postId] = reaction;
-      likedPosts.add(postId);
-      if (displayEl) displayEl.innerHTML = `<span class="react-display-emoji">${reactionEmojis[reaction]}</span><span class="react-total">${data.likes_count}</span>`;
-    } else {
-      delete userReactions[postId];
-      likedPosts.delete(postId);
-      if (displayEl) displayEl.innerHTML = `<span class="react-display-emoji">🤍</span><span class="react-total">${data.likes_count}</span>`;
-    }
-  } catch {}
+  // Logged in — sync to server in background (no await)
+  fetch(`${API_URL}/api/wall/${postId}/like`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ reaction: isRemoving ? null : reaction })
+  }).catch(() => {});
 }
 
 async function toggleLike(postId) {
