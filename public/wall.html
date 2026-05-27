@@ -472,15 +472,23 @@ function setCategory(c, el) {
 }
 
 function formatTime(d) {
-  if (!d) return 'just now';
-  const date = new Date(typeof d === 'string' && !d.endsWith('Z') ? d + 'Z' : d);
-  if (isNaN(date.getTime())) return 'just now';
-  const diff = Date.now() - date;
+  if (!d) return '';
+  let date;
+  if (typeof d === 'string') {
+    // Handle both with and without timezone
+    date = new Date(d.includes('T') ? (d.endsWith('Z') || d.includes('+') ? d : d + 'Z') : d);
+  } else {
+    date = new Date(d);
+  }
+  if (isNaN(date.getTime())) return '';
+  const diff = Date.now() - date.getTime();
+  if (diff < 0) return 'just now'; // future date protection
   if (diff < 60000) return 'just now';
   if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
   if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
   if (diff < 604800000) return Math.floor(diff/86400000) + 'd ago';
-  return date.toLocaleDateString([], {month:'short',day:'numeric'});
+  if (diff < 2592000000) return Math.floor(diff/604800000) + 'w ago';
+  return date.toLocaleDateString([], {month:'short', day:'numeric'});
 }
 
 function getInitials(fn, ln) { return ((fn?.[0]||'')+(ln?.[0]||'')).toUpperCase() || '?'; }
@@ -638,8 +646,10 @@ function toggleReactBar(postId, e) {
   document.getElementById(`react-wrap-${postId}`)?.classList.toggle('open');
 }
 
-document.addEventListener('click', () => {
-  document.querySelectorAll('.react-wrap.open').forEach(w => w.classList.remove('open'));
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.react-wrap')) {
+    document.querySelectorAll('.react-wrap.open').forEach(w => w.classList.remove('open'));
+  }
 });
 
 async function setReaction(postId, reaction) {
