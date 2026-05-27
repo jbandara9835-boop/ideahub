@@ -125,6 +125,7 @@ app.get('/support-dashboard', (req, res) => {
 });
 app.get('/wall', (req, res) => res.sendFile(__dirname + '/public/wall.html'));
 app.get('/settings', (req, res) => res.sendFile(__dirname + '/public/settings.html'));
+app.get('/attorney-dashboard', (req, res) => res.sendFile(__dirname + '/public/attorney-dashboard.html'));
 app.get('/admin', (req, res) => {
   res.sendFile(__dirname + '/public/admin.html');
 });
@@ -1524,6 +1525,130 @@ app.post('/api/profile/avatar', authMiddleware, upload.single('avatar'), async (
     res.json({ url: urlData.publicUrl });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+// ── ATTORNEY ──────────────────────────────────────────────────────────────────
+
+app.get('/api/attorney/cases', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase.from('legal_cases')
+    .select('*, client:client_id(id, first_name, last_name)')
+    .eq('attorney_id', req.user.id)
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  const cases = (data||[]).map(c => ({ ...c, client_name: c.client ? `${c.client.first_name} ${c.client.last_name}` : null }));
+  res.json(cases);
+});
+
+app.post('/api/attorney/cases', authMiddleware, async (req, res) => {
+  const { title, case_type, deadline, description, client_id, fee } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title required' });
+  const { data, error } = await supabase.from('legal_cases').insert([{
+    attorney_id: req.user.id, title, case_type: case_type||'other',
+    deadline: deadline||null, description: description||'',
+    client_id: client_id||null, fee: fee||null, status: 'open'
+  }]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+app.put('/api/attorney/cases/:id', authMiddleware, async (req, res) => {
+  const { status, notes, title, description, deadline, fee } = req.body;
+  const updateData = { updated_at: new Date().toISOString() };
+  if (status !== undefined) updateData.status = status;
+  if (notes !== undefined) updateData.notes = notes;
+  if (title !== undefined) updateData.title = title;
+  if (description !== undefined) updateData.description = description;
+  if (deadline !== undefined) updateData.deadline = deadline;
+  if (fee !== undefined) updateData.fee = fee;
+  const { data, error } = await supabase.from('legal_cases').update(updateData).eq('id', req.params.id).eq('attorney_id', req.user.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.get('/api/attorney/documents', authMiddleware, async (req, res) => {
+  const { data: cases } = await supabase.from('legal_cases').select('id').eq('attorney_id', req.user.id);
+  const caseIds = (cases||[]).map(c => c.id);
+  if (!caseIds.length) return res.json([]);
+  const { data, error } = await supabase.from('case_documents').select('*').in('case_id', caseIds).order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data||[]);
+});
+
+app.post('/api/attorney/documents', authMiddleware, async (req, res) => {
+  const { case_id, file_name, file_url, doc_type } = req.body;
+  if (!file_url) return res.status(400).json({ error: 'File URL required' });
+  const { data, error } = await supabase.from('case_documents').insert([{
+    case_id: case_id||null, uploaded_by: req.user.id,
+    file_name: file_name||'document', file_url, doc_type: doc_type||'other'
+  }]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+app.get('/api/attorney/verifications', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase.from('identity_verifications').select('*').eq('requested_by', req.user.id).order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data||[]);
+});
+
+app.post('/api/attorney/verify-request', authMiddleware, async (req, res) => {
+  const { target_user_id, case_id, reason } = req.body;
+  if (!target_user_id || !reason) return res.status(400).json({ error: 'Target user and reason required' });
+  const { data, error } = await supabase.from('identity_verifications').insert([{
+    requested_by: req.user.id, target_user_id, case_id: case_id||null, reason, status: 'pending'
+  }]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  // Notify admin
+  const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
+  if (admins?.length) {
+    await supabase.from('notifications').insert(admins.map(a => ({
+      user_id: a.id, type: 'verify_request',
+      title: '🔍 Identity Verification Request',
+      message: `Attorney requested identity verification for user #${target_user_id}`,
+      link: '/admin'
+    })));
+  }
+  res.status(201).json(data);
+});
+
+app.get('/api/attorney/qualifications', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase.from('attorney_qualifications').select('*').eq('attorney_id', req.user.id).single();
+  if (error && error.code !== 'PGRST116') return res.status(500).json({ error: error.message });
+  res.json(data||null);
+});
+
+app.post('/api/attorney/qualifications', authMiddleware, async (req, res) => {
+  const { licence_number, bar_association, jurisdiction, licence_file_url, degree_file_url } = req.body;
+  const { data: existing } = await supabase.from('attorney_qualifications').select('id').eq('attorney_id', req.user.id).single();
+  let result;
+  if (existing) {
+    const { data, error } = await supabase.from('attorney_qualifications').update({ licence_number, bar_association, jurisdiction, licence_file_url, degree_file_url, status: 'pending', updated_at: new Date().toISOString() }).eq('attorney_id', req.user.id).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    result = data;
+  } else {
+    const { data, error } = await supabase.from('attorney_qualifications').insert([{ attorney_id: req.user.id, licence_number, bar_association, jurisdiction, licence_file_url, degree_file_url, status: 'pending' }]).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    result = data;
+  }
+  // Notify admin
+  const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
+  if (admins?.length) {
+    await supabase.from('notifications').insert(admins.map(a => ({
+      user_id: a.id, type: 'qual_submitted',
+      title: '🎓 Attorney Qualification Submitted',
+      message: `An attorney submitted qualifications for verification`,
+      link: '/admin'
+    })));
+  }
+  res.json(result);
+});
+
+app.get('/api/users/search', authMiddleware, async (req, res) => {
+  const q = req.query.q;
+  if (!q || q.length < 2) return res.json([]);
+  const { data, error } = await supabase.from('users').select('id, first_name, last_name, role').or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%`).neq('id', req.user.id).limit(8);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data||[]);
+});
+
 // ── SETTINGS ──────────────────────────────────────────────────────────────────
 
 app.post('/api/auth/change-password', authMiddleware, async (req, res) => {

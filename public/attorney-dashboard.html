@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Attorney Dashboard — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+  --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+  --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+  --blue: #60a5fa; --blue-dim: rgba(96,165,250,0.12);
+  --purple: #a78bfa; --purple-dim: rgba(167,139,250,0.12);
+  --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+}
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 1.5rem 1rem; z-index: 100; overflow-y: auto; }
+.logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; padding: 0 0.5rem; }
+.logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
+.nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-item.active { color: var(--blue); background: var(--blue-dim); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-section-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 0.75rem 0.75rem 0.25rem; }
+.user-card { display: flex; align-items: center; gap: 10px; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border); margin-top: auto; cursor: pointer; position: relative; }
+.avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: var(--blue-dim); border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--blue); flex-shrink: 0; overflow: hidden; }
+.avatar-sm img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.user-info { flex: 1; min-width: 0; }
+.user-name-sb { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role-sb { font-size: 11px; color: var(--muted); }
+
+/* MAIN */
+.main { margin-left: 220px; padding: 2rem 2.5rem; }
+
+/* TOPBAR */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+.page-title span { color: var(--blue); }
+
+/* VERIFICATION BANNER */
+.verify-banner { background: linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.08)); border: 1px solid rgba(96,165,250,0.25); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.verify-banner-text h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.verify-banner-text p { font-size: 13px; color: var(--muted); }
+.btn-blue { background: var(--blue); color: #0d0d0f; border: none; border-radius: 8px; padding: 0.6rem 1.25rem; font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: opacity 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn-blue:hover { opacity: 0.85; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 2rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; }
+.stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+.stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.stat-value.blue { color: var(--blue); }
+.stat-value.green { color: var(--success); }
+.stat-value.yellow { color: var(--accent); }
+.stat-value.purple { color: var(--purple); }
+.stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tab { padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; border: none; background: none; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; }
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--blue-dim); color: var(--blue); font-weight: 600; }
+.tab-badge { background: var(--blue); color: #0d0d0f; border-radius: 20px; padding: 1px 7px; font-size: 10px; font-weight: 700; }
+
+/* SECTION */
+.section { display: none; }
+.section.active { display: block; }
+
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 16px; transition: border-color 0.2s; }
+.card:hover { border-color: var(--border-hover); }
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem; gap: 10px; }
+.card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+.card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; gap: 12px; flex-wrap: wrap; }
+.card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+
+/* BADGES */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-open { background: rgba(96,165,250,0.15); color: var(--blue); }
+.badge-progress { background: rgba(245,200,66,0.15); color: var(--accent); }
+.badge-awaiting { background: rgba(167,139,250,0.15); color: var(--purple); }
+.badge-completed { background: rgba(110,231,183,0.15); color: var(--success); }
+.badge-closed { background: rgba(110,110,110,0.15); color: var(--muted); }
+.badge-pending { background: rgba(245,200,66,0.15); color: var(--accent); }
+.badge-verified { background: rgba(110,231,183,0.15); color: var(--success); }
+.badge-rejected { background: rgba(255,107,107,0.15); color: var(--error); }
+
+.case-type-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--muted); }
+
+/* BUTTONS */
+.btn-sm { padding: 0.45rem 1rem; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.btn-primary { background: var(--blue); color: #0d0d0f; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-ghost { background: none; border: 1px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
+.btn-success { background: rgba(110,231,183,0.15); color: var(--success); border: 1px solid rgba(110,231,183,0.3); }
+.btn-danger { background: rgba(255,107,107,0.1); color: var(--error); border: 1px solid rgba(255,107,107,0.3); }
+
+/* FORM */
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.4px; }
+.field input, .field textarea, .field select { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; transition: border-color 0.2s; appearance: none; }
+.field textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6b65' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-color: rgba(255,255,255,0.04); padding-right: 36px; cursor: pointer; }
+.field select option { background: #16161a; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--blue); background: var(--blue-dim); }
+.field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; padding: 2rem; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+.modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
+.modal-close:hover { color: var(--text); }
+
+/* DOCUMENTS */
+.doc-item { display: flex; align-items: center; gap: 12px; padding: 0.85rem 1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+.doc-icon { font-size: 20px; flex-shrink: 0; }
+.doc-info { flex: 1; min-width: 0; }
+.doc-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.doc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* FILE UPLOAD */
+.upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+.upload-area:hover { border-color: var(--blue); background: var(--blue-dim); }
+
+/* EMPTY */
+.empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+.empty-icon { font-size: 40px; margin-bottom: 1rem; }
+.empty-text { font-size: 14px; }
+
+/* MSG */
+.msg { border-radius: 8px; padding: 0.65rem 1rem; font-size: 13px; margin-top: 0.75rem; display: none; }
+.msg.show { display: block; }
+.msg.success { background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.3); color: var(--success); }
+.msg.error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: var(--error); }
+
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #0d0d0f; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 1.5rem; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+.timeline-item { position: relative; margin-bottom: 1.25rem; }
+.timeline-item::before { content: ''; position: absolute; left: -1.25rem; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--blue); border: 2px solid var(--bg); }
+.timeline-title { font-size: 13px; font-weight: 600; }
+.timeline-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* QUALIFICATION CARD */
+.qual-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 12px; }
+.qual-status { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+
+@media (max-width: 900px) {
+  .sidebar { width: 60px; padding: 1rem 0.5rem; }
+  .nav-item span:not(.nav-icon), .user-info { display: none; }
+  .logo { justify-content: center; }
+  .nav-item { justify-content: center; padding: 0.6rem; }
+  .user-card { justify-content: center; padding: 0.5rem; }
+  .main { margin-left: 60px; padding: 1.5rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <a href="/" style="text-decoration:none;color:inherit;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">IdeaHub</a>
+  </div>
+  <nav class="nav" id="sidebarNav"></nav>
+  <div class="user-card" id="userCard" onclick="toggleUserMenu()">
+    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
+    <div class="user-info">
+      <div class="user-name-sb" id="sidebarName">Loading...</div>
+      <div class="user-role-sb">⚖️ Patent Attorney</div>
+    </div>
+    <span style="color:var(--muted);font-size:12px;">⋯</span>
+  </div>
+  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
+    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
+    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
+    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">⚖️ Attorney <span>Dashboard</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Manage your legal cases, documents and clients</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-blue" onclick="openNewCaseModal()">+ New Case</button>
+    </div>
+  </div>
+
+  <!-- VERIFICATION BANNER -->
+  <div id="verifyBanner" class="verify-banner" style="display:none;">
+    <div class="verify-banner-text">
+      <h3>⚖️ Complete your attorney verification</h3>
+      <p>Upload your licence and degree to get verified by admin. Verified attorneys get more clients and access to identity verification requests.</p>
+    </div>
+    <button class="btn-blue" onclick="showTab('qualifications')">Submit Qualifications →</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Active Cases</div>
+      <div class="stat-value blue" id="statActive">—</div>
+      <div class="stat-sub">in progress</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Hire Requests</div>
+      <div class="stat-value yellow" id="statHire">—</div>
+      <div class="stat-sub">awaiting response</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed Cases</div>
+      <div class="stat-value green" id="statCompleted">—</div>
+      <div class="stat-sub">all time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Earnings</div>
+      <div class="stat-value purple" id="statEarnings">—</div>
+      <div class="stat-sub">from cases</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('overview', this)">📊 Overview</button>
+    <button class="tab" onclick="showTab('cases', this)" id="tabCases">📁 My Cases</button>
+    <button class="tab" onclick="showTab('hire', this)" id="tabHire">📥 Hire Requests</button>
+    <button class="tab" onclick="showTab('documents', this)">📄 Documents</button>
+    <button class="tab" onclick="showTab('verifications', this)">🔍 Verifications</button>
+    <button class="tab" onclick="showTab('qualifications', this)">🎓 Qualifications</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="section active" id="section-overview">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Recent Cases</div>
+        <div id="recentCases"><div style="display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;padding:2rem 0;justify-content:center;"><div class="spin"></div> Loading...</div></div>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Pending Hire Requests</div>
+        <div id="recentHire"><div style="display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;padding:2rem 0;justify-content:center;"><div class="spin"></div> Loading...</div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Case Types I Handle</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;text-align:center;flex:1;min-width:130px;">
+          <div style="font-size:24px;margin-bottom:6px;">📋</div>
+          <div style="font-size:12px;font-weight:600;">Legal Advice</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;text-align:center;flex:1;min-width:130px;">
+          <div style="font-size:24px;margin-bottom:6px;">📝</div>
+          <div style="font-size:12px;font-weight:600;">Draft Agreements</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;text-align:center;flex:1;min-width:130px;">
+          <div style="font-size:24px;margin-bottom:6px;">🔒</div>
+          <div style="font-size:12px;font-weight:600;">Patent Filing</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;text-align:center;flex:1;min-width:130px;">
+          <div style="font-size:24px;margin-bottom:6px;">⚖️</div>
+          <div style="font-size:12px;font-weight:600;">Dispute Resolution</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;text-align:center;flex:1;min-width:130px;">
+          <div style="font-size:24px;margin-bottom:6px;">✉️</div>
+          <div style="font-size:12px;font-weight:600;">Legal Letters</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;text-align:center;flex:1;min-width:130px;">
+          <div style="font-size:24px;margin-bottom:6px;">🔍</div>
+          <div style="font-size:12px;font-weight:600;">Party Verification</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASES -->
+  <div class="section" id="section-cases">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-sm btn-ghost case-filter active" onclick="filterCases('all',this)">All</button>
+        <button class="btn-sm btn-ghost case-filter" onclick="filterCases('open',this)">Open</button>
+        <button class="btn-sm btn-ghost case-filter" onclick="filterCases('in_progress',this)">In Progress</button>
+        <button class="btn-sm btn-ghost case-filter" onclick="filterCases('awaiting_docs',this)">Awaiting Docs</button>
+        <button class="btn-sm btn-ghost case-filter" onclick="filterCases('completed',this)">Completed</button>
+      </div>
+      <button class="btn-blue btn-sm" onclick="openNewCaseModal()">+ New Case</button>
+    </div>
+    <div id="casesList"></div>
+  </div>
+
+  <!-- HIRE REQUESTS -->
+  <div class="section" id="section-hire">
+    <div id="hireList"></div>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <div class="section" id="section-documents">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div style="font-size:14px;color:var(--muted);">All documents across your cases</div>
+      <button class="btn-blue btn-sm" onclick="openUploadModal()">📎 Upload Document</button>
+    </div>
+    <div id="documentsList"></div>
+  </div>
+
+  <!-- VERIFICATIONS -->
+  <div class="section" id="section-verifications">
+    <div style="background:var(--blue-dim);border:1px solid rgba(96,165,250,0.2);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">🔍 Identity Verification Center</div>
+      <div style="font-size:13px;color:var(--muted);">Request admin to verify the identity of parties you are dealing with. Admin will verify their credentials and share approved information with you.</div>
+    </div>
+    <button class="btn-blue btn-sm" onclick="openVerifRequestModal()" style="margin-bottom:1rem;">+ Request Verification</button>
+    <div id="verificationsList"></div>
+  </div>
+
+  <!-- QUALIFICATIONS -->
+  <div class="section" id="section-qualifications">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;margin-bottom:20px;">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:0.5rem;">🎓 Attorney Qualifications</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);">Submit your qualifications for admin verification. Once verified, you'll get a ✅ Verified Attorney badge and access to more features.</div>
+
+      <div id="qualStatus"></div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Licence Number</label>
+          <input type="text" id="licenceNumber" placeholder="e.g. LKA-ATT-12345" />
+        </div>
+        <div class="field">
+          <label>Bar Association</label>
+          <input type="text" id="barAssociation" placeholder="e.g. Bar Association of Sri Lanka" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Jurisdiction / Country</label>
+        <input type="text" id="jurisdiction" placeholder="e.g. Sri Lanka, United States" />
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Attorney Licence (PDF/Image)</label>
+          <div class="upload-area" onclick="document.getElementById('licenceFile').click()">
+            <div style="font-size:24px;margin-bottom:6px;">📄</div>
+            <div style="font-size:13px;color:var(--muted);" id="licenceFileName">Click to upload licence</div>
+          </div>
+          <input type="file" id="licenceFile" accept=".pdf,image/*" style="display:none;" onchange="handleQualFile('licence',event)" />
+        </div>
+        <div class="field">
+          <label>Law Degree Certificate (PDF/Image)</label>
+          <div class="upload-area" onclick="document.getElementById('degreeFile').click()">
+            <div style="font-size:24px;margin-bottom:6px;">🎓</div>
+            <div style="font-size:13px;color:var(--muted);" id="degreeFileName">Click to upload degree</div>
+          </div>
+          <input type="file" id="degreeFile" accept=".pdf,image/*" style="display:none;" onchange="handleQualFile('degree',event)" />
+        </div>
+      </div>
+      <div class="msg success" id="qualSuccess"></div>
+      <div class="msg error" id="qualError"></div>
+      <button class="btn-blue" onclick="submitQualifications()" style="margin-top:0.5rem;padding:0.8rem 2rem;">
+        <div class="spinner" id="qualSpinner"></div>
+        <span id="qualBtnText">Submit for Verification</span>
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- NEW CASE MODAL -->
+<div class="modal-overlay" id="newCaseModal">
+  <div class="modal">
+    <div class="modal-title">
+      📁 New Legal Case
+      <button class="modal-close" onclick="closeModal('newCaseModal')">✕</button>
+    </div>
+    <div class="field">
+      <label>Case Title *</label>
+      <input type="text" id="caseTitle" placeholder="e.g. Patent Filing for AI Idea" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Case Type *</label>
+        <select id="caseType">
+          <option value="">Select type</option>
+          <option value="patent_advice">Patent Advice</option>
+          <option value="agreement_draft">Draft Agreement</option>
+          <option value="dispute">Dispute Resolution</option>
+          <option value="patent_filing">Patent Filing</option>
+          <option value="legal_letter">Legal Letter</option>
+          <option value="party_verification">Party Verification</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Deadline</label>
+        <input type="date" id="caseDeadline" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <textarea id="caseDescription" placeholder="Describe the case details, what needs to be done..."></textarea>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Client (optional)</label>
+        <input type="text" id="caseClientSearch" placeholder="Search client by name..." oninput="searchClients(this.value)" />
+        <input type="hidden" id="caseClientId" />
+        <div id="clientSearchResults" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-top:4px;display:none;max-height:150px;overflow-y:auto;"></div>
+      </div>
+      <div class="field">
+        <label>Fee (USD)</label>
+        <input type="number" id="caseFee" placeholder="500" min="0" />
+      </div>
+    </div>
+    <div class="msg error" id="caseError"></div>
+    <div class="msg success" id="caseSuccess"></div>
+    <button class="btn-blue" onclick="createCase()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;">
+      <div class="spinner" id="caseSpinner"></div>
+      <span id="caseBtnText">Create Case</span>
+    </button>
+  </div>
+</div>
+
+<!-- CASE DETAIL MODAL -->
+<div class="modal-overlay" id="caseDetailModal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-title">
+      <span id="detailTitle">Case Details</span>
+      <button class="modal-close" onclick="closeModal('caseDetailModal')">✕</button>
+    </div>
+    <div id="caseDetailContent"></div>
+  </div>
+</div>
+
+<!-- UPLOAD DOCUMENT MODAL -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <div class="modal-title">
+      📎 Upload Document
+      <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
+    </div>
+    <div class="field">
+      <label>Related Case</label>
+      <select id="uploadCaseId">
+        <option value="">No specific case</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Document Type</label>
+      <select id="uploadDocType">
+        <option value="agreement">Agreement</option>
+        <option value="letter">Legal Letter</option>
+        <option value="patent_doc">Patent Document</option>
+        <option value="id_proof">ID Proof</option>
+        <option value="evidence">Evidence</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>File</label>
+      <div class="upload-area" onclick="document.getElementById('docFile').click()">
+        <div style="font-size:28px;margin-bottom:8px;">📎</div>
+        <div style="font-size:13px;color:var(--muted);" id="docFileName">Click to select file (PDF, Image, Word)</div>
+      </div>
+      <input type="file" id="docFile" accept=".pdf,.doc,.docx,image/*" style="display:none;" onchange="document.getElementById('docFileName').textContent=this.files[0]?.name||'Click to select file'" />
+    </div>
+    <div class="msg error" id="uploadError"></div>
+    <div class="msg success" id="uploadSuccess"></div>
+    <button class="btn-blue" onclick="uploadDocument()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">
+      <div class="spinner" id="uploadSpinner"></div>
+      <span id="uploadBtnText">Upload Document</span>
+    </button>
+  </div>
+</div>
+
+<!-- VERIFICATION REQUEST MODAL -->
+<div class="modal-overlay" id="verifModal">
+  <div class="modal">
+    <div class="modal-title">
+      🔍 Request Identity Verification
+      <button class="modal-close" onclick="closeModal('verifModal')">✕</button>
+    </div>
+    <div style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:1rem;margin-bottom:1.25rem;font-size:13px;color:var(--muted);">
+      Admin will contact the party and verify their identity. Once verified, their confirmed details will be shared with you securely.
+    </div>
+    <div class="field">
+      <label>Party to Verify (Name or Email)</label>
+      <input type="text" id="verifPartySearch" placeholder="Search user..." oninput="searchClients(this.value, 'verif')" />
+      <input type="hidden" id="verifPartyId" />
+      <div id="verifSearchResults" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-top:4px;display:none;max-height:150px;overflow-y:auto;"></div>
+    </div>
+    <div class="field">
+      <label>Related Case (optional)</label>
+      <select id="verifCaseId">
+        <option value="">No specific case</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Reason for Verification *</label>
+      <textarea id="verifReason" placeholder="Explain why you need to verify this party's identity..."></textarea>
+    </div>
+    <div class="msg error" id="verifError"></div>
+    <div class="msg success" id="verifSuccess"></div>
+    <button class="btn-blue" onclick="submitVerifRequest()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">
+      <div class="spinner" id="verifSpinner"></div>
+      <span id="verifBtnText">Submit Verification Request</span>
+    </button>
+  </div>
+</div>
+
+<script>
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+const token = localStorage.getItem('ih_token');
+const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+if (!token || !user) window.location.href = '/login';
+if (user && user.role !== 'patent_attorney') window.location.href = '/dashboard';
+
+const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  if (!nav) return;
+  nav.innerHTML = `
+    <div class="nav-section-label">My Account</div>
+    <a class="nav-item active" href="/attorney-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+    <div class="nav-section-label">Marketplace</div>
+    <a class="nav-item" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
+    <a class="nav-item" href="/wall"><span class="nav-icon">🧱</span><span>IdeaWall</span></a>
+    <div class="nav-section-label">My Work</div>
+    <a class="nav-item" href="#" onclick="showTab('cases');return false;"><span class="nav-icon">📁</span><span>Cases</span></a>
+    <a class="nav-item" href="#" onclick="showTab('hire');return false;"><span class="nav-icon">📥</span><span>Hire Requests</span></a>
+    <a class="nav-item" href="#" onclick="showTab('documents');return false;"><span class="nav-icon">📄</span><span>Documents</span></a>
+    <a class="nav-item" href="#" onclick="showTab('verifications');return false;"><span class="nav-icon">🔍</span><span>Verifications</span></a>
+    <div class="nav-section-label">Activity</div>
+    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
+    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+  `;
+}
+
+renderSidebar();
+
+if (user) {
+  const avatarUrl = user.avatar_url || user.avatarUrl;
+  const avatarEl = document.getElementById('sidebarAvatar');
+  if (avatarEl) {
+    if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" />`;
+    else document.getElementById('sidebarAvatarText').textContent = user.first_name?.[0] || '?';
+  }
+  document.getElementById('sidebarName').textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
+}
+
+function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href = '/login'; }
+function toggleUserMenu() {
+  const menu = document.getElementById('userMenu');
+  if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', (e) => {
+  const card = document.getElementById('userCard');
+  const menu = document.getElementById('userMenu');
+  if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
+});
+
+// ── TABS ──
+function showTab(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`section-${id}`)?.classList.add('active');
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.tab').forEach(t => { if (t.getAttribute('onclick')?.includes(`'${id}'`)) t.classList.add('active'); });
+  loadSectionData(id);
+}
+
+function loadSectionData(id) {
+  if (id === 'cases' || id === 'overview') loadCases();
+  if (id === 'hire' || id === 'overview') loadHireRequests();
+  if (id === 'documents') loadDocuments();
+  if (id === 'verifications') loadVerifications();
+  if (id === 'qualifications') loadQualifications();
+}
+
+// ── HELPERS ──
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function caseTypeName(t) {
+  const map = { patent_advice:'Patent Advice', agreement_draft:'Draft Agreement', dispute:'Dispute Resolution', patent_filing:'Patent Filing', legal_letter:'Legal Letter', party_verification:'Party Verification', other:'Other' };
+  return map[t] || t;
+}
+
+function caseTypeIcon(t) {
+  const map = { patent_advice:'💡', agreement_draft:'📝', dispute:'⚖️', patent_filing:'🔒', legal_letter:'✉️', party_verification:'🔍', other:'📋' };
+  return map[t] || '📋';
+}
+
+function statusBadge(s) {
+  const map = { open:'badge-open', in_progress:'badge-progress', awaiting_docs:'badge-awaiting', awaiting_verification:'badge-awaiting', completed:'badge-completed', closed:'badge-closed' };
+  const labels = { open:'Open', in_progress:'In Progress', awaiting_docs:'Awaiting Docs', awaiting_verification:'Awaiting Verification', completed:'Completed', closed:'Closed' };
+  return `<span class="badge ${map[s]||'badge-open'}">${labels[s]||s}</span>`;
+}
+
+// ── LOAD DATA ──
+let allCases = [];
+let currentCaseFilter = 'all';
+let licenceFileUrl = '';
+let degreeFileUrl = '';
+
+async function loadDashboard() {
+  try {
+    // Load cases
+    const casesRes = await fetch(`${API_URL}/api/attorney/cases`, { headers: { Authorization: `Bearer ${token}` } });
+    allCases = casesRes.ok ? await casesRes.json() : [];
+
+    // Load hire requests
+    const hireRes = await fetch(`${API_URL}/api/hire/incoming`, { headers: { Authorization: `Bearer ${token}` } });
+    const hireData = hireRes.ok ? await hireRes.json() : [];
+    const pendingHire = hireData.filter(h => h.status === 'pending');
+
+    // Stats
+    document.getElementById('statActive').textContent = allCases.filter(c => ['open','in_progress','awaiting_docs'].includes(c.status)).length;
+    document.getElementById('statHire').textContent = pendingHire.length;
+    document.getElementById('statCompleted').textContent = allCases.filter(c => c.status === 'completed').length;
+    const earnings = allCases.filter(c => c.status === 'completed').reduce((s, c) => s + (c.fee || 0), 0);
+    document.getElementById('statEarnings').textContent = '$' + earnings.toLocaleString();
+
+    // Check qualification status
+    const qualRes = await fetch(`${API_URL}/api/attorney/qualifications`, { headers: { Authorization: `Bearer ${token}` } });
+    const qual = qualRes.ok ? await qualRes.json() : null;
+    if (!qual || qual.status === 'pending' || !qual) {
+      document.getElementById('verifyBanner').style.display = 'flex';
+    }
+
+    // Render overview
+    renderRecentCases(allCases.slice(0, 4));
+    renderRecentHire(pendingHire.slice(0, 3));
+
+    // Populate case selects in modals
+    populateCaseSelects();
+
+  } catch(e) { console.error(e); }
+}
+
+function populateCaseSelects() {
+  const selects = ['uploadCaseId', 'verifCaseId'];
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">No specific case</option>' + allCases.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+  });
+}
+
+function renderRecentCases(cases) {
+  const el = document.getElementById('recentCases');
+  if (!cases.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📁</div><div class="empty-text">No cases yet</div></div>'; return; }
+  el.innerHTML = cases.map(c => `
+    <div class="card" style="cursor:pointer;" onclick="openCaseDetail(${c.id})">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${caseTypeIcon(c.case_type)} ${c.title}</div>
+          <div class="card-meta"><span>${caseTypeName(c.case_type)}</span><span>📅 ${formatDate(c.deadline)}</span></div>
+        </div>
+        ${statusBadge(c.status)}
+      </div>
+      ${c.description ? `<div class="card-desc">${c.description.slice(0,100)}${c.description.length>100?'...':''}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderRecentHire(hires) {
+  const el = document.getElementById('recentHire');
+  if (!hires.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📥</div><div class="empty-text">No pending requests</div></div>'; return; }
+  el.innerHTML = hires.map(h => `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${h.title}</div>
+          <div class="card-meta"><span>from ${h.client?.first_name||'Client'} ${h.client?.last_name||''}</span></div>
+        </div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <div class="card-footer">
+        <span style="font-size:13px;color:var(--muted);">${h.budget ? '$'+h.budget : 'Budget TBD'}</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm btn-success" onclick="respondHire(${h.id},'accepted')">Accept</button>
+          <button class="btn-sm btn-danger" onclick="respondHire(${h.id},'rejected')">Decline</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function loadCases() {
+  const res = await fetch(`${API_URL}/api/attorney/cases`, { headers: { Authorization: `Bearer ${token}` } });
+  allCases = res.ok ? await res.json() : [];
+  renderCasesList();
+}
+
+function filterCases(filter, el) {
+  currentCaseFilter = filter;
+  document.querySelectorAll('.case-filter').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderCasesList();
+}
+
+function renderCasesList() {
+  const filtered = currentCaseFilter === 'all' ? allCases : allCases.filter(c => c.status === currentCaseFilter);
+  const el = document.getElementById('casesList');
+  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📁</div><div class="empty-text">No cases found</div></div>'; return; }
+  el.innerHTML = filtered.map(c => `
+    <div class="card" style="cursor:pointer;" onclick="openCaseDetail(${c.id})">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${caseTypeIcon(c.case_type)} ${c.title}</div>
+          <div class="card-meta">
+            <span class="case-type-badge">${caseTypeName(c.case_type)}</span>
+            ${c.client_name ? `<span>👤 ${c.client_name}</span>` : ''}
+            ${c.deadline ? `<span>📅 ${formatDate(c.deadline)}</span>` : ''}
+            ${c.fee ? `<span>💰 $${c.fee}</span>` : ''}
+          </div>
+        </div>
+        ${statusBadge(c.status)}
+      </div>
+      ${c.description ? `<div class="card-desc">${c.description.slice(0,120)}${c.description.length>120?'...':''}</div>` : ''}
+      <div class="card-footer">
+        <span style="font-size:12px;color:var(--muted);">Created ${formatDate(c.created_at)}</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm btn-ghost" onclick="event.stopPropagation();openCaseDetail(${c.id})">View Details →</button>
+          ${c.client_id ? `<a class="btn-sm btn-primary" href="/messages?userId=${c.client_id}" onclick="event.stopPropagation()">💬 Message</a>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function loadHireRequests() {
+  const res = await fetch(`${API_URL}/api/hire/incoming`, { headers: { Authorization: `Bearer ${token}` } });
+  const hires = res.ok ? await res.json() : [];
+  const el = document.getElementById('hireList');
+  if (!hires.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📥</div><div class="empty-text">No hire requests yet</div></div>'; return; }
+  el.innerHTML = hires.map(h => `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${h.title}</div>
+          <div class="card-meta">
+            <span>👤 ${h.client?.first_name||''} ${h.client?.last_name||''}</span>
+            <span>🌍 ${h.country||'—'}</span>
+            ${h.budget ? `<span>💰 $${h.budget}</span>` : ''}
+            ${h.deadline ? `<span>📅 ${formatDate(h.deadline)}</span>` : ''}
+          </div>
+        </div>
+        <span class="badge ${h.status==='pending'?'badge-pending':h.status==='accepted'?'badge-completed':'badge-closed'}">${h.status}</span>
+      </div>
+      ${h.description ? `<div class="card-desc">${h.description}</div>` : ''}
+      <div class="card-footer">
+        <span style="font-size:12px;color:var(--muted);">${formatDate(h.created_at)}</span>
+        <div style="display:flex;gap:8px;">
+          ${h.status === 'pending' ? `
+            <button class="btn-sm btn-success" onclick="respondHire(${h.id},'accepted')">✅ Accept</button>
+            <button class="btn-sm btn-danger" onclick="respondHire(${h.id},'rejected')">❌ Decline</button>
+          ` : ''}
+          ${h.status === 'accepted' ? `
+            <button class="btn-sm btn-primary" onclick="createCaseFromHire(${h.id},'${h.title}',${h.client?.id||null})">📁 Create Case</button>
+            <a class="btn-sm btn-ghost" href="/messages?userId=${h.client?.id}">💬 Message</a>
+          ` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function loadDocuments() {
+  const res = await fetch(`${API_URL}/api/attorney/documents`, { headers: { Authorization: `Bearer ${token}` } });
+  const docs = res.ok ? await res.json() : [];
+  const el = document.getElementById('documentsList');
+  if (!docs.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📄</div><div class="empty-text">No documents uploaded yet</div></div>'; return; }
+  el.innerHTML = docs.map(d => `
+    <div class="doc-item">
+      <div class="doc-icon">${d.doc_type==='agreement'?'📝':d.doc_type==='letter'?'✉️':d.doc_type==='patent_doc'?'🔒':d.doc_type==='id_proof'?'🪪':'📎'}</div>
+      <div class="doc-info">
+        <div class="doc-name">${d.file_name}</div>
+        <div class="doc-meta">${d.doc_type} · ${formatDate(d.created_at)}</div>
+      </div>
+      <div class="doc-actions">
+        <a class="btn-sm btn-primary" href="${d.file_url}" target="_blank">View</a>
+        ${d.is_verified ? '<span class="badge badge-verified">✅ Verified</span>' : ''}
+      </div>
+    </div>`).join('');
+}
+
+async function loadVerifications() {
+  const res = await fetch(`${API_URL}/api/attorney/verifications`, { headers: { Authorization: `Bearer ${token}` } });
+  const verifs = res.ok ? await res.json() : [];
+  const el = document.getElementById('verificationsList');
+  if (!verifs.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No verification requests yet</div></div>'; return; }
+  el.innerHTML = verifs.map(v => `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Verification Request #${v.id}</div>
+          <div class="card-meta"><span>Target: User #${v.target_user_id}</span><span>${formatDate(v.created_at)}</span></div>
+        </div>
+        <span class="badge ${v.status==='pending'?'badge-pending':v.status==='approved'?'badge-verified':'badge-rejected'}">${v.status}</span>
+      </div>
+      ${v.reason ? `<div class="card-desc">${v.reason}</div>` : ''}
+      ${v.admin_notes ? `<div style="background:var(--blue-dim);border:1px solid rgba(96,165,250,0.2);border-radius:8px;padding:0.75rem;font-size:13px;margin-top:0.5rem;"><strong>Admin Notes:</strong> ${v.admin_notes}</div>` : ''}
+    </div>`).join('');
+}
+
+async function loadQualifications() {
+  const res = await fetch(`${API_URL}/api/attorney/qualifications`, { headers: { Authorization: `Bearer ${token}` } });
+  const qual = res.ok ? await res.json() : null;
+  const el = document.getElementById('qualStatus');
+  if (qual) {
+    const statusHtml = qual.status === 'verified'
+      ? `<div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;margin-bottom:1rem;">✅ <strong>Verified Attorney</strong> — Your qualifications have been verified by admin.</div>`
+      : qual.status === 'pending'
+      ? `<div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:10px;padding:1rem;margin-bottom:1rem;">⏳ <strong>Under Review</strong> — Admin is reviewing your qualifications. This usually takes 1-2 business days.</div>`
+      : qual.status === 'rejected'
+      ? `<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:1rem;margin-bottom:1rem;">❌ <strong>Rejected</strong> — ${qual.reject_reason || 'Please resubmit with correct documents.'}</div>`
+      : '';
+    el.innerHTML = statusHtml;
+    document.getElementById('licenceNumber').value = qual.licence_number || '';
+    document.getElementById('barAssociation').value = qual.bar_association || '';
+    document.getElementById('jurisdiction').value = qual.jurisdiction || '';
+    if (qual.licence_file_url) { licenceFileUrl = qual.licence_file_url; document.getElementById('licenceFileName').textContent = '✅ Licence uploaded'; }
+    if (qual.degree_file_url) { degreeFileUrl = qual.degree_file_url; document.getElementById('degreeFileName').textContent = '✅ Degree uploaded'; }
+  }
+}
+
+// ── ACTIONS ──
+async function respondHire(hireId, status) {
+  try {
+    const res = await fetch(`${API_URL}/api/hire/${hireId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) { loadHireRequests(); loadDashboard(); }
+  } catch(e) {}
+}
+
+function createCaseFromHire(hireId, title, clientId) {
+  document.getElementById('caseTitle').value = title;
+  document.getElementById('caseClientId').value = clientId || '';
+  openModal('newCaseModal');
+}
+
+async function createCase() {
+  const title = document.getElementById('caseTitle').value.trim();
+  const caseType = document.getElementById('caseType').value;
+  const deadline = document.getElementById('caseDeadline').value;
+  const description = document.getElementById('caseDescription').value.trim();
+  const clientId = document.getElementById('caseClientId').value;
+  const fee = document.getElementById('caseFee').value;
+  const errEl = document.getElementById('caseError');
+  const sucEl = document.getElementById('caseSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+  if (!title) { errEl.textContent = 'Please enter a case title.'; errEl.classList.add('show'); return; }
+  if (!caseType) { errEl.textContent = 'Please select a case type.'; errEl.classList.add('show'); return; }
+  const btn = document.querySelector('#newCaseModal .btn-blue');
+  const sp = document.getElementById('caseSpinner');
+  const bt = document.getElementById('caseBtnText');
+  btn.disabled=true; sp.style.display='block'; bt.textContent='Creating...';
+  try {
+    const res = await fetch(`${API_URL}/api/attorney/cases`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ title, case_type: caseType, deadline: deadline||null, description, client_id: clientId||null, fee: fee||null })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    sucEl.textContent = '✅ Case created successfully!';
+    sucEl.classList.add('show');
+    setTimeout(() => { closeModal('newCaseModal'); loadDashboard(); loadCases(); }, 1200);
+  } catch(err) { errEl.textContent = err.message; errEl.classList.add('show'); }
+  btn.disabled=false; sp.style.display='none'; bt.textContent='Create Case';
+}
+
+async function openCaseDetail(caseId) {
+  const c = allCases.find(x => x.id === caseId);
+  if (!c) return;
+  document.getElementById('detailTitle').textContent = `${caseTypeIcon(c.case_type)} ${c.title}`;
+  document.getElementById('caseDetailContent').innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;">
+      ${statusBadge(c.status)}
+      <span class="case-type-badge">${caseTypeName(c.case_type)}</span>
+      ${c.fee ? `<span class="badge badge-pending">💰 $${c.fee}</span>` : ''}
+    </div>
+    ${c.description ? `<div style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:1.25rem;">${c.description}</div>` : ''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;">
+      <div style="background:var(--surface2);border-radius:10px;padding:1rem;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Client</div>
+        <div style="font-size:14px;font-weight:500;">${c.client_name || '—'}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:10px;padding:1rem;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Deadline</div>
+        <div style="font-size:14px;font-weight:500;">${formatDate(c.deadline)}</div>
+      </div>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:0.75rem;">Update Status</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;">
+      <button class="btn-sm btn-ghost" onclick="updateCaseStatus(${c.id},'open')">Open</button>
+      <button class="btn-sm btn-ghost" onclick="updateCaseStatus(${c.id},'in_progress')">In Progress</button>
+      <button class="btn-sm btn-ghost" onclick="updateCaseStatus(${c.id},'awaiting_docs')">Awaiting Docs</button>
+      <button class="btn-sm btn-success" onclick="updateCaseStatus(${c.id},'completed')">✅ Complete</button>
+      <button class="btn-sm btn-danger" onclick="updateCaseStatus(${c.id},'closed')">Close</button>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:0.75rem;">Case Notes</div>
+    <textarea id="caseNotes" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;resize:vertical;min-height:80px;line-height:1.6;" placeholder="Add notes about this case...">${c.notes||''}</textarea>
+    <div style="display:flex;gap:8px;margin-top:0.75rem;flex-wrap:wrap;">
+      <button class="btn-sm btn-primary" onclick="saveNotes(${c.id})">Save Notes</button>
+      ${c.client_id ? `<a class="btn-sm btn-ghost" href="/messages?userId=${c.client_id}">💬 Message Client</a>` : ''}
+      <button class="btn-sm btn-ghost" onclick="openUploadModal()">📎 Upload Doc</button>
+    </div>
+    <div id="notesMsg" class="msg" style="margin-top:0.5rem;"></div>
+  `;
+  openModal('caseDetailModal');
+}
+
+async function updateCaseStatus(caseId, status) {
+  try {
+    const res = await fetch(`${API_URL}/api/attorney/cases/${caseId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) { loadCases(); loadDashboard(); openCaseDetail(caseId); }
+  } catch(e) {}
+}
+
+async function saveNotes(caseId) {
+  const notes = document.getElementById('caseNotes').value;
+  try {
+    const res = await fetch(`${API_URL}/api/attorney/cases/${caseId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ notes })
+    });
+    const msgEl = document.getElementById('notesMsg');
+    if (res.ok) { msgEl.textContent = '✅ Notes saved!'; msgEl.className = 'msg success show'; }
+    else { msgEl.textContent = 'Failed to save.'; msgEl.className = 'msg error show'; }
+    setTimeout(() => msgEl.classList.remove('show'), 3000);
+    const c = allCases.find(x => x.id === caseId);
+    if (c) c.notes = notes;
+  } catch(e) {}
+}
+
+async function uploadDocument() {
+  const file = document.getElementById('docFile').files[0];
+  const caseId = document.getElementById('uploadCaseId').value;
+  const docType = document.getElementById('uploadDocType').value;
+  const errEl = document.getElementById('uploadError');
+  const sucEl = document.getElementById('uploadSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+  if (!file) { errEl.textContent = 'Please select a file.'; errEl.classList.add('show'); return; }
+  const btn = document.querySelector('#uploadModal .btn-blue');
+  const sp = document.getElementById('uploadSpinner');
+  const bt = document.getElementById('uploadBtnText');
+  btn.disabled=true; sp.style.display='block'; bt.textContent='Uploading...';
+  try {
+    // Upload file
+    const fd = new FormData(); fd.append('image', file);
+    const uploadRes = await fetch(`${API_URL}/api/ideas/upload-image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+    const uploadData = await uploadRes.json();
+    if (!uploadData.url) throw new Error('Upload failed');
+    // Save document record
+    const res = await fetch(`${API_URL}/api/attorney/documents`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ case_id: caseId||null, file_name: file.name, file_url: uploadData.url, doc_type: docType })
+    });
+    if (!res.ok) throw new Error('Failed to save document');
+    sucEl.textContent = '✅ Document uploaded!';
+    sucEl.classList.add('show');
+    setTimeout(() => closeModal('uploadModal'), 1200);
+    loadDocuments();
+  } catch(err) { errEl.textContent = err.message; errEl.classList.add('show'); }
+  btn.disabled=false; sp.style.display='none'; bt.textContent='Upload Document';
+}
+
+async function submitVerifRequest() {
+  const targetId = document.getElementById('verifPartyId').value;
+  const caseId = document.getElementById('verifCaseId').value;
+  const reason = document.getElementById('verifReason').value.trim();
+  const errEl = document.getElementById('verifError');
+  const sucEl = document.getElementById('verifSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+  if (!targetId) { errEl.textContent = 'Please select a party to verify.'; errEl.classList.add('show'); return; }
+  if (!reason) { errEl.textContent = 'Please provide a reason.'; errEl.classList.add('show'); return; }
+  const btn = document.querySelector('#verifModal .btn-blue');
+  const sp = document.getElementById('verifSpinner');
+  const bt = document.getElementById('verifBtnText');
+  btn.disabled=true; sp.style.display='block'; bt.textContent='Submitting...';
+  try {
+    const res = await fetch(`${API_URL}/api/attorney/verify-request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ target_user_id: targetId, case_id: caseId||null, reason })
+    });
+    if (!res.ok) throw new Error('Failed');
+    sucEl.textContent = '✅ Verification request submitted! Admin will review shortly.';
+    sucEl.classList.add('show');
+    setTimeout(() => closeModal('verifModal'), 1500);
+    loadVerifications();
+  } catch(err) { errEl.textContent = err.message; errEl.classList.add('show'); }
+  btn.disabled=false; sp.style.display='none'; bt.textContent='Submit Verification Request';
+}
+
+async function handleQualFile(type, e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById(type === 'licence' ? 'licenceFileName' : 'degreeFileName');
+  statusEl.textContent = 'Uploading...';
+  try {
+    const fd = new FormData(); fd.append('image', file);
+    const res = await fetch(`${API_URL}/api/ideas/upload-image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+    const data = await res.json();
+    if (data.url) {
+      if (type === 'licence') { licenceFileUrl = data.url; statusEl.textContent = '✅ ' + file.name; }
+      else { degreeFileUrl = data.url; statusEl.textContent = '✅ ' + file.name; }
+    }
+  } catch { statusEl.textContent = '❌ Upload failed'; }
+}
+
+async function submitQualifications() {
+  const licenceNumber = document.getElementById('licenceNumber').value.trim();
+  const barAssociation = document.getElementById('barAssociation').value.trim();
+  const jurisdiction = document.getElementById('jurisdiction').value.trim();
+  const errEl = document.getElementById('qualError');
+  const sucEl = document.getElementById('qualSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+  if (!licenceNumber) { errEl.textContent = 'Please enter your licence number.'; errEl.classList.add('show'); return; }
+  if (!licenceFileUrl) { errEl.textContent = 'Please upload your attorney licence.'; errEl.classList.add('show'); return; }
+  if (!degreeFileUrl) { errEl.textContent = 'Please upload your law degree.'; errEl.classList.add('show'); return; }
+  const btn = document.querySelector('#section-qualifications .btn-blue');
+  const sp = document.getElementById('qualSpinner');
+  const bt = document.getElementById('qualBtnText');
+  btn.disabled=true; sp.style.display='block'; bt.textContent='Submitting...';
+  try {
+    const res = await fetch(`${API_URL}/api/attorney/qualifications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ licence_number: licenceNumber, bar_association: barAssociation, jurisdiction, licence_file_url: licenceFileUrl, degree_file_url: degreeFileUrl })
+    });
+    if (!res.ok) throw new Error('Failed');
+    sucEl.textContent = '✅ Qualifications submitted! Admin will verify within 1-2 business days.';
+    sucEl.classList.add('show');
+    document.getElementById('verifyBanner').style.display = 'none';
+    loadQualifications();
+  } catch(err) { errEl.textContent = err.message; errEl.classList.add('show'); }
+  btn.disabled=false; sp.style.display='none'; bt.textContent='Submit for Verification';
+}
+
+async function searchClients(query, context = 'case') {
+  if (query.length < 2) { document.getElementById(context==='verif'?'verifSearchResults':'clientSearchResults').style.display='none'; return; }
+  try {
+    const res = await fetch(`${API_URL}/api/users/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
+    const users = res.ok ? await res.json() : [];
+    const resultsEl = document.getElementById(context==='verif'?'verifSearchResults':'clientSearchResults');
+    if (!users.length) { resultsEl.style.display='none'; return; }
+    resultsEl.style.display='block';
+    resultsEl.innerHTML = users.map(u => `
+      <div style="padding:0.6rem 0.75rem;cursor:pointer;font-size:13px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background=''" onclick="selectClient(${u.id},'${u.first_name} ${u.last_name}','${context}')">
+        ${u.first_name} ${u.last_name} <span style="color:var(--muted);font-size:11px;">(${u.role})</span>
+      </div>`).join('');
+  } catch {}
+}
+
+function selectClient(id, name, context) {
+  if (context === 'verif') {
+    document.getElementById('verifPartyId').value = id;
+    document.getElementById('verifPartySearch').value = name;
+    document.getElementById('verifSearchResults').style.display = 'none';
+  } else {
+    document.getElementById('caseClientId').value = id;
+    document.getElementById('caseClientSearch').value = name;
+    document.getElementById('clientSearchResults').style.display = 'none';
+  }
+}
+
+// ── MODALS ──
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+function openNewCaseModal() { openModal('newCaseModal'); }
+function openUploadModal() { populateCaseSelects(); openModal('uploadModal'); }
+function openVerifRequestModal() { populateCaseSelects(); openModal('verifModal'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+loadDashboard();
+</script>
+</body>
+</html>
