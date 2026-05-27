@@ -396,7 +396,7 @@ const token = localStorage.getItem('ih_token');
 const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
 const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
-const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
+const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/attorney-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
 
 function renderSidebar() {
   const path = window.location.pathname;

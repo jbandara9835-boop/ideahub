@@ -431,7 +431,7 @@
   if (!token || !user) window.location.href = '/login';
 
   const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
-  const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
+  const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/attorney-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
   const navLinks = { idea_creator:[['⚡','Dashboard','/dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['➕','Submit','/submit'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], investor:[['⚡','Dashboard','/buyer-dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['🏭','Businesses','/businesses'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], business_owner:[['⚡','Dashboard','/business-dashboard'],['🏭','Businesses','/businesses'],['➕','List Business','/list-business'],['👤','Profile','/profile'],['💬','Messages','/messages']] };
   const defaultNav = [['⚡','Dashboard','/dashboard'],['🤝','Find Support','/find-support'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']];
 

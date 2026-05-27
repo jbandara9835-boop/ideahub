@@ -123,6 +123,9 @@ app.get('/find-support', (req, res) => {
 app.get('/support-dashboard', (req, res) => {
   res.sendFile(__dirname + '/public/support-dashboard.html');
 });
+app.get('/attorney-dashboard', (req, res) => {
+  res.sendFile(__dirname + '/public/attorney-dashboard.html');
+});
 app.get('/wall', (req, res) => res.sendFile(__dirname + '/public/wall.html'));
 app.get('/settings', (req, res) => res.sendFile(__dirname + '/public/settings.html'));
 app.get('/attorney-dashboard', (req, res) => res.sendFile(__dirname + '/public/attorney-dashboard.html'));
