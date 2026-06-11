@@ -542,6 +542,17 @@
     <input type="text" id="heroSearchInput" placeholder="Search by title, keyword, or category…" />
     <button onclick="doSearch()">Search</button>
   </div>
+  <div class="hero-filters" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+    <button class="filter-chip active" data-cat="all" style="background:var(--gold);border-color:var(--gold);color:#000;font-weight:600;">All</button>
+    <button class="filter-chip" data-cat="Technology">💻 Technology</button>
+    <button class="filter-chip" data-cat="Health">🏥 Health</button>
+    <button class="filter-chip" data-cat="Education">📚 Education</button>
+    <button class="filter-chip" data-cat="Finance">💰 Finance</button>
+    <button class="filter-chip" data-cat="Food">🍔 Food</button>
+    <button class="filter-chip" data-cat="E-commerce">🛒 E-commerce</button>
+    <button class="filter-chip" data-cat="Environment">🌿 Environment</button>
+    <button class="filter-chip" data-cat="Entertainment">🎮 Entertainment</button>
+  </div>
   <div class="hero-stats">
     <div class="hero-stat"><strong id="statIdeas">—</strong> ideas listed</div>
     <div class="hero-stat"><strong id="statCreators">—</strong> creators</div>
@@ -552,16 +563,7 @@
 <!-- ── FILTER BAR ── -->
 <div class="filter-bar">
   <div class="filter-inner">
-    <button class="filter-chip active" data-cat="all">All</button>
-    <button class="filter-chip" data-cat="Technology">💻 Technology</button>
-    <button class="filter-chip" data-cat="Health">🏥 Health</button>
-    <button class="filter-chip" data-cat="Education">📚 Education</button>
-    <button class="filter-chip" data-cat="Finance">💰 Finance</button>
-    <button class="filter-chip" data-cat="Food">🍔 Food</button>
-    <button class="filter-chip" data-cat="E-commerce">🛒 E-commerce</button>
-    <button class="filter-chip" data-cat="Environment">🌿 Environment</button>
-    <button class="filter-chip" data-cat="Entertainment">🎮 Entertainment</button>
-    <div class="filter-divider"></div>
+    
     <button class="filter-chip" data-level="Market Ready">Market Ready</button>
     <button class="filter-chip" data-level="Prototype">Prototype</button>
     <button class="filter-chip" data-level="Concept">Concept</button>
