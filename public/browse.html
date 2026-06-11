@@ -667,8 +667,8 @@
 
     filteredIdeas = allIdeas.filter(idea => {
       const matchCat = activeCategory === 'all' || idea.category === activeCategory;
-      const stage = (idea.development_stage || idea.idea_type || '').toLowerCase().replace(/_/g,' ').trim();
-      const matchLevel = !activeLevel || stage === activeLevel.toLowerCase();
+      const levelMap = { 'Concept': 1, 'Prototype': 2, 'Market Ready': 3 };
+      const matchLevel = !activeLevel || idea.level === levelMap[activeLevel];
       const matchSearch = !searchTerm ||
         (idea.title || '').toLowerCase().includes(searchTerm) ||
         (idea.description || '').toLowerCase().includes(searchTerm) ||
@@ -737,7 +737,8 @@
   }
 
   function cardHTML(idea) {
-    const stage = idea.development_stage || idea.idea_type || 'Concept';
+    const levelLabel = { 1: 'Concept', 2: 'Prototype', 3: 'Market Ready' };
+    const stage = levelLabel[idea.level] || idea.idea_type || 'Concept';
     const avatarUrl = idea.creator_avatar || idea.avatar_url;
     const avatarHTML = avatarUrl
       ? `<img src="${avatarUrl}" alt="">`
