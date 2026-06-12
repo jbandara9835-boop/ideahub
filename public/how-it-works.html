@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>How It Works — IdeaHub</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#0a0a0a; --surface:#141414; --surface2:#1c1c1c;
+      --border:#2a2a2a; --gold:#f5c518; --gold-dim:#c49a10;
+      --text:#f0f0f0; --muted:#888; --radius:12px;
+      --green:#4ade80; --blue:#60a5fa; --purple:#a78bfa;
+    }
+    body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+
+    /* NAV */
+    .topnav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; gap:24px; }
+    .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-size:1.15rem; font-weight:700; flex-shrink:0; }
+    .nav-logo .logo-icon { width:32px; height:32px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+    .nav-links { display:flex; align-items:center; gap:8px; margin-left:auto; }
+    .nav-links a { color:var(--muted); text-decoration:none; font-size:0.875rem; padding:6px 14px; border-radius:6px; transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .btn-gold { background:var(--gold) !important; color:#000 !important; font-weight:600 !important; }
+    .nav-user { display:none; align-items:center; gap:8px; }
+    .nav-user.visible { display:flex; }
+    .nav-avatar { width:34px; height:34px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:#000; overflow:hidden; text-decoration:none; flex-shrink:0; }
+    .nav-avatar img { width:100%; height:100%; object-fit:cover; }
+    .btn-outline { border:1px solid var(--border); color:var(--text); border-radius:6px; }
+    .btn-outline:hover { border-color:var(--gold) !important; }
+
+    /* HERO */
+    .hero { text-align:center; padding:72px 32px 56px; background:linear-gradient(135deg,#0a0a0a 0%,#0d0a08 50%,#0a0a0a 100%); border-bottom:1px solid var(--border); }
+    .hero-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.25); color:var(--gold); border-radius:20px; padding:5px 14px; font-size:0.8rem; font-weight:600; margin-bottom:20px; }
+    .hero h1 { font-size:2.8rem; font-weight:800; line-height:1.2; margin-bottom:16px; }
+    .hero h1 span { color:var(--gold); }
+    .hero p { color:var(--muted); font-size:1.05rem; max-width:560px; margin:0 auto 32px; line-height:1.7; }
+    .hero-btns { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+    .btn-lg { padding:12px 28px; border-radius:10px; font-size:0.95rem; font-weight:600; cursor:pointer; text-decoration:none; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
+    .btn-primary-lg { background:var(--gold); color:#000; border:none; }
+    .btn-primary-lg:hover { background:var(--gold-dim); }
+    .btn-secondary-lg { background:var(--surface); border:1px solid var(--border); color:var(--text); }
+    .btn-secondary-lg:hover { border-color:var(--gold); }
+
+    /* ROLE TABS */
+    .role-tabs-section { padding:40px 32px 0; max-width:1100px; margin:0 auto; }
+    .section-label { font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:16px; text-align:center; }
+    .role-tabs { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:0; }
+    .role-tab { background:var(--surface2); border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:8px 20px; font-size:0.875rem; cursor:pointer; transition:all 0.2s; }
+    .role-tab:hover { border-color:var(--gold); color:var(--text); }
+    .role-tab.active { background:var(--gold); border-color:var(--gold); color:#000; font-weight:600; }
+
+    /* SECTIONS */
+    .content { max-width:1100px; margin:0 auto; padding:40px 32px 60px; }
+
+    .role-section { display:none; }
+    .role-section.active { display:block; }
+
+    .section-header { text-align:center; margin-bottom:48px; }
+    .section-header h2 { font-size:1.8rem; font-weight:800; margin-bottom:10px; }
+    .section-header h2 span { color:var(--gold); }
+    .section-header p { color:var(--muted); font-size:0.95rem; max-width:520px; margin:0 auto; line-height:1.7; }
+
+    /* STEPS */
+    .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; margin-bottom:48px; }
+    .step-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; position:relative; transition:border-color 0.2s; }
+    .step-card:hover { border-color:rgba(245,197,24,0.3); }
+    .step-num { width:36px; height:36px; background:var(--gold); color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.9rem; margin-bottom:14px; }
+    .step-icon { font-size:1.5rem; margin-bottom:10px; }
+    .step-title { font-size:0.95rem; font-weight:700; margin-bottom:6px; }
+    .step-desc { font-size:0.82rem; color:var(--muted); line-height:1.6; }
+
+    /* VIDEO PLACEHOLDER */
+    .video-placeholder { background:var(--surface); border:2px dashed var(--border); border-radius:var(--radius); padding:60px 20px; text-align:center; margin-bottom:48px; cursor:pointer; transition:border-color 0.2s; }
+    .video-placeholder:hover { border-color:rgba(245,197,24,0.4); }
+    .video-icon { font-size:3rem; margin-bottom:12px; }
+    .video-placeholder h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
+    .video-placeholder p { font-size:0.82rem; color:var(--muted); }
+    .coming-soon-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(96,165,250,0.1); border:1px solid rgba(96,165,250,0.25); color:var(--blue); border-radius:20px; padding:4px 12px; font-size:0.72rem; font-weight:600; margin-top:10px; }
+
+    /* FAQ */
+    .faq-section { margin-top:48px; }
+    .faq-title { font-size:1.1rem; font-weight:700; margin-bottom:20px; }
+    .faq-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+    .faq-q { padding:16px 20px; font-size:0.875rem; font-weight:600; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s; }
+    .faq-q:hover { background:var(--surface2); }
+    .faq-q .arrow { color:var(--muted); font-size:0.8rem; transition:transform 0.2s; }
+    .faq-item.open .faq-q .arrow { transform:rotate(180deg); }
+    .faq-a { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+    .faq-item.open .faq-a { max-height:200px; }
+    .faq-a-inner { padding:0 20px 16px; font-size:0.82rem; color:var(--muted); line-height:1.7; border-top:1px solid var(--border); padding-top:14px; }
+
+    /* CTA */
+    .cta-box { background:linear-gradient(135deg,rgba(245,197,24,0.08),rgba(245,197,24,0.03)); border:1px solid rgba(245,197,24,0.2); border-radius:16px; padding:40px; text-align:center; margin-top:48px; }
+    .cta-box h3 { font-size:1.4rem; font-weight:800; margin-bottom:10px; }
+    .cta-box p { color:var(--muted); font-size:0.9rem; margin-bottom:24px; }
+    .cta-btns { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+
+    /* OVERVIEW GRID */
+    .overview-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:48px; }
+    .overview-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:border-color 0.2s,transform 0.2s; cursor:pointer; text-decoration:none; color:inherit; }
+    .overview-card:hover { border-color:var(--gold); transform:translateY(-3px); }
+    .overview-icon { font-size:2rem; margin-bottom:10px; }
+    .overview-title { font-size:0.9rem; font-weight:700; margin-bottom:4px; }
+    .overview-desc { font-size:0.78rem; color:var(--muted); line-height:1.5; }
+
+    .footer { border-top:1px solid var(--border); padding:24px 32px; text-align:center; color:var(--muted); font-size:0.82rem; margin-top:40px; }
+    .footer a { color:var(--gold); text-decoration:none; }
+
+    @media (max-width:768px) {
+      .topnav { padding:0 16px; }
+      .hero { padding:48px 16px 36px; }
+      .hero h1 { font-size:2rem; }
+      .content { padding:24px 16px 40px; }
+      .role-tabs-section { padding:24px 16px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <a href="/" class="nav-logo"><div class="logo-icon">💡</div><span>IdeaHub</span></a>
+  <div class="nav-links" id="guestNav">
+    <a href="/login">Sign in</a>
+    <a href="/signup" class="btn-gold" style="border-radius:6px;padding:6px 14px;">Join free</a>
+  </div>
+  <div class="nav-user" id="userNav">
+    <a href="/dashboard" class="btn-outline" id="dashboardLink" style="padding:6px 14px;text-decoration:none;font-size:0.875rem;">My Dashboard</a>
+    <a href="/profile" class="nav-avatar" id="navAvatar"></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">📖 Platform Guide</div>
+  <h1>Everything you need to know<br>about <span>IdeaHub</span></h1>
+  <p>Whether you're an idea creator, investor, business owner or support professional — here's how IdeaHub works for you.</p>
+  <div class="hero-btns">
+    <a href="/signup" class="btn-lg btn-primary-lg">Get Started Free →</a>
+    <a href="/browse" class="btn-lg btn-secondary-lg">Browse Ideas</a>
+  </div>
+</section>
+
+<!-- ROLE TABS -->
+<div class="role-tabs-section">
+  <div class="section-label">I am a…</div>
+  <div class="role-tabs">
+    <button class="role-tab active" onclick="showSection('overview', this)">🌟 Overview</button>
+    <button class="role-tab" onclick="showSection('creator', this)">💡 Idea Creator</button>
+    <button class="role-tab" onclick="showSection('investor', this)">💰 Investor</button>
+    <button class="role-tab" onclick="showSection('business', this)">🏢 Business Owner</button>
+    <button class="role-tab" onclick="showSection('support', this)">🤝 Support Pro</button>
+    <button class="role-tab" onclick="showSection('buyer', this)">🛒 Idea Buyer</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- OVERVIEW -->
+  <div class="role-section active" id="section-overview">
+    <div class="section-header">
+      <h2>What is <span>IdeaHub</span>?</h2>
+      <p>IdeaHub is a marketplace connecting idea creators, investors, business owners, and support professionals in one place.</p>
+    </div>
+    <div class="overview-grid">
+      <a class="overview-card" onclick="showSectionByName('creator')">
+        <div class="overview-icon">💡</div>
+        <div class="overview-title">Idea Creators</div>
+        <div class="overview-desc">Submit and sell original business ideas to investors and buyers worldwide.</div>
+      </a>
+      <a class="overview-card" onclick="showSectionByName('investor')">
+        <div class="overview-icon">💰</div>
+        <div class="overview-title">Investors</div>
+        <div class="overview-desc">Post problem requests and receive tailored idea proposals from creators.</div>
+      </a>
+      <a class="overview-card" onclick="showSectionByName('buyer')">
+        <div class="overview-icon">🛒</div>
+        <div class="overview-title">Idea Buyers</div>
+        <div class="overview-desc">Browse and purchase ready-made ideas from the marketplace.</div>
+      </a>
+      <a class="overview-card" onclick="showSectionByName('business')">
+        <div class="overview-icon">🏢</div>
+        <div class="overview-title">Business Owners</div>
+        <div class="overview-desc">List your business for franchise, license, or partnership opportunities globally.</div>
+      </a>
+      <a class="overview-card" onclick="showSectionByName('support')">
+        <div class="overview-icon">🤝</div>
+        <div class="overview-title">Support Pros</div>
+        <div class="overview-desc">Virtual managers, patent attorneys and corporate services helping ideas grow.</div>
+      </a>
+    </div>
+    <div class="video-placeholder">
+      <div class="video-icon">🎬</div>
+      <h3>Platform Overview Video</h3>
+      <p>A full walkthrough of IdeaHub — what it is, how it works, and who it's for.</p>
+      <div class="coming-soon-tag">🎥 Video coming soon</div>
+    </div>
+    <div class="cta-box">
+      <h3>Ready to get started?</h3>
+      <p>Join thousands of creators, investors and professionals already on IdeaHub.</p>
+      <div class="cta-btns">
+        <a href="/signup" class="btn-lg btn-primary-lg">Create Free Account →</a>
+        <a href="/browse" class="btn-lg btn-secondary-lg">Browse the Marketplace</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- IDEA CREATOR -->
+  <div class="role-section" id="section-creator">
+    <div class="section-header">
+      <h2>For <span>Idea Creators</span></h2>
+      <p>Have a great idea? Submit it to the marketplace and earn when investors or buyers purchase it.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-icon">👤</div>
+        <div class="step-title">Create your profile</div>
+        <div class="step-desc">Sign up as an Idea Creator, complete your profile with your expertise, specializations and avatar.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-icon">📝</div>
+        <div class="step-title">Submit your idea</div>
+        <div class="step-desc">Go to Submit Idea, fill in the title, description, category, price and development stage. Add images and patent details if applicable.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-icon">🌐</div>
+        <div class="step-title">Get discovered</div>
+        <div class="step-desc">Your idea goes live on the marketplace and is visible to thousands of buyers and investors worldwide.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">Respond to investors</div>
+        <div class="step-desc">Browse Investor Requests and submit proposals. If shortlisted, you'll be invited to pitch your idea directly.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-icon">🔒</div>
+        <div class="step-title">Secure the deal</div>
+        <div class="step-desc">Once selected, the investor locks payment in escrow. Deliver your idea and get paid when they confirm.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">6</div>
+        <div class="step-icon">💰</div>
+        <div class="step-title">Get paid</div>
+        <div class="step-desc">Earnings are added to your wallet when the buyer confirms the delivery. Withdraw anytime.</div>
+      </div>
+    </div>
+    <div class="video-placeholder">
+      <div class="video-icon">🎬</div>
+      <h3>Idea Creator Walkthrough</h3>
+      <p>Step-by-step video: how to submit your first idea and get your first sale.</p>
+      <div class="coming-soon-tag">🎥 Video coming soon</div>
+    </div>
+    <div class="faq-section">
+      <div class="faq-title">Frequently Asked Questions</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How much does it cost to submit an idea? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Submitting ideas is completely free. IdeaHub charges a small commission only when your idea is sold.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I submit a patented idea? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes! You can submit patented ideas and upload your patent certificate. Our admin team will verify it and add a Verified Patent badge to your listing, increasing buyer trust.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What happens after I submit a proposal for an investor request? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">The investor reviews all proposals and can shortlist, invite to pitch, or select yours. You'll get notified at every stage. If selected, escrow is locked and you'll need to deliver the idea.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How does the escrow system protect me? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">When an investor selects your proposal, they lock the agreed payment in escrow before you deliver anything. This guarantees you get paid once you deliver the work.</div></div>
+      </div>
+    </div>
+    <div class="cta-box">
+      <h3>Ready to submit your first idea?</h3>
+      <p>Join thousands of creators already earning on IdeaHub.</p>
+      <div class="cta-btns">
+        <a href="/signup" class="btn-lg btn-primary-lg">Start as Idea Creator →</a>
+        <a href="/submit" class="btn-lg btn-secondary-lg">Submit an Idea</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVESTOR -->
+  <div class="role-section" id="section-investor">
+    <div class="section-header">
+      <h2>For <span>Investors</span></h2>
+      <p>Post your problem or challenge and let the world's best idea creators pitch their solutions to you.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-icon">👤</div>
+        <div class="step-title">Sign up as Investor</div>
+        <div class="step-desc">Create your account and select the Investor role. Complete your profile to build trust with creators.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-icon">📋</div>
+        <div class="step-title">Post a Request</div>
+        <div class="step-desc">Go to Investor Requests and post your problem. Describe the challenge, set a budget and deadline.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-icon">📬</div>
+        <div class="step-title">Receive Proposals</div>
+        <div class="step-desc">Idea creators from around the world submit proposals. You'll be notified for each new submission.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-icon">⭐</div>
+        <div class="step-title">Shortlist & Pitch</div>
+        <div class="step-desc">Shortlist the best proposals and invite selected creators to pitch. Chat directly to discuss their approach.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-icon">🔒</div>
+        <div class="step-title">Lock Escrow</div>
+        <div class="step-desc">Once you choose a creator, lock the agreed amount in escrow. This signals the creator to deliver.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">6</div>
+        <div class="step-icon">✅</div>
+        <div class="step-title">Confirm & Close</div>
+        <div class="step-desc">Review the delivered idea. Confirm to release payment, or raise a dispute if something is wrong.</div>
+      </div>
+    </div>
+    <div class="video-placeholder">
+      <div class="video-icon">🎬</div>
+      <h3>Investor Walkthrough</h3>
+      <p>How to post a request, review proposals and get your problem solved.</p>
+      <div class="coming-soon-tag">🎥 Video coming soon</div>
+    </div>
+    <div class="faq-section">
+      <div class="faq-title">Frequently Asked Questions</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What types of problems can I post? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Any business problem, innovation challenge, or market gap you need solved. From tech solutions to marketing strategies, product concepts to business models.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is my request visible to everyone? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes, requests are public so creators can find and respond to them. However, you control which proposals you engage with and can keep communications private.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What if I'm not happy with the delivered idea? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">You can raise a dispute before releasing payment. Our support team will review the case and mediate between you and the creator.</div></div>
+      </div>
+    </div>
+    <div class="cta-box">
+      <h3>Have a problem that needs solving?</h3>
+      <p>Post your first request and get proposals from creators worldwide.</p>
+      <div class="cta-btns">
+        <a href="/signup" class="btn-lg btn-primary-lg">Start as Investor →</a>
+        <a href="/idea-requests" class="btn-lg btn-secondary-lg">Browse Requests</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUSINESS OWNER -->
+  <div class="role-section" id="section-business">
+    <div class="section-header">
+      <h2>For <span>Business Owners</span></h2>
+      <p>List your business for franchise, licensing or partnership opportunities and connect with expansion partners globally.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-icon">👤</div>
+        <div class="step-title">Sign up as Business Owner</div>
+        <div class="step-desc">Create your account with the Business Owner role and complete your profile.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-icon">🏢</div>
+        <div class="step-title">List your business</div>
+        <div class="step-desc">Go to Business Expansion and click "+ List Business". Add your business details, expansion types, investment range and territories.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-icon">📋</div>
+        <div class="step-title">Receive applications</div>
+        <div class="step-desc">Investors and entrepreneurs apply to franchise, license or partner with your business. Review their profiles and investment capacity.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-icon">📅</div>
+        <div class="step-title">Schedule a meetup</div>
+        <div class="step-desc">Shortlist the best applicants, chat with them and schedule a meetup — online or in person — to discuss terms.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-icon">🤝</div>
+        <div class="step-title">Negotiate & agree</div>
+        <div class="step-desc">Negotiate terms directly. Once you reach an agreement, mark the application as Agreed and proceed outside the platform.</div>
+      </div>
+    </div>
+    <div class="video-placeholder">
+      <div class="video-icon">🎬</div>
+      <h3>Business Owner Walkthrough</h3>
+      <p>How to list your business and find the right expansion partner.</p>
+      <div class="coming-soon-tag">🎥 Video coming soon</div>
+    </div>
+    <div class="faq-section">
+      <div class="faq-title">Frequently Asked Questions</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What expansion types can I offer? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">You can list your business for Franchise, License, Joint Venture, Distribution, or White Label partnerships. You can offer multiple types on the same listing.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Does IdeaHub handle contracts or payments for business deals? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">No — business expansion deals are negotiated and finalized directly between the parties outside the platform. IdeaHub provides the discovery and connection platform. Legal contracts are handled independently.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I restrict which countries can apply? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. When listing your business you can specify territories you're open to, and filter applicants by country.</div></div>
+      </div>
+    </div>
+    <div class="cta-box">
+      <h3>Ready to expand your business?</h3>
+      <p>List your business and connect with expansion partners worldwide.</p>
+      <div class="cta-btns">
+        <a href="/signup" class="btn-lg btn-primary-lg">List Your Business →</a>
+        <a href="/businesses" class="btn-lg btn-secondary-lg">Browse Businesses</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORT PRO -->
+  <div class="role-section" id="section-support">
+    <div class="section-header">
+      <h2>For <span>Support Professionals</span></h2>
+      <p>Offer your expertise as a Virtual Manager, Patent Attorney or Corporate Services provider and get hired by idea creators.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-icon">👤</div>
+        <div class="step-title">Sign up as Support Pro</div>
+        <div class="step-desc">Create your account and select your role — Virtual Manager, Patent Attorney or Corporate Services.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-icon">📋</div>
+        <div class="step-title">Build your profile</div>
+        <div class="step-desc">Add your tagline, hourly rate, experience, languages, availability and service countries. Upload qualifications for verification.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-icon">✅</div>
+        <div class="step-title">Get verified</div>
+        <div class="step-desc">Patent Attorneys can submit their licence and bar association details for admin verification. A verified badge increases your hire rate.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-icon">📬</div>
+        <div class="step-title">Receive hire requests</div>
+        <div class="step-desc">Idea creators find you in Support Services and send hire requests with their project details and budget.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">Communicate & deliver</div>
+        <div class="step-desc">Accept requests, message clients directly, deliver your work and mark the job as complete.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">6</div>
+        <div class="step-icon">⭐</div>
+        <div class="step-title">Build your reputation</div>
+        <div class="step-desc">Completed jobs earn you ratings and reviews. Higher ratings put you at the top of search results.</div>
+      </div>
+    </div>
+    <div class="video-placeholder">
+      <div class="video-icon">🎬</div>
+      <h3>Support Professional Walkthrough</h3>
+      <p>How to set up your profile and start getting hired on IdeaHub.</p>
+      <div class="coming-soon-tag">🎥 Video coming soon</div>
+    </div>
+    <div class="faq-section">
+      <div class="faq-title">Frequently Asked Questions</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What is a Virtual Manager on IdeaHub? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">A Virtual Manager helps idea creators manage their projects, coordinate tasks, handle communications and keep development on track — remotely.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Do I need to be a licensed attorney to join as Patent Attorney? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. You'll need to submit your licence number and bar association details for verification. Unverified profiles can still be listed but won't have the verified badge.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I restrict which countries I work with? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. In your support profile you can set your service type to "Specific Countries" (only serve listed countries) or "Restricted Countries" (exclude certain countries). Clients will see a warning before hiring.</div></div>
+      </div>
+    </div>
+    <div class="cta-box">
+      <h3>Ready to offer your expertise?</h3>
+      <p>Join IdeaHub as a support professional and start getting hired.</p>
+      <div class="cta-btns">
+        <a href="/signup" class="btn-lg btn-primary-lg">Join as Support Pro →</a>
+        <a href="/find-support" class="btn-lg btn-secondary-lg">Browse Professionals</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUYER -->
+  <div class="role-section" id="section-buyer">
+    <div class="section-header">
+      <h2>For <span>Idea Buyers</span></h2>
+      <p>Browse thousands of ready-made ideas and purchase the ones that match your vision.</p>
+    </div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-icon">🔍</div>
+        <div class="step-title">Browse the marketplace</div>
+        <div class="step-desc">Visit the Marketplace and filter by category, development stage, price range and more to find the right idea.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-icon">💡</div>
+        <div class="step-title">Review idea details</div>
+        <div class="step-desc">Click any idea to see the full description, creator profile, patent status, development stage and price.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">Contact the creator</div>
+        <div class="step-desc">Message the creator directly to ask questions, negotiate or request more details before purchasing.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-icon">💳</div>
+        <div class="step-title">Purchase securely</div>
+        <div class="step-desc">Complete your purchase through IdeaHub's secure payment system. Funds are held in escrow until you confirm delivery.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-icon">✅</div>
+        <div class="step-title">Confirm & own the idea</div>
+        <div class="step-desc">Once you receive all idea materials and documents, confirm the delivery to release payment to the creator.</div>
+      </div>
+    </div>
+    <div class="video-placeholder">
+      <div class="video-icon">🎬</div>
+      <h3>Buyer Walkthrough</h3>
+      <p>How to find, evaluate and purchase your first idea on IdeaHub.</p>
+      <div class="coming-soon-tag">🎥 Video coming soon</div>
+    </div>
+    <div class="faq-section">
+      <div class="faq-title">Frequently Asked Questions</div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What do I get when I buy an idea? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">You receive the full idea documentation including the concept description, business plan details, research, technical specifications (if applicable) and any supporting files the creator provides.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Are ideas exclusive once purchased? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Once an idea is sold, it's marked as sold and removed from the marketplace. The creator cannot sell it again to another buyer.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What if I'm not satisfied with the idea? <span class="arrow">▼</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Payment is held in escrow and only released when you confirm satisfaction. If there's an issue, you can raise a dispute before confirming delivery.</div></div>
+      </div>
+    </div>
+    <div class="cta-box">
+      <h3>Find your next big idea</h3>
+      <p>Thousands of innovative ideas waiting to be discovered and built.</p>
+      <div class="cta-btns">
+        <a href="/browse" class="btn-lg btn-primary-lg">Browse Ideas →</a>
+        <a href="/signup" class="btn-lg btn-secondary-lg">Create Free Account</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  © 2025 <a href="https://picela.co" target="_blank">Picela</a>. All rights reserved. IdeaHub is a product by <a href="https://picela.co" target="_blank">Picela</a>.
+</footer>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : 'https://ideahub-production-1b18.up.railway.app';
+
+  // Nav
+  const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('ih_user') || 'null');
+  if (token && user) {
+    document.getElementById('guestNav').style.display = 'none';
+    document.getElementById('userNav').classList.add('visible');
+    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
+    document.getElementById('dashboardLink').href = roleLinks[user.role] || '/dashboard';
+    const avatarEl = document.getElementById('navAvatar');
+    const avatarUrl = user.avatar_url || user.avatarUrl;
+    if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
+    else avatarEl.textContent = (user.name || user.first_name || user.email || 'U')[0].toUpperCase();
+  }
+
+  // Section switching
+  function showSection(name, btn) {
+    document.querySelectorAll('.role-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    if (btn) btn.classList.add('active');
+    window.scrollTo({ top: document.querySelector('.role-tabs-section').offsetTop - 70, behavior: 'smooth' });
+  }
+
+  function showSectionByName(name) {
+    const btn = document.querySelector(`.role-tab[onclick*="'${name}'"]`);
+    showSection(name, btn);
+  }
+
+  // FAQ accordion
+  function toggleFaq(el) {
+    const item = el.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // Check URL hash for pre-navigation
+  const hash = window.location.hash.replace('#','');
+  if (['creator','investor','business','support','buyer'].includes(hash)) {
+    showSectionByName(hash);
+  }
+</script>
+</body>
+</html>
