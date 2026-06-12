@@ -135,6 +135,9 @@ app.get('/attorney-dashboard', (req, res) => res.sendFile(__dirname + '/public/a
 app.get('/admin', (req, res) => {
   res.sendFile(__dirname + '/public/admin.html');
 });
+app.get('/how-it-works', (req, res) => {
+  res.sendFile(__dirname + '/public/how-it-works.html');
+});
 app.get('/api/stats/public', async (req, res) => {
   const [ideasRes, usersRes, txRes] = await Promise.all([
     supabase.from('ideas').select('*', { count: 'exact', head: true }).eq('status', 'live'),
