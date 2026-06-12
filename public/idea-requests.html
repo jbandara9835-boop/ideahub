@@ -34,8 +34,6 @@
     .hero h1 { font-size:2rem; font-weight:800; margin-bottom:6px; }
     .hero h1 span { color:var(--gold); }
     .hero p { color:var(--muted); font-size:0.95rem; margin-bottom:24px; }
-
-    /* SEARCH ROW */
     .search-row { max-width:680px; margin:0 auto 14px; display:flex; gap:8px; }
     .search-row input { flex:1; background:var(--surface); border:1.5px solid var(--border); border-radius:10px; padding:13px 20px; color:var(--text); font-size:1rem; outline:none; transition:border-color 0.2s; }
     .search-row input:focus { border-color:var(--gold); }
@@ -51,8 +49,6 @@
     .adv-toggle-btn.open .arrow { transform:rotate(180deg); }
     .adv-count { background:var(--gold); color:#000; border-radius:20px; padding:2px 8px; font-size:0.75rem; font-weight:700; display:none; }
     .adv-count.visible { display:inline; }
-
-    /* ADVANCED PANEL */
     .adv-panel { max-width:680px; margin:0 auto 20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; max-height:0; transition:max-height 0.35s ease, opacity 0.25s ease; opacity:0; pointer-events:none; }
     .adv-panel.open { max-height:500px; opacity:1; pointer-events:all; }
     .adv-panel-inner { padding:20px; display:flex; flex-direction:column; gap:18px; }
@@ -71,18 +67,16 @@
     .btn-apply { background:var(--gold); color:#000; border:none; border-radius:8px; padding:7px 18px; font-size:0.82rem; font-weight:600; cursor:pointer; }
     .btn-apply:hover { background:var(--gold-dim); }
 
-    /* HERO STATS */
     .hero-stats { display:flex; justify-content:center; gap:32px; }
     .hero-stat { color:var(--muted); font-size:0.875rem; }
     .hero-stat strong { color:var(--text); }
 
-    /* ACTIVE FILTERS BAR */
+    /* ACTIVE BAR */
     .active-bar { position:sticky; top:60px; z-index:90; background:rgba(10,10,10,0.97); border-bottom:1px solid var(--border); padding:10px 32px; display:none; align-items:center; gap:8px; flex-wrap:wrap; }
     .active-bar.visible { display:flex; }
     .active-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.3); color:var(--gold); border-radius:20px; padding:4px 12px; font-size:0.78rem; }
-    .active-tag button { background:none; border:none; color:var(--gold); cursor:pointer; font-size:0.85rem; padding:0; line-height:1; }
+    .active-tag button { background:none; border:none; color:var(--gold); cursor:pointer; font-size:0.85rem; padding:0; }
     .clear-all-btn { margin-left:auto; background:none; border:none; color:var(--muted); font-size:0.78rem; cursor:pointer; text-decoration:underline; }
-    .clear-all-btn:hover { color:var(--text); }
 
     /* SORT BAR */
     .sort-bar { border-bottom:1px solid var(--border); padding:10px 32px; }
@@ -103,9 +97,9 @@
     .post-banner p { font-size:0.85rem; color:var(--muted); }
     .post-banner strong { color:var(--text); display:block; font-size:0.9rem; margin-bottom:2px; }
 
-    /* REQUEST CARDS */
+    /* REQUEST CARDS — clickable */
     .requests-list { display:flex; flex-direction:column; gap:14px; }
-    .req-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; transition:border-color 0.2s, box-shadow 0.2s, transform 0.2s; position:relative; overflow:hidden; }
+    .req-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; transition:border-color 0.2s, box-shadow 0.2s, transform 0.2s; position:relative; overflow:hidden; text-decoration:none; color:inherit; display:block; cursor:pointer; }
     .req-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--gold),var(--green)); opacity:0; transition:opacity 0.2s; }
     .req-card:hover { border-color:var(--gold); box-shadow:0 4px 24px rgba(245,197,24,0.07); transform:translateY(-2px); }
     .req-card:hover::before { opacity:1; }
@@ -120,25 +114,27 @@
     .s-pitching { background:rgba(167,139,250,0.15); color:var(--purple); }
     .s-closed { background:rgba(255,255,255,0.08); color:var(--muted); }
     .featured-badge { background:rgba(245,197,24,0.15); color:var(--gold); font-size:0.7rem; padding:3px 8px; border-radius:20px; font-weight:600; }
-
     .req-desc { font-size:0.83rem; color:var(--muted); line-height:1.6; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .req-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
     .req-tag { background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-size:0.72rem; padding:3px 10px; border-radius:20px; }
     .req-meta { display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:0.78rem; color:var(--muted); margin-bottom:14px; }
     .deadline-warn { color:#fb923c !important; }
     .deadline-pass { color:#888 !important; text-decoration:line-through; }
-
     .req-footer { display:flex; align-items:center; justify-content:space-between; padding-top:14px; border-top:1px solid var(--border); gap:12px; flex-wrap:wrap; }
     .req-investor { display:flex; align-items:center; gap:8px; }
-    .inv-avatar { width:28px; height:28px; border-radius:50%; background:rgba(245,197,24,0.15); border:1px solid rgba(245,197,24,0.3); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:var(--gold); overflow:hidden; flex-shrink:0; }
+    .inv-avatar { width:28px; height:28px; border-radius:50%; background:rgba(245,197,24,0.15); border:1px solid rgba(245,197,24,0.3); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:var(--gold); }
     .inv-name { font-size:0.78rem; color:var(--muted); }
     .req-right { display:flex; align-items:center; gap:10px; }
     .budget { font-size:1.1rem; font-weight:800; color:var(--gold); }
-    .bids-count { font-size:0.78rem; color:var(--muted); display:flex; align-items:center; gap:4px; background:var(--surface2); padding:4px 10px; border-radius:20px; }
-    .btn-bid { background:var(--gold); color:#000; border:none; border-radius:6px; padding:7px 16px; font-size:0.82rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
-    .btn-bid:hover { background:var(--gold-dim); }
-    .btn-bid-ghost { background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:7px 16px; font-size:0.82rem; font-weight:500; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
-    .btn-bid-ghost:hover { border-color:var(--gold); color:var(--gold); }
+    .bids-count { font-size:0.78rem; color:var(--muted); background:var(--surface2); padding:4px 10px; border-radius:20px; }
+    .btn-bid { background:var(--gold); color:#000; border:none; border-radius:6px; padding:7px 16px; font-size:0.82rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; pointer-events:none; }
+    .btn-bid-ghost { background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:7px 16px; font-size:0.82rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; pointer-events:none; }
+
+    /* PAGINATION */
+    .pagination { display:flex; justify-content:center; gap:8px; margin-top:28px; }
+    .page-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 14px; font-size:0.875rem; cursor:pointer; transition:all 0.15s; }
+    .page-btn:hover, .page-btn.active { background:var(--gold); border-color:var(--gold); color:#000; font-weight:600; }
+    .page-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
     .loading { text-align:center; padding:60px 20px; color:var(--muted); }
     .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 16px; }
@@ -154,19 +150,15 @@
       .hero { padding:28px 16px 20px; }
       .search-row { flex-direction:column; }
       .hero-stats { gap:16px; flex-wrap:wrap; }
-      .sort-bar { padding:10px 16px; }
+      .sort-bar, .active-bar { padding:10px 16px; }
       .main { padding:16px; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="topnav">
-  <a href="/" class="nav-logo">
-    <div class="logo-icon">💡</div>
-    <span>IdeaHub</span>
-  </a>
+  <a href="/" class="nav-logo"><div class="logo-icon">💡</div><span>IdeaHub</span></a>
   <div class="nav-right">
     <div id="guestNav" style="display:flex;align-items:center;gap:8px;">
       <a href="/login">Sign in</a>
@@ -180,29 +172,21 @@
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
   <h1>Investor <span>Requests</span></h1>
   <p>Investors post problems — idea creators submit solutions & pitch for funding</p>
-
   <div class="search-row">
     <input type="text" id="searchInput" placeholder="Search by title, problem or industry…" />
     <button onclick="applyFilters()">Search</button>
   </div>
-
-  <!-- Advanced Filters Toggle -->
   <div class="adv-toggle-row">
     <button class="adv-toggle-btn" id="advToggleBtn" onclick="toggleAdvanced()">
-      <span>⚙️ Advanced Filters</span>
-      <span class="arrow">▼</span>
+      <span>⚙️ Advanced Filters</span><span class="arrow">▼</span>
     </button>
     <span class="adv-count" id="advCount">0</span>
   </div>
-
-  <!-- Advanced Panel -->
   <div class="adv-panel" id="advPanel">
     <div class="adv-panel-inner">
-      <!-- Category -->
       <div>
         <div class="filter-group-label">Category</div>
         <div class="chips-wrap" id="catChips">
@@ -217,7 +201,6 @@
           <button class="chip" data-cat="Entertainment">🎮 Entertainment</button>
         </div>
       </div>
-      <!-- Budget -->
       <div>
         <div class="filter-group-label">Budget Range</div>
         <div class="budget-row">
@@ -226,7 +209,6 @@
           <input type="number" id="budgetMax" placeholder="Max $" />
         </div>
       </div>
-      <!-- Deadline -->
       <div>
         <div class="filter-group-label">Deadline</div>
         <div class="chips-wrap" id="deadlineChips">
@@ -242,7 +224,6 @@
       </div>
     </div>
   </div>
-
   <div class="hero-stats">
     <div class="hero-stat"><strong id="statOpen">—</strong> open requests</div>
     <div class="hero-stat"><strong id="statTotal">—</strong> total requests</div>
@@ -250,10 +231,8 @@
   </div>
 </section>
 
-<!-- Active filters bar -->
 <div class="active-bar" id="activeBar"></div>
 
-<!-- SORT BAR -->
 <div class="sort-bar">
   <div class="sort-bar-inner">
     <div class="results-txt" id="resultsCount">Loading…</div>
@@ -273,18 +252,18 @@
   </div>
 </div>
 
-<!-- MAIN -->
 <main class="main">
   <div class="post-banner" id="postBanner">
     <div>
       <strong>Have a problem that needs a creative solution?</strong>
       <p>Post a request and let idea creators pitch their best solutions to you.</p>
     </div>
-    <a href="/post-request" class="btn-bid" id="postBannerBtn">+ Post a Request</a>
+    <a href="/post-request" class="btn-bid" style="pointer-events:all;" id="postBannerBtn">+ Post a Request</a>
   </div>
   <div class="requests-list" id="requestsList">
     <div class="loading"><div class="spinner"></div><p>Loading requests…</p></div>
   </div>
+  <div class="pagination" id="pagination"></div>
 </main>
 
 <footer class="footer">
@@ -296,7 +275,11 @@
     ? 'http://localhost:3000'
     : 'https://ideahub-production-1b18.up.railway.app';
 
-  let allRequests = [], activeStatus = 'all', activeCategory = 'all', activeDeadline = 'all', advOpen = false;
+  let allRequests = [], filteredRequests = [];
+  let activeStatus = 'all', activeCategory = 'all', activeDeadline = 'all';
+  let advOpen = false, currentPage = 1;
+  const PER_PAGE = 10;
+
   const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('ih_user') || 'null');
   const isInvestor = user && ['investor','corporate_services','admin'].includes(user.role);
@@ -314,7 +297,7 @@
     if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
     else avatarEl.textContent = (user.name || user.first_name || user.email || 'U')[0].toUpperCase();
     if (isCreator) {
-      document.getElementById('postBanner').innerHTML = `<div><strong>Looking for a request to solve?</strong><p>Browse open requests below and submit your best idea as a proposal.</p></div><span style="font-size:2rem;">💡</span>`;
+      document.getElementById('postBanner').innerHTML = `<div><strong>Looking for a request to solve?</strong><p>Browse open requests below and click any card to submit your proposal.</p></div><span style="font-size:2rem;">💡</span>`;
     }
   }
 
@@ -330,12 +313,10 @@
     if (activeDeadline !== 'all') tags.push({ label: `Deadline ≤ ${activeDeadline}d`, key: 'dl' });
     const bMin = document.getElementById('budgetMin').value;
     const bMax = document.getElementById('budgetMax').value;
-    if (bMin || bMax) tags.push({ label: `Budget ${bMin?'$'+bMin:''}${bMin&&bMax?'–':''}${bMax?'$'+bMax:''}`, key: 'budget' });
-
+    if (bMin || bMax) tags.push({ label: `Budget${bMin?' $'+bMin:''}${bMin&&bMax?'–':''}${bMax?'$'+bMax:''}`, key: 'budget' });
     const countEl = document.getElementById('advCount');
     countEl.textContent = tags.length;
     countEl.classList.toggle('visible', tags.length > 0);
-
     const bar = document.getElementById('activeBar');
     if (!tags.length) { bar.classList.remove('visible'); return; }
     bar.classList.add('visible');
@@ -344,9 +325,9 @@
   }
 
   window.removeTag = function(key) {
-    if (key === 'cat') { activeCategory = 'all'; document.querySelectorAll('#catChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#catChips .chip[data-cat="all"]').classList.add('active'); }
-    if (key === 'dl') { activeDeadline = 'all'; document.querySelectorAll('#deadlineChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#deadlineChips .chip[data-dl="all"]').classList.add('active'); }
-    if (key === 'budget') { document.getElementById('budgetMin').value=''; document.getElementById('budgetMax').value=''; }
+    if (key==='cat') { activeCategory='all'; document.querySelectorAll('#catChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#catChips .chip[data-cat="all"]').classList.add('active'); }
+    if (key==='dl') { activeDeadline='all'; document.querySelectorAll('#deadlineChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#deadlineChips .chip[data-dl="all"]').classList.add('active'); }
+    if (key==='budget') { document.getElementById('budgetMin').value=''; document.getElementById('budgetMax').value=''; }
     updateActiveBar(); applyFilters();
   };
 
@@ -356,7 +337,7 @@
       allRequests = await res.json();
       if (!Array.isArray(allRequests)) allRequests = allRequests.requests || [];
       document.getElementById('statTotal').textContent = allRequests.length;
-      document.getElementById('statOpen').textContent = allRequests.filter(r => r.status === 'open').length;
+      document.getElementById('statOpen').textContent = allRequests.filter(r => r.status==='open').length;
       document.getElementById('statProposals').textContent = allRequests.reduce((a,r) => a+(r.proposal_count||0), 0);
       applyFilters();
     } catch(e) {
@@ -366,36 +347,66 @@
 
   function applyFilters() {
     updateActiveBar();
-    const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+    const q = (document.getElementById('searchInput').value||'').toLowerCase().trim();
     const sort = document.getElementById('sortSelect').value;
-    const bMin = parseInt(document.getElementById('budgetMin').value) || 0;
-    const bMax = parseInt(document.getElementById('budgetMax').value) || Infinity;
+    const bMin = parseInt(document.getElementById('budgetMin').value)||0;
+    const bMax = parseInt(document.getElementById('budgetMax').value)||Infinity;
 
-    let filtered = allRequests.filter(r => {
-      const matchStatus = activeStatus === 'all' || r.status === activeStatus;
-      const matchCat = activeCategory === 'all' || r.industry === activeCategory;
+    filteredRequests = allRequests.filter(r => {
+      const matchStatus = activeStatus==='all' || r.status===activeStatus;
+      const matchCat = activeCategory==='all' || r.industry===activeCategory;
       const matchQ = !q || (r.title||'').toLowerCase().includes(q) || (r.problem||'').toLowerCase().includes(q);
-      const rMin = r.budget_min||0, rMax = r.budget_max||rMin;
-      const matchBudget = (!bMin || rMax >= bMin) && (!isFinite(bMax) || rMin <= bMax);
+      const rMin=r.budget_min||0, rMax=r.budget_max||rMin;
+      const matchBudget = (!bMin||rMax>=bMin) && (!isFinite(bMax)||rMin<=bMax);
       let matchDl = true;
-      if (activeDeadline !== 'all' && r.deadline) {
-        const days = Math.ceil((new Date(r.deadline) - new Date()) / 86400000);
-        matchDl = days <= parseInt(activeDeadline);
+      if (activeDeadline!=='all' && r.deadline) {
+        const days = Math.ceil((new Date(r.deadline)-new Date())/86400000);
+        matchDl = days<=parseInt(activeDeadline);
       }
       return matchStatus && matchCat && matchQ && matchBudget && matchDl;
     });
 
-    if (sort === 'budget_high') filtered.sort((a,b) => (b.budget_max||b.budget_min||0)-(a.budget_max||a.budget_min||0));
-    else if (sort === 'budget_low') filtered.sort((a,b) => (a.budget_min||0)-(b.budget_min||0));
-    else if (sort === 'most_bids') filtered.sort((a,b) => (b.proposal_count||0)-(a.proposal_count||0));
-    else if (sort === 'deadline') filtered.sort((a,b) => new Date(a.deadline||'9999')-new Date(b.deadline||'9999'));
-    else filtered.sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
+    if (sort==='budget_high') filteredRequests.sort((a,b)=>(b.budget_max||b.budget_min||0)-(a.budget_max||a.budget_min||0));
+    else if (sort==='budget_low') filteredRequests.sort((a,b)=>(a.budget_min||0)-(b.budget_min||0));
+    else if (sort==='most_bids') filteredRequests.sort((a,b)=>(b.proposal_count||0)-(a.proposal_count||0));
+    else if (sort==='deadline') filteredRequests.sort((a,b)=>new Date(a.deadline||'9999')-new Date(b.deadline||'9999'));
+    else filteredRequests.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
 
-    document.getElementById('resultsCount').innerHTML = `<strong>${filtered.length}</strong> request${filtered.length!==1?'s':''} found`;
-    document.getElementById('requestsList').innerHTML = filtered.length
-      ? filtered.map(cardHTML).join('')
-      : '<div class="empty"><h3>No requests found</h3><p>Try adjusting your filters</p></div>';
+    currentPage = 1;
+    renderPage();
   }
+
+  function renderPage() {
+    const total = filteredRequests.length;
+    const start = (currentPage-1)*PER_PAGE;
+    const page = filteredRequests.slice(start, start+PER_PAGE);
+
+    document.getElementById('resultsCount').innerHTML = total
+      ? `Showing <strong>${start+1}–${Math.min(start+PER_PAGE,total)}</strong> of <strong>${total}</strong> requests`
+      : '<strong>0</strong> requests found';
+
+    document.getElementById('requestsList').innerHTML = page.length
+      ? page.map(cardHTML).join('')
+      : '<div class="empty"><h3>No requests found</h3><p>Try adjusting your filters</p></div>';
+
+    renderPagination(total);
+  }
+
+  function renderPagination(total) {
+    const pages = Math.ceil(total/PER_PAGE);
+    if (pages<=1) { document.getElementById('pagination').innerHTML=''; return; }
+    let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ Prev</button>`;
+    for (let i=1; i<=pages; i++) {
+      if (i===1||i===pages||Math.abs(i-currentPage)<=2)
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+      else if (Math.abs(i-currentPage)===3)
+        html += `<span style="color:var(--muted);padding:0 4px">…</span>`;
+    }
+    html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>Next ›</button>`;
+    document.getElementById('pagination').innerHTML = html;
+  }
+
+  function goPage(p) { currentPage=p; renderPage(); window.scrollTo({top:0,behavior:'smooth'}); }
 
   function clearFilters() {
     activeCategory='all'; activeDeadline='all';
@@ -411,7 +422,7 @@
   function formatBudget(min, max) {
     if (!min && !max) return 'Budget open';
     const fmt = n => n>=1000 ? '$'+(n/1000).toFixed(n%1000===0?0:1)+'k' : '$'+n;
-    if (min && max) return `${fmt(min)} – ${fmt(max)}`;
+    if (min&&max) return `${fmt(min)} – ${fmt(max)}`;
     if (min) return `From ${fmt(min)}`;
     return `Up to ${fmt(max)}`;
   }
@@ -419,9 +430,9 @@
   function deadlineHTML(d) {
     if (!d) return '';
     const days = Math.ceil((new Date(d)-new Date())/86400000);
-    if (days < 0) return `<span class="deadline-pass">⏰ Deadline passed</span>`;
-    if (days <= 3) return `<span class="deadline-warn">🔥 ${days}d left</span>`;
-    if (days <= 7) return `<span style="color:var(--orange)">⏰ ${days} days left</span>`;
+    if (days<0) return `<span class="deadline-pass">⏰ Deadline passed</span>`;
+    if (days<=3) return `<span class="deadline-warn">🔥 ${days}d left</span>`;
+    if (days<=7) return `<span style="color:var(--orange)">⏰ ${days} days left</span>`;
     return `<span>⏰ ${days} days left</span>`;
   }
 
@@ -434,16 +445,16 @@
 
   const statusMap = { open:'Open', proposals_received:'Proposals In', shortlisting:'Shortlisting', pitching:'Pitching', closed:'Closed' };
 
-  function bidButton(r) {
-    if (!token) return `<a href="/login" class="btn-bid">Sign in to Bid</a>`;
-    if (isCreator) return `<a href="/request/${r.id}" class="btn-bid">Submit Proposal →</a>`;
-    if (isInvestor && r.investor_id === user?.id) return `<a href="/request/${r.id}" class="btn-bid-ghost">Manage →</a>`;
-    return `<a href="/request/${r.id}" class="btn-bid-ghost">View Details →</a>`;
+  function bidButtonHTML(r) {
+    if (!token) return `<span class="btn-bid">Sign in to Bid</span>`;
+    if (isCreator) return `<span class="btn-bid">Submit Proposal →</span>`;
+    if (isInvestor && r.investor_id===user?.id) return `<span class="btn-bid-ghost">Manage →</span>`;
+    return `<span class="btn-bid-ghost">View Details →</span>`;
   }
 
   function cardHTML(r) {
     return `
-      <div class="req-card">
+      <a class="req-card" href="/request-detail?id=${r.id}">
         <div class="req-top">
           <div class="req-title">${r.title||'Untitled Request'}</div>
           <div class="req-badges">
@@ -469,10 +480,10 @@
           <div class="req-right">
             <div class="budget">${formatBudget(r.budget_min, r.budget_max)}</div>
             <div class="bids-count">📝 ${r.proposal_count||0} bids</div>
-            ${bidButton(r)}
+            ${bidButtonHTML(r)}
           </div>
         </div>
-      </div>`;
+      </a>`;
   }
 
   // Events
