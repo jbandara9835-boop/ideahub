@@ -4,276 +4,325 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Find Support — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
   :root {
-    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
-    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
-    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
-    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
-    --purple: #a78bfa; --blue: #60a5fa; --pink: #f472b6;
+    --bg:#0a0a0a; --surface:#141414; --surface2:#1c1c1c;
+    --border:#2a2a2a; --gold:#f5c518; --gold-dim:#c49a10;
+    --text:#f0f0f0; --muted:#888; --radius:12px;
+    --green:#4ade80; --blue:#60a5fa; --purple:#a78bfa; --pink:#f472b6; --error:#ff6b6b;
   }
-  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
 
-  /* SIDEBAR */
-  .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
-  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
-  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
-  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
-  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
-  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
-  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
-  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
-  .nav-item.active { color:var(--accent); background:var(--accent-dim); }
-  .nav-icon { font-size:16px; width:20px; text-align:center; }
-  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
-  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
-  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
-  .user-info { flex:1; min-width:0; }
-  .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .user-role-sb { font-size:11px; color:var(--muted); }
-  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
-  .logout-btn:hover { color:var(--error); }
-
-  /* MAIN */
-  .main { margin-left:220px; padding:2rem 2.5rem; }
+  /* NAV */
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; gap:16px; }
+  .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-size:1.15rem; font-weight:700; flex-shrink:0; }
+  .nav-logo .logo-icon { width:32px; height:32px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+  .nav-right { display:flex; align-items:center; gap:8px; margin-left:auto; }
+  .nav-right a { color:var(--muted); text-decoration:none; font-size:0.875rem; padding:6px 14px; border-radius:6px; transition:color 0.2s; }
+  .nav-right a:hover { color:var(--text); }
+  .btn-gold { background:var(--gold) !important; color:#000 !important; font-weight:600 !important; border-radius:6px; }
+  .btn-outline { border:1px solid var(--border) !important; color:var(--text) !important; border-radius:6px; }
+  .btn-outline:hover { border-color:var(--gold) !important; }
+  .nav-avatar { width:34px; height:34px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:#000; overflow:hidden; text-decoration:none; flex-shrink:0; }
+  .nav-avatar img { width:100%; height:100%; object-fit:cover; }
+  .nav-user { display:none; align-items:center; gap:8px; }
+  .nav-user.visible { display:flex; }
 
   /* HERO */
-  .hero { margin-bottom:2rem; }
-  .hero-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.5px; margin-bottom:0.4rem; }
-  .hero-title span { color:var(--accent); }
-  .hero-sub { font-size:15px; color:var(--muted); }
+  .hero { background:linear-gradient(135deg,#0a0a0a 0%,#0d0a14 50%,#0a0a0a 100%); border-bottom:1px solid var(--border); padding:36px 32px 28px; text-align:center; }
+  .hero h1 { font-size:2rem; font-weight:800; margin-bottom:6px; }
+  .hero h1 span { color:var(--gold); }
+  .hero p { color:var(--muted); font-size:0.95rem; margin-bottom:24px; }
 
-  /* ROLE TABS */
-  .role-tabs { display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap; }
-  .role-tab { display:flex; align-items:center; gap:8px; padding:8px 18px; border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; font-weight:500; color:var(--muted); background:none; font-family:'DM Sans',sans-serif; }
-  .role-tab:hover { border-color:var(--border-hover); color:var(--text); }
-  .role-tab.active { color:#0d0d0f; border-color:transparent; }
-  .role-tab.active.all { background:var(--accent); color:#0d0d0f; }
-  .role-tab.active.virtual_manager { background:var(--purple); }
-  .role-tab.active.patent_attorney { background:var(--blue); }
-  .role-tab.active.corporate_services { background:var(--pink); }
-  .role-count { background:rgba(255,255,255,0.15); border-radius:20px; padding:1px 7px; font-size:11px; }
+  /* SEARCH ROW */
+  .search-row { max-width:680px; margin:0 auto 14px; display:flex; gap:8px; }
+  .search-row input { flex:1; background:var(--surface); border:1.5px solid var(--border); border-radius:10px; padding:13px 20px; color:var(--text); font-size:1rem; outline:none; transition:border-color 0.2s; }
+  .search-row input:focus { border-color:var(--gold); }
+  .search-row button { background:var(--gold); color:#000; border:none; border-radius:10px; padding:13px 24px; font-size:0.95rem; font-weight:600; cursor:pointer; }
+  .search-row button:hover { background:var(--gold-dim); }
 
-  /* FILTERS */
-  .filter-row { display:flex; gap:10px; margin-bottom:1.5rem; align-items:center; flex-wrap:wrap; }
-  .search-wrap { flex:1; min-width:200px; position:relative; }
-  .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; }
-  .search-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.7rem 1rem 0.7rem 2.5rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; }
-  .search-input:focus { border-color:var(--accent); }
-  .search-input::placeholder { color:var(--muted); }
-  .filter-select { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.7rem 1rem; font-size:13px; font-family:'DM Sans',sans-serif; color:var(--muted); outline:none; cursor:pointer; }
-  .filter-select option { background:#16161a; }
-  .verified-filter { display:flex; align-items:center; gap:8px; padding:0.7rem 1rem; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:13px; color:var(--muted); transition:all 0.15s; white-space:nowrap; }
-  .verified-filter.on { border-color:var(--success); color:var(--success); background:rgba(110,231,183,0.08); }
+  /* ADVANCED TOGGLE */
+  .adv-toggle-row { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; }
+  .adv-toggle-btn { display:inline-flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:7px 18px; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
+  .adv-toggle-btn:hover { border-color:var(--gold); color:var(--text); }
+  .adv-toggle-btn.open { border-color:var(--gold); color:var(--gold); background:rgba(245,197,24,0.08); }
+  .adv-toggle-btn .arrow { transition:transform 0.25s; display:inline-block; }
+  .adv-toggle-btn.open .arrow { transform:rotate(180deg); }
+  .adv-count { background:var(--gold); color:#000; border-radius:20px; padding:2px 8px; font-size:0.75rem; font-weight:700; display:none; }
+  .adv-count.visible { display:inline; }
 
-  /* STATS BAR */
-  .stats-bar { font-size:13px; color:var(--muted); margin-bottom:1.25rem; }
-  .stats-bar span { color:var(--text); font-weight:500; }
+  /* ADVANCED PANEL */
+  .adv-panel { max-width:680px; margin:0 auto 20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; max-height:0; transition:max-height 0.35s ease,opacity 0.25s ease; opacity:0; pointer-events:none; }
+  .adv-panel.open { max-height:500px; opacity:1; pointer-events:all; }
+  .adv-panel-inner { padding:20px; display:flex; flex-direction:column; gap:18px; }
+  .filter-group-label { font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+  .chips-wrap { display:flex; flex-wrap:wrap; gap:7px; }
+  .chip { background:var(--surface2); border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:6px 14px; font-size:0.82rem; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .chip:hover { border-color:var(--gold); color:var(--text); }
+  .chip.active { background:var(--gold) !important; border-color:var(--gold) !important; color:#000 !important; font-weight:600 !important; }
+  .chip.active.vm { background:var(--purple) !important; border-color:var(--purple) !important; }
+  .chip.active.pa { background:var(--blue) !important; border-color:var(--blue) !important; }
+  .chip.active.cs { background:var(--pink) !important; border-color:var(--pink) !important; }
+  .rate-row { display:flex; gap:8px; align-items:center; }
+  .rate-row input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; color:var(--text); font-size:0.85rem; outline:none; }
+  .rate-row input:focus { border-color:var(--gold); }
+  .rate-row span { color:var(--muted); font-size:0.85rem; flex-shrink:0; }
+  .adv-footer { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; border-top:1px solid var(--border); }
+  .btn-clear { background:none; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:7px 16px; font-size:0.82rem; cursor:pointer; }
+  .btn-clear:hover { border-color:var(--gold); color:var(--text); }
+  .btn-apply { background:var(--gold); color:#000; border:none; border-radius:8px; padding:7px 18px; font-size:0.82rem; font-weight:600; cursor:pointer; }
 
-  /* GRID */
-  .support-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; }
+  /* HERO STATS */
+  .hero-stats { display:flex; justify-content:center; gap:32px; }
+  .hero-stat { color:var(--muted); font-size:0.875rem; }
+  .hero-stat strong { color:var(--text); }
 
-  /* SUPPORT CARD */
-  .support-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; transition:all 0.2s; position:relative; overflow:hidden; }
-  .support-card:hover { border-color:var(--border-hover); transform:translateY(-3px); }
+  /* ACTIVE BAR */
+  .active-bar { position:sticky; top:60px; z-index:90; background:rgba(10,10,10,0.97); border-bottom:1px solid var(--border); padding:10px 32px; display:none; align-items:center; gap:8px; flex-wrap:wrap; }
+  .active-bar.visible { display:flex; }
+  .active-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.3); color:var(--gold); border-radius:20px; padding:4px 12px; font-size:0.78rem; }
+  .active-tag button { background:none; border:none; color:var(--gold); cursor:pointer; font-size:0.85rem; padding:0; }
+  .clear-all-btn { margin-left:auto; background:none; border:none; color:var(--muted); font-size:0.78rem; cursor:pointer; text-decoration:underline; }
+
+  /* SORT BAR */
+  .sort-bar { border-bottom:1px solid var(--border); padding:10px 32px; }
+  .sort-bar-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .results-txt { font-size:0.875rem; color:var(--muted); }
+  .results-txt strong { color:var(--text); }
+  .sort-select { margin-left:auto; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 12px; font-size:0.82rem; cursor:pointer; outline:none; }
+  .verified-toggle { display:inline-flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); border-radius:6px; padding:5px 12px; font-size:0.78rem; cursor:pointer; transition:all 0.15s; }
+  .verified-toggle.on { border-color:var(--green); color:var(--green); background:rgba(74,222,128,0.08); }
+
+  /* MAIN */
+  .main { max-width:1200px; margin:0 auto; padding:24px 32px; }
+
+  /* SUPPORT CARDS */
+  .support-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+  .support-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; position:relative; overflow:hidden; }
   .support-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
   .support-card.virtual_manager::before { background:var(--purple); }
   .support-card.patent_attorney::before { background:var(--blue); }
   .support-card.corporate_services::before { background:var(--pink); }
+  .support-card:hover { transform:translateY(-3px); border-color:#3a3a3a; box-shadow:0 8px 24px rgba(0,0,0,0.3); }
 
-  .card-top { display:flex; align-items:flex-start; gap:12px; margin-bottom:1rem; }
-  .card-avatar { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; flex-shrink:0; }
+  .card-top { display:flex; align-items:flex-start; gap:12px; margin-bottom:14px; }
+  .card-avatar { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:700; flex-shrink:0; overflow:hidden; }
+  .card-avatar img { width:100%; height:100%; object-fit:cover; }
   .card-avatar.virtual_manager { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); }
   .card-avatar.patent_attorney { background:rgba(96,165,250,0.15); color:var(--blue); border:1px solid rgba(96,165,250,0.3); }
   .card-avatar.corporate_services { background:rgba(244,114,182,0.15); color:var(--pink); border:1px solid rgba(244,114,182,0.3); }
+  .card-name { font-size:1rem; font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:2px; }
+  .verified-tick { color:var(--green); font-size:0.85rem; }
+  .card-role { font-size:0.75rem; color:var(--muted); }
+  .card-tagline { font-size:0.82rem; color:var(--muted); font-style:italic; margin-bottom:12px; line-height:1.5; }
 
-  .card-header-info { flex:1; min-width:0; }
-  .card-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; display:flex; align-items:center; gap:6px; }
-  .verified-tick { color:var(--success); font-size:13px; }
-  .card-role { font-size:12px; color:var(--muted); margin-top:2px; }
-  .card-tagline { font-size:13px; color:var(--muted); margin-bottom:0.75rem; line-height:1.4; font-style:italic; }
+  .card-stats { display:flex; gap:14px; margin-bottom:10px; flex-wrap:wrap; }
+  .stat-item { font-size:0.75rem; color:var(--muted); display:flex; align-items:center; gap:4px; }
+  .stat-item strong { color:var(--text); }
 
-  .card-stats { display:flex; gap:12px; margin-bottom:0.75rem; }
-  .card-stat { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); }
-  .card-stat strong { color:var(--text); }
+  .card-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .card-tag { background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-size:0.72rem; padding:2px 8px; border-radius:20px; }
 
-  .card-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1rem; }
-  .card-tag { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:20px; padding:2px 8px; font-size:11px; color:var(--muted); }
-
-  .card-location { font-size:12px; color:var(--muted); margin-bottom:1rem; display:flex; align-items:center; gap:4px; }
-
-  .avail-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .avail-dot.available { background:var(--success); }
-  .avail-dot.busy { background:var(--accent); }
+  .card-location { font-size:0.78rem; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+  .avail-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .avail-dot.available { background:var(--green); }
+  .avail-dot.busy { background:var(--gold); }
   .avail-dot.unavailable { background:var(--error); }
 
-  .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid var(--border); }
-  .card-rate { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--accent); }
-  .card-rate span { font-size:12px; font-weight:400; color:var(--muted); }
-  .hire-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:7px 16px; font-size:13px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s; }
-  .hire-btn:hover { opacity:0.85; }
-  .hire-btn.busy { background:rgba(245,200,66,0.3); color:var(--accent); cursor:not-allowed; }
+  .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:14px; border-top:1px solid var(--border); }
+  .card-rate { font-size:1.1rem; font-weight:800; color:var(--gold); }
+  .card-rate span { font-size:0.75rem; font-weight:400; color:var(--muted); }
+  .btn-hire { background:var(--gold); color:#000; border:none; border-radius:6px; padding:7px 18px; font-size:0.82rem; font-weight:600; cursor:pointer; transition:background 0.15s; }
+  .btn-hire:hover { background:var(--gold-dim); }
+  .btn-hire.busy { background:var(--surface2); color:var(--muted); border:1px solid var(--border); cursor:not-allowed; }
 
-  /* STARS */
-  .stars { color:var(--accent); font-size:12px; }
-
-  /* EMPTY/LOADING */
-  .empty { text-align:center; padding:4rem 1rem; color:var(--muted); grid-column:1/-1; }
-  .empty-icon { font-size:48px; margin-bottom:1rem; }
-  .loading { display:flex; align-items:center; justify-content:center; padding:4rem; gap:10px; color:var(--muted); font-size:14px; grid-column:1/-1; }
-  .spin { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+  /* LOADING / EMPTY */
+  .loading { text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
+  .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 16px; }
   @keyframes spin { to { transform:rotate(360deg); } }
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
+  .empty h3 { font-size:1rem; margin-bottom:8px; color:var(--text); }
 
   /* HIRE MODAL */
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity 0.2s; }
   .modal-overlay.show { opacity:1; pointer-events:all; }
-  .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; animation:fadeUp 0.25s ease; }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-  .modal-title { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; margin-bottom:0.4rem; }
-  .modal-sub { font-size:13px; color:var(--muted); margin-bottom:1.5rem; }
-
-  .warning-box { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:10px; padding:1rem; margin-bottom:1.25rem; font-size:13px; color:var(--error); display:none; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; }
+  .modal h2 { font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+  .modal-sub { font-size:0.82rem; color:var(--muted); margin-bottom:20px; }
+  .warning-box { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:8px; padding:12px; margin-bottom:14px; font-size:0.82rem; color:var(--error); display:none; }
   .warning-box.show { display:block; }
-  .warning-box.warn { background:rgba(245,200,66,0.1); border-color:rgba(245,200,66,0.3); color:var(--accent); }
-
-  .modal .field { margin-bottom:1rem; }
-  .modal label { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.4px; }
-  .modal input, .modal textarea, .modal select { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
-  .modal textarea { resize:vertical; min-height:100px; line-height:1.6; }
-  .modal input:focus, .modal textarea:focus, .modal select:focus { border-color:var(--accent); }
+  .warning-box.warn { background:rgba(245,197,24,0.1); border-color:rgba(245,197,24,0.3); color:var(--gold); }
+  .field { margin-bottom:14px; }
+  .lbl { display:block; font-size:0.72rem; font-weight:600; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.04em; }
+  .modal input, .modal textarea, .modal select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:0.875rem; color:var(--text); outline:none; transition:border-color 0.2s; font-family:inherit; }
+  .modal textarea { resize:vertical; min-height:90px; line-height:1.6; }
+  .modal input:focus, .modal textarea:focus, .modal select:focus { border-color:var(--gold); }
   .modal input::placeholder, .modal textarea::placeholder { color:var(--muted); }
-  .modal .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .modal-actions { display:flex; gap:10px; margin-top:16px; }
+  .btn-modal-hire { flex:1; background:var(--gold); color:#000; border:none; border-radius:8px; padding:11px; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-modal-hire:hover { background:var(--gold-dim); }
+  .btn-modal-hire:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-modal-cancel { background:none; border:1px solid var(--border); border-radius:8px; padding:11px 18px; font-size:0.875rem; color:var(--muted); cursor:pointer; }
+  .btn-modal-cancel:hover { border-color:var(--gold); color:var(--text); }
+  .modal-spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#000; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  .modal-success { color:var(--green); font-size:0.82rem; margin-top:10px; text-align:center; display:none; }
+  .modal-success.show { display:block; }
+  .modal-error { color:var(--error); font-size:0.82rem; margin-top:10px; display:none; }
+  .modal-error.show { display:block; }
 
-  .modal-actions { display:flex; gap:10px; margin-top:1.25rem; }
-  .modal-hire { flex:1; background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.85rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
-  .modal-cancel { background:none; border:1px solid var(--border); border-radius:8px; padding:0.85rem 1.25rem; font-size:14px; color:var(--muted); cursor:pointer; }
-  .modal-cancel:hover { color:var(--text); }
+  .footer { border-top:1px solid var(--border); padding:24px 32px; text-align:center; color:var(--muted); font-size:0.82rem; margin-top:20px; }
+  .footer a { color:var(--gold); text-decoration:none; }
 
-  .modal-spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
-  .hire-success { color:var(--success); font-size:13px; margin-top:0.75rem; text-align:center; display:none; }
-  .hire-success.show { display:block; }
-  .hire-error { color:var(--error); font-size:13px; margin-top:0.75rem; display:none; }
-  .hire-error.show { display:block; }
-
-  @media (max-width:900px) {
-    .sidebar { width:60px; padding:1rem 0.5rem; }
-    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
-    .logo { justify-content:center; }
-    .nav-item { justify-content:center; padding:0.6rem; }
-    .user-card { justify-content:center; padding:0.5rem; }
-    .main { margin-left:60px; padding:1.5rem; }
+  @media (max-width:768px) {
+    .topnav { padding:0 16px; }
+    .hero { padding:28px 16px 20px; }
+    .search-row { flex-direction:column; }
+    .hero-stats { gap:16px; flex-wrap:wrap; }
+    .sort-bar, .active-bar { padding:10px 16px; }
+    .main { padding:16px; }
     .support-grid { grid-template-columns:1fr; }
   }
 </style>
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav">
-    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Marketplace</span></a>
-    <a class="nav-item active" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-  </nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
+<!-- NAV -->
+<nav class="topnav">
+  <a href="/" class="nav-logo"><div class="logo-icon">💡</div><span>IdeaHub</span></a>
+  <div class="nav-right">
+    <div id="guestNav" style="display:flex;align-items:center;gap:8px;">
+      <a href="/login">Sign in</a>
+      <a href="/signup" class="btn-gold">Join free</a>
     </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
-
-<main class="main">
-  <div class="hero">
-    <div class="hero-title">Find <span>Support</span> for your idea</div>
-    <div class="hero-sub">Hire verified professionals to help manage, protect and grow your ideas</div>
-  </div>
-
-  <!-- ROLE TABS -->
-  <div class="role-tabs">
-    <button class="role-tab active all" onclick="setRole('all', this)">🌟 All Professionals <span class="role-count" id="countAll">0</span></button>
-    <button class="role-tab virtual_manager" onclick="setRole('virtual_manager', this)">🤝 Virtual Managers <span class="role-count" id="countVM">0</span></button>
-    <button class="role-tab patent_attorney" onclick="setRole('patent_attorney', this)">⚖️ Patent Attorneys <span class="role-count" id="countPA">0</span></button>
-    <button class="role-tab corporate_services" onclick="setRole('corporate_services', this)">🏢 Corporate Services <span class="role-count" id="countCS">0</span></button>
-  </div>
-
-  <!-- FILTERS -->
-  <div class="filter-row">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" id="searchInput" placeholder="Search by name, tagline..." oninput="handleSearch()" />
+    <div class="nav-user" id="userNav">
+      <a href="/dashboard" class="btn-outline" id="dashboardLink" style="padding:6px 14px;text-decoration:none;font-size:0.875rem;">My Dashboard</a>
+      <a href="/profile" class="nav-avatar" id="navAvatar"></a>
     </div>
-    <select class="filter-select" id="countryFilter" onchange="renderGrid()">
-      <option value="">🌍 All Countries</option>
-      <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
-      <option>India</option><option>Australia</option><option>Canada</option>
-      <option>Germany</option><option>Singapore</option><option>UAE</option>
-    </select>
-    <select class="filter-select" id="sortFilter" onchange="renderGrid()">
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Find <span>Support</span> for your idea</h1>
+  <p>Hire verified professionals to help manage, protect and grow your ideas</p>
+
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Search by name, tagline, or expertise…" />
+    <button onclick="applyFilters()">Search</button>
+  </div>
+
+  <!-- Advanced Toggle -->
+  <div class="adv-toggle-row">
+    <button class="adv-toggle-btn" id="advToggleBtn" onclick="toggleAdvanced()">
+      <span>⚙️ Advanced Filters</span><span class="arrow">▼</span>
+    </button>
+    <span class="adv-count" id="advCount">0</span>
+  </div>
+
+  <!-- Advanced Panel -->
+  <div class="adv-panel" id="advPanel">
+    <div class="adv-panel-inner">
+      <!-- Role -->
+      <div>
+        <div class="filter-group-label">Professional Type</div>
+        <div class="chips-wrap" id="roleChips">
+          <button class="chip active" data-role="all">🌟 All</button>
+          <button class="chip vm" data-role="virtual_manager">🤝 Virtual Manager</button>
+          <button class="chip pa" data-role="patent_attorney">⚖️ Patent Attorney</button>
+          <button class="chip cs" data-role="corporate_services">🏢 Corporate Services</button>
+        </div>
+      </div>
+      <!-- Country -->
+      <div>
+        <div class="filter-group-label">Country</div>
+        <div class="chips-wrap" id="countryChips">
+          <button class="chip active" data-country="all">All Countries</button>
+          <button class="chip" data-country="Sri Lanka">🇱🇰 Sri Lanka</button>
+          <button class="chip" data-country="United States">🇺🇸 United States</button>
+          <button class="chip" data-country="United Kingdom">🇬🇧 United Kingdom</button>
+          <button class="chip" data-country="India">🇮🇳 India</button>
+          <button class="chip" data-country="Australia">🇦🇺 Australia</button>
+          <button class="chip" data-country="Singapore">🇸🇬 Singapore</button>
+          <button class="chip" data-country="UAE">🇦🇪 UAE</button>
+        </div>
+      </div>
+      <!-- Hourly Rate -->
+      <div>
+        <div class="filter-group-label">Hourly Rate (USD)</div>
+        <div class="rate-row">
+          <input type="number" id="rateMin" placeholder="Min $" />
+          <span>—</span>
+          <input type="number" id="rateMax" placeholder="Max $" />
+        </div>
+      </div>
+      <!-- Availability -->
+      <div>
+        <div class="filter-group-label">Availability</div>
+        <div class="chips-wrap" id="availChips">
+          <button class="chip active" data-avail="all">All</button>
+          <button class="chip" data-avail="available">🟢 Available Now</button>
+          <button class="chip" data-avail="busy">🟡 Busy</button>
+        </div>
+      </div>
+      <div class="adv-footer">
+        <button class="btn-clear" onclick="clearFilters()">Clear all</button>
+        <button class="btn-apply" onclick="toggleAdvanced(); applyFilters();">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat"><strong id="statAll">—</strong> professionals</div>
+    <div class="hero-stat"><strong id="statVM">—</strong> virtual managers</div>
+    <div class="hero-stat"><strong id="statPA">—</strong> attorneys</div>
+    <div class="hero-stat"><strong id="statCS">—</strong> corporate</div>
+  </div>
+</section>
+
+<!-- ACTIVE BAR -->
+<div class="active-bar" id="activeBar"></div>
+
+<!-- SORT BAR -->
+<div class="sort-bar">
+  <div class="sort-bar-inner">
+    <div class="results-txt" id="resultsCount">Loading…</div>
+    <button class="verified-toggle" id="verifiedToggle" onclick="toggleVerified()">✅ Verified Only</button>
+    <select class="sort-select" id="sortSelect" onchange="applyFilters()">
       <option value="rating">⭐ Top Rated</option>
       <option value="rate_low">💰 Rate: Low to High</option>
       <option value="rate_high">💰 Rate: High to Low</option>
       <option value="jobs">✅ Most Jobs</option>
     </select>
-    <div class="verified-filter" id="verifiedFilter" onclick="toggleVerified()">✅ Verified Only</div>
   </div>
+</div>
 
-  <div class="stats-bar" id="statsBar">Loading professionals...</div>
-
+<!-- MAIN -->
+<main class="main">
   <div class="support-grid" id="supportGrid">
-    <div class="loading"><div class="spin"></div> Loading professionals...</div>
+    <div class="loading"><div class="spinner"></div><p>Loading professionals…</p></div>
   </div>
 </main>
+
+<footer class="footer">
+  © 2025 <a href="https://picela.co" target="_blank">Picela</a>. All rights reserved. IdeaHub is a product by <a href="https://picela.co" target="_blank">Picela</a>.
+</footer>
 
 <!-- HIRE MODAL -->
 <div class="modal-overlay" id="hireModal">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">Hire Professional</div>
-    <div class="modal-sub" id="modalSub">Fill in the details for your job request</div>
-
+    <h2 id="modalTitle">Hire Professional</h2>
+    <div class="modal-sub" id="modalSub">Send a hire request</div>
     <div class="warning-box" id="warningBox"></div>
-
-    <div class="field">
-      <label>Job Title *</label>
-      <input type="text" id="hireTitle" placeholder="e.g. Help me file a patent for my idea" />
+    <div class="field"><label class="lbl">Job Title *</label><input type="text" id="hireTitle" placeholder="e.g. Help me file a patent for my idea" /></div>
+    <div class="field"><label class="lbl">Description</label><textarea id="hireDesc" placeholder="Describe what you need help with…"></textarea></div>
+    <div class="form-row">
+      <div class="field"><label class="lbl">Budget (USD)</label><input type="number" id="hireBudget" placeholder="500" min="1" /></div>
+      <div class="field"><label class="lbl">Deadline</label><input type="date" id="hireDeadline" /></div>
     </div>
     <div class="field">
-      <label>Description</label>
-      <textarea id="hireDesc" placeholder="Describe what you need help with in detail..."></textarea>
-    </div>
-    <div class="row">
-      <div class="field">
-        <label>Budget (USD)</label>
-        <input type="number" id="hireBudget" placeholder="500" min="1" />
-      </div>
-      <div class="field">
-        <label>Deadline</label>
-        <input type="date" id="hireDeadline" />
-      </div>
-    </div>
-    <div class="field">
-      <label>Your Country</label>
+      <label class="lbl">Your Country</label>
       <select id="hireCountry">
         <option value="">Select your country</option>
         <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
@@ -284,18 +333,14 @@
       </select>
     </div>
     <div class="field">
-      <label>Related Idea (optional)</label>
-      <select id="hireIdea">
-        <option value="">No specific idea</option>
-      </select>
+      <label class="lbl">Related Idea (optional)</label>
+      <select id="hireIdea"><option value="">No specific idea</option></select>
     </div>
-
-    <div class="hire-error" id="hireError"></div>
-    <div class="hire-success" id="hireSuccess">🎉 Hire request sent! The professional will respond soon.</div>
-
+    <div class="modal-error" id="hireError"></div>
+    <div class="modal-success" id="hireSuccess">🎉 Hire request sent! The professional will respond soon.</div>
     <div class="modal-actions">
-      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
-      <button class="modal-hire" id="hireBtn" onclick="submitHire()">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-modal-hire" id="hireBtn" onclick="submitHire()">
         <div class="modal-spinner" id="hireSpinner"></div>
         <span id="hireBtnText">Send Hire Request</span>
       </button>
@@ -304,192 +349,196 @@
 </div>
 
 <script>
-  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : 'https://ideahub-production-1b18.up.railway.app';
 
-  // ── SHARED SIDEBAR NAV ──
-  function renderSidebar() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('.nav');
-    if (!nav) return;
-    const newIdeaBtn = document.getElementById('newIdeaBtn');
-    if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
-    nav.innerHTML = `
-      <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-      <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
-      <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-      <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-    `;
-  }
-  const token = localStorage.getItem('ih_token');
-  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
-  renderSidebar();
+  let allProfiles = [], advOpen = false, verifiedOnly = false;
+  let activeRole = 'all', activeCountry = 'all', activeAvail = 'all';
+  let selectedSupportId = null;
+
+  const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('ih_user') || 'null');
 
   const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
   const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
 
-  if (user) {
-    const initials = (user.first_name?.[0] || '') + (user.Last_name?.[0] || '');
+  function initNav() {
+    if (!token || !user) return;
+    document.getElementById('guestNav').style.display = 'none';
+    document.getElementById('userNav').classList.add('visible');
+    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
+    document.getElementById('dashboardLink').href = roleLinks[user.role] || '/dashboard';
+    const avatarEl = document.getElementById('navAvatar');
     const avatarUrl = user.avatar_url || user.avatarUrl;
-      const avatarEl = document.getElementById('sidebarAvatar');
-      if (avatarEl) {
-        if (avatarUrl) {
-          avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-        } else {
-          avatarEl.textContent = (user.first_name?.[0] || '?');
-        }
-      }
-    const sbName = document.getElementById('sidebarName');
-      if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
-      // stars handled below
-    document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role || '—';
-      const starEl = document.getElementById('sidebarStars');
-      if (starEl) {
-        const stars = user.profile_stars || 0;
-        starEl.innerHTML = [1,2,3,4,5].map(i => `<span style="color:${i<=stars?'#f5c842':'#3a3a3a'}">★</span>`).join('');
-      }
-    const creatorRoles = ['idea_creator','patent_seller'];
-    // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : '/buyer-dashboard';
+    if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
+    else avatarEl.textContent = (user.name || user.first_name || user.email || 'U')[0].toUpperCase();
   }
 
-  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href = '/login'; }
-
-  function toggleUserMenu() {
-    const menu = document.getElementById('userMenu');
-    if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  // Check URL param for pre-filter
+  const urlParams = new URLSearchParams(window.location.search);
+  const preType = urlParams.get('type');
+  if (preType && ['virtual_manager','patent_attorney','corporate_services'].includes(preType)) {
+    activeRole = preType;
   }
 
-  document.addEventListener('click', (e) => {
-    const card = document.getElementById('userCard');
-    const menu = document.getElementById('userMenu');
-    if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
-  });
-
-  let allProfiles = [];
-  let activeRole = 'all';
-  let verifiedOnly = false;
-  let searchTerm = '';
-  let selectedSupportId = null;
-
-  function setRole(role, el) {
-    activeRole = role;
-    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    renderGrid();
+  function toggleAdvanced() {
+    advOpen = !advOpen;
+    document.getElementById('advPanel').classList.toggle('open', advOpen);
+    document.getElementById('advToggleBtn').classList.toggle('open', advOpen);
   }
 
   function toggleVerified() {
     verifiedOnly = !verifiedOnly;
-    document.getElementById('verifiedFilter').classList.toggle('on', verifiedOnly);
-    renderGrid();
+    document.getElementById('verifiedToggle').classList.toggle('on', verifiedOnly);
+    applyFilters();
   }
 
-  let searchTimer;
-  function handleSearch() {
-    searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(renderGrid, 300);
+  function updateActiveBar() {
+    const tags = [];
+    if (activeRole !== 'all') tags.push({ label: roleEmoji[activeRole]+' '+roleMap[activeRole], key:'role' });
+    if (activeCountry !== 'all') tags.push({ label:'📍 '+activeCountry, key:'country' });
+    if (activeAvail !== 'all') tags.push({ label: activeAvail==='available'?'🟢 Available':'🟡 Busy', key:'avail' });
+    const rMin = document.getElementById('rateMin').value;
+    const rMax = document.getElementById('rateMax').value;
+    if (rMin||rMax) tags.push({ label:`Rate ${rMin?'$'+rMin:''}${rMin&&rMax?'–':''}${rMax?'$'+rMax:''}`, key:'rate' });
+    if (verifiedOnly) tags.push({ label:'✅ Verified Only', key:'verified' });
+
+    const countEl = document.getElementById('advCount');
+    countEl.textContent = tags.length;
+    countEl.classList.toggle('visible', tags.length > 0);
+
+    const bar = document.getElementById('activeBar');
+    if (!tags.length) { bar.classList.remove('visible'); return; }
+    bar.classList.add('visible');
+    bar.innerHTML = tags.map(t => `<span class="active-tag">${t.label} <button onclick="removeTag('${t.key}')">✕</button></span>`).join('') +
+      `<button class="clear-all-btn" onclick="clearFilters()">Clear all</button>`;
   }
 
-  function starsHtml(avg, count) {
-    if (!avg || avg === 0) return '<span style="color:var(--muted);font-size:12px;">No reviews yet</span>';
-    const full = Math.round(avg);
-    return `<span class="stars">${'⭐'.repeat(full)}</span> <span style="font-size:12px;color:var(--muted);">${avg} (${count})</span>`;
+  window.removeTag = function(key) {
+    if (key==='role') { activeRole='all'; document.querySelectorAll('#roleChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#roleChips .chip[data-role="all"]').classList.add('active'); }
+    if (key==='country') { activeCountry='all'; document.querySelectorAll('#countryChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#countryChips .chip[data-country="all"]').classList.add('active'); }
+    if (key==='avail') { activeAvail='all'; document.querySelectorAll('#availChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#availChips .chip[data-avail="all"]').classList.add('active'); }
+    if (key==='rate') { document.getElementById('rateMin').value=''; document.getElementById('rateMax').value=''; }
+    if (key==='verified') { verifiedOnly=false; document.getElementById('verifiedToggle').classList.remove('on'); }
+    updateActiveBar(); applyFilters();
+  };
+
+  function clearFilters() {
+    activeRole='all'; activeCountry='all'; activeAvail='all'; verifiedOnly=false;
+    document.querySelectorAll('#roleChips .chip').forEach(b=>b.classList.remove('active'));
+    document.querySelector('#roleChips .chip[data-role="all"]').classList.add('active');
+    document.querySelectorAll('#countryChips .chip').forEach(b=>b.classList.remove('active'));
+    document.querySelector('#countryChips .chip[data-country="all"]').classList.add('active');
+    document.querySelectorAll('#availChips .chip').forEach(b=>b.classList.remove('active'));
+    document.querySelector('#availChips .chip[data-avail="all"]').classList.add('active');
+    document.getElementById('rateMin').value='';
+    document.getElementById('rateMax').value='';
+    document.getElementById('verifiedToggle').classList.remove('on');
+    updateActiveBar(); applyFilters();
   }
 
-  function availLabel(a) {
-    if (a === 'available') return 'Available';
-    if (a === 'busy') return 'Busy';
-    return 'Unavailable';
+  async function loadProfiles() {
+    try {
+      const res = await fetch(`${API_URL}/api/support/browse`);
+      allProfiles = await res.json();
+      // Update stats
+      document.getElementById('statAll').textContent = allProfiles.length;
+      document.getElementById('statVM').textContent = allProfiles.filter(p=>p.role==='virtual_manager').length;
+      document.getElementById('statPA').textContent = allProfiles.filter(p=>p.role==='patent_attorney').length;
+      document.getElementById('statCS').textContent = allProfiles.filter(p=>p.role==='corporate_services').length;
+      // Pre-filter active role chips
+      if (activeRole !== 'all') {
+        document.querySelectorAll('#roleChips .chip').forEach(b=>b.classList.remove('active'));
+        const btn = document.querySelector(`#roleChips .chip[data-role="${activeRole}"]`);
+        if (btn) btn.classList.add('active');
+      }
+      applyFilters();
+    } catch(e) {
+      document.getElementById('supportGrid').innerHTML = '<div class="empty"><h3>Failed to load</h3><p>Please refresh the page</p></div>';
+    }
   }
 
-  function renderGrid() {
-    const country = document.getElementById('countryFilter').value;
-    const sort = document.getElementById('sortFilter').value;
+  function applyFilters() {
+    updateActiveBar();
+    const q = (document.getElementById('searchInput').value||'').toLowerCase().trim();
+    const sort = document.getElementById('sortSelect').value;
+    const rMin = parseInt(document.getElementById('rateMin').value)||0;
+    const rMax = parseInt(document.getElementById('rateMax').value)||Infinity;
 
     let filtered = allProfiles.filter(p => {
-      if (activeRole !== 'all' && p.role !== activeRole) return false;
-      if (verifiedOnly && !p.is_verified) return false;
-      if (country && p.home_country !== country) return false;
-      if (searchTerm) {
-        const name = `${p.users?.first_name||''} ${p.users?.last_name||''}`.toLowerCase();
-        const tag = (p.tagline || '').toLowerCase();
-        if (!name.includes(searchTerm) && !tag.includes(searchTerm)) return false;
-      }
-      return true;
+      const matchRole = activeRole==='all' || p.role===activeRole;
+      const matchCountry = activeCountry==='all' || p.home_country===activeCountry;
+      const matchAvail = activeAvail==='all' || p.availability===activeAvail;
+      const matchVerified = !verifiedOnly || p.is_verified;
+      const matchRate = (!rMin || (p.hourly_rate||0)>=rMin) && (!isFinite(rMax) || (p.hourly_rate||0)<=rMax);
+      const name = `${p.users?.first_name||''} ${p.users?.last_name||''}`.toLowerCase();
+      const matchQ = !q || name.includes(q) || (p.tagline||'').toLowerCase().includes(q);
+      return matchRole && matchCountry && matchAvail && matchVerified && matchRate && matchQ;
     });
 
-    if (sort === 'rate_low') filtered.sort((a,b) => (a.hourly_rate||0) - (b.hourly_rate||0));
-    else if (sort === 'rate_high') filtered.sort((a,b) => (b.hourly_rate||0) - (a.hourly_rate||0));
-    else if (sort === 'jobs') filtered.sort((a,b) => (b.completed_jobs||0) - (a.completed_jobs||0));
-    else filtered.sort((a,b) => (b.avg_rating||0) - (a.avg_rating||0));
+    if (sort==='rate_low') filtered.sort((a,b)=>(a.hourly_rate||0)-(b.hourly_rate||0));
+    else if (sort==='rate_high') filtered.sort((a,b)=>(b.hourly_rate||0)-(a.hourly_rate||0));
+    else if (sort==='jobs') filtered.sort((a,b)=>(b.completed_jobs||0)-(a.completed_jobs||0));
+    else filtered.sort((a,b)=>(b.avg_rating||0)-(a.avg_rating||0));
 
-    // Update counts
-    document.getElementById('countAll').textContent = allProfiles.length;
-    document.getElementById('countVM').textContent = allProfiles.filter(p=>p.role==='virtual_manager').length;
-    document.getElementById('countPA').textContent = allProfiles.filter(p=>p.role==='patent_attorney').length;
-    document.getElementById('countCS').textContent = allProfiles.filter(p=>p.role==='corporate_services').length;
-    document.getElementById('statsBar').innerHTML = `Showing <span>${filtered.length}</span> of <span>${allProfiles.length}</span> professionals`;
-
-    const grid = document.getElementById('supportGrid');
-    if (filtered.length === 0) {
-      grid.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No professionals found — try different filters</div></div>`;
-      return;
-    }
-
-    grid.innerHTML = filtered.map(p => {
-      const name = `${p.users?.first_name||''} ${p.users?.last_name||''}`.trim() || 'Anonymous';
-      const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-      const canHire = p.availability === 'available';
-      const langs = (p.languages || []).slice(0,3);
-
-      return `
-        <div class="support-card ${p.role}">
-          <div class="card-top">
-            <div class="card-avatar ${p.role}">${initials}</div>
-            <div class="card-header-info">
-              <div class="card-name">
-                ${name}
-                ${p.is_verified ? '<span class="verified-tick" title="Verified Professional">✅</span>' : ''}
-              </div>
-              <div class="card-role">${roleEmoji[p.role]} ${roleMap[p.role]}</div>
-            </div>
-          </div>
-
-          ${p.tagline ? `<div class="card-tagline">"${p.tagline}"</div>` : ''}
-
-          <div class="card-stats">
-            <div class="card-stat">${starsHtml(p.avg_rating, p.completed_jobs)}</div>
-            <div class="card-stat">✅ <strong>${p.completed_jobs||0}</strong> jobs</div>
-            <div class="card-stat">🏆 <strong>${p.experience_years||0}yr</strong></div>
-          </div>
-
-          ${langs.length ? `<div class="card-tags">${langs.map(l=>`<span class="card-tag">🗣 ${l}</span>`).join('')}</div>` : ''}
-
-          <div class="card-location">
-            <div class="avail-dot ${p.availability||'available'}"></div>
-            ${availLabel(p.availability)} · ${p.home_country || 'Worldwide'}
-            ${p.service_type === 'specific_countries' ? ' · <span style="color:var(--blue);font-size:11px;">Limited countries</span>' : ''}
-            ${p.service_type === 'restricted_countries' ? ' · <span style="color:var(--error);font-size:11px;">Some restrictions</span>' : ''}
-          </div>
-
-          <div class="card-footer">
-            <div class="card-rate">${p.hourly_rate ? '$'+p.hourly_rate+'<span>/hr</span>' : '<span style="color:var(--muted);font-size:13px;">Rate negotiable</span>'}</div>
-            <button class="hire-btn ${canHire?'':'busy'}" onclick="${canHire ? `openHireModal(${p.user_id}, '${name}', '${p.role}')` : 'void(0)'}">${canHire ? 'Hire Now' : 'Busy'}</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+    document.getElementById('resultsCount').innerHTML = `<strong>${filtered.length}</strong> of <strong>${allProfiles.length}</strong> professionals`;
+    document.getElementById('supportGrid').innerHTML = filtered.length
+      ? filtered.map(cardHTML).join('')
+      : '<div class="empty"><h3>No professionals found</h3><p>Try adjusting your filters</p></div>';
   }
 
+  function starsHTML(avg, count) {
+    if (!avg) return `<span style="color:var(--muted);font-size:0.75rem;">No reviews yet</span>`;
+    const n = Math.round(avg);
+    return `<span style="color:var(--gold);">${'★'.repeat(n)}${'☆'.repeat(5-n)}</span> <span style="font-size:0.72rem;color:var(--muted);">${avg} (${count||0})</span>`;
+  }
+
+  function cardHTML(p) {
+    const name = `${p.users?.first_name||''} ${p.users?.last_name||''}`.trim() || 'Anonymous';
+    const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    const avatarUrl = p.users?.avatar_url;
+    const avatarContent = avatarUrl ? `<img src="${avatarUrl}" alt="">` : initials;
+    const canHire = p.availability === 'available';
+    const langs = (p.languages||[]).slice(0,3);
+    const avail = p.availability || 'available';
+    const availLabel = avail==='available'?'Available':avail==='busy'?'Busy':'Unavailable';
+
+    return `
+      <div class="support-card ${p.role}">
+        <div class="card-top">
+          <div class="card-avatar ${p.role}">${avatarContent}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="card-name">
+              ${name}
+              ${p.is_verified?'<span class="verified-tick" title="Verified">✅</span>':''}
+            </div>
+            <div class="card-role">${roleEmoji[p.role]||''} ${roleMap[p.role]||p.role}</div>
+          </div>
+        </div>
+        ${p.tagline?`<div class="card-tagline">"${p.tagline}"</div>`:''}
+        <div class="card-stats">
+          <div class="stat-item">${starsHTML(p.avg_rating, p.completed_jobs)}</div>
+          <div class="stat-item">✅ <strong>${p.completed_jobs||0}</strong> jobs</div>
+          <div class="stat-item">🏆 <strong>${p.experience_years||0}yr</strong> exp</div>
+        </div>
+        ${langs.length?`<div class="card-tags">${langs.map(l=>`<span class="card-tag">🗣 ${l}</span>`).join('')}</div>`:''}
+        <div class="card-location">
+          <div class="avail-dot ${avail}"></div>
+          ${availLabel} · ${p.home_country||'Worldwide'}
+          ${p.service_type==='specific_countries'?'<span style="color:var(--blue);font-size:0.72rem;"> · Limited countries</span>':''}
+          ${p.service_type==='restricted_countries'?'<span style="color:var(--error);font-size:0.72rem;"> · Some restrictions</span>':''}
+        </div>
+        <div class="card-footer">
+          <div class="card-rate">${p.hourly_rate?'$'+p.hourly_rate+'<span>/hr</span>':'<span>Rate negotiable</span>'}</div>
+          <button class="btn-hire ${canHire?'':'busy'}" onclick="${canHire?`openHireModal(${p.user_id},'${name.replace(/'/g,"\\'")}','${p.role}')`:'void(0)'}">
+            ${canHire?'Hire Now →':'Busy'}
+          </button>
+        </div>
+      </div>`;
+  }
+
+  // HIRE MODAL
   async function openHireModal(supportId, name, role) {
     if (!token) { window.location.href = '/login'; return; }
     selectedSupportId = supportId;
@@ -498,105 +547,108 @@
     document.getElementById('warningBox').classList.remove('show');
     document.getElementById('hireError').classList.remove('show');
     document.getElementById('hireSuccess').classList.remove('show');
-    document.getElementById('hireTitle').value = '';
-    document.getElementById('hireDesc').value = '';
-    document.getElementById('hireBudget').value = '';
-    document.getElementById('hireDeadline').value = '';
-    document.getElementById('hireBtnText').textContent = 'Send Hire Request';
-    document.getElementById('hireBtn').disabled = false;
-
-    // Load user's ideas for dropdown
-    if (token) {
-      try {
-        const res = await fetch(`${API_URL}/api/my-ideas`, { headers: { Authorization: `Bearer ${token}` } });
-        const ideas = await res.json();
-        const sel = document.getElementById('hireIdea');
-        sel.innerHTML = '<option value="">No specific idea</option>' + (Array.isArray(ideas) ? ideas.map(i => `<option value="${i.id}">${i.title}</option>`).join('') : '');
-      } catch (e) {}
-    }
-
+    document.getElementById('hireTitle').value='';
+    document.getElementById('hireDesc').value='';
+    document.getElementById('hireBudget').value='';
+    document.getElementById('hireDeadline').value='';
+    document.getElementById('hireCountry').value='';
+    document.getElementById('hireBtnText').textContent='Send Hire Request';
+    document.getElementById('hireBtn').disabled=false;
+    document.getElementById('hireSpinner').style.display='none';
+    // Load ideas
+    try {
+      const res = await fetch(`${API_URL}/api/my-ideas`, { headers:{ Authorization:`Bearer ${token}` } });
+      const ideas = await res.json();
+      const sel = document.getElementById('hireIdea');
+      sel.innerHTML = '<option value="">No specific idea</option>' + (Array.isArray(ideas)?ideas.map(i=>`<option value="${i.id}">${i.title}</option>`).join(''):'');
+    } catch(e) {}
     document.getElementById('hireModal').classList.add('show');
   }
 
   function closeModal() { document.getElementById('hireModal').classList.remove('show'); }
-  document.getElementById('hireModal').addEventListener('click', e => { if (e.target === document.getElementById('hireModal')) closeModal(); });
+  document.getElementById('hireModal').addEventListener('click', e => { if(e.target===document.getElementById('hireModal')) closeModal(); });
 
-  // Check country restriction when country changes
   document.getElementById('hireCountry').addEventListener('change', async function() {
     const country = this.value;
     if (!country || !selectedSupportId) return;
     try {
       const res = await fetch(`${API_URL}/api/support/check-restriction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ support_user_id: selectedSupportId, client_country: country })
+        method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body: JSON.stringify({ support_user_id:selectedSupportId, client_country:country })
       });
       const data = await res.json();
       const box = document.getElementById('warningBox');
       if (data.warning) {
-        box.textContent = (data.blocked ? '🚫 ' : '⚠️ ') + data.warning;
-        box.classList.remove('warn');
-        if (!data.blocked) box.classList.add('warn');
-        box.classList.add('show');
+        box.textContent = (data.blocked?'🚫 ':'⚠️ ') + data.warning;
+        box.className = 'warning-box show' + (data.blocked?'':' warn');
         document.getElementById('hireBtn').disabled = data.blocked;
-        if (data.blocked) document.getElementById('hireBtnText').textContent = 'Not Available in Your Country';
+        document.getElementById('hireBtnText').textContent = data.blocked ? 'Not Available in Your Country' : 'Send Hire Request';
       } else {
         box.classList.remove('show');
         document.getElementById('hireBtn').disabled = false;
         document.getElementById('hireBtnText').textContent = 'Send Hire Request';
       }
-    } catch (e) {}
+    } catch(e) {}
   });
 
   async function submitHire() {
     const title = document.getElementById('hireTitle').value.trim();
     const description = document.getElementById('hireDesc').value.trim();
-    const budget = parseFloat(document.getElementById('hireBudget').value) || null;
-    const deadline = document.getElementById('hireDeadline').value || null;
+    const budget = parseFloat(document.getElementById('hireBudget').value)||null;
+    const deadline = document.getElementById('hireDeadline').value||null;
     const country = document.getElementById('hireCountry').value;
-    const idea_id = document.getElementById('hireIdea').value || null;
-
+    const idea_id = document.getElementById('hireIdea').value||null;
     const errorEl = document.getElementById('hireError');
-    const successEl = document.getElementById('hireSuccess');
     errorEl.classList.remove('show');
-
-    if (!title) { errorEl.textContent = 'Please enter a job title.'; errorEl.classList.add('show'); return; }
-    if (!country) { errorEl.textContent = 'Please select your country.'; errorEl.classList.add('show'); return; }
-
+    if (!title) { errorEl.textContent='Please enter a job title.'; errorEl.classList.add('show'); return; }
+    if (!country) { errorEl.textContent='Please select your country.'; errorEl.classList.add('show'); return; }
     const btn = document.getElementById('hireBtn');
     const spinner = document.getElementById('hireSpinner');
-    const btnText = document.getElementById('hireBtnText');
-    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Sending...';
-
+    btn.disabled=true; spinner.style.display='block'; document.getElementById('hireBtnText').textContent='Sending…';
     try {
       const res = await fetch(`${API_URL}/api/hire`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ support_id: selectedSupportId, title, description, budget, deadline, country, idea_id })
+        method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body: JSON.stringify({ support_id:selectedSupportId, title, description, budget, deadline, country, idea_id })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send');
-
-      successEl.classList.add('show');
-      btnText.textContent = 'Sent!';
+      if (!res.ok) throw new Error(data.error||'Failed');
+      document.getElementById('hireSuccess').classList.add('show');
+      document.getElementById('hireBtnText').textContent='Sent!';
       setTimeout(closeModal, 2000);
-    } catch (err) {
-      errorEl.textContent = err.message || 'Something went wrong.';
+    } catch(err) {
+      errorEl.textContent = err.message||'Something went wrong.';
       errorEl.classList.add('show');
-      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Send Hire Request';
+      btn.disabled=false; spinner.style.display='none'; document.getElementById('hireBtnText').textContent='Send Hire Request';
     }
   }
 
-  async function loadProfiles() {
-    try {
-      const res = await fetch(`${API_URL}/api/support/browse`);
-      allProfiles = await res.json();
-      renderGrid();
-    } catch (err) {
-      document.getElementById('supportGrid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-text">Failed to load. Please refresh.</div></div>`;
-    }
-  }
+  // Chip event listeners
+  document.getElementById('roleChips').addEventListener('click', e => {
+    const btn = e.target.closest('.chip[data-role]');
+    if (!btn) return;
+    document.querySelectorAll('#roleChips .chip').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeRole = btn.dataset.role;
+  });
+  document.getElementById('countryChips').addEventListener('click', e => {
+    const btn = e.target.closest('.chip[data-country]');
+    if (!btn) return;
+    document.querySelectorAll('#countryChips .chip').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCountry = btn.dataset.country;
+  });
+  document.getElementById('availChips').addEventListener('click', e => {
+    const btn = e.target.closest('.chip[data-avail]');
+    if (!btn) return;
+    document.querySelectorAll('#availChips .chip').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeAvail = btn.dataset.avail;
+  });
 
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') applyFilters(); });
+
+  initNav();
   loadProfiles();
 </script>
 </body>
