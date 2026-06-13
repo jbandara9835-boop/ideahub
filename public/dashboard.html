@@ -462,8 +462,27 @@
     if (!nav) return;
     const newIdeaBtn = document.getElementById('newIdeaBtn');
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
+    const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
+      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && user.role === 'business_owner' ? '/business-dashboard'
+      : user && user.role === 'admin' ? '/admin'
+      : '/dashboard';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' || path === '/attorney-dashboard' ? 'active' : ''}" href="${dashUrl}"><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span>My Profile</span></a>
+      <div class="nav-section-label">Marketplace</div>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span>Marketplace</span></a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span>Request an Idea</span></a>
+      <a class="nav-item ${path === '/businesses' ? 'active' : ''}" href="/businesses"><span>Business Expansion</span></a>
+      <div class="nav-section-label">Support</div>
+      <a class="nav-item" href="/find-support?type=patent_attorney"><span>Find an Attorney</span></a>
+      <a class="nav-item" href="/find-support?type=virtual_manager"><span>Virtual Manager</span></a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span>Support Services</span></a>
+      <div class="nav-section-label">Activity</div>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span>Messages</span></a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span>Wallet</span></a>
+    `;
       <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
