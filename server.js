@@ -138,6 +138,12 @@ app.get('/admin', (req, res) => {
 app.get('/how-it-works', (req, res) => {
   res.sendFile(__dirname + '/public/how-it-works.html');
 });
+app.get('/contact', (req, res) => {
+  res.redirect('/about#contact');
+});
+app.get('/contact', (req, res) => {
+  res.redirect('/about#contact');
+});
 app.get('/api/stats/public', async (req, res) => {
   const [ideasRes, usersRes, txRes] = await Promise.all([
     supabase.from('ideas').select('*', { count: 'exact', head: true }).eq('status', 'live'),
