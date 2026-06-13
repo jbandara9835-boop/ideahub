@@ -305,8 +305,18 @@
       successMsg.classList.add('show');
       btnText.textContent = 'Success!';
 
+      const dashMap = {
+        idea_creator: '/dashboard',
+        patent_seller: '/dashboard',
+        investor: '/buyer-dashboard',
+        corporate_services: '/buyer-dashboard',
+        virtual_manager: '/support-dashboard',
+        patent_attorney: '/support-dashboard',
+        business_owner: '/business-dashboard',
+        admin: '/admin'
+      };
       setTimeout(() => {
-        window.location.href = CREATOR_ROLES.includes(role) ? '/dashboard' : BUSINESS_ROLES.includes(role) ? '/business-dashboard' : '/browse';
+        window.location.href = dashMap[role] || '/dashboard';
       }, 1000);
 
     } catch (err) {
