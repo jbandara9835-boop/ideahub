@@ -20,12 +20,15 @@
     .nav-links a { color:var(--muted); text-decoration:none; font-size:0.875rem; padding:6px 14px; border-radius:6px; transition:color 0.2s; }
     .nav-links a:hover { color:var(--text); }
     .btn-join { background:var(--gold) !important; color:#000 !important; font-weight:600 !important; }
-    .nav-user { display:none; align-items:center; gap:10px; }
+    .nav-user { display:none; align-items:center; gap:8px; }
     .nav-user.visible { display:flex; }
     .nav-avatar { width:34px; height:34px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:#000; overflow:hidden; cursor:pointer; text-decoration:none; }
     .nav-avatar img { width:100%; height:100%; object-fit:cover; }
-    .nav-dashboard-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:6px 14px; border-radius:6px; font-size:0.875rem; text-decoration:none; }
+    .nav-dashboard-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:6px 14px; border-radius:6px; font-size:0.875rem; text-decoration:none; transition:border-color 0.2s; }
     .nav-dashboard-btn:hover { border-color:var(--gold); }
+    .btn-back-dash { background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.3); color:var(--gold); padding:6px 14px; border-radius:6px; font-size:0.875rem; text-decoration:none; display:none; align-items:center; gap:6px; transition:all 0.2s; }
+    .btn-back-dash:hover { background:rgba(245,197,24,0.2); }
+    .btn-back-dash.visible { display:inline-flex; }
 
     .hero { background:linear-gradient(135deg,#0a0a0a 0%,#141008 50%,#0a0a0a 100%); border-bottom:1px solid var(--border); padding:48px 32px 32px; text-align:center; }
     .hero h1 { font-size:2.2rem; font-weight:800; margin-bottom:8px; }
@@ -37,7 +40,6 @@
     .hero-search button { background:var(--gold); color:#000; border:none; border-radius:10px; padding:13px 24px; font-size:0.95rem; font-weight:600; cursor:pointer; }
     .hero-search button:hover { background:var(--gold-dim); }
 
-    /* ── CHIPS: pure class-based, NO inline styles ── */
     .cat-chips { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
     .chip { flex-shrink:0; background:var(--surface2); border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:6px 16px; font-size:0.85rem; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
     .chip:hover { border-color:var(--gold); color:var(--text); }
@@ -121,7 +123,7 @@
     <a href="/signup" class="btn-join">Join free</a>
   </div>
   <div class="nav-user" id="userNav">
-    <a href="/dashboard" class="nav-dashboard-btn" id="dashboardLink">My Dashboard</a>
+    <a href="#" class="btn-back-dash" id="backToDashBtn">← Dashboard</a>
     <a href="/profile" class="nav-avatar" id="navAvatar"></a>
   </div>
 </nav>
@@ -133,7 +135,6 @@
     <input type="text" id="searchInput" placeholder="Search by title, keyword, or category…" />
     <button onclick="applyFilters()">Search</button>
   </div>
-  <!-- category chips — NO inline styles, all class-based -->
   <div class="cat-chips" id="catChips">
     <button class="chip active" data-cat="all">All</button>
     <button class="chip" data-cat="Technology">💻 Technology</button>
@@ -188,22 +189,33 @@
   let activeCategory = 'all', activeLevel = null;
 
   function initNav() {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    // Support BOTH token key formats (ih_token from sidebar pages, token from public pages)
+    const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
+    const userRaw = localStorage.getItem('user') || localStorage.getItem('ih_user');
+    const user = JSON.parse(userRaw || 'null');
     if (!token || !user) return;
+
     document.getElementById('guestNav').style.display = 'none';
     document.getElementById('userNav').classList.add('visible');
+
     const roleLinks = {
       idea_creator:'/dashboard', patent_seller:'/dashboard',
       investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard',
       virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard',
       business_owner:'/business-dashboard', admin:'/admin'
     };
-    document.getElementById('dashboardLink').href = roleLinks[user.role] || '/dashboard';
+    const dashUrl = roleLinks[user.role] || '/dashboard';
+
+    // ← Dashboard button (back to their specific dashboard)
+    const backBtn = document.getElementById('backToDashBtn');
+    backBtn.href = dashUrl;
+    backBtn.classList.add('visible');
+
+    // Avatar
     const avatarEl = document.getElementById('navAvatar');
     const avatarUrl = user.avatar_url || user.avatarUrl;
     if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
-    else avatarEl.textContent = (user.name || user.email || 'U')[0].toUpperCase();
+    else avatarEl.textContent = (user.first_name || user.name || user.email || 'U')[0].toUpperCase();
   }
 
   async function loadIdeas() {
@@ -328,7 +340,6 @@
 
   function goPage(p) { currentPage=p; renderPage(); window.scrollTo({top:0,behavior:'smooth'}); }
 
-  // Category chips — delegated to parent container
   document.getElementById('catChips').addEventListener('click', e => {
     const btn = e.target.closest('.chip[data-cat]');
     if (!btn) return;
@@ -338,7 +349,6 @@
     applyFilters();
   });
 
-  // Level chips
   document.querySelectorAll('.chip[data-level]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (activeLevel === btn.dataset.level) {
