@@ -315,11 +315,19 @@
   if (!token || !user) window.location.href = '/login';
   if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/dashboard';
 
-  const initials = (user?.firstName?.[0]||'') + (user?.lastName?.[0]||'');
-  document.getElementById('sidebarAvatar').textContent = initials||'?';
-  document.getElementById('sidebarName').textContent = `${user?.firstName||''} ${user?.lastName||''}`.trim();
+  const initials = (user?.first_name?.[0]||'') + (user?.last_name?.[0]||'');
+  const avatarUrl = user?.avatar_url || user?.avatarUrl;
+  const avatarEl = document.getElementById('sidebarAvatar');
+  if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+  else avatarEl.textContent = initials||'?';
+  document.getElementById('sidebarName').textContent = `${user?.first_name||''} ${user?.last_name||''}`.trim();
   document.getElementById('sidebarRole').textContent = roleMap[user?.role]||'—';
-  document.getElementById('welcomeTitle').textContent = `Welcome back, ${user?.firstName||'there'} 👋`;
+  document.getElementById('welcomeTitle').textContent = `Welcome back, ${user?.first_name||'there'} 👋`;
+  const starEl = document.getElementById('sidebarStars');
+  if (starEl) {
+    const stars = user?.profile_stars || 0;
+    starEl.innerHTML = [1,2,3,4,5].map(i => `<span style="color:${i<=stars?'#f5c842':'#3a3a3a'}">★</span>`).join('');
+  }
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
 
