@@ -21,22 +21,20 @@
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
   .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
-  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
-  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:2px; overflow-y:auto; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav-section-label { font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:0.75rem 0.75rem 0.25rem; }
+  .nav-item { display:flex; align-items:center; padding:0.55rem 0.75rem; border-radius:8px; font-size:13.5px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
   .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
   .nav-item.active { color:var(--accent); background:var(--accent-dim); }
-  .nav-icon { font-size:16px; width:20px; text-align:center; }
-  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
-  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
-  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; cursor:pointer; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
+  .avatar-sm img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
   .user-info { flex:1; min-width:0; }
   .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .user-role-sb { font-size:11px; color:var(--muted); }
-  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
-  .logout-btn:hover { color:var(--error); }
 
   .main { margin-left:220px; padding:2rem 2.5rem; }
-
   .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
   .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; letter-spacing:-0.5px; }
   .page-subtitle { font-size:14px; color:var(--muted); margin-top:2px; }
@@ -65,7 +63,6 @@
   .section-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
   .section-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); }
   .section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; }
-  .section-link { font-size:12px; color:var(--accent); text-decoration:none; cursor:pointer; }
 
   .job-row { padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
   .job-row:last-child { border-bottom:none; }
@@ -91,18 +88,15 @@
   .client-info { display:flex; align-items:center; gap:8px; }
   .client-avatar { width:28px; height:28px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--muted); flex-shrink:0; }
   .client-name { font-size:12px; color:var(--muted); }
-
   .budget-pill { background:var(--accent-dim); color:var(--accent); border-radius:20px; padding:2px 8px; font-size:11px; font-weight:600; }
 
   .empty { text-align:center; padding:2.5rem 1rem; color:var(--muted); }
   .empty-icon { font-size:32px; margin-bottom:0.75rem; }
   .empty-text { font-size:13px; }
-
   .loading { display:flex; align-items:center; justify-content:center; padding:2.5rem; color:var(--muted); gap:10px; font-size:13px; }
   .spin { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
 
-  /* JOB CHAT MODAL */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity 0.2s; }
   .modal-overlay.show { opacity:1; pointer-events:all; }
   .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; width:100%; max-width:520px; max-height:80vh; display:flex; flex-direction:column; animation:fadeUp 0.25s ease; }
@@ -123,23 +117,20 @@
   .chat-input:focus { border-color:var(--accent); }
   .chat-send { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0 14px; cursor:pointer; font-size:18px; }
 
-  /* RATE MODAL */
-  .rate-modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:400px; animation:fadeUp 0.25s ease; }
+  .rate-modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:400px; }
   .rate-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:0.5rem; }
   .stars-row { display:flex; gap:8px; margin:1rem 0; }
-  .star-btn { font-size:32px; cursor:pointer; transition:transform 0.15s; background:none; border:none; filter:grayscale(1); }
-  .star-btn.active { filter:none; transform:scale(1.1); }
+  .star-btn { font-size:32px; cursor:pointer; background:none; border:none; filter:grayscale(1); }
+  .star-btn.active { filter:none; }
   .rate-review { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; resize:none; min-height:80px; margin-bottom:1rem; }
-  .rate-review:focus { border-color:var(--accent); }
   .rate-btns { display:flex; gap:10px; }
   .rate-submit { flex:1; background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.75rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; }
   .rate-cancel { background:none; border:1px solid var(--border); border-radius:8px; padding:0.75rem 1.25rem; font-size:14px; color:var(--muted); cursor:pointer; }
 
   @media (max-width:900px) {
     .sidebar { width:60px; padding:1rem 0.5rem; }
-    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo-text, .nav-item, .user-info { display:none; }
     .logo { justify-content:center; }
-    .nav-item { justify-content:center; padding:0.6rem; }
     .user-card { justify-content:center; padding:0.5rem; }
     .main { margin-left:60px; padding:1.5rem; }
     .stats-grid { grid-template-columns:repeat(2,1fr); }
@@ -154,24 +145,13 @@
     <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
     <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
   </div>
-  <nav class="nav">
-    <a class="nav-item active" href="/support-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Marketplace</span></a>
-    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-    <a class="nav-item" href="/support-profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-  </nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
+  <nav class="nav" id="sidebarNav"></nav>
+  <div class="user-card" id="userCard" onclick="toggleUserMenu()">
+    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
     <div class="user-info">
       <div class="user-name-sb" id="sidebarName">Loading...</div>
       <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
+      <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
     </div>
     <span style="color:var(--muted);font-size:12px;">⋯</span>
   </div>
@@ -191,52 +171,24 @@
       <div class="page-subtitle">Manage your jobs and grow your reputation</div>
     </div>
   </div>
-
   <div id="roleBanner"></div>
-
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">Pending Requests</div>
-      <div class="stat-value yellow" id="statPending">—</div>
-      <div class="stat-sub">awaiting response</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Active Jobs</div>
-      <div class="stat-value purple" id="statActive">—</div>
-      <div class="stat-sub">in progress</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Completed Jobs</div>
-      <div class="stat-value green" id="statCompleted">—</div>
-      <div class="stat-sub">all time</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Avg Rating</div>
-      <div class="stat-value yellow" id="statRating">—</div>
-      <div class="stat-sub">from clients</div>
-    </div>
+    <div class="stat-card"><div class="stat-label">Pending Requests</div><div class="stat-value yellow" id="statPending">—</div><div class="stat-sub">awaiting response</div></div>
+    <div class="stat-card"><div class="stat-label">Active Jobs</div><div class="stat-value purple" id="statActive">—</div><div class="stat-sub">in progress</div></div>
+    <div class="stat-card"><div class="stat-label">Completed Jobs</div><div class="stat-value green" id="statCompleted">—</div><div class="stat-sub">all time</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value yellow" id="statRating">—</div><div class="stat-sub">from clients</div></div>
   </div>
-
-  <!-- PENDING REQUESTS -->
   <div class="section-card">
-    <div class="section-header">
-      <div class="section-title">📬 Pending Hire Requests</div>
-    </div>
+    <div class="section-header"><div class="section-title">📬 Pending Hire Requests</div></div>
     <div id="pendingList"><div class="loading"><div class="spin"></div> Loading...</div></div>
   </div>
-
-  <!-- ACTIVE + COMPLETED -->
   <div class="two-col">
     <div class="section-card" style="margin-bottom:0;">
-      <div class="section-header">
-        <div class="section-title">⚡ Active Jobs</div>
-      </div>
+      <div class="section-header"><div class="section-title">⚡ Active Jobs</div></div>
       <div id="activeList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
     <div class="section-card" style="margin-bottom:0;">
-      <div class="section-header">
-        <div class="section-title">✅ Completed Jobs</div>
-      </div>
+      <div class="section-header"><div class="section-title">✅ Completed Jobs</div></div>
       <div id="completedList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
   </div>
@@ -262,7 +214,7 @@
   <div class="rate-modal">
     <div class="rate-title">Rate this job</div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:0.5rem;">How was your experience with the client?</p>
-    <div class="stars-row" id="starsRow">
+    <div class="stars-row">
       <button class="star-btn" onclick="setStar(1)">⭐</button>
       <button class="star-btn" onclick="setStar(2)">⭐</button>
       <button class="star-btn" onclick="setStar(3)">⭐</button>
@@ -279,14 +231,22 @@
 
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
-  // ── SHARED SIDEBAR NAV ──
+  if (!token || !user) window.location.href = '/login';
+
+  const SUPPORT_ROLES = ['virtual_manager','patent_attorney','corporate_services'];
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
+  const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Provide business solutions and partnerships' };
+
+  if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/dashboard';
+
   function renderSidebar() {
     const path = window.location.pathname;
-    const nav = document.querySelector('.nav');
+    const nav = document.getElementById('sidebarNav');
     if (!nav) return;
-    const newIdeaBtn = document.getElementById('newIdeaBtn');
-    if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
       : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
       : user && user.role === 'business_owner' ? '/business-dashboard'
@@ -306,38 +266,16 @@
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
       <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions">Wallet</a>
-    \`;
-  } || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-      <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
-      <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-      <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
     `;
   }
-  const token = localStorage.getItem('ih_token');
-  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
   renderSidebar();
 
-  const SUPPORT_ROLES = ['virtual_manager','patent_attorney','corporate_services'];
-  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
-  const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Provide business solutions and partnerships' };
-
-  if (!token || !user) window.location.href = '/login';
-  if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/dashboard';
-
-  const initials = (user?.first_name?.[0]||'') + (user?.last_name?.[0]||'');
+  // Init sidebar user info
   const avatarUrl = user?.avatar_url || user?.avatarUrl;
   const avatarEl = document.getElementById('sidebarAvatar');
   if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-  else avatarEl.textContent = initials||'?';
+  else document.getElementById('sidebarAvatarText').textContent = (user?.first_name?.[0]||'?');
   document.getElementById('sidebarName').textContent = `${user?.first_name||''} ${user?.last_name||''}`.trim();
   document.getElementById('sidebarRole').textContent = roleMap[user?.role]||'—';
   document.getElementById('welcomeTitle').textContent = `Welcome back, ${user?.first_name||'there'} 👋`;
@@ -348,12 +286,10 @@
   }
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
-
   function toggleUserMenu() {
     const menu = document.getElementById('userMenu');
     if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
   }
-
   document.addEventListener('click', (e) => {
     const card = document.getElementById('userCard');
     const menu = document.getElementById('userMenu');
@@ -369,16 +305,12 @@
     return new Date(d).toLocaleDateString([],{month:'short',day:'numeric'});
   }
 
-  let activeChatId = null;
-  let selectedStars = 0;
-  let rateHireId = null;
-  let rateClientId = null;
+  let activeChatId = null, selectedStars = 0, rateHireId = null, rateClientId = null;
 
   function clientInitials(hire) {
     const name = `${hire.client?.first_name||''} ${hire.client?.last_name||''}`.trim();
     return name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
   }
-
   function clientName(hire) {
     return `${hire.client?.first_name||''} ${hire.client?.last_name||''}`.trim()||'Client';
   }
@@ -389,17 +321,11 @@
     const cn = clientName(hire);
     return `
       <div class="job-row">
-        <div class="job-top">
-          <div class="job-title">${hire.title}</div>
-          ${badge}
-        </div>
+        <div class="job-top"><div class="job-title">${hire.title}</div>${badge}</div>
         <div class="job-meta">
           ${hire.description ? `<div style="margin-bottom:4px;color:var(--muted);font-size:12px;">${hire.description.slice(0,80)}${hire.description.length>80?'...':''}</div>` : ''}
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <div class="client-info">
-              <div class="client-avatar">${ci}</div>
-              <span class="client-name">by ${cn}</span>
-            </div>
+            <div class="client-info"><div class="client-avatar">${ci}</div><span class="client-name">by ${cn}</span></div>
             ${hire.budget ? `<span class="budget-pill">$${hire.budget.toLocaleString()}</span>` : ''}
             ${hire.deadline ? `<span style="font-size:11px;color:var(--muted);">📅 ${formatDate(hire.deadline)}</span>` : ''}
             ${hire.country_warning ? `<span style="font-size:11px;color:var(--accent);">⚠️ Country restriction noted</span>` : ''}
@@ -407,36 +333,22 @@
         </div>
         ${showActions ? `
         <div class="job-actions">
-          ${hire.status==='pending' ? `
-            <button class="btn-accept" onclick="updateStatus(${hire.id},'accepted')">Accept</button>
-            <button class="btn-reject" onclick="updateStatus(${hire.id},'cancelled')">Decline</button>
-          ` : ''}
-          ${hire.status==='accepted' ? `
-            <button class="btn-complete" onclick="updateStatus(${hire.id},'in_progress')">Start Job</button>
-          ` : ''}
-          ${hire.status==='in_progress' ? `
-            <button class="btn-complete" onclick="updateStatus(${hire.id},'completed')">Mark Complete</button>
-          ` : ''}
-          ${hire.status==='completed' ? `
-            <span style="font-size:12px;color:var(--success);">✅ Completed ${formatDate(hire.completed_at)}</span>
-          ` : ''}
+          ${hire.status==='pending' ? `<button class="btn-accept" onclick="updateStatus(${hire.id},'accepted')">Accept</button><button class="btn-reject" onclick="updateStatus(${hire.id},'cancelled')">Decline</button>` : ''}
+          ${hire.status==='accepted' ? `<button class="btn-complete" onclick="updateStatus(${hire.id},'in_progress')">Start Job</button>` : ''}
+          ${hire.status==='in_progress' ? `<button class="btn-complete" onclick="updateStatus(${hire.id},'completed')">Mark Complete</button>` : ''}
+          ${hire.status==='completed' ? `<span style="font-size:12px;color:var(--success);">✅ Completed ${formatDate(hire.completed_at)}</span>` : ''}
           <button class="btn-msg" onclick="openChat(${hire.id},'${hire.title.replace(/'/g,"\\'")}')">💬 Chat</button>
         </div>` : ''}
-      </div>
-    `;
+      </div>`;
   }
 
   async function updateStatus(id, status) {
-    const confirmMap = { accepted:'Accept this job?', cancelled:'Decline this request?', in_progress:'Start this job?', completed:'Mark as completed? Client will be notified to confirm.' };
+    const confirmMap = { accepted:'Accept this job?', cancelled:'Decline this request?', in_progress:'Start this job?', completed:'Mark as completed?' };
     if (!confirm(confirmMap[status]||'Update status?')) return;
     try {
-      const res = await fetch(`${API_URL}/api/hire/${id}/status`, {
-        method:'PUT',
-        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({status})
-      });
+      const res = await fetch(`${API_URL}/api/hire/${id}/status`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body:JSON.stringify({status}) });
       if (res.ok) loadDashboard();
-    } catch(e) { alert('Failed to update.'); }
+    } catch { alert('Failed to update.'); }
   }
 
   async function openChat(hireId, title) {
@@ -445,7 +357,6 @@
     document.getElementById('chatModal').classList.add('show');
     loadChatMsgs();
   }
-
   function closeChat() { document.getElementById('chatModal').classList.remove('show'); activeChatId=null; }
   document.getElementById('chatModal').addEventListener('click', e => { if(e.target===document.getElementById('chatModal')) closeChat(); });
 
@@ -455,58 +366,33 @@
       const res = await fetch(`${API_URL}/api/hire/${activeChatId}/messages`,{headers:{Authorization:`Bearer ${token}`}});
       const msgs = await res.json();
       const el = document.getElementById('chatMsgs');
-      if(!msgs.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">No messages yet. Say hello!</div>';return;}
+      if(!msgs.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">No messages yet.</div>';return;}
       el.innerHTML = msgs.map(m=>{
         const isMe = m.from_id===user.id;
         return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${m.text}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
       }).join('');
       el.scrollTop=el.scrollHeight;
-    }catch(e){}
+    }catch{}
   }
-
   function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMsg();}}
-
   async function sendChatMsg(){
     const input=document.getElementById('chatInput');
     const text=input.value.trim();
     if(!text||!activeChatId) return;
     input.value='';
-    try{
-      await fetch(`${API_URL}/api/hire/${activeChatId}/messages`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({text})
-      });
-      loadChatMsgs();
-    }catch(e){}
+    try{ await fetch(`${API_URL}/api/hire/${activeChatId}/messages`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({text})}); loadChatMsgs(); }catch{}
   }
 
-  function setStar(n){
-    selectedStars=n;
-    document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('active',i<n));
-  }
-
-  function openRate(hireId, clientId){
-    rateHireId=hireId; rateClientId=clientId;
-    selectedStars=0;
-    document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('rateReview').value='';
-    document.getElementById('rateModal').classList.add('show');
-  }
-
-  function closeRate(){document.getElementById('rateModal').classList.remove('show');}
-
+  function setStar(n){ selectedStars=n; document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('active',i<n)); }
+  function openRate(hireId,clientId){ rateHireId=hireId; rateClientId=clientId; selectedStars=0; document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('active')); document.getElementById('rateReview').value=''; document.getElementById('rateModal').classList.add('show'); }
+  function closeRate(){ document.getElementById('rateModal').classList.remove('show'); }
   async function submitRate(){
     if(!selectedStars){alert('Please select a star rating.');return;}
     try{
-      const res=await fetch(`${API_URL}/api/ratings`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({hire_id:rateHireId,rated_user_id:rateClientId,stars:selectedStars,review:document.getElementById('rateReview').value.trim()})
-      });
+      const res=await fetch(`${API_URL}/api/ratings`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({hire_id:rateHireId,rated_user_id:rateClientId,stars:selectedStars,review:document.getElementById('rateReview').value.trim()})});
       if(res.ok){closeRate();alert('Rating submitted!');}
-      else{const d=await res.json();alert(d.error||'Failed to submit.');}
-    }catch(e){alert('Something went wrong.');}
+      else{const d=await res.json();alert(d.error||'Failed.');}
+    }catch{alert('Something went wrong.');}
   }
 
   async function loadDashboard(){
@@ -515,44 +401,30 @@
         fetch(`${API_URL}/api/hire/incoming`,{headers:{Authorization:`Bearer ${token}`}}),
         fetch(`${API_URL}/api/support/profile`,{headers:{Authorization:`Bearer ${token}`}})
       ]);
-
       const hires = hireRes.ok ? await hireRes.json() : [];
       const profile = profileRes.ok ? await profileRes.json() : null;
-
       const role = user?.role||'virtual_manager';
       document.getElementById('roleBanner').innerHTML = `
         <div class="role-banner ${role}">
           <div class="role-banner-icon">${roleEmoji[role]}</div>
-          <div>
-            <div class="role-banner-title">${roleMap[role]}</div>
-            <div class="role-banner-sub">${roleDesc[role]}</div>
-          </div>
-          <div class="verified-pill ${profile?.is_verified?'yes':'no'}">
-            ${profile?.is_verified?'✅ Verified':'⏳ Pending Verification'}
-          </div>
+          <div><div class="role-banner-title">${roleMap[role]}</div><div class="role-banner-sub">${roleDesc[role]}</div></div>
+          <div class="verified-pill ${profile?.is_verified?'yes':'no'}">${profile?.is_verified?'✅ Verified':'⏳ Pending Verification'}</div>
         </div>`;
-
       const pending = hires.filter(h=>h.status==='pending');
       const active = hires.filter(h=>['accepted','in_progress'].includes(h.status));
       const completed = hires.filter(h=>h.status==='completed');
-
       document.getElementById('statPending').textContent = pending.length;
       document.getElementById('statActive').textContent = active.length;
       document.getElementById('statCompleted').textContent = completed.length;
       document.getElementById('statRating').textContent = profile?.avg_rating ? '⭐ '+profile.avg_rating : '—';
-
       const renderList = (el, list, actions) => {
-        if(!list.length){
-          el.innerHTML=`<div class="empty"><div class="empty-icon">${actions?'📭':'🎉'}</div><div class="empty-text">${actions?'No requests yet':'No jobs here yet'}</div></div>`;
-        } else {
-          el.innerHTML=list.map(h=>jobCard(h,actions)).join('');
-        }
+        el.innerHTML = !list.length
+          ? `<div class="empty"><div class="empty-icon">${actions?'📭':'🎉'}</div><div class="empty-text">${actions?'No requests yet':'No jobs here yet'}</div></div>`
+          : list.map(h=>jobCard(h,actions)).join('');
       };
-
       renderList(document.getElementById('pendingList'), pending, true);
       renderList(document.getElementById('activeList'), active, true);
       renderList(document.getElementById('completedList'), completed, false);
-
     }catch(err){console.error(err);}
   }
 
