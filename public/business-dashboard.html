@@ -6,13 +6,13 @@
 <title>Business Dashboard — IdeaHub</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
   :root {
-    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
-    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
-    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
-    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
-    --blue: #60a5fa; --purple: #a78bfa; --orange: #fb923c;
+    --bg:#0d0d0f; --surface:#16161a; --surface2:#1e1e24;
+    --border:rgba(255,255,255,0.08); --border-hover:rgba(255,255,255,0.18);
+    --accent:#f5c842; --accent-dim:rgba(245,200,66,0.12);
+    --text:#f0ede8; --muted:#6e6b65; --error:#ff6b6b; --success:#6ee7b7;
+    --blue:#60a5fa; --purple:#a78bfa; --orange:#fb923c;
   }
   body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
   .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
@@ -20,19 +20,18 @@
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
   .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
-  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
-  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:2px; overflow-y:auto; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav-section-label { font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:0.75rem 0.75rem 0.25rem; }
+  .nav-item { display:flex; align-items:center; padding:0.55rem 0.75rem; border-radius:8px; font-size:13.5px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; }
   .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
   .nav-item.active { color:var(--accent); background:var(--accent-dim); }
-  .nav-icon { font-size:16px; width:20px; text-align:center; }
-  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
-  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
-  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; cursor:pointer; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
+  .avatar-sm img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
   .user-info { flex:1; min-width:0; }
   .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .user-role-sb { font-size:11px; color:var(--muted); }
-  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; }
-  .logout-btn:hover { color:var(--error); }
 
   .main { margin-left:220px; padding:2rem 2.5rem; }
   .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; }
@@ -97,9 +96,8 @@
 
   @media (max-width:900px) {
     .sidebar { width:60px; padding:1rem 0.5rem; }
-    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo-text, .nav-item, .user-info { display:none; }
     .logo { justify-content:center; }
-    .nav-item { justify-content:center; padding:0.6rem; }
     .user-card { justify-content:center; padding:0.5rem; }
     .main { margin-left:60px; padding:1.5rem; }
     .stats-grid { grid-template-columns:repeat(2,1fr); }
@@ -112,24 +110,21 @@
     <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
     <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
   </div>
-  <nav class="nav">
-    <a class="nav-item active" href="/business-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/businesses"><span class="nav-icon">🏭</span><span>Browse</span></a>
-    <a class="nav-item" href="/list-business"><span class="nav-icon">➕</span><span>List Business</span></a>
-    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-  </nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
+  <nav class="nav" id="sidebarNav"></nav>
+  <div class="user-card" id="userCard" onclick="toggleUserMenu()">
+    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
     <div class="user-info">
       <div class="user-name-sb" id="sidebarName">Loading...</div>
       <div class="user-role-sb">Business Owner</div>
     </div>
-    <button class="logout-btn" onclick="logout()">✕</button>
+    <span style="color:var(--muted);font-size:12px;">⋯</span>
+  </div>
+  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
+    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
+    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
+    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
+    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
   </div>
 </aside>
 
@@ -141,28 +136,18 @@
     </div>
     <a class="new-btn" href="/list-business">+ List Business</a>
   </div>
-
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">My Listings</div><div class="stat-value yellow" id="statListings">—</div></div>
     <div class="stat-card"><div class="stat-label">Total Applications</div><div class="stat-value blue" id="statApps">—</div></div>
     <div class="stat-card"><div class="stat-label">Shortlisted</div><div class="stat-value yellow" id="statShortlisted">—</div></div>
     <div class="stat-card"><div class="stat-label">Agreements</div><div class="stat-value green" id="statAgreed">—</div></div>
   </div>
-
-  <!-- MY LISTINGS -->
   <div class="section-card">
-    <div class="section-header">
-      <div class="section-title">🏢 My Business Listings</div>
-      <a href="/list-business" style="font-size:12px;color:var(--accent);text-decoration:none;">+ Add New</a>
-    </div>
+    <div class="section-header"><div class="section-title">🏢 My Business Listings</div><a href="/list-business" style="font-size:12px;color:var(--accent);text-decoration:none;">+ Add New</a></div>
     <div id="listingsList"><div class="loading"><div class="spin"></div> Loading...</div></div>
   </div>
-
-  <!-- ALL APPLICATIONS -->
   <div class="section-card">
-    <div class="section-header">
-      <div class="section-title">📋 Incoming Applications</div>
-    </div>
+    <div class="section-header"><div class="section-title">📋 Incoming Applications</div></div>
     <div id="applicationsList"><div class="loading"><div class="spin"></div> Loading...</div></div>
   </div>
 </main>
@@ -172,21 +157,14 @@
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:440px;">
     <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:0.5rem;">📅 Schedule Meetup</h3>
     <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Set a meetup time with this investor</p>
-    <div style="margin-bottom:1rem;">
-      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Meetup Type</label>
+    <div style="margin-bottom:1rem;"><label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Meetup Type</label>
       <select id="meetupType" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;appearance:none;">
-        <option value="virtual">🖥 Virtual (Video Call)</option>
-        <option value="physical">🏢 In-Person Meeting</option>
-      </select>
-    </div>
-    <div style="margin-bottom:1rem;">
-      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Date & Time</label>
-      <input type="datetime-local" id="meetupDate" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" />
-    </div>
-    <div style="margin-bottom:1rem;">
-      <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Location / Meeting Link</label>
-      <input type="text" id="meetupLocation" placeholder="e.g. Zoom link or office address" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" />
-    </div>
+        <option value="virtual">🖥 Virtual (Video Call)</option><option value="physical">🏢 In-Person Meeting</option>
+      </select></div>
+    <div style="margin-bottom:1rem;"><label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Date & Time</label>
+      <input type="datetime-local" id="meetupDate" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" /></div>
+    <div style="margin-bottom:1rem;"><label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Location / Meeting Link</label>
+      <input type="text" id="meetupLocation" placeholder="e.g. Zoom link or office address" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" /></div>
     <div style="display:flex;gap:10px;">
       <button onclick="closeMeetup()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:0.75rem 1.25rem;font-size:14px;color:var(--muted);cursor:pointer;">Cancel</button>
       <button onclick="confirmMeetup()" style="flex:1;background:var(--accent);color:#0d0d0f;border:none;border-radius:8px;padding:0.75rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Schedule Meetup</button>
@@ -196,44 +174,59 @@
 
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
-
-  // ── SHARED SIDEBAR NAV ──
-  function renderSidebar() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('.nav');
-    if (!nav) return;
-    const newIdeaBtn = document.getElementById('newIdeaBtn');
-    if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
-    nav.innerHTML = `
-      <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-      <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
-      <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-      <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-    `;
-  }
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
-  renderSidebar();
-
   if (!token || !user) window.location.href = '/login';
 
-  if (user) {
-    const initials = (user.first_name?.[0]||'') + (user.Last_name?.[0]||'');
-    document.getElementById('sidebarAvatar').textContent = initials||'?';
-    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
-    document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.firstName||'there'} 👋`;
+  function renderSidebar() {
+    const path = window.location.pathname;
+    const nav = document.getElementById('sidebarNav');
+    if (!nav) return;
+    const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
+      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && user.role === 'business_owner' ? '/business-dashboard'
+      : user && user.role === 'admin' ? '/admin' : '/dashboard';
+    nav.innerHTML = `
+      <div class="nav-section-label">My Account</div>
+      <a class="nav-item ${path.includes('dashboard') ? 'active' : ''}" href="${dashUrl}">Dashboard</a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile">My Profile</a>
+      <div class="nav-section-label">Marketplace</div>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse">Marketplace</a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests">Request an Idea</a>
+      <a class="nav-item ${path === '/businesses' ? 'active' : ''}" href="/businesses">Business Expansion</a>
+      <div class="nav-section-label">Support</div>
+      <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
+      <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
+      <div class="nav-section-label">Activity</div>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions">Wallet</a>
+    `;
   }
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
+  function toggleUserMenu() {
+    const menu = document.getElementById('userMenu');
+    if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+  document.addEventListener('click', (e) => {
+    const card = document.getElementById('userCard');
+    const menu = document.getElementById('userMenu');
+    if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
+  });
+
+  renderSidebar();
+  if (user) {
+    const avatarUrl = user.avatar_url || user.avatarUrl;
+    const avatarEl = document.getElementById('sidebarAvatar');
+    if (avatarEl) {
+      if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      else document.getElementById('sidebarAvatarText').textContent = user.first_name?.[0]||'?';
+    }
+    document.getElementById('sidebarName').textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
+    document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.first_name||'there'} 👋`;
+  }
+
   function timeAgo(d) {
     const diff = Date.now()-new Date(d);
     if (diff<3600000) return Math.floor(diff/60000)+'m ago';
@@ -242,8 +235,7 @@
   }
 
   let pendingMeetupAppId = null;
-
-  function openMeetup(appId) { pendingMeetupAppId = appId; document.getElementById('meetupOverlay').style.display='flex'; }
+  function openMeetup(appId) { pendingMeetupAppId=appId; document.getElementById('meetupOverlay').style.display='flex'; }
   function closeMeetup() { document.getElementById('meetupOverlay').style.display='none'; pendingMeetupAppId=null; }
 
   async function confirmMeetup() {
@@ -253,92 +245,71 @@
     if (!meetup_date) { alert('Please select a date and time.'); return; }
     try {
       const res = await fetch(`${API_URL}/api/expansion-applications/${pendingMeetupAppId}/status`, {
-        method:'PUT',
-        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
         body:JSON.stringify({status:'meetup_scheduled',meetup_type,meetup_date,meetup_location})
       });
       if (res.ok) { closeMeetup(); loadDashboard(); }
-    } catch(e) { alert('Failed.'); }
+    } catch { alert('Failed.'); }
   }
 
   async function updateAppStatus(appId, status) {
-    const confirmMap = { shortlisted:'Shortlist this investor?', negotiating:'Start negotiation?', agreed:'Mark as agreed? This means you\'ve reached a deal!', rejected:'Reject this application?' };
+    const confirmMap = { shortlisted:'Shortlist this investor?', negotiating:'Start negotiation?', agreed:'Mark as agreed?', rejected:'Reject this application?' };
     if (!confirm(confirmMap[status]||'Update?')) return;
     try {
       const res = await fetch(`${API_URL}/api/expansion-applications/${appId}/status`, {
-        method:'PUT',
-        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
         body:JSON.stringify({status})
       });
       if (res.ok) loadDashboard();
-    } catch(e) { alert('Failed.'); }
+    } catch { alert('Failed.'); }
   }
 
   async function loadDashboard() {
     try {
       const bizRes = await fetch(`${API_URL}/api/my-businesses`, {headers:{Authorization:`Bearer ${token}`}});
       const businesses = bizRes.ok ? await bizRes.json() : [];
-
-      // Load all applications for all listings
       let allApps = [];
       for (const biz of businesses) {
         const appsRes = await fetch(`${API_URL}/api/businesses/${biz.id}/applications`, {headers:{Authorization:`Bearer ${token}`}});
         if (appsRes.ok) {
           const apps = await appsRes.json();
-          allApps = [...allApps, ...apps.map(a => ({...a, biz_name: biz.business_name, biz_id: biz.id}))];
+          allApps = [...allApps, ...apps.map(a => ({...a, biz_name:biz.business_name, biz_id:biz.id}))];
         }
       }
 
-      // Stats
       document.getElementById('statListings').textContent = businesses.length;
       document.getElementById('statApps').textContent = allApps.length;
       document.getElementById('statShortlisted').textContent = allApps.filter(a=>a.status==='shortlisted').length;
       document.getElementById('statAgreed').textContent = allApps.filter(a=>a.status==='agreed').length;
 
-      // Listings
       const listingsEl = document.getElementById('listingsList');
-      if (businesses.length === 0) {
-        listingsEl.innerHTML = `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem;">🏢</div><div style="font-size:13px;">No listings yet</div><a href="/list-business" style="color:var(--accent);font-size:13px;margin-top:0.5rem;display:inline-block;">List your first business →</a></div>`;
-      } else {
-        listingsEl.innerHTML = businesses.map(b => {
+      listingsEl.innerHTML = !businesses.length
+        ? `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem">🏢</div><div style="font-size:13px">No listings yet</div><a href="/list-business" style="color:var(--accent);font-size:13px;margin-top:0.5rem;display:inline-block">List your first business →</a></div>`
+        : businesses.map(b => {
           const initials = b.business_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-          return `
-          <div class="listing-row">
+          return `<div class="listing-row">
             <div class="listing-logo">${initials}</div>
-            <div class="listing-info">
-              <div class="listing-name">${b.business_name}</div>
-              <div class="listing-meta">${b.industry||'—'} · ${b.country||'—'} · ${b.application_count||0} applications · ${b.view_count||0} views</div>
-            </div>
-            <div class="listing-actions">
-              <a class="btn-view" href="/business/${b.id}">View</a>
-              <span class="btn-apps">${b.application_count||0} Apps</span>
-            </div>
+            <div class="listing-info"><div class="listing-name">${b.business_name}</div><div class="listing-meta">${b.industry||'—'} · ${b.country||'—'} · ${b.application_count||0} applications · ${b.view_count||0} views</div></div>
+            <div class="listing-actions"><a class="btn-view" href="/business/${b.id}">View</a><span class="btn-apps">${b.application_count||0} Apps</span></div>
           </div>`;
         }).join('');
-      }
 
-      // Applications
       const appsEl = document.getElementById('applicationsList');
-      if (allApps.length === 0) {
-        appsEl.innerHTML = `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem;">📭</div><div style="font-size:13px;">No applications yet</div></div>`;
-      } else {
-        appsEl.innerHTML = allApps.map(app => {
+      appsEl.innerHTML = !allApps.length
+        ? `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem">📭</div><div style="font-size:13px">No applications yet</div></div>`
+        : allApps.map(app => {
           const name = `${app.investor?.first_name||''} ${app.investor?.last_name||''}`.trim()||app.investor_name||'Investor';
           const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-          return `
-          <div class="app-row">
+          return `<div class="app-row">
             <div class="app-header">
               <div class="app-investor">
                 <div class="investor-av">${initials}</div>
-                <div>
-                  <div class="investor-name">${name}</div>
-                  <div class="investor-sub">${app.expansion_type?.replace('_',' ')} · ${app.biz_name} · ${timeAgo(app.created_at)}</div>
-                </div>
+                <div><div class="investor-name">${name}</div><div class="investor-sub">${app.expansion_type?.replace('_',' ')} · ${app.biz_name} · ${timeAgo(app.created_at)}</div></div>
               </div>
               <span class="badge badge-${app.status}">${app.status.replace('_',' ')}</span>
             </div>
             <div class="app-message">${app.message||'—'}</div>
-            ${app.investment_capacity ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;">💰 ${app.investment_capacity} · 📍 ${app.territory||'—'}</div>` : ''}
+            ${app.investment_capacity ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem">💰 ${app.investment_capacity} · 📍 ${app.territory||'—'}</div>` : ''}
             <div class="app-actions">
               ${app.status==='pending' ? `<button class="btn-shortlist" onclick="updateAppStatus(${app.id},'shortlisted')">⭐ Shortlist</button>` : ''}
               ${['pending','shortlisted'].includes(app.status) ? `<button class="btn-meetup" onclick="openMeetup(${app.id})">📅 Schedule Meetup</button>` : ''}
@@ -349,8 +320,6 @@
             </div>
           </div>`;
         }).join('');
-      }
-
     } catch(err) { console.error(err); }
   }
 

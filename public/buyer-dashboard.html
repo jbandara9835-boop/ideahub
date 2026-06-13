@@ -6,45 +6,38 @@
 <title>Buyer Dashboard — IdeaHub</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
   :root {
-    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
-    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
-    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
-    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --bg:#0d0d0f; --surface:#16161a; --surface2:#1e1e24;
+    --border:rgba(255,255,255,0.08); --border-hover:rgba(255,255,255,0.18);
+    --accent:#f5c842; --accent-dim:rgba(245,200,66,0.12);
+    --text:#f0ede8; --muted:#6e6b65; --error:#ff6b6b; --success:#6ee7b7;
   }
-  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
-
-  /* SIDEBAR */
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
   .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
   .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
-  .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
-  .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+  .nav { flex:1; display:flex; flex-direction:column; gap:2px; overflow-y:auto; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav-section-label { font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:0.75rem 0.75rem 0.25rem; }
+  .nav-item { display:flex; align-items:center; padding:0.55rem 0.75rem; border-radius:8px; font-size:13.5px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; }
   .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
   .nav-item.active { color:var(--accent); background:var(--accent-dim); }
-  .nav-icon { font-size:16px; width:20px; text-align:center; }
-  .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
-  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
-  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; }
+  .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; cursor:pointer; }
+  .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
+  .avatar-sm img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
   .user-info { flex:1; min-width:0; }
   .user-name-sb { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .user-role-sb { font-size:11px; color:var(--muted); }
-  .logout-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:4px; font-size:16px; transition:color 0.2s; }
-  .logout-btn:hover { color:var(--error); }
 
-  /* MAIN */
   .main { margin-left:220px; padding:2rem 2.5rem; }
-
   .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; }
   .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; letter-spacing:-0.5px; }
   .page-subtitle { font-size:14px; color:var(--muted); margin-top:2px; }
-  .browse-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s; text-decoration:none; display:flex; align-items:center; gap:6px; }
-  .browse-btn:hover { opacity:0.9; }
+  .browse-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; }
 
-  /* STATS */
   .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:2rem; }
   .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.5rem; transition:border-color 0.2s; }
   .stat-card:hover { border-color:var(--border-hover); }
@@ -54,39 +47,33 @@
   .stat-value.blue { color:#60a5fa; }
   .stat-sub { font-size:12px; color:var(--muted); margin-top:4px; }
 
-  /* ROLE BADGE */
   .role-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:500; margin-bottom:2rem; }
   .role-badge.investor { background:rgba(110,231,183,0.15); color:var(--success); border:1px solid rgba(110,231,183,0.3); }
-  .role-badge.virtual_manager { background:rgba(167,139,250,0.15); color:#a78bfa; border:1px solid rgba(167,139,250,0.3); }
-  .role-badge.patent_attorney { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
   .role-badge.corporate_services { background:rgba(244,114,182,0.15); color:#f472b6; border:1px solid rgba(244,114,182,0.3); }
 
-  /* TWO COL */
   .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+  .actions-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:2rem; }
+  .action-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1rem; text-align:center; cursor:pointer; transition:all 0.2s; text-decoration:none; color:var(--text); display:block; }
+  .action-card:hover { border-color:var(--border-hover); transform:translateY(-2px); }
+  .action-icon { font-size:28px; margin-bottom:0.5rem; display:block; }
+  .action-label { font-size:13px; font-weight:500; }
+  .action-sub { font-size:11px; color:var(--muted); margin-top:2px; }
 
-  /* SECTION */
   .section-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
   .section-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); }
   .section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; }
   .section-link { font-size:12px; color:var(--accent); text-decoration:none; }
-  .section-link:hover { text-decoration:underline; }
 
-  /* PURCHASE ROW */
   .purchase-row { display:flex; align-items:center; gap:12px; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
   .purchase-row:last-child { border-bottom:none; }
   .purchase-row:hover { background:rgba(255,255,255,0.02); }
   .purchase-icon { width:40px; height:40px; border-radius:10px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
   .purchase-info { flex:1; min-width:0; }
-  .purchase-title { font-size:14px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .purchase-title { font-size:14px; font-weight:500; }
   .purchase-meta { font-size:12px; color:var(--muted); margin-top:2px; }
   .purchase-amount { font-weight:600; font-size:14px; color:var(--error); flex-shrink:0; }
 
-  .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:500; }
-  .badge-completed { background:rgba(110,231,183,0.15); color:var(--success); }
-  .badge-escrow { background:rgba(245,200,66,0.15); color:var(--accent); }
-
-  /* MESSAGE ROW */
-  .msg-row { display:flex; align-items:flex-start; gap:12px; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; cursor:pointer; }
+  .msg-row { display:flex; align-items:flex-start; gap:12px; padding:1rem 1.5rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
   .msg-row:last-child { border-bottom:none; }
   .msg-row:hover { background:rgba(255,255,255,0.02); }
   .msg-avatar { width:36px; height:36px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--muted); flex-shrink:0; }
@@ -95,29 +82,21 @@
   .msg-preview { font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .msg-time { font-size:11px; color:var(--muted); flex-shrink:0; }
 
-  /* QUICK ACTIONS */
-  .actions-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:2rem; }
-  .action-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1rem; text-align:center; cursor:pointer; transition:all 0.2s; text-decoration:none; color:var(--text); display:block; }
-  .action-card:hover { border-color:var(--border-hover); transform:translateY(-2px); }
-  .action-icon { font-size:28px; margin-bottom:0.5rem; display:block; }
-  .action-label { font-size:13px; font-weight:500; }
-  .action-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+  .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:500; }
+  .badge-completed { background:rgba(110,231,183,0.15); color:var(--success); }
+  .badge-escrow { background:rgba(245,200,66,0.15); color:var(--accent); }
 
-  /* EMPTY */
   .empty { text-align:center; padding:2.5rem 1rem; color:var(--muted); }
   .empty-icon { font-size:32px; margin-bottom:0.75rem; }
-  .empty-text { font-size:13px; }
   .empty-link { color:var(--accent); font-size:13px; text-decoration:none; margin-top:0.5rem; display:inline-block; }
-
   .loading { display:flex; align-items:center; justify-content:center; padding:2.5rem; color:var(--muted); gap:10px; font-size:13px; }
   .spin { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
 
   @media (max-width:900px) {
     .sidebar { width:60px; padding:1rem 0.5rem; }
-    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo-text, .nav-item, .user-info { display:none; }
     .logo { justify-content:center; }
-    .nav-item { justify-content:center; padding:0.6rem; }
     .user-card { justify-content:center; padding:0.5rem; }
     .main { margin-left:60px; padding:1.5rem; }
     .stats-grid { grid-template-columns:repeat(2,1fr); }
@@ -127,29 +106,18 @@
 </style>
 </head>
 <body>
-
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
     <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
   </div>
-  <nav class="nav">
-    <a class="nav-item active" href="/buyer-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-  </nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
+  <nav class="nav" id="sidebarNav"></nav>
+  <div class="user-card" id="userCard" onclick="toggleUserMenu()">
+    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
     <div class="user-info">
       <div class="user-name-sb" id="sidebarName">Loading...</div>
       <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
+      <div id="sidebarStars" style="font-size:11px;margin-top:2px;"></div>
     </div>
     <span style="color:var(--muted);font-size:12px;">⋯</span>
   </div>
@@ -168,179 +136,106 @@
       <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
       <div class="page-subtitle">Here's your IdeaHub overview</div>
     </div>
-    <a class="browse-btn" href="/browse">🔍 Browse Ideas</a>
+    <a class="browse-btn" href="/browse">Browse Ideas</a>
   </div>
-
   <div id="roleBadge"></div>
-
-  <!-- STATS -->
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">Ideas Purchased</div>
-      <div class="stat-value accent" id="statPurchased">—</div>
-      <div class="stat-sub">total bought</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Spent</div>
-      <div class="stat-value" id="statSpent">—</div>
-      <div class="stat-sub">all time</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">In Escrow</div>
-      <div class="stat-value blue" id="statEscrow">—</div>
-      <div class="stat-sub">pending confirm</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Messages</div>
-      <div class="stat-value" id="statMessages">—</div>
-      <div class="stat-sub">conversations</div>
-    </div>
+    <div class="stat-card"><div class="stat-label">Ideas Purchased</div><div class="stat-value accent" id="statPurchased">—</div><div class="stat-sub">total bought</div></div>
+    <div class="stat-card"><div class="stat-label">Total Spent</div><div class="stat-value" id="statSpent">—</div><div class="stat-sub">all time</div></div>
+    <div class="stat-card"><div class="stat-label">In Escrow</div><div class="stat-value blue" id="statEscrow">—</div><div class="stat-sub">pending confirm</div></div>
+    <div class="stat-card"><div class="stat-label">Messages</div><div class="stat-value" id="statMessages">—</div><div class="stat-sub">conversations</div></div>
   </div>
-
-  <!-- QUICK ACTIONS -->
   <div class="actions-grid">
-    <a class="action-card" href="/browse">
-      <span class="action-icon">🔍</span>
-      <div class="action-label">Browse Ideas</div>
-      <div class="action-sub">Discover new ideas</div>
-    </a>
-    <a class="action-card" href="/post-request">
-      <span class="action-icon">🎯</span>
-      <div class="action-label">Post a Request</div>
-      <div class="action-sub">Get ideas from creators</div>
-    </a>
-    <a class="action-card" href="/messages">
-      <span class="action-icon">💬</span>
-      <div class="action-label">Messages</div>
-      <div class="action-sub">Chat with creators</div>
-    </a>
-    <a class="action-card" href="/transactions">
-      <span class="action-icon">💸</span>
-      <div class="action-label">Transactions</div>
-      <div class="action-sub">View purchases</div>
-    </a>
-    <a class="action-card" href="/profile">
-      <span class="action-icon">👤</span>
-      <div class="action-label">My Profile</div>
-      <div class="action-sub">Edit your info</div>
-    </a>
+    <a class="action-card" href="/browse"><span class="action-icon">🔍</span><div class="action-label">Browse Ideas</div><div class="action-sub">Discover new ideas</div></a>
+    <a class="action-card" href="/post-request"><span class="action-icon">🎯</span><div class="action-label">Post a Request</div><div class="action-sub">Get ideas from creators</div></a>
+    <a class="action-card" href="/messages"><span class="action-icon">💬</span><div class="action-label">Messages</div><div class="action-sub">Chat with creators</div></a>
+    <a class="action-card" href="/transactions"><span class="action-icon">💸</span><div class="action-label">Transactions</div><div class="action-sub">View purchases</div></a>
+    <a class="action-card" href="/profile"><span class="action-icon">👤</span><div class="action-label">My Profile</div><div class="action-sub">Edit your info</div></a>
   </div>
-
-  <!-- PURCHASES + MESSAGES -->
   <div class="two-col">
-    <!-- RECENT PURCHASES -->
     <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">Recent Purchases</div>
-        <a class="section-link" href="/transactions">View all →</a>
-      </div>
-      <div id="purchasesList">
-        <div class="loading"><div class="spin"></div> Loading...</div>
-      </div>
+      <div class="section-header"><div class="section-title">Recent Purchases</div><a class="section-link" href="/transactions">View all →</a></div>
+      <div id="purchasesList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
-
-    <!-- RECENT MESSAGES -->
     <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">Recent Messages</div>
-        <a class="section-link" href="/messages">View all →</a>
-      </div>
-      <div id="messagesList">
-        <div class="loading"><div class="spin"></div> Loading...</div>
-      </div>
+      <div class="section-header"><div class="section-title">Recent Messages</div><a class="section-link" href="/messages">View all →</a></div>
+      <div id="messagesList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
   </div>
-
-  <!-- IDEAS IN ESCROW -->
-  <div class="section-card" id="escrowSection" style="display:none; margin-bottom:20px;">
-    <div class="section-header">
-      <div class="section-title">⏳ Awaiting Your Confirmation</div>
-      <a class="section-link" href="/transactions">Manage →</a>
-    </div>
+  <div class="section-card" id="escrowSection" style="display:none;margin-bottom:20px;">
+    <div class="section-header"><div class="section-title">⏳ Awaiting Your Confirmation</div><a class="section-link" href="/transactions">Manage →</a></div>
     <div id="escrowList"></div>
   </div>
-
 </main>
 
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
-
-  // ── SHARED SIDEBAR NAV ──
-  function renderSidebar() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('.nav');
-    if (!nav) return;
-    const newIdeaBtn = document.getElementById('newIdeaBtn');
-    if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
-    nav.innerHTML = `
-      <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-      <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
-      <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-      <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-    `;
-  }
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
-  renderSidebar();
-
   if (!token || !user) window.location.href = '/login';
 
-  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate' };
-  const roleEmoji = { investor:'💼', virtual_manager:'🤝', patent_attorney:'⚖️', patent_seller:'📋', corporate_services:'🏢' };
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+  const roleEmoji = { investor:'💼', corporate_services:'🏢' };
 
-  if (user) {
-    const initials = (user.first_name?.[0] || '') + (user.Last_name?.[0] || '');
-    const avatarUrl = user.avatar_url || user.avatarUrl;
-      const avatarEl = document.getElementById('sidebarAvatar');
-      if (avatarEl) {
-        if (avatarUrl) {
-          avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-        } else {
-          avatarEl.textContent = (user.first_name?.[0] || '?');
-        }
-      }
-    const sbName = document.getElementById('sidebarName');
-      if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
-      // stars handled below
-    document.getElementById('sidebarRole').textContent = roleMap[user.role] || '—';
-    document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.firstName || 'there'} 👋`;
-
-    const role = user.role || 'investor';
-    const badgeClass = role.replace('_', '_');
-    const emoji = roleEmoji[role] || '👤';
-    document.getElementById('roleBadge').innerHTML = `<div class="role-badge ${role}" style="margin-bottom:1.5rem;">${emoji} ${roleMap[role] || role}</div>`;
+  function renderSidebar() {
+    const path = window.location.pathname;
+    const nav = document.getElementById('sidebarNav');
+    if (!nav) return;
+    const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
+      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && user.role === 'business_owner' ? '/business-dashboard'
+      : user && user.role === 'admin' ? '/admin' : '/dashboard';
+    nav.innerHTML = `
+      <div class="nav-section-label">My Account</div>
+      <a class="nav-item ${path.includes('dashboard') ? 'active' : ''}" href="${dashUrl}">Dashboard</a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile">My Profile</a>
+      <div class="nav-section-label">Marketplace</div>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse">Marketplace</a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests">Request an Idea</a>
+      <a class="nav-item ${path === '/businesses' ? 'active' : ''}" href="/businesses">Business Expansion</a>
+      <div class="nav-section-label">Support</div>
+      <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
+      <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
+      <div class="nav-section-label">Activity</div>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions">Wallet</a>
+    `;
   }
 
-  function logout() {
-    localStorage.removeItem('ih_token');
-    localStorage.removeItem('ih_user');
-    window.location.href = '/login';
-  }
-
+  function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href = '/login'; }
   function toggleUserMenu() {
     const menu = document.getElementById('userMenu');
     if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
   }
-
   document.addEventListener('click', (e) => {
     const card = document.getElementById('userCard');
     const menu = document.getElementById('userMenu');
     if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
   });
 
-  function formatDate(d) {
-    return new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  // Init
+  renderSidebar();
+  if (user) {
+    const avatarUrl = user.avatar_url || user.avatarUrl;
+    const avatarEl = document.getElementById('sidebarAvatar');
+    if (avatarEl) {
+      if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      else document.getElementById('sidebarAvatarText').textContent = user.first_name?.[0] || '?';
+    }
+    document.getElementById('sidebarName').textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
+    document.getElementById('sidebarRole').textContent = roleMap[user.role] || '—';
+    const starEl = document.getElementById('sidebarStars');
+    if (starEl) {
+      const stars = user.profile_stars || 0;
+      starEl.innerHTML = [1,2,3,4,5].map(i => `<span style="color:${i<=stars?'#f5c842':'#3a3a3a'}">★</span>`).join('');
+    }
+    document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.first_name||'there'} 👋`;
+    const role = user.role || 'investor';
+    document.getElementById('roleBadge').innerHTML = `<div class="role-badge ${role}" style="margin-bottom:1.5rem;">${roleEmoji[role]||'👤'} ${roleMap[role]||role}</div>`;
   }
 
+  function formatDate(d) { return new Date(d).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}); }
   function formatTime(d) {
     const date = new Date(d + (d.endsWith('Z') ? '' : 'Z'));
     const diff = Date.now() - date;
@@ -356,105 +251,73 @@
         fetch(`${API_URL}/api/transactions`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/messages`, { headers:{ Authorization:`Bearer ${token}` } })
       ]);
-
       const transactions = txRes.ok ? await txRes.json() : [];
       const messages = msgRes.ok ? await msgRes.json() : [];
-
       const myId = user?.id;
       const purchases = transactions.filter(t => t.buyer_id === myId);
       const completed = purchases.filter(t => t.status === 'completed');
       const escrow = purchases.filter(t => t.status === 'escrow');
       const totalSpent = completed.reduce((s,t) => s + (t.total||0), 0);
 
-      // Stats
       document.getElementById('statPurchased').textContent = completed.length;
       document.getElementById('statSpent').textContent = '$' + totalSpent.toLocaleString();
       document.getElementById('statEscrow').textContent = escrow.length;
-
-      // Unique conversations
       const convIds = new Set();
-      messages.forEach(m => {
-        const otherId = m.from_id === myId ? m.to_id : m.from_id;
-        convIds.add(otherId);
-      });
+      messages.forEach(m => convIds.add(m.from_id === myId ? m.to_id : m.from_id));
       document.getElementById('statMessages').textContent = convIds.size;
 
-      // Purchases list
       const purchasesList = document.getElementById('purchasesList');
       const recentPurchases = purchases.slice(0, 5);
-      if (recentPurchases.length === 0) {
-        purchasesList.innerHTML = `<div class="empty"><div class="empty-icon">🛒</div><div class="empty-text">No purchases yet</div><a class="empty-link" href="/browse">Browse ideas →</a></div>`;
-      } else {
-        purchasesList.innerHTML = recentPurchases.map(tx => `
+      purchasesList.innerHTML = !recentPurchases.length
+        ? `<div class="empty"><div class="empty-icon">🛒</div><div>No purchases yet</div><a class="empty-link" href="/browse">Browse ideas →</a></div>`
+        : recentPurchases.map(tx => `
           <div class="purchase-row">
             <div class="purchase-icon">💡</div>
             <div class="purchase-info">
-              <div class="purchase-title">${tx.idea_title || 'Unknown idea'}</div>
-              <div class="purchase-meta">${formatDate(tx.created_at)} · <span class="badge ${tx.status === 'completed' ? 'badge-completed' : 'badge-escrow'}">${tx.status}</span></div>
+              <div class="purchase-title">${tx.idea_title||'Unknown idea'}</div>
+              <div class="purchase-meta">${formatDate(tx.created_at)} · <span class="badge ${tx.status==='completed'?'badge-completed':'badge-escrow'}">${tx.status}</span></div>
             </div>
             <div class="purchase-amount">-$${(tx.amount||0).toLocaleString()}</div>
-          </div>
-        `).join('');
-      }
+          </div>`).join('');
 
-      // Messages list
-      const messagesList = document.getElementById('messagesList');
       const convMap = {};
       messages.forEach(m => {
         const otherId = m.from_id === myId ? m.to_id : m.from_id;
         const otherName = m.from_id === myId ? (m.to_name||`User ${m.to_id}`) : (m.from_name||`User ${m.from_id}`);
-        if (!convMap[otherId] || new Date(m.created_at) > new Date(convMap[otherId].created_at)) {
+        if (!convMap[otherId] || new Date(m.created_at) > new Date(convMap[otherId].created_at))
           convMap[otherId] = { ...m, otherName, otherId };
-        }
       });
-      const convs = Object.values(convMap).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,5);
-
-      if (convs.length === 0) {
-        messagesList.innerHTML = `<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">No messages yet</div><a class="empty-link" href="/browse">Browse ideas to contact creators →</a></div>`;
-      } else {
-        messagesList.innerHTML = convs.map(conv => {
+      const convs = Object.values(convMap).sort((a,b) => new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+      const messagesList = document.getElementById('messagesList');
+      messagesList.innerHTML = !convs.length
+        ? `<div class="empty"><div class="empty-icon">💬</div><div>No messages yet</div></div>`
+        : convs.map(conv => {
           const initials = conv.otherName.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-          return `
-            <div class="msg-row" onclick="window.location.href='/messages'">
-              <div class="msg-avatar">${initials}</div>
-              <div class="msg-info">
-                <div class="msg-name">${conv.otherName}</div>
-                <div class="msg-preview">${conv.text || '—'}</div>
-              </div>
-              <div class="msg-time">${formatTime(conv.created_at)}</div>
-            </div>
-          `;
+          return `<div class="msg-row" onclick="window.location.href='/messages'">
+            <div class="msg-avatar">${initials}</div>
+            <div class="msg-info"><div class="msg-name">${conv.otherName}</div><div class="msg-preview">${conv.text||'—'}</div></div>
+            <div class="msg-time">${formatTime(conv.created_at)}</div>
+          </div>`;
         }).join('');
-      }
 
-      // Escrow section
       if (escrow.length > 0) {
         document.getElementById('escrowSection').style.display = 'block';
         document.getElementById('escrowList').innerHTML = escrow.map(tx => `
           <div class="purchase-row">
             <div class="purchase-icon">⏳</div>
-            <div class="purchase-info">
-              <div class="purchase-title">${tx.idea_title || 'Unknown idea'}</div>
-              <div class="purchase-meta">Purchased ${formatDate(tx.created_at)} · Awaiting your confirmation</div>
-            </div>
+            <div class="purchase-info"><div class="purchase-title">${tx.idea_title||'Unknown idea'}</div><div class="purchase-meta">Purchased ${formatDate(tx.created_at)} · Awaiting confirmation</div></div>
             <button onclick="confirmTx('${tx.id}')" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;">Confirm</button>
-          </div>
-        `).join('');
+          </div>`).join('');
       }
-
-    } catch (err) {
-      console.error(err);
-    }
+    } catch(err) { console.error(err); }
   }
 
   async function confirmTx(id) {
     if (!confirm('Confirm this transaction? This releases payment to the seller.')) return;
     try {
-      const res = await fetch(`${API_URL}/api/transactions/${id}/confirm`, {
-        method:'PUT', headers:{ Authorization:`Bearer ${token}` }
-      });
+      const res = await fetch(`${API_URL}/api/transactions/${id}/confirm`, { method:'PUT', headers:{ Authorization:`Bearer ${token}` } });
       if (res.ok) loadDashboard();
-    } catch (err) { alert('Failed to confirm.'); }
+    } catch { alert('Failed to confirm.'); }
   }
 
   loadDashboard();
