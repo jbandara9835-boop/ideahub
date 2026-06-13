@@ -324,6 +324,17 @@
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
 
+  function toggleUserMenu() {
+    const menu = document.getElementById('userMenu');
+    if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+
+  document.addEventListener('click', (e) => {
+    const card = document.getElementById('userCard');
+    const menu = document.getElementById('userMenu');
+    if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
+  });
+
   function formatDate(d) { return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
   function formatTime(d) {
     const diff = Date.now()-new Date(d);
