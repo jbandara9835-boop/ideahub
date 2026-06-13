@@ -24,6 +24,7 @@
   .nav-item.active { color:var(--accent); background:var(--accent-dim); }
   .nav-icon { font-size:16px; width:20px; text-align:center; }
   .nav-divider { height:1px; background:var(--border); margin:0.75rem 0; }
+  .nav-section-label { font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:1.5px; padding:0.75rem 0.75rem 0.25rem; }
   .user-card { display:flex; align-items:center; gap:10px; padding:0.75rem; border-radius:10px; border:1px solid var(--border); margin-top:auto; }
   .avatar-sm { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
   .avatar-sm img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
@@ -410,20 +411,25 @@
     if (!nav) return;
     const newIdeaBtn = document.getElementById('newIdeaBtn');
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
+    const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
+      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && user.role === 'business_owner' ? '/business-dashboard'
+      : user && user.role === 'admin' ? '/admin' : '/dashboard';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+      <a class="nav-item ${path.includes('dashboard') ? 'active' : ''}" href="${dashUrl}">Dashboard</a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile">My Profile</a>
       <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse">Marketplace</a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests">Request an Idea</a>
+      <a class="nav-item ${path === '/businesses' ? 'active' : ''}" href="/businesses">Business Expansion</a>
       <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
+      <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
+      <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions">Wallet</a>
     `;
   }
   const token = localStorage.getItem('ih_token');
