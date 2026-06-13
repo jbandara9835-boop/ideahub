@@ -1818,6 +1818,62 @@ app.post('/api/wall/:id/comments', authMiddleware, async (req, res) => {
 // Handle shareToWall on idea submit — patch into POST /api/ideas
 // (handled inline in the ideas route via shareToWall flag)
 
+// ── SWITCH ROLE ───────────────────────────────────────────────────────────────
+app.get('/switch-role', (req, res) => res.sendFile(__dirname + '/public/switch-role.html'));
+
+app.post('/api/auth/switch-role', authMiddleware, async (req, res) => {
+  const { role } = req.body;
+  const INSTANT_ROLES = ['idea_creator', 'investor', 'virtual_manager', 'business_owner', 'corporate_services'];
+  if (!INSTANT_ROLES.includes(role)) return res.status(400).json({ error: 'This role requires admin approval.' });
+  const { data: user, error } = await supabase.from('users').update({ role }).eq('id', req.user.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  const { password: _, ...safeUser } = user;
+  res.json({ success: true, user: safeUser });
+});
+
+app.post('/api/auth/role-switch-request', authMiddleware, async (req, res) => {
+  const { requested_role, licence_number, bar_association, jurisdiction, experience_years, licence_file_url, gov_id_url, statement, patent_numbers, patent_jurisdiction, patent_year, patent_cert_url, patent_description } = req.body;
+  const APPROVAL_ROLES = ['patent_attorney', 'patent_seller'];
+  if (!APPROVAL_ROLES.includes(requested_role)) return res.status(400).json({ error: 'This role does not require approval.' });
+  const { data: existing } = await supabase.from('role_switch_requests').select('id').eq('user_id', req.user.id).eq('requested_role', requested_role).eq('status', 'pending').single();
+  if (existing) return res.status(400).json({ error: 'You already have a pending request for this role.' });
+  const { data, error } = await supabase.from('role_switch_requests').insert([{ user_id: req.user.id, requested_role, status: 'pending', licence_number: licence_number||null, bar_association: bar_association||null, jurisdiction: jurisdiction||null, experience_years: experience_years||null, licence_file_url: licence_file_url||null, gov_id_url: gov_id_url||null, statement: statement||null, patent_numbers: patent_numbers||null, patent_jurisdiction: patent_jurisdiction||null, patent_year: patent_year||null, patent_cert_url: patent_cert_url||null, patent_description: patent_description||null }]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
+  if (admins?.length) await supabase.from('notifications').insert(admins.map(a => ({ user_id: a.id, type: 'role_request', title: '🔄 New Role Switch Request', message: `A user wants to become a ${requested_role.replace(/_/g,' ')}. Review in Admin Panel.`, link: '/admin' })));
+  res.status(201).json(data);
+});
+
+app.get('/api/admin/role-requests', authMiddleware, async (req, res) => {
+  const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { data, error } = await supabase.from('role_switch_requests').select('*, user:user_id(id, first_name, last_name, email, role, country)').order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+app.put('/api/admin/role-requests/:id/approve', authMiddleware, async (req, res) => {
+  const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { data: request } = await supabase.from('role_switch_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  await supabase.from('users').update({ role: request.requested_role }).eq('id', request.user_id);
+  await supabase.from('role_switch_requests').update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: req.user.id }).eq('id', req.params.id);
+  await supabase.from('notifications').insert([{ user_id: request.user_id, type: 'role_approved', title: '✅ Role Request Approved!', message: `Your request to become a ${request.requested_role.replace(/_/g,' ')} has been approved!`, link: '/' }]);
+  res.json({ success: true });
+});
+
+app.put('/api/admin/role-requests/:id/reject', authMiddleware, async (req, res) => {
+  const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { reason } = req.body;
+  const { data: request } = await supabase.from('role_switch_requests').select('*').eq('id', req.params.id).single();
+  if (!request) return res.status(404).json({ error: 'Request not found' });
+  await supabase.from('role_switch_requests').update({ status: 'rejected', reject_reason: reason, reviewed_at: new Date().toISOString(), reviewed_by: req.user.id }).eq('id', req.params.id);
+  await supabase.from('notifications').insert([{ user_id: request.user_id, type: 'role_rejected', title: '❌ Role Request Not Approved', message: `Your request to become a ${request.requested_role.replace(/_/g,' ')} was not approved. Reason: ${reason}`, link: '/switch-role' }]);
+  res.json({ success: true });
+});
+
 // ── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

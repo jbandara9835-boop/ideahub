@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Switch Role — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+    --purple: #a78bfa; --blue: #60a5fa; --orange: #fb923c; --pink: #f472b6;
+  }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; padding:2rem 1rem; }
+  body::before { content:''; position:fixed; top:-30%; right:-20%; width:60vw; height:60vw; background:radial-gradient(circle,rgba(245,200,66,0.05) 0%,transparent 70%); pointer-events:none; }
+
+  .wrap { max-width:720px; margin:0 auto; }
+
+  .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--muted); text-decoration:none; font-size:14px; margin-bottom:2rem; transition:color 0.2s; }
+  .back-link:hover { color:var(--text); }
+
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:2rem; text-decoration:none; }
+  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--text); }
+
+  h1 { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; margin-bottom:6px; }
+  .subtitle { font-size:14px; color:var(--muted); margin-bottom:2rem; }
+
+  .current-role-bar { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem 1.25rem; margin-bottom:2rem; display:flex; align-items:center; gap:12px; }
+  .current-role-label { font-size:12px; color:var(--muted); margin-bottom:3px; }
+  .current-role-val { font-size:14px; font-weight:600; color:var(--accent); }
+
+  /* ROLE GRID */
+  .role-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:2rem; }
+  .role-card { border:1px solid var(--border); border-radius:14px; padding:1.25rem 1rem; cursor:pointer; transition:all 0.2s; text-align:center; position:relative; background:var(--surface2); }
+  .role-card:hover { border-color:var(--border-hover); transform:translateY(-2px); }
+  .role-card.selected { border-color:var(--accent); background:var(--accent-dim); }
+  .role-card.current-role { opacity:0.4; cursor:not-allowed; pointer-events:none; }
+  .role-card.current-role::after { content:'Current'; position:absolute; top:6px; right:6px; font-size:9px; background:var(--surface); color:var(--muted); padding:2px 6px; border-radius:4px; }
+  .role-card.needs-approval { border-style:dashed; }
+  .role-card.needs-approval.selected { border-color:var(--orange); background:rgba(251,146,60,0.1); }
+  .approval-tag { position:absolute; top:6px; right:6px; font-size:9px; background:rgba(251,146,60,0.15); color:var(--orange); padding:2px 6px; border-radius:4px; border:1px solid rgba(251,146,60,0.3); }
+  .role-emoji { font-size:28px; display:block; margin-bottom:8px; }
+  .role-name { font-size:12px; font-weight:600; display:block; color:var(--text); line-height:1.3; }
+  .role-desc { font-size:10px; color:var(--muted); display:block; margin-top:3px; }
+  .role-check { position:absolute; top:7px; left:7px; width:16px; height:16px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; font-size:9px; color:#0d0d0f; font-weight:700; }
+  .role-card.selected .role-check { opacity:1; }
+  .role-card.needs-approval.selected .role-check { background:var(--orange); }
+
+  /* FORM */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:1.25rem; }
+  .card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .field { margin-bottom:1rem; }
+  .field label { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.4px; }
+  .field input, .field textarea, .field select { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
+  .field textarea { resize:vertical; min-height:80px; line-height:1.6; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--accent); background:var(--accent-dim); }
+  .field input::placeholder, .field textarea::placeholder { color:var(--muted); }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .field-note { font-size:11px; color:var(--muted); margin-top:4px; line-height:1.5; }
+
+  .approval-notice { background:rgba(251,146,60,0.08); border:1px solid rgba(251,146,60,0.25); border-radius:10px; padding:1rem 1.25rem; margin-bottom:1.25rem; font-size:13px; color:var(--orange); display:none; }
+  .approval-notice.show { display:block; }
+  .approval-notice strong { display:block; margin-bottom:4px; }
+
+  .instant-notice { background:rgba(110,231,183,0.08); border:1px solid rgba(110,231,183,0.25); border-radius:10px; padding:1rem 1.25rem; margin-bottom:1.25rem; font-size:13px; color:var(--success); display:none; }
+  .instant-notice.show { display:block; }
+
+  .extra-fields { display:none; }
+  .extra-fields.show { display:block; }
+
+  .error-msg { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; color:var(--error); margin-bottom:1rem; display:none; }
+  .error-msg.show { display:block; }
+  .success-msg { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.3); border-radius:8px; padding:0.9rem; font-size:14px; color:var(--success); margin-bottom:1rem; text-align:center; display:none; }
+  .success-msg.show { display:block; }
+
+  .btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; margin-top:0.25rem; transition:opacity 0.2s,transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn:hover { opacity:0.9; transform:translateY(-1px); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .btn.orange { background:var(--orange); color:#fff; }
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="#" class="back-link" id="backLink">← Back to Dashboard</a>
+  <a href="/" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    <span class="logo-text">IdeaHub</span>
+  </a>
+
+  <h1>Switch Your Role</h1>
+  <p class="subtitle">Your profile details are carried over. Fill in any new role-specific fields below.</p>
+
+  <div class="current-role-bar">
+    <span style="font-size:24px;" id="currentRoleEmoji">💡</span>
+    <div>
+      <div class="current-role-label">Your current role</div>
+      <div class="current-role-val" id="currentRoleLabel">—</div>
+    </div>
+  </div>
+
+  <!-- ROLE PICKER -->
+  <div class="role-grid" id="roleGrid">
+    <div class="role-card" data-role="idea_creator" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">💡</span>
+      <span class="role-name">Idea Creator</span>
+      <span class="role-desc">Post & sell ideas</span>
+    </div>
+    <div class="role-card" data-role="investor" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">💼</span>
+      <span class="role-name">Investor</span>
+      <span class="role-desc">Discover & fund ideas</span>
+    </div>
+    <div class="role-card" data-role="virtual_manager" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🤝</span>
+      <span class="role-name">Virtual Manager</span>
+      <span class="role-desc">Manage & grow</span>
+    </div>
+    <div class="role-card needs-approval" data-role="patent_attorney" onclick="selectRole(this)">
+      <div class="approval-tag">Needs Approval</div>
+      <div class="role-check">✓</div>
+      <span class="role-emoji">⚖️</span>
+      <span class="role-name">Patent Attorney</span>
+      <span class="role-desc">Legal services</span>
+    </div>
+    <div class="role-card needs-approval" data-role="patent_seller" onclick="selectRole(this)">
+      <div class="approval-tag">Needs Approval</div>
+      <div class="role-check">✓</div>
+      <span class="role-emoji">📋</span>
+      <span class="role-name">Patent Seller</span>
+      <span class="role-desc">Sell your patents</span>
+    </div>
+    <div class="role-card" data-role="business_owner" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🏭</span>
+      <span class="role-name">Business Owner</span>
+      <span class="role-desc">Expand your business</span>
+    </div>
+    <div class="role-card" data-role="corporate_services" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🏢</span>
+      <span class="role-name">Corporate</span>
+      <span class="role-desc">Business solutions</span>
+    </div>
+  </div>
+
+  <!-- NOTICES -->
+  <div class="instant-notice" id="instantNotice">
+    ✅ <strong>Instant switch</strong> — This role change takes effect immediately. Your existing data and profile are preserved.
+  </div>
+  <div class="approval-notice" id="approvalNotice">
+    <strong>⏳ Admin Approval Required</strong>
+    This role requires verification. Fill in the details below and submit — our team will review within 24–48 hours. You'll keep your current role until approved.
+  </div>
+
+  <!-- PRE-FILLED PROFILE (always shown) -->
+  <div class="card">
+    <div class="card-title">👤 Your Profile Details <span style="font-size:11px;color:var(--success);font-weight:400;">Auto-filled from your account</span></div>
+    <div class="row2">
+      <div class="field"><label>First Name</label><input type="text" id="firstName" /></div>
+      <div class="field"><label>Last Name</label><input type="text" id="lastName" /></div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" id="email" readonly style="opacity:0.6;" /></div>
+    <div class="row2">
+      <div class="field"><label>Country</label><input type="text" id="country" /></div>
+      <div class="field"><label>City</label><input type="text" id="city" /></div>
+    </div>
+    <div class="field"><label>Bio</label><textarea id="bio" placeholder="Tell us about yourself..."></textarea></div>
+  </div>
+
+  <!-- EXTRA FIELDS FOR PATENT ATTORNEY -->
+  <div class="extra-fields card" id="attorneyFields">
+    <div class="card-title">⚖️ Patent Attorney Details <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
+    <div class="field">
+      <label>Bar Licence Number</label>
+      <input type="text" id="licenceNumber" placeholder="e.g. BAR-2024-00123" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Bar Association</label>
+        <input type="text" id="barAssociation" placeholder="e.g. Sri Lanka Bar Association" />
+      </div>
+      <div class="field">
+        <label>Jurisdiction</label>
+        <select id="jurisdiction">
+          <option value="">Select jurisdiction</option>
+          <option>Sri Lanka</option><option>United States</option><option>United Kingdom</option>
+          <option>India</option><option>Australia</option><option>Singapore</option>
+          <option>European Union</option><option>International (PCT)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Years of Experience</label>
+      <input type="number" id="attorneyYears" placeholder="e.g. 5" min="0" />
+    </div>
+    <div class="field">
+      <label>Licence Certificate URL</label>
+      <input type="url" id="licenceUrl" placeholder="https://..." />
+      <div class="field-note">Upload your licence certificate to Supabase storage and paste the public URL here.</div>
+    </div>
+    <div class="field">
+      <label>Government ID URL</label>
+      <input type="url" id="govIdUrl" placeholder="https://..." />
+      <div class="field-note">National ID or Passport — for identity verification only.</div>
+    </div>
+    <div class="field">
+      <label>Statement</label>
+      <textarea id="attorneyStatement" placeholder="Briefly describe your patent law practice and expertise..."></textarea>
+    </div>
+  </div>
+
+  <!-- EXTRA FIELDS FOR PATENT SELLER -->
+  <div class="extra-fields card" id="sellerFields">
+    <div class="card-title">📋 Patent Seller Details <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
+    <div class="field">
+      <label>Patent Number(s)</label>
+      <input type="text" id="patentNumbers" placeholder="e.g. US10,234,567 B2" />
+      <div class="field-note">Enter the patent number(s) you own and wish to sell. Separate multiple with commas.</div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Patent Jurisdiction</label>
+        <select id="patentJurisdiction">
+          <option value="">Select jurisdiction</option>
+          <option>USPTO (United States)</option><option>EPO (European)</option>
+          <option>WIPO (International PCT)</option><option>NIPO (Sri Lanka)</option>
+          <option>IPO (India)</option><option>IP Australia</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Patent Year</label>
+        <input type="number" id="patentYear" placeholder="e.g. 2022" min="1900" max="2030" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Patent Certificate URL</label>
+      <input type="url" id="patentCertUrl" placeholder="https://..." />
+      <div class="field-note">Upload your patent grant certificate and paste the public URL here.</div>
+    </div>
+    <div class="field">
+      <label>Government ID URL</label>
+      <input type="url" id="sellerGovIdUrl" placeholder="https://..." />
+      <div class="field-note">National ID or Passport — to verify ownership.</div>
+    </div>
+    <div class="field">
+      <label>Brief Description of the Patent</label>
+      <textarea id="patentDescription" placeholder="Describe what your patent covers and why it's valuable..."></textarea>
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="success-msg" id="successMsg"></div>
+
+  <button class="btn" id="submitBtn" onclick="submitSwitch()" disabled>
+    <div class="spinner" id="spinner"></div>
+    <span id="btnText">Select a role to continue</span>
+  </button>
+</div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const token = localStorage.getItem('ih_token');
+  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+
+  if (!token || !user) window.location.href = '/login';
+
+  const APPROVAL_ROLES = ['patent_attorney', 'patent_seller'];
+  const roleLabels = {
+    idea_creator: 'Idea Creator', investor: 'Investor', virtual_manager: 'Virtual Manager',
+    patent_attorney: 'Patent Attorney', patent_seller: 'Patent Seller',
+    business_owner: 'Business Owner', corporate_services: 'Corporate Services'
+  };
+  const roleEmojis = {
+    idea_creator:'💡', investor:'💼', virtual_manager:'🤝',
+    patent_attorney:'⚖️', patent_seller:'📋', business_owner:'🏭', corporate_services:'🏢'
+  };
+  const dashMap = {
+    idea_creator:'/dashboard', patent_seller:'/dashboard',
+    investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard',
+    virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard',
+    business_owner:'/business-dashboard', admin:'/admin'
+  };
+
+  let selectedRole = null;
+
+  // Init
+  document.getElementById('currentRoleEmoji').textContent = roleEmojis[user.role] || '👤';
+  document.getElementById('currentRoleLabel').textContent = roleLabels[user.role] || user.role;
+  document.getElementById('backLink').href = dashMap[user.role] || '/dashboard';
+
+  // Mark current role card
+  document.querySelectorAll('.role-card').forEach(card => {
+    if (card.dataset.role === user.role) card.classList.add('current-role');
+  });
+
+  // Pre-fill profile
+  document.getElementById('firstName').value = user.first_name || '';
+  document.getElementById('lastName').value = user.last_name || '';
+  document.getElementById('email').value = user.email || '';
+  document.getElementById('country').value = user.country || '';
+  document.getElementById('city').value = user.city || '';
+  document.getElementById('bio').value = user.bio || '';
+
+  function selectRole(el) {
+    if (el.classList.contains('current-role')) return;
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedRole = el.dataset.role;
+
+    const needsApproval = APPROVAL_ROLES.includes(selectedRole);
+
+    document.getElementById('instantNotice').classList.toggle('show', !needsApproval);
+    document.getElementById('approvalNotice').classList.toggle('show', needsApproval);
+
+    // Show/hide extra fields
+    document.getElementById('attorneyFields').classList.toggle('show', selectedRole === 'patent_attorney');
+    document.getElementById('sellerFields').classList.toggle('show', selectedRole === 'patent_seller');
+
+    // Update button
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    btn.className = 'btn' + (needsApproval ? ' orange' : '');
+    document.getElementById('btnText').textContent = needsApproval
+      ? `Submit Request to become ${roleLabels[selectedRole]} →`
+      : `Switch to ${roleLabels[selectedRole]} →`;
+  }
+
+  async function submitSwitch() {
+    if (!selectedRole) return;
+    const errorEl = document.getElementById('errorMsg');
+    const successEl = document.getElementById('successMsg');
+    errorEl.classList.remove('show');
+    successEl.classList.remove('show');
+
+    const profileData = {
+      first_name: document.getElementById('firstName').value.trim(),
+      last_name: document.getElementById('lastName').value.trim(),
+      country: document.getElementById('country').value.trim(),
+      city: document.getElementById('city').value.trim(),
+      bio: document.getElementById('bio').value.trim(),
+    };
+
+    if (!profileData.first_name) { errorEl.textContent='Please enter your first name.'; errorEl.classList.add('show'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    btn.disabled = true; spinner.style.display = 'block';
+    document.getElementById('btnText').textContent = 'Processing...';
+
+    try {
+      const needsApproval = APPROVAL_ROLES.includes(selectedRole);
+
+      if (!needsApproval) {
+        // ── INSTANT SWITCH ──
+        // 1. Update profile
+        await fetch(`${API_URL}/api/auth/me`, {
+          method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+          body: JSON.stringify(profileData)
+        });
+        // 2. Switch role
+        const res = await fetch(`${API_URL}/api/auth/switch-role`, {
+          method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+          body: JSON.stringify({ role: selectedRole })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to switch role');
+
+        // Update localStorage
+        const updatedUser = { ...user, ...profileData, role: selectedRole };
+        localStorage.setItem('ih_user', JSON.stringify(updatedUser));
+
+        successEl.textContent = `✅ Role switched to ${roleLabels[selectedRole]}! Redirecting to your new dashboard…`;
+        successEl.classList.add('show');
+        setTimeout(() => { window.location.href = dashMap[selectedRole] || '/dashboard'; }, 1500);
+
+      } else {
+        // ── APPROVAL REQUIRED ──
+        let extraData = {};
+        if (selectedRole === 'patent_attorney') {
+          extraData = {
+            licence_number: document.getElementById('licenceNumber').value.trim(),
+            bar_association: document.getElementById('barAssociation').value.trim(),
+            jurisdiction: document.getElementById('jurisdiction').value,
+            experience_years: parseInt(document.getElementById('attorneyYears').value) || null,
+            licence_file_url: document.getElementById('licenceUrl').value.trim(),
+            gov_id_url: document.getElementById('govIdUrl').value.trim(),
+            statement: document.getElementById('attorneyStatement').value.trim(),
+          };
+          if (!extraData.licence_number || !extraData.bar_association) {
+            throw new Error('Please fill in your licence number and bar association.');
+          }
+        } else if (selectedRole === 'patent_seller') {
+          extraData = {
+            patent_numbers: document.getElementById('patentNumbers').value.trim(),
+            patent_jurisdiction: document.getElementById('patentJurisdiction').value,
+            patent_year: parseInt(document.getElementById('patentYear').value) || null,
+            patent_cert_url: document.getElementById('patentCertUrl').value.trim(),
+            gov_id_url: document.getElementById('sellerGovIdUrl').value.trim(),
+            patent_description: document.getElementById('patentDescription').value.trim(),
+          };
+          if (!extraData.patent_numbers) {
+            throw new Error('Please enter your patent number(s).');
+          }
+        }
+
+        // Update profile first
+        await fetch(`${API_URL}/api/auth/me`, {
+          method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+          body: JSON.stringify(profileData)
+        });
+
+        // Submit role switch request
+        const res = await fetch(`${API_URL}/api/auth/role-switch-request`, {
+          method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+          body: JSON.stringify({ requested_role: selectedRole, ...profileData, ...extraData })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to submit request');
+
+        successEl.innerHTML = `
+          ⏳ <strong>Request submitted!</strong> Our team will review your application within 24–48 hours.
+          You'll be notified by email once approved. You'll keep your current role (${roleLabels[user.role]}) until then.
+        `;
+        successEl.classList.add('show');
+        btn.disabled = true;
+        document.getElementById('btnText').textContent = 'Request Submitted';
+      }
+
+    } catch(err) {
+      errorEl.textContent = err.message || 'Something went wrong. Please try again.';
+      errorEl.classList.add('show');
+      btn.disabled = false; spinner.style.display = 'none';
+      document.getElementById('btnText').textContent = APPROVAL_ROLES.includes(selectedRole)
+        ? `Submit Request to become ${roleLabels[selectedRole]} →`
+        : `Switch to ${roleLabels[selectedRole]} →`;
+    }
+  }
+</script>
+</body>
+</html>
