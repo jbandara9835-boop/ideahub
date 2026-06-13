@@ -764,7 +764,9 @@ function updateStates() {
         showMsg('success','✅ Profile saved! You earned your first ⭐ star!');
       } else { showMsg('success','✅ Profile saved successfully!'); }
       const u=JSON.parse(localStorage.getItem('ih_user')||'{}');
-      u.firstName=fn; u.lastName=ln; localStorage.setItem('ih_user',JSON.stringify(u));
+      u.firstName=fn; u.lastName=ln;
+      u.first_name=fn; u.last_name=ln;
+      localStorage.setItem('ih_user',JSON.stringify(u));
       currentProfile={...currentProfile,...payload};
     } catch(err) { showMsg('error',err.message||'Something went wrong.'); }
     finally { btn.disabled=false; sp.style.display='none'; bt.textContent='Save Changes'; }
