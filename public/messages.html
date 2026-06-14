@@ -78,6 +78,23 @@
   .chat-header-sub { font-size: 12px; color: var(--muted); }
   .call-btn { background: none; border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: auto; transition: all 0.2s; font-size: 16px; }
   .call-btn:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .add-person-btn { background: none; border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 16px; }
+  .add-person-btn:hover { border-color: var(--accent); background: var(--accent-dim); }
+
+  /* SEARCH RESULTS DROPDOWN */
+  .search-results { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; max-height: 160px; overflow-y: auto; display: none; }
+  .search-result-item { padding: 0.6rem 0.75rem; cursor: pointer; font-size: 13px; transition: background 0.15s; display: flex; justify-content: space-between; align-items: center; }
+  .search-result-item:hover { background: rgba(255,255,255,0.05); }
+  .search-result-role { font-size: 11px; color: var(--muted); }
+
+  /* GROUP CONSENT CARD */
+  .group-consent-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; max-width: 320px; margin: 0 auto 1rem; }
+  .group-consent-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .group-consent-text { font-size: 13px; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.5; }
+  .group-consent-actions { display: flex; gap: 8px; }
+
+  /* GROUP BADGE IN CONV LIST */
+  .group-badge { background: var(--accent-dim); color: var(--accent); font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-left: 6px; }
 
   /* CALL REQUEST CARD */
   .call-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; max-width: 280px; }
@@ -211,6 +228,23 @@
         <div class="empty-icon">💬</div>
         <div class="empty-text">Select a conversation to start chatting</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PERSON MODAL -->
+<div class="modal-overlay" id="addPersonModal">
+  <div class="call-modal">
+    <h3>👥 Add Someone to Chat</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;">Add a lawyer, accountant, or other professional to a new group chat with you and ${activeConv?.name||'this person'}. The other party must approve before the group becomes active.</p>
+    <label>Search by Name</label>
+    <input type="text" id="addPersonSearch" placeholder="Type a name..." oninput="searchAddPerson(this.value)" autocomplete="off" />
+    <div class="search-results" id="addPersonResults"></div>
+    <input type="hidden" id="addPersonId" />
+    <div id="addPersonSelected" style="display:none;background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:8px;padding:0.6rem 0.75rem;font-size:13px;margin-bottom:1rem;"></div>
+    <div class="call-modal-actions">
+      <button class="call-modal-cancel" onclick="closeAddPersonModal()">Cancel</button>
+      <button class="call-modal-submit" onclick="submitAddPerson()">Send Request</button>
     </div>
   </div>
 </div>
@@ -436,6 +470,7 @@
           <div class="chat-header-name">${activeConv.name}</div>
           <div class="chat-header-sub">${msgs.length} message${msgs.length !== 1 ? 's' : ''}</div>
         </div>
+        <button class="add-person-btn" onclick="openAddPersonModal()" title="Add someone to chat">👥➕</button>
         <button class="call-btn" onclick="openCallModal()" title="Request a call">📞</button>
       </div>
       <div class="chat-messages" id="chatMessages">
@@ -498,6 +533,69 @@
         </div>
         <div class="bubble-time">${formatTime(msg.created_at)}</div>
       </div>`;
+  }
+
+  let addPersonSelectedUser = null;
+  let addPersonSearchTimeout = null;
+
+  function openAddPersonModal() {
+    if (!activeConv) return;
+    document.getElementById('addPersonSearch').value = '';
+    document.getElementById('addPersonResults').style.display = 'none';
+    document.getElementById('addPersonSelected').style.display = 'none';
+    document.getElementById('addPersonId').value = '';
+    addPersonSelectedUser = null;
+    document.querySelector('#addPersonModal p').textContent = `Add a lawyer, accountant, or other professional to a new group chat with you and ${activeConv.name}. ${activeConv.name} must approve before the group becomes active.`;
+    document.getElementById('addPersonModal').classList.add('show');
+  }
+  function closeAddPersonModal() { document.getElementById('addPersonModal').classList.remove('show'); }
+
+  function searchAddPerson(query) {
+    clearTimeout(addPersonSearchTimeout);
+    if (query.length < 2) { document.getElementById('addPersonResults').style.display = 'none'; return; }
+    addPersonSearchTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/users/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
+        const users = res.ok ? await res.json() : [];
+        const filtered = users.filter(u => u.id !== activeConv.id);
+        const el = document.getElementById('addPersonResults');
+        if (!filtered.length) { el.style.display = 'none'; return; }
+        el.style.display = 'block';
+        el.innerHTML = filtered.map(u => `
+          <div class="search-result-item" onclick='selectAddPerson(${u.id}, "${u.first_name} ${u.last_name}", "${(u.role||"").replace(/_/g," ")}")'>
+            <span>${u.first_name} ${u.last_name}</span>
+            <span class="search-result-role">${(u.role||'').replace(/_/g,' ')}</span>
+          </div>`).join('');
+      } catch {}
+    }, 300);
+  }
+
+  function selectAddPerson(id, name, role) {
+    addPersonSelectedUser = { id, name, role };
+    document.getElementById('addPersonId').value = id;
+    document.getElementById('addPersonSearch').value = name;
+    document.getElementById('addPersonResults').style.display = 'none';
+    const sel = document.getElementById('addPersonSelected');
+    sel.style.display = 'block';
+    sel.innerHTML = `Selected: <strong>${name}</strong> <span style="color:var(--muted)">(${role})</span>`;
+  }
+
+  async function submitAddPerson() {
+    if (!addPersonSelectedUser || !activeConv) { alert('Please select a person to add.'); return; }
+    try {
+      const res = await fetch(`${API_URL}/api/groups`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ otherUserId: activeConv.id, newUserId: addPersonSelectedUser.id })
+      });
+      if (res.ok) {
+        closeAddPersonModal();
+        alert(`Request sent! ${activeConv.name} needs to approve adding ${addPersonSelectedUser.name} before the group chat becomes active.`);
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Failed to send request.');
+      }
+    } catch(e) { alert('Failed to send request.'); }
   }
 
   function openCallModal() {
