@@ -314,7 +314,7 @@
   const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', admin:'Admin' };
   const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
 
-  let allCerts = []; let allUsers = []; let allHires = []; let allIdeas = [];
+  let allCerts = []; let allUsers = []; let allHires = []; let allIdeas = []; let allRoleRequests = [];
   let activeCertFilter = 'pending';
   let rejectCertId = null;
 
@@ -413,6 +413,96 @@
       });
       if (res.ok) { closeReject(); loadAll(); }
       else { const d=await res.json(); alert(d.error||'Failed'); }
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
+  // ROLE REQUESTS
+  function renderRoleRequests() {
+    const el = document.getElementById('rolesList');
+    const pending = allRoleRequests.filter(r => r.status === 'pending');
+    if (!pending.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🔄</div><div class="empty-text">No pending role requests</div></div>`; return; }
+
+    el.innerHTML = pending.map(r => {
+      const uName = `${r.user?.first_name||''} ${r.user?.last_name||''}`.trim()||'Unknown';
+      const uInitials = uName.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      const roleLabel = (r.requested_role||'').replace(/_/g,' ');
+
+      let detailsHtml = '';
+      if (r.requested_role === 'patent_attorney') {
+        detailsHtml = `
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Licence Number</div><div class="cert-detail-val">${r.licence_number||'—'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Bar Association</div><div class="cert-detail-val">${r.bar_association||'—'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Jurisdiction</div><div class="cert-detail-val">${r.jurisdiction||'—'}</div></div>
+          </div>
+          <div style="margin-bottom:1rem;">
+            ${r.licence_file_url ? `<a href="${r.licence_file_url}" target="_blank" class="cert-file-btn">📄 View Licence</a>` : ''}
+            ${r.gov_id_url ? `<a href="${r.gov_id_url}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
+            ${!r.licence_file_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">⚠️ No documents uploaded</div>' : ''}
+          </div>
+          ${r.statement ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${r.statement}</div>` : ''}
+        `;
+      } else if (r.requested_role === 'patent_seller') {
+        detailsHtml = `
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Patent Numbers</div><div class="cert-detail-val">${r.patent_numbers||'—'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Jurisdiction</div><div class="cert-detail-val">${r.patent_jurisdiction||'—'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Year</div><div class="cert-detail-val">${r.patent_year||'—'}</div></div>
+          </div>
+          <div style="margin-bottom:1rem;">
+            ${r.patent_cert_url ? `<a href="${r.patent_cert_url}" target="_blank" class="cert-file-btn">📄 View Patent Cert</a>` : ''}
+            ${r.gov_id_url ? `<a href="${r.gov_id_url}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
+            ${!r.patent_cert_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">⚠️ No documents uploaded</div>' : ''}
+          </div>
+          ${r.patent_description ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${r.patent_description}</div>` : ''}
+        `;
+      }
+
+      return `
+        <div class="cert-card pending">
+          <div class="cert-top">
+            <div class="cert-user">
+              <div class="cert-avatar">${uInitials}</div>
+              <div class="cert-user-info">
+                <div class="cert-user-name">${uName}</div>
+                <div class="cert-user-role">Currently: ${roleMap[r.user?.role]||r.user?.role||'—'} → Requesting: <strong>${roleLabel}</strong></div>
+              </div>
+            </div>
+            <span class="cert-status-badge pending">⏳ Pending</span>
+          </div>
+          ${detailsHtml}
+          <div class="cert-actions">
+            <button class="btn-approve" onclick="approveRoleRequest(${r.id})">✅ Approve</button>
+            <button class="btn-reject-cert" onclick="rejectRoleRequest(${r.id})">❌ Reject</button>
+            <span style="font-size:12px;color:var(--muted);">${r.user?.email||''} · ${formatDate(r.created_at)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function approveRoleRequest(id) {
+    if (!confirm('Approve this role change? The user\'s role will be updated immediately.')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/role-requests/${id}/approve`, {
+        method:'PUT', headers:{ Authorization:`Bearer ${token}` }
+      });
+      if (res.ok) loadAll();
+      else { const d = await res.json(); alert(d.error||'Failed'); }
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
+  async function rejectRoleRequest(id) {
+    const reason = prompt('Rejection reason (shown to user):');
+    if (!reason) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/role-requests/${id}/reject`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body: JSON.stringify({ reason })
+      });
+      if (res.ok) loadAll();
+      else { const d = await res.json(); alert(d.error||'Failed'); }
     } catch(e) { alert('Something went wrong.'); }
   }
 
@@ -549,39 +639,36 @@
 
   async function loadAll() {
     try {
-      // Load certificates (using existing endpoint + filter all)
-      const certsRes = await fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } });
-
-      // Load users, ideas, hires via existing endpoints
-      const [usersRes, ideasRes, hiresRes] = await Promise.all([
+      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes] = await Promise.all([
+        fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } }),
+        fetch(`${API_URL}/api/admin/users`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/ideas`),
-        fetch(`${API_URL}/api/ideas`),
-        fetch(`${API_URL}/api/hire/incoming`, { headers:{ Authorization:`Bearer ${token}` } })
+        fetch(`${API_URL}/api/hire/incoming`, { headers:{ Authorization:`Bearer ${token}` } }),
+        fetch(`${API_URL}/api/admin/role-requests`, { headers:{ Authorization:`Bearer ${token}` } })
       ]);
 
-      // We'll use what we have
       allIdeas = ideasRes.ok ? await ideasRes.json() : [];
       allHires = hiresRes.ok ? await hiresRes.json() : [];
-
-      // For admin we show our own certs as example (in production, admin sees all)
       allCerts = certsRes.ok ? await certsRes.json() : [];
-
-      // Mock some user data from local
-      allUsers = [user].filter(Boolean);
+      allUsers = usersRes.ok ? await usersRes.json() : [];
+      allRoleRequests = rolesRes.ok ? await rolesRes.json() : [];
 
       // Stats
       const pendingCerts = allCerts.filter(c=>c.status==='pending').length;
+      const pendingRoles = allRoleRequests.filter(r=>r.status==='pending').length;
       document.getElementById('sPendingCerts').textContent = pendingCerts;
       document.getElementById('sTotalUsers').textContent = allUsers.length;
       document.getElementById('sTotalIdeas').textContent = allIdeas.length;
       document.getElementById('sActiveHires').textContent = allHires.filter(h=>['accepted','in_progress'].includes(h.status)).length;
-      document.getElementById('sVerifiedPros').textContent = allHires.filter(h=>h.status==='completed').length;
+      document.getElementById('sVerifiedPros').textContent = allUsers.filter(u=>u.verification_status==='verified').length;
       document.getElementById('tabCertCount').textContent = pendingCerts;
+      document.getElementById('tabRoleCount').textContent = pendingRoles;
       document.getElementById('tabUserCount').textContent = allUsers.length;
       document.getElementById('tabHireCount').textContent = allHires.length;
       document.getElementById('tabIdeaCount').textContent = allIdeas.length;
 
       renderCerts();
+      renderRoleRequests();
       renderUsers(allUsers);
       renderHires(allHires);
       renderIdeas(allIdeas);
