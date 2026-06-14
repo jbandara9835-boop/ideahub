@@ -389,7 +389,7 @@
       if (msgRes.status === 401) { logout(); return; }
       allMessages = await msgRes.json();
       myGroups = groupRes.ok ? await groupRes.json() : [];
-      buildConversations();
+      await buildConversations();
     } catch (err) {
       document.getElementById('convList').innerHTML = `<div style="padding:1rem;color:var(--error);font-size:13px;">Failed to load messages.</div>`;
     }
@@ -940,11 +940,13 @@
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('user');
     const groupId = params.get('group');
+    console.log('Restoring:', { userId, groupId, conversations, myGroups });
     if (groupId) {
       const group = myGroups.find(g => g.id === parseInt(groupId));
       if (group) await openGroup(group.id);
     } else if (userId) {
       const conv = conversations.find(c => c.id === parseInt(userId));
+      console.log('Found conv:', conv);
       if (conv) openConv(conv.id);
     }
   }
