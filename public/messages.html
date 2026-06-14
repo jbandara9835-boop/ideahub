@@ -499,6 +499,10 @@
     activeConv = conversations.find(c => c.id === otherId);
     activeGroup = null;
     if (!activeConv) return;
+    const url = new URL(window.location);
+    url.searchParams.set('user', otherId);
+    url.searchParams.delete('group');
+    window.history.replaceState({}, '', url);
     renderConvList();
     renderChatArea();
   }
@@ -507,6 +511,10 @@
     activeGroup = myGroups.find(g => g.id === groupId);
     activeConv = null;
     if (!activeGroup) return;
+    const url = new URL(window.location);
+    url.searchParams.set('group', groupId);
+    url.searchParams.delete('user');
+    window.history.replaceState({}, '', url);
     renderConvList();
     await renderGroupArea();
   }
@@ -928,7 +936,20 @@
     }
   }
 
-  loadMessages();
+  async function restoreActiveConv() {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user');
+    const groupId = params.get('group');
+    if (groupId) {
+      const group = myGroups.find(g => g.id === parseInt(groupId));
+      if (group) await openGroup(group.id);
+    } else if (userId) {
+      const conv = conversations.find(c => c.id === parseInt(userId));
+      if (conv) openConv(conv.id);
+    }
+  }
+
+  loadMessages().then(restoreActiveConv);
   setInterval(loadMessages, 15000);
 </script>
 </body>
