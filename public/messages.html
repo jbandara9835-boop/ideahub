@@ -76,6 +76,35 @@
   .chat-header-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--muted); }
   .chat-header-name { font-size: 15px; font-weight: 600; }
   .chat-header-sub { font-size: 12px; color: var(--muted); }
+  .call-btn { background: none; border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: auto; transition: all 0.2s; font-size: 16px; }
+  .call-btn:hover { border-color: var(--accent); background: var(--accent-dim); }
+
+  /* CALL REQUEST CARD */
+  .call-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; max-width: 280px; }
+  .call-card-header { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .call-card-time { font-size: 13px; color: var(--text); margin-bottom: 0.75rem; }
+  .call-card-status { font-size: 12px; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 0.5rem; }
+  .call-status-pending { background: rgba(245,200,66,0.15); color: var(--accent); }
+  .call-status-accepted { background: rgba(110,231,183,0.15); color: var(--success); }
+  .call-status-declined { background: rgba(255,107,107,0.15); color: var(--error); }
+  .call-card-actions { display: flex; gap: 8px; margin-top: 0.5rem; }
+  .call-btn-accept { background: var(--success); color: #0d0d0f; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .call-btn-decline { background: none; border: 1px solid var(--error); color: var(--error); border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; }
+  .call-join-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .call-link-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 12px; color: var(--text); outline: none; margin-bottom: 0.5rem; }
+  .call-link-input:focus { border-color: var(--accent); }
+
+  /* CALL REQUEST MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .call-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 380px; }
+  .call-modal h3 { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 1rem; }
+  .call-modal label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.4px; }
+  .call-modal input, .call-modal textarea { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 1rem; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); outline: none; margin-bottom: 1rem; }
+  .call-modal input:focus, .call-modal textarea:focus { border-color: var(--accent); }
+  .call-modal-actions { display: flex; gap: 10px; }
+  .call-modal-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1.25rem; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .call-modal-submit { flex: 1; background: var(--accent); color: #0d0d0f; border: none; border-radius: 8px; padding: 0.7rem; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; }
 
   .chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 12px; }
 
@@ -182,6 +211,34 @@
         <div class="empty-icon">💬</div>
         <div class="empty-text">Select a conversation to start chatting</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- CALL REQUEST MODAL -->
+<div class="modal-overlay" id="callModal">
+  <div class="call-modal">
+    <h3>📞 Request a Call</h3>
+    <label>Date & Time</label>
+    <input type="datetime-local" id="callDateInput" />
+    <label>Note (optional)</label>
+    <textarea id="callNoteInput" rows="2" placeholder="What would you like to discuss?"></textarea>
+    <div class="call-modal-actions">
+      <button class="call-modal-cancel" onclick="closeCallModal()">Cancel</button>
+      <button class="call-modal-submit" onclick="submitCallRequest()">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEET LINK MODAL -->
+<div class="modal-overlay" id="meetLinkModal">
+  <div class="call-modal">
+    <h3>📹 Add Google Meet Link</h3>
+    <label>Meeting Link</label>
+    <input type="text" id="meetLinkInput" placeholder="https://meet.google.com/xxx-xxxx-xxx" />
+    <div class="call-modal-actions">
+      <button class="call-modal-cancel" onclick="closeMeetLinkModal()">Cancel</button>
+      <button class="call-modal-submit" onclick="submitMeetLink()">Accept & Send Link</button>
     </div>
   </div>
 </div>
@@ -377,11 +434,13 @@
           <div class="chat-header-name">${activeConv.name}</div>
           <div class="chat-header-sub">${msgs.length} message${msgs.length !== 1 ? 's' : ''}</div>
         </div>
+        <button class="call-btn" onclick="openCallModal()" title="Request a call">📞</button>
       </div>
       <div class="chat-messages" id="chatMessages">
         ${msgs.length === 0 ? `<div class="empty-conv"><div class="empty-icon">👋</div><div class="empty-text">Say hello!</div></div>` :
           msgs.map(msg => {
             const isMe = msg.from_id === myId;
+            if (msg.type === 'call_request') return renderCallCard(msg, isMe);
             return `
               <div class="msg-bubble ${isMe ? 'me' : 'them'}">
                 ${msg.idea_id ? `<div class="idea-ref">💡 Re: Idea #${msg.idea_id}</div>` : ''}
@@ -403,6 +462,100 @@
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     document.getElementById('msgInput')?.focus();
+  }
+
+  function formatCallDate(d) {
+    if (!d) return '';
+    const date = new Date(d);
+    return date.toLocaleString([], { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function renderCallCard(msg, isMe) {
+    const statusLabel = { pending:'⏳ Pending', accepted:'✅ Accepted', declined:'❌ Declined' };
+    const statusClass = { pending:'call-status-pending', accepted:'call-status-accepted', declined:'call-status-declined' };
+    let actionsHtml = '';
+
+    if (msg.call_status === 'pending' && !isMe) {
+      actionsHtml = `
+        <div class="call-card-actions">
+          <button class="call-btn-accept" onclick="openMeetLinkModal('${msg.id}')">Accept</button>
+          <button class="call-btn-decline" onclick="respondCall('${msg.id}','declined')">Decline</button>
+        </div>`;
+    } else if (msg.call_status === 'accepted' && msg.meet_link) {
+      actionsHtml = `<a class="call-join-btn" href="${msg.meet_link}" target="_blank">📹 Join Call</a>`;
+    }
+
+    return `
+      <div class="msg-bubble ${isMe ? 'me' : 'them'}">
+        <div class="call-card">
+          <div class="call-card-header">📞 Call Request</div>
+          <div class="call-card-time">${formatCallDate(msg.call_date)}</div>
+          ${msg.text ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.5rem;">${msg.text}</div>` : ''}
+          <span class="call-card-status ${statusClass[msg.call_status]||'call-status-pending'}">${statusLabel[msg.call_status]||'⏳ Pending'}</span>
+          ${actionsHtml}
+        </div>
+        <div class="bubble-time">${formatTime(msg.created_at)}</div>
+      </div>`;
+  }
+
+  function openCallModal() {
+    document.getElementById('callDateInput').value = '';
+    document.getElementById('callNoteInput').value = '';
+    document.getElementById('callModal').classList.add('show');
+  }
+  function closeCallModal() { document.getElementById('callModal').classList.remove('show'); }
+
+  async function submitCallRequest() {
+    const callDate = document.getElementById('callDateInput').value;
+    const note = document.getElementById('callNoteInput').value.trim();
+    if (!callDate) { alert('Please select a date and time.'); return; }
+    if (!activeConv) return;
+    try {
+      const res = await fetch(`${API_URL}/api/messages/call-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ toId: activeConv.id, callDate: new Date(callDate).toISOString(), note })
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        activeConv.messages.push(saved);
+        activeConv.lastMsg = saved;
+        closeCallModal();
+        renderConvList();
+        renderChatArea();
+      }
+    } catch(e) { alert('Failed to send call request.'); }
+  }
+
+  let pendingCallMsgId = null;
+  function openMeetLinkModal(msgId) {
+    pendingCallMsgId = msgId;
+    document.getElementById('meetLinkInput').value = '';
+    document.getElementById('meetLinkModal').classList.add('show');
+  }
+  function closeMeetLinkModal() { document.getElementById('meetLinkModal').classList.remove('show'); pendingCallMsgId = null; }
+
+  async function submitMeetLink() {
+    const link = document.getElementById('meetLinkInput').value.trim();
+    if (!link) { alert('Please paste a Google Meet link.'); return; }
+    await respondCall(pendingCallMsgId, 'accepted', link);
+    closeMeetLinkModal();
+  }
+
+  async function respondCall(msgId, status, meetLink) {
+    try {
+      const res = await fetch(`${API_URL}/api/messages/${msgId}/call-response`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status, meetLink })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        const idx = activeConv.messages.findIndex(m => m.id === updated.id);
+        if (idx >= 0) activeConv.messages[idx] = updated;
+        renderChatArea();
+      }
+    } catch(e) { alert('Failed to respond.'); }
   }
 
   function autoResize(el) {
