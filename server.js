@@ -670,6 +670,19 @@ app.post('/api/messages', authMiddleware, async (req, res) => {
     .insert([{ from_id: req.user.id, to_id: parseInt(toId), text, idea_id: ideaId || null }])
     .select().single();
   if (error) return res.status(500).json({ error: error.message });
+
+  // Notify recipient
+  const { data: sender } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+  const senderName = sender ? `${sender.first_name} ${sender.last_name||''}`.trim() : 'Someone';
+  await supabase.from('notifications').insert([{
+    user_id: parseInt(toId),
+    type: 'new_message',
+    title: '💬 New Message',
+    message: `${senderName} sent you a message: "${text.slice(0,60)}${text.length>60?'...':''}"`,
+    link: `/messages?user=${req.user.id}`,
+    data: { from_id: req.user.id }
+  }]);
+
   res.status(201).json(data);
 });
 
@@ -689,6 +702,19 @@ app.post('/api/messages/call-request', authMiddleware, async (req, res) => {
     }])
     .select().single();
   if (error) return res.status(500).json({ error: error.message });
+
+  // Notify recipient
+  const { data: sender } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+  const senderName = sender ? `${sender.first_name} ${sender.last_name||''}`.trim() : 'Someone';
+  await supabase.from('notifications').insert([{
+    user_id: parseInt(toId),
+    type: meetLink ? 'call_now' : 'call_request',
+    title: meetLink ? '📞 Incoming Call!' : '📅 Call Request',
+    message: meetLink ? `${senderName} is calling you now!` : `${senderName} requested a call.`,
+    link: `/messages?user=${req.user.id}`,
+    data: { from_id: req.user.id }
+  }]);
+
   res.status(201).json(data);
 });
 
@@ -711,6 +737,19 @@ app.put('/api/messages/:id/call-response', authMiddleware, async (req, res) => {
     .eq('id', req.params.id)
     .select().single();
   if (error) return res.status(500).json({ error: error.message });
+
+  // Notify original requester
+  const { data: responder } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+  const responderName = responder ? `${responder.first_name} ${responder.last_name||''}`.trim() : 'Someone';
+  await supabase.from('notifications').insert([{
+    user_id: msg.from_id,
+    type: 'call_response',
+    title: status === 'accepted' ? '✅ Call Accepted!' : '❌ Call Declined',
+    message: status === 'accepted' ? `${responderName} accepted your call request.` : `${responderName} declined your call request.`,
+    link: `/messages?user=${req.user.id}`,
+    data: { from_id: req.user.id }
+  }]);
+
   res.json(data);
 });
 
