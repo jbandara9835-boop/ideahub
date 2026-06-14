@@ -29,14 +29,12 @@
   .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
   .logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
   .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
-  .nav { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; scrollbar-width: none; }
+  .nav { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; scrollbar-width: none; }
   .nav::-webkit-scrollbar { display: none; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item { display: flex; align-items: center; padding: 0.55rem 0.75rem; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; }
   .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
   .nav-item.active { color: var(--accent); background: var(--accent-dim); }
-  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
-  .nav-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
-  .nav-section-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 0.75rem 0.75rem 0.25rem; }
+  .nav-section-label { font-size: 10px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 1.5px; padding: 0.75rem 0.75rem 0.25rem; }
   .user-card { display: flex; align-items: center; gap: 10px; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border); margin-top: auto; }
   .avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
   .user-info { flex: 1; min-width: 0; }
@@ -121,15 +119,7 @@
     <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
     <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
   </div>
-  <nav class="nav">
-    <a class="nav-item" href="/dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/"><span class="nav-icon">💡</span><span>Marketplace</span></a>
-    <a class="nav-item" href="/submit"><span class="nav-icon">✚</span><span>Post an Idea</span></a>
-    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item active" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-  </nav>
+  <nav class="nav" id="sidebarNav"></nav>
   <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
     <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
   </div>
@@ -146,6 +136,7 @@
     <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
     <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
     <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
+    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
     <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
   </div>
 </aside>
@@ -260,24 +251,27 @@
   // ── SHARED SIDEBAR NAV ──
   function renderSidebar() {
     const path = window.location.pathname;
-    const nav = document.querySelector('.nav');
+    const nav = document.getElementById('sidebarNav');
     if (!nav) return;
-    const newIdeaBtn = document.getElementById('newIdeaBtn');
-    if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
+    const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
+      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && user.role === 'business_owner' ? '/business-dashboard'
+      : user && user.role === 'admin' ? '/admin' : '/dashboard';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+      <a class="nav-item ${path.includes('dashboard') ? 'active' : ''}" href="${dashUrl}">Dashboard</a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile">My Profile</a>
       <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse">Marketplace</a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests">Request an Idea</a>
+      <a class="nav-item ${path === '/businesses' ? 'active' : ''}" href="/businesses">Business Expansion</a>
       <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
+      <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
+      <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions">Wallet</a>
     `;
   }
   const token = localStorage.getItem('ih_token');
