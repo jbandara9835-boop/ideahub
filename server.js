@@ -2092,6 +2092,164 @@ app.post('/api/certificates/upload-url', authMiddleware, async (req, res) => {
   res.json({ uploadUrl: data.signedUrl, filePath, token: data.token });
 });
 
+// ── GROUP CONVERSATIONS (Add 3rd party to chat) ────────────────────────────────
+
+// CREATE a group conversation - inviter + existing party (auto-approved) + new party (pending)
+app.post('/api/groups', authMiddleware, async (req, res) => {
+  const { otherUserId, newUserId, title } = req.body;
+  if (!otherUserId || !newUserId) return res.status(400).json({ error: 'otherUserId and newUserId required' });
+  if (parseInt(newUserId) === req.user.id || parseInt(newUserId) === parseInt(otherUserId)) {
+    return res.status(400).json({ error: 'Invalid user to add' });
+  }
+
+  const { data: group, error } = await supabase
+    .from('group_conversations')
+    .insert([{ title: title || null, created_by: req.user.id, status: 'pending' }])
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+
+  const members = [
+    { conversation_id: group.id, user_id: req.user.id, status: 'approved', invited_by: req.user.id },
+    { conversation_id: group.id, user_id: parseInt(otherUserId), status: 'pending', invited_by: req.user.id },
+    { conversation_id: group.id, user_id: parseInt(newUserId), status: 'pending', invited_by: req.user.id }
+  ];
+  const { error: memErr } = await supabase.from('group_members').insert(members);
+  if (memErr) return res.status(500).json({ error: memErr.message });
+
+  // Notify the existing party for consent
+  const { data: inviter } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+  const { data: newUser } = await supabase.from('users').select('first_name, last_name, role').eq('id', newUserId).single();
+  await supabase.from('notifications').insert([{
+    user_id: parseInt(otherUserId),
+    type: 'group_invite',
+    title: '👥 Group Chat Request',
+    message: `${inviter?.first_name||'Someone'} wants to add ${newUser?.first_name||'a user'} (${newUser?.role?.replace(/_/g,' ')||''}) to a group chat with you.`,
+    link: `/messages?group=${group.id}`,
+    data: { group_id: group.id }
+  }]);
+
+  res.status(201).json(group);
+});
+
+// GET my group conversations
+app.get('/api/groups', authMiddleware, async (req, res) => {
+  const { data: memberships, error } = await supabase
+    .from('group_members')
+    .select('*, group:conversation_id(*)')
+    .eq('user_id', req.user.id);
+  if (error) return res.status(500).json({ error: error.message });
+
+  const groups = await Promise.all((memberships||[]).map(async m => {
+    const { data: allMembers } = await supabase
+      .from('group_members')
+      .select('*, user:user_id(id, first_name, last_name, role)')
+      .eq('conversation_id', m.conversation_id);
+    return { ...m.group, my_status: m.status, members: allMembers || [] };
+  }));
+
+  res.json(groups);
+});
+
+// RESPOND to a group invite (approve/decline)
+app.put('/api/groups/:id/respond', authMiddleware, async (req, res) => {
+  const { status } = req.body; // 'approved' or 'declined'
+  if (!['approved','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+  const { data: member } = await supabase.from('group_members').select('*').eq('conversation_id', req.params.id).eq('user_id', req.user.id).single();
+  if (!member) return res.status(404).json({ error: 'Not a member of this group' });
+
+  await supabase.from('group_members').update({ status }).eq('conversation_id', req.params.id).eq('user_id', req.user.id);
+
+  if (status === 'declined') {
+    await supabase.from('group_conversations').update({ status: 'declined' }).eq('id', req.params.id);
+    // Notify other members
+    const { data: members } = await supabase.from('group_members').select('user_id').eq('conversation_id', req.params.id).neq('user_id', req.user.id);
+    const { data: decliner } = await supabase.from('users').select('first_name').eq('id', req.user.id).single();
+    if (members?.length) {
+      await supabase.from('notifications').insert(members.map(m => ({
+        user_id: m.user_id, type: 'group_declined', title: '❌ Group Chat Declined',
+        message: `${decliner?.first_name||'A user'} declined to join the group chat.`, link: '/messages'
+      })));
+    }
+  } else {
+    // Check if all members approved -> activate group
+    const { data: allMembers } = await supabase.from('group_members').select('status, user_id').eq('conversation_id', req.params.id);
+    const allApproved = allMembers.every(m => m.status === 'approved');
+    if (allApproved) {
+      await supabase.from('group_conversations').update({ status: 'active' }).eq('id', req.params.id);
+      const { data: approver } = await supabase.from('users').select('first_name').eq('id', req.user.id).single();
+      const others = allMembers.filter(m => m.user_id !== req.user.id);
+      await supabase.from('notifications').insert(others.map(m => ({
+        user_id: m.user_id, type: 'group_active', title: '✅ Group Chat Active!',
+        message: `${approver?.first_name||'A user'} approved the group chat. You can now chat together.`, link: `/messages?group=${req.params.id}`
+      })));
+    }
+  }
+
+  res.json({ success: true, status });
+});
+
+// GET messages for a group (only if approved member)
+app.get('/api/groups/:id/messages', authMiddleware, async (req, res) => {
+  const { data: member } = await supabase.from('group_members').select('status').eq('conversation_id', req.params.id).eq('user_id', req.user.id).single();
+  if (!member || member.status !== 'approved') return res.status(403).json({ error: 'Not authorized' });
+
+  const { data, error } = await supabase
+    .from('group_messages')
+    .select('*, sender:from_id(id, first_name, last_name)')
+    .eq('conversation_id', req.params.id)
+    .order('created_at', { ascending: true });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+// POST message in a group
+app.post('/api/groups/:id/messages', authMiddleware, async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'Text required' });
+
+  const { data: member } = await supabase.from('group_members').select('status').eq('conversation_id', req.params.id).eq('user_id', req.user.id).single();
+  if (!member || member.status !== 'approved') return res.status(403).json({ error: 'Not authorized' });
+
+  const { data, error } = await supabase
+    .from('group_messages')
+    .insert([{ conversation_id: parseInt(req.params.id), from_id: req.user.id, text, type: 'text' }])
+    .select('*, sender:from_id(id, first_name, last_name)').single();
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Notify other approved members
+  const { data: members } = await supabase.from('group_members').select('user_id').eq('conversation_id', req.params.id).eq('status', 'approved').neq('user_id', req.user.id);
+  const { data: sender } = await supabase.from('users').select('first_name').eq('id', req.user.id).single();
+  if (members?.length) {
+    await supabase.from('notifications').insert(members.map(m => ({
+      user_id: m.user_id, type: 'group_message', title: '💬 New Group Message',
+      message: `${sender?.first_name||'Someone'} sent a message in your group chat.`, link: `/messages?group=${req.params.id}`
+    })));
+  }
+
+  res.status(201).json(data);
+});
+
+// CALL REQUEST within a group
+app.post('/api/groups/:id/call-request', authMiddleware, async (req, res) => {
+  const { callDate, note, meetLink } = req.body;
+  if (!callDate) return res.status(400).json({ error: 'callDate required' });
+
+  const { data: member } = await supabase.from('group_members').select('status').eq('conversation_id', req.params.id).eq('user_id', req.user.id).single();
+  if (!member || member.status !== 'approved') return res.status(403).json({ error: 'Not authorized' });
+
+  const { data, error } = await supabase
+    .from('group_messages')
+    .insert([{
+      conversation_id: parseInt(req.params.id), from_id: req.user.id,
+      text: note || '', type: 'call_request', call_date: callDate,
+      call_status: meetLink ? 'accepted' : 'pending', meet_link: meetLink || null
+    }])
+    .select('*, sender:from_id(id, first_name, last_name)').single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
 // ── HIRE REQUESTS ─────────────────────────────────────────────
 
 // CREATE hire request
