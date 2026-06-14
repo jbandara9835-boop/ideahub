@@ -282,7 +282,8 @@
     return p >= 1000 ? '$'+(p/1000).toFixed(p%1000===0?0:1)+'k' : '$'+p;
   }
   function starsHTML(r) {
-    const n = Math.max(1, Math.round(r||1));
+    if (!r || r <= 0) return '☆☆☆☆☆ <span style="color:var(--muted);">(No ratings)</span>';
+    const n = Math.max(1, Math.min(5, Math.round(r)));
     return '★'.repeat(n)+'☆'.repeat(5-n);
   }
   function stageClass(s) {
