@@ -408,7 +408,7 @@ app.get('/api/ideas', async (req, res) => {
 app.get('/api/ideas/:id', async (req, res) => {
   const { data: idea, error } = await supabase
     .from('ideas')
-    .select('*')
+    .select('*, creator:creator_id(first_name, last_name, avatar_url, tagline, profile_stars, role)')
     .eq('id', req.params.id)
     .single();
 
