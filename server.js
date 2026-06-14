@@ -164,9 +164,9 @@ app.get('/api/ideas/public', async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   const enriched = await Promise.all((data || []).map(async idea => {
     const { data: creator } = await supabase
-      .from('users').select('first_name, last_name, avatar_url')
+      .from('users').select('first_name, last_name, avatar_url, profile_stars')
       .eq('id', idea.creator_id).single();
-    return { ...idea, creator_first_name: creator?.first_name || '', creator_last_name: creator?.last_name || '', creator_avatar: creator?.avatar_url || null };
+    return { ...idea, creator_first_name: creator?.first_name || '', creator_last_name: creator?.last_name || '', creator_avatar: creator?.avatar_url || null, creator_stars: creator?.profile_stars || 0 };
   }));
   res.json(enriched);
 });

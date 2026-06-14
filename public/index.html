@@ -729,7 +729,10 @@ footer a:hover { color: var(--text); }
             <div class="idea-card-foot">
               <div class="idea-creator">
                 <div class="idea-creator-av">${avatarHtml}</div>
-                ${idea.creator_first_name ? `${idea.creator_first_name} ${idea.creator_last_name || ''}` : 'Anonymous'}
+                <div>
+                  <div>${idea.creator_first_name ? `${idea.creator_first_name} ${idea.creator_last_name || ''}` : 'Anonymous'}</div>
+                  <div style="color:var(--accent);font-size:11px;margin-top:2px;">${idea.creator_stars > 0 ? '★'.repeat(Math.round(idea.creator_stars)) + '☆'.repeat(5-Math.round(idea.creator_stars)) : '<span style="color:var(--muted);">No ratings yet</span>'}</div>
+                </div>
               </div>
               <div class="idea-meta">
                 👁 ${idea.views || 0}
