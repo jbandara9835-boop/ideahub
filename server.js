@@ -673,6 +673,46 @@ app.post('/api/messages', authMiddleware, async (req, res) => {
   res.status(201).json(data);
 });
 
+// REQUEST a call (creates a special message of type 'call_request')
+app.post('/api/messages/call-request', authMiddleware, async (req, res) => {
+  const { toId, callDate, note } = req.body;
+  if (!toId || !callDate) return res.status(400).json({ error: 'toId and callDate required' });
+  const { data, error } = await supabase
+    .from('messages')
+    .insert([{
+      from_id: req.user.id, to_id: parseInt(toId),
+      text: note || '',
+      type: 'call_request',
+      call_date: callDate,
+      call_status: 'pending'
+    }])
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+// RESPOND to a call request (accept with meet link, or decline)
+app.put('/api/messages/:id/call-response', authMiddleware, async (req, res) => {
+  const { status, meetLink } = req.body; // status: 'accepted' or 'declined'
+  if (!['accepted','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+  const { data: msg } = await supabase.from('messages').select('*').eq('id', req.params.id).single();
+  if (!msg) return res.status(404).json({ error: 'Call request not found' });
+  if (msg.to_id !== req.user.id) return res.status(403).json({ error: 'Only the recipient can respond' });
+  if (msg.type !== 'call_request') return res.status(400).json({ error: 'Not a call request' });
+
+  const updateData = { call_status: status };
+  if (status === 'accepted' && meetLink) updateData.meet_link = meetLink;
+
+  const { data, error } = await supabase
+    .from('messages')
+    .update(updateData)
+    .eq('id', req.params.id)
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 // ── PATENTS ──────────────────────────────────────────────────────────────────
 
 app.post('/api/patents', authMiddleware, async (req, res) => {
