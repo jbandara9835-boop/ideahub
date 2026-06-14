@@ -1885,6 +1885,15 @@ app.post('/api/auth/role-switch-request', authMiddleware, async (req, res) => {
   res.status(201).json(data);
 });
 
+// GET all users (admin)
+app.get('/api/admin/users', authMiddleware, async (req, res) => {
+  const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { data, error } = await supabase.from('users').select('id, first_name, last_name, email, role, country, created_at, verified, verification_status').order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
 app.get('/api/admin/role-requests', authMiddleware, async (req, res) => {
   const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
   if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });

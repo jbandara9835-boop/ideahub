@@ -179,6 +179,7 @@
     <a class="nav-item" href="/"><span class="nav-icon">🏠</span><span>Main Site</span></a>
     <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Marketplace</span></a>
     <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
+    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
   </nav>
   <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
     <div class="avatar-sm" id="sidebarAvatar">A</div>
@@ -221,6 +222,7 @@
   <!-- TABS -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('certs', this)">📜 Certificates <span class="tab-count red" id="tabCertCount">0</span></button>
+    <button class="tab" onclick="switchTab('roles', this)">🔄 Role Requests <span class="tab-count red" id="tabRoleCount">0</span></button>
     <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
     <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
     <button class="tab" onclick="switchTab('ideas', this)">💡 Ideas <span class="tab-count" id="tabIdeaCount">0</span></button>
@@ -236,6 +238,11 @@
       <button onclick="filterCerts('all')" id="certFilter-all" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">All</button>
     </div>
     <div id="certsList"><div class="loading"><div class="spin"></div> Loading certificates...</div></div>
+  </div>
+
+  <!-- ROLE REQUESTS TAB -->
+  <div class="tab-content" id="tab-roles">
+    <div id="rolesList"><div class="loading"><div class="spin"></div> Loading role requests...</div></div>
   </div>
 
   <!-- USERS TAB -->
@@ -292,39 +299,15 @@
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
-  // ── SHARED SIDEBAR NAV ──
-  function renderSidebar() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('.nav');
-    if (!nav) return;
-    const newIdeaBtn = document.getElementById('newIdeaBtn');
-    if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
-    nav.innerHTML = `
-      <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-      <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
-      <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-      <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-    `;
-  }
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
-  renderSidebar();
 
   if (!token || !user) window.location.href = '/login';
   if (user?.role !== 'admin') { alert('Admin access only!'); window.location.href = '/'; }
 
-  const initials = (user?.firstName?.[0]||'') + (user?.lastName?.[0]||'');
+  const initials = (user?.first_name?.[0]||'') + (user?.last_name?.[0]||'');
   document.getElementById('sidebarAvatar').textContent = initials||'A';
-  document.getElementById('sidebarName').textContent = `${user?.firstName||''} ${user?.lastName||''}`.trim()||'Admin';
+  document.getElementById('sidebarName').textContent = `${user?.first_name||''} ${user?.last_name||''}`.trim()||'Admin';
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
 
