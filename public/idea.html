@@ -4,6 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Idea — IdeaHub</title>
+<meta name="description" id="metaDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
+<link rel="canonical" id="canonicalLink" href="https://ideahub.it.com/idea" />
+<meta property="og:type" content="website" />
+<meta property="og:url" id="ogUrl" content="https://ideahub.it.com/idea" />
+<meta property="og:title" id="ogTitle" content="Idea — IdeaHub" />
+<meta property="og:description" id="ogDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" id="twTitle" content="Idea — IdeaHub" />
+<meta name="twitter:description" id="twDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -361,6 +370,16 @@
 
       document.title = `${idea.title} — IdeaHub`;
       document.getElementById('breadcrumbTitle').textContent = idea.title;
+
+      const seoDesc = (idea.summary || idea.description || `${idea.title} — a ${idea.industry || ''} idea listed on IdeaHub.`).slice(0, 160);
+      const seoUrl = `https://ideahub.it.com/idea?id=${idea.id}`;
+      document.getElementById('metaDesc').setAttribute('content', seoDesc);
+      document.getElementById('canonicalLink').setAttribute('href', seoUrl);
+      document.getElementById('ogUrl').setAttribute('content', seoUrl);
+      document.getElementById('ogTitle').setAttribute('content', `${idea.title} — IdeaHub`);
+      document.getElementById('ogDesc').setAttribute('content', seoDesc);
+      document.getElementById('twTitle').setAttribute('content', `${idea.title} — IdeaHub`);
+      document.getElementById('twDesc').setAttribute('content', seoDesc);
 
       const lvl = getLevelInfo(idea.level);
       const fee = Math.round((idea.price || 0) * 0.08);
