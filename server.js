@@ -675,7 +675,7 @@ app.post('/api/messages', authMiddleware, async (req, res) => {
 
 // REQUEST a call (creates a special message of type 'call_request')
 app.post('/api/messages/call-request', authMiddleware, async (req, res) => {
-  const { toId, callDate, note } = req.body;
+  const { toId, callDate, note, meetLink } = req.body;
   if (!toId || !callDate) return res.status(400).json({ error: 'toId and callDate required' });
   const { data, error } = await supabase
     .from('messages')
@@ -684,7 +684,8 @@ app.post('/api/messages/call-request', authMiddleware, async (req, res) => {
       text: note || '',
       type: 'call_request',
       call_date: callDate,
-      call_status: 'pending'
+      call_status: meetLink ? 'accepted' : 'pending',
+      meet_link: meetLink || null
     }])
     .select().single();
   if (error) return res.status(500).json({ error: error.message });

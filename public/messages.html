@@ -225,7 +225,23 @@
     <textarea id="callNoteInput" rows="2" placeholder="What would you like to discuss?"></textarea>
     <div class="call-modal-actions">
       <button class="call-modal-cancel" onclick="closeCallModal()">Cancel</button>
-      <button class="call-modal-submit" onclick="submitCallRequest()">Send Request</button>
+      <button class="call-modal-submit" onclick="submitCallRequest()">Schedule</button>
+    </div>
+    <div style="text-align:center;margin:0.75rem 0;font-size:11px;color:var(--muted);">— or —</div>
+    <button class="call-modal-submit" style="width:100%;background:var(--success);" onclick="startCallNow()">📞 Call Now</button>
+  </div>
+</div>
+
+<!-- CALL NOW LINK MODAL -->
+<div class="modal-overlay" id="callNowModal">
+  <div class="call-modal">
+    <h3>📹 Start Call Now</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;">Get a free Google Meet link at <a href="https://meet.google.com/new" target="_blank" style="color:var(--accent);">meet.google.com/new</a>, then paste it below to invite the other person instantly.</p>
+    <label>Meeting Link</label>
+    <input type="text" id="callNowLinkInput" placeholder="https://meet.google.com/xxx-xxxx-xxx" />
+    <div class="call-modal-actions">
+      <button class="call-modal-cancel" onclick="closeCallNowModal()">Cancel</button>
+      <button class="call-modal-submit" onclick="submitCallNow()">Send Invite</button>
     </div>
   </div>
 </div>
@@ -525,6 +541,35 @@
         renderChatArea();
       }
     } catch(e) { alert('Failed to send call request.'); }
+  }
+
+  function startCallNow() {
+    closeCallModal();
+    document.getElementById('callNowLinkInput').value = '';
+    document.getElementById('callNowModal').classList.add('show');
+  }
+  function closeCallNowModal() { document.getElementById('callNowModal').classList.remove('show'); }
+
+  async function submitCallNow() {
+    const link = document.getElementById('callNowLinkInput').value.trim();
+    if (!link) { alert('Please paste a Google Meet link.'); return; }
+    if (!activeConv) return;
+    try {
+      const res = await fetch(`${API_URL}/api/messages/call-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ toId: activeConv.id, callDate: new Date().toISOString(), note: '📞 Calling now!', meetLink: link })
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        activeConv.messages.push(saved);
+        activeConv.lastMsg = saved;
+        closeCallNowModal();
+        renderConvList();
+        renderChatArea();
+        window.open(link, '_blank');
+      }
+    } catch(e) { alert('Failed to send call invite.'); }
   }
 
   let pendingCallMsgId = null;
