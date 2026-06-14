@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /buyer-dashboard
+Disallow: /business-dashboard
+Disallow: /support-dashboard
+Disallow: /attorney-dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /messages
+Disallow: /transactions
+Disallow: /settings
+Disallow: /submit
+Disallow: /post-request
+Disallow: /list-business
+
+Sitemap: https://ideahub.it.com/sitemap.xml
