@@ -2230,6 +2230,29 @@ app.post('/api/groups/:id/messages', authMiddleware, async (req, res) => {
   res.status(201).json(data);
 });
 
+// RESPOND to a call request within a group
+app.put('/api/groups/call-response/:msgId', authMiddleware, async (req, res) => {
+  const { status, meetLink } = req.body;
+  if (!['accepted','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+  const { data: msg } = await supabase.from('group_messages').select('*').eq('id', req.params.msgId).single();
+  if (!msg) return res.status(404).json({ error: 'Call request not found' });
+
+  const { data: member } = await supabase.from('group_members').select('status').eq('conversation_id', msg.conversation_id).eq('user_id', req.user.id).single();
+  if (!member || member.status !== 'approved') return res.status(403).json({ error: 'Not authorized' });
+
+  const updateData = { call_status: status };
+  if (status === 'accepted' && meetLink) updateData.meet_link = meetLink;
+
+  const { data, error } = await supabase
+    .from('group_messages')
+    .update(updateData)
+    .eq('id', req.params.msgId)
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 // CALL REQUEST within a group
 app.post('/api/groups/:id/call-request', authMiddleware, async (req, res) => {
   const { callDate, note, meetLink } = req.body;
