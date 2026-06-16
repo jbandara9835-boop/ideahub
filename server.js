@@ -650,6 +650,23 @@ app.post('/api/transactions', authMiddleware, async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   await supabase.from('ideas').update({ status: 'escrow' }).eq('id', idea.id);
+
+  // Email seller — escrow locked
+  const { data: seller } = await supabase.from('users').select('email, first_name').eq('id', idea.creator_id).single();
+  const { data: buyer } = await supabase.from('users').select('first_name').eq('id', req.user.id).single();
+  if (seller?.email) {
+    sendEmail(seller.email, `🔒 Escrow Locked for "${idea.title}" — IdeaHub`, `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+        <h2 style="margin-bottom:8px;">Your idea has a buyer! 🎉</h2>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">${buyer?.first_name || 'A buyer'} has locked <strong style="color:#f5c842;">$${idea.price.toLocaleString()}</strong> in escrow for your idea <strong>"${idea.title}"</strong>.</p>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Deliver the idea materials to the buyer. Once they confirm delivery, funds will be released to your wallet.</p>
+        <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Transaction →</a>
+        <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+      </div>
+    `);
+  }
+
   res.status(201).json(tx);
 });
 
@@ -668,6 +685,21 @@ app.put('/api/transactions/:id/confirm', authMiddleware, async (req, res) => {
   const { data: seller } = await supabase.from('users').select('earnings').eq('id', tx.seller_id).single();
   await supabase.from('users').update({ earnings: (seller?.earnings || 0) + tx.amount }).eq('id', tx.seller_id);
   await supabase.from('ideas').update({ status: 'sold' }).eq('id', tx.idea_id);
+
+  // Email seller — payment released
+  const { data: sellerUser } = await supabase.from('users').select('email, first_name').eq('id', tx.seller_id).single();
+  if (sellerUser?.email) {
+    sendEmail(sellerUser.email, `💰 Payment Released — $${tx.amount.toLocaleString()} added to your wallet`, `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+        <h2 style="margin-bottom:8px;">Your idea was sold! 🏆</h2>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">The buyer confirmed delivery and <strong style="color:#f5c842;">$${tx.amount.toLocaleString()}</strong> has been added to your IdeaHub wallet.</p>
+        <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Wallet →</a>
+        <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+      </div>
+    `);
+  }
+
   res.json(updated);
 });
 
@@ -1140,6 +1172,20 @@ app.post('/api/requests/:id/proposals', authMiddleware, async (req, res) => {
     link: `/request/${req.params.id}`,
     data: { request_id: req.params.id, proposal_id: data.id }
   }]);
+
+  // Email investor — new proposal
+  const { data: investor } = await supabase.from('users').select('email, first_name').eq('id', request.investor_id).single();
+  if (investor?.email) {
+    sendEmail(investor.email, `📝 New proposal for "${request.title}" — IdeaHub`, `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+        <h2 style="margin-bottom:8px;">New proposal received! 📝</h2>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;"><strong>${creator?.first_name || 'A creator'} ${creator?.last_name || ''}</strong> submitted a proposal for your request <strong>"${request.title}"</strong>.</p>
+        <a href="https://ideahub.it.com/request-detail?id=${req.params.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Review Proposal →</a>
+        <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+      </div>
+    `);
+  }
 
   res.status(201).json(data);
 });
