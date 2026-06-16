@@ -7,11 +7,11 @@ const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const multer = require('multer');
 const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ── EMAIL HELPER ─────────────────────────────────────────────────────────────
 async function sendEmail(to, subject, html) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: process.env.RESEND_FROM,
       to,
