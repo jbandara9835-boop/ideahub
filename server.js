@@ -1963,6 +1963,18 @@ app.put('/api/admin/role-requests/:id/reject', authMiddleware, async (req, res) 
   res.json({ success: true });
 });
 
+// ── HEALTH CHECK & KEEP-ALIVE ─────────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Self-ping every 14 minutes to prevent Railway from sleeping
+setInterval(() => {
+  fetch('https://ideahub-production-1b18.up.railway.app/api/health')
+    .then(() => console.log('Keep-alive ping sent:', new Date().toISOString()))
+    .catch(err => console.log('Keep-alive ping failed:', err.message));
+}, 14 * 60 * 1000);
+
 // ── START SERVER ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
