@@ -2059,26 +2059,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// TEMP: test email endpoint
-app.get('/api/test-email', async (req, res) => {
-  try {
-    console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
-    console.log('RESEND_API_KEY starts with:', process.env.RESEND_API_KEY?.slice(0,8));
-    console.log('RESEND_FROM:', process.env.RESEND_FROM);
-    await sendEmail(
-      'jbandara9835@gmail.com',
-      '✅ IdeaHub Email Test',
-      `<div style="font-family:sans-serif;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-        <h2 style="color:#f5c842;">Email is working! 🎉</h2>
-        <p>IdeaHub Resend integration is live.</p>
-        <p>RESEND_FROM: ${process.env.RESEND_FROM || 'NOT SET'}</p>
-      </div>`
-    );
-    res.json({ message: 'Test email sent!', from: process.env.RESEND_FROM || 'NOT SET' });
-  } catch(err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// Health check only — test email endpoint removed
 
 // Self-ping every 14 minutes to prevent Railway from sleeping
 setInterval(() => {
