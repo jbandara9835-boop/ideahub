@@ -6,6 +6,23 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const multer = require('multer');
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// ── EMAIL HELPER ─────────────────────────────────────────────────────────────
+async function sendEmail(to, subject, html) {
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM,
+      to,
+      subject,
+      html
+    });
+    console.log('Email sent to:', to);
+  } catch(err) {
+    console.error('Email error:', err.message);
+  }
+}
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 
 const app = express();
@@ -229,6 +246,18 @@ app.post('/api/auth/signup', async (req, res) => {
 
   const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
   const { password: _, ...safeUser } = user;
+
+  // Welcome email
+  sendEmail(email, 'Welcome to IdeaHub! 🎉', `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+      <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
+      <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${firstName}! 👋</h2>
+      <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully. You're now part of the global marketplace where ideas become empires.</p>
+      <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:24px;">Go to Dashboard →</a>
+      <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+    </div>
+  `);
+
   res.json({ token, user: { ...safeUser, firstName: user.first_name, lastName: user.last_name } });
 });
 
@@ -682,6 +711,20 @@ app.post('/api/messages', authMiddleware, async (req, res) => {
     link: `/messages?user=${req.user.id}`,
     data: { from_id: req.user.id }
   }]);
+
+  // Email notification
+  const { data: recipient } = await supabase.from('users').select('email, first_name').eq('id', parseInt(toId)).single();
+  if (recipient?.email) {
+    sendEmail(recipient.email, `💬 New message from ${senderName} — IdeaHub`, `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+        <h2 style="margin-bottom:8px;">New message from ${senderName}</h2>
+        <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-bottom:20px;color:#9a9080;">"${text.slice(0,200)}${text.length>200?'...':''}"</div>
+        <a href="https://ideahub.it.com/messages?user=${req.user.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Reply →</a>
+        <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+      </div>
+    `);
+  }
 
   res.status(201).json(data);
 });
