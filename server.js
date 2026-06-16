@@ -1991,6 +1991,8 @@ app.post('/api/wall/:id/comments', authMiddleware, async (req, res) => {
 
 // ── SWITCH ROLE ───────────────────────────────────────────────────────────────
 app.get('/switch-role', (req, res) => res.sendFile(__dirname + '/public/switch-role.html'));
+app.get('/forgot-password', (req, res) => res.sendFile(__dirname + '/public/forgot-password.html'));
+app.get('/reset-password', (req, res) => res.sendFile(__dirname + '/public/reset-password.html'));
 
 app.post('/api/auth/switch-role', authMiddleware, async (req, res) => {
   const { role } = req.body;
@@ -2052,6 +2054,65 @@ app.put('/api/admin/role-requests/:id/reject', authMiddleware, async (req, res) 
   await supabase.from('role_switch_requests').update({ status: 'rejected', reject_reason: reason, reviewed_at: new Date().toISOString(), reviewed_by: req.user.id }).eq('id', req.params.id);
   await supabase.from('notifications').insert([{ user_id: request.user_id, type: 'role_rejected', title: '❌ Role Request Not Approved', message: `Your request to become a ${request.requested_role.replace(/_/g,' ')} was not approved. Reason: ${reason}`, link: '/switch-role' }]);
   res.json({ success: true });
+});
+
+// ── FORGOT PASSWORD ───────────────────────────────────────────────────────────
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  const { data: user } = await supabase.from('users').select('id, first_name').eq('email', email).single();
+  if (!user) return res.json({ message: 'If that email exists, a reset link has been sent.' });
+
+  // Generate token
+  const token = require('crypto').randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+  // Store token
+  await supabase.from('password_resets').insert([{ email, token, expires_at: expiresAt }]);
+
+  // Send email
+  const resetLink = `https://ideahub.it.com/reset-password?token=${token}`;
+  await sendEmail(email, '🔑 Reset your IdeaHub password', `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+      <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+      <h2 style="margin-bottom:8px;">Reset your password</h2>
+      <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${user.first_name}, we received a request to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>
+      <a href="${resetLink}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:20px;">Reset Password →</a>
+      <p style="color:#6e6b65;font-size:12px;margin-top:16px;">If you didn't request this, ignore this email. Your password won't change.</p>
+      <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+    </div>
+  `);
+
+  res.json({ message: 'If that email exists, a reset link has been sent.' });
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'Token and password required' });
+  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+  // Find token
+  const { data: reset } = await supabase
+    .from('password_resets')
+    .select('*')
+    .eq('token', token)
+    .eq('used', false)
+    .single();
+
+  if (!reset) return res.status(400).json({ error: 'Invalid or expired reset link' });
+  if (new Date(reset.expires_at) < new Date()) return res.status(400).json({ error: 'Reset link has expired. Please request a new one.' });
+
+  // Update password
+  const hashed = await bcrypt.hash(password, 10);
+  const { error } = await supabase.from('users').update({ password: hashed }).eq('email', reset.email);
+  if (error) return res.status(500).json({ error: error.message });
+
+  // Mark token as used
+  await supabase.from('password_resets').update({ used: true }).eq('token', token);
+
+  res.json({ message: 'Password reset successfully!' });
 });
 
 // ── HEALTH CHECK & KEEP-ALIVE ─────────────────────────────────────────────────

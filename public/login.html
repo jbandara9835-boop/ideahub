@@ -307,7 +307,7 @@
         </svg>
       </button>
     </div>
-    <div class="forgot"><a href="#">Forgot password?</a></div>
+    <div class="forgot"><a href="/forgot-password">Forgot password?</a></div>
   </div>
 
   <button class="btn" id="loginBtn" onclick="handleLogin()">
@@ -318,7 +318,7 @@
   <div class="divider">or</div>
 
   <div class="signup-link">
-    Don't have an account? <a href="/signup.html">Create one free</a>
+    Don't have an account? <a href="/signup">Create one free</a>
   </div>
 </div>
 
@@ -385,12 +385,13 @@
       btnText.textContent = 'Success!';
 
       setTimeout(() => {
-        const creatorRoles = ['idea_creator', 'patent_seller'];
-        if (creatorRoles.includes(data.user.role)) {
-          window.location.href = '/dashboard';
-        } else {
-          window.location.href = '/buyer-dashboard';
-        }
+        const roleLinks = {
+          idea_creator: '/dashboard', patent_seller: '/dashboard',
+          investor: '/buyer-dashboard', corporate_services: '/buyer-dashboard',
+          virtual_manager: '/support-dashboard', patent_attorney: '/attorney-dashboard',
+          business_owner: '/business-dashboard', admin: '/admin'
+        };
+        window.location.href = roleLinks[data.user.role] || '/dashboard';
       }, 1000);
 
     } catch (err) {
