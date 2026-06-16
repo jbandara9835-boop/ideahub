@@ -2062,6 +2062,9 @@ app.get('/api/health', (req, res) => {
 // TEMP: test email endpoint
 app.get('/api/test-email', async (req, res) => {
   try {
+    console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+    console.log('RESEND_API_KEY starts with:', process.env.RESEND_API_KEY?.slice(0,8));
+    console.log('RESEND_FROM:', process.env.RESEND_FROM);
     await sendEmail(
       'jbandara9835@gmail.com',
       '✅ IdeaHub Email Test',
