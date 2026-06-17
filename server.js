@@ -2134,7 +2134,7 @@ app.get('/robots.txt', (req, res) => {
 
   // Self-ping every 14 minutes to prevent Railway from sleeping
   setInterval(() => {
-    fetch('https://ideahub-production-1b18.up.railway.app/api/health')
+    fetch('https://ideahub.it.com/api/health')
       .then(() => console.log('Keep-alive ping sent:', new Date().toISOString()))
       .catch(err => console.log('Keep-alive ping failed:', err.message));
   }, 14 * 60 * 1000);
