@@ -380,12 +380,39 @@ footer a:hover { color: var(--text); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
 @media (max-width: 768px) {
-  nav { padding: 1rem 1.25rem; }
+  nav { padding: 0.9rem 1rem; }
   .nav-links { display: none; }
-  section { padding: 4rem 1.25rem; }
-  .hero-stats { gap: 1.5rem; }
+  .nav-actions { gap: 6px; }
+  .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
+  .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
+
+  .hero { padding: 6rem 1rem 3rem; }
+  .hero-title { font-size: clamp(48px, 16vw, 80px); }
+  .hero-sub { font-size: 15px; padding: 0 0.5rem; }
+  .hero-stats { gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .hero-stat-val { font-size: 22px; }
+
+  #searchWrap { flex-direction: column; border-radius: 12px; }
+  #searchWrap select { border-right: none; border-bottom: 1px solid var(--border); border-radius: 0; min-width: unset; width: 100%; padding: 0.7rem 1rem; }
+  #searchWrap input { padding: 0.7rem 1rem; font-size: 14px; }
+  #searchWrap button { width: 100%; padding: 0.8rem; border-radius: 0 0 12px 12px; }
+
+  .hero-actions { flex-direction: column; align-items: center; gap: 10px; }
+  .hero-btn-main, .hero-btn-sec { width: 100%; max-width: 320px; justify-content: center; }
+
+  section { padding: 3rem 1rem; }
+  .trending-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .ideas-grid { grid-template-columns: 1fr; }
+  .roles-grid { grid-template-columns: 1fr; }
+  .categories-grid { gap: 8px; }
+  .how-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
   .how-grid::before { display: none; }
-  footer { flex-direction: column; text-align: center; }
+
+  .final-cta-title { font-size: clamp(36px, 12vw, 60px); }
+  .final-cta-sub { font-size: 14px; }
+
+  footer { flex-direction: column; text-align: center; padding: 1.5rem 1rem; gap: 1rem; }
+  .footer-links { flex-wrap: wrap; justify-content: center; gap: 0.75rem; font-size: 12px; }
 }
 </style>
 </head>
