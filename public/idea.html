@@ -143,14 +143,25 @@
 
   @media (max-width:900px) {
     .sidebar { width:60px; padding:1rem 0.5rem; }
-    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn { display:none; }
+    .logo-text, .nav-item span:not(.nav-icon), .user-info, .logout-btn, .nav-section-label { display:none; }
     .logo { justify-content:center; }
     .nav-item { justify-content:center; padding:0.6rem; }
     .user-card { justify-content:center; padding:0.5rem; }
-    .main { margin-left:60px; padding:1.5rem; }
+    .main { margin-left:60px; padding:1.5rem; max-width:unset; }
     .detail-grid { grid-template-columns:1fr; }
     .buy-card { position:static; }
     .meta-grid { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:600px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; padding:1rem; }
+    .topbar { flex-wrap:wrap; gap:8px; }
+    .idea-title { font-size:22px; }
+    .meta-grid { grid-template-columns:1fr 1fr; }
+    .creator-card { flex-wrap:wrap; }
+    .price-big { font-size:28px; }
+    .modal { padding:1.25rem; }
+    .modal-overlay { padding:0.5rem; }
   }
 </style>
 </head>

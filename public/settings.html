@@ -104,13 +104,21 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 
 @media (max-width: 900px) {
   .sidebar { width: 60px; padding: 1rem 0.5rem; }
-  .nav-item span:not(.nav-icon), .user-info { display: none; }
+  .nav-item span:not(.nav-icon), .user-info, .nav-section-label { display: none; }
   .logo { justify-content: center; }
   .nav-item { justify-content: center; padding: 0.6rem; }
   .user-card { justify-content: center; padding: 0.5rem; }
-  .main { margin-left: 60px; padding: 1.5rem; }
+  .main { margin-left: 60px; padding: 1.5rem; max-width: unset; }
   .settings-layout { grid-template-columns: 1fr; }
   .settings-nav { position: static; display: flex; flex-wrap: wrap; gap: 4px; }
+  .row2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 1rem; }
+  .settings-card { padding: 1.25rem; }
+  .save-btn, .danger-btn { width: 100%; justify-content: center; }
+  .toggle-row { gap: 12px; }
 }
 </style>
 </head>
