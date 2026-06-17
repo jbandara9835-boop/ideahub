@@ -150,12 +150,26 @@
 
   @media (max-width:900px) {
     .sidebar { width:60px; padding:1rem 0.5rem; }
-    .logo-text, .nav-item, .user-info { display:none; }
+    .logo-text, .nav-item, .user-info, .nav-section-label { display:none; }
     .logo { justify-content:center; }
     .user-card { justify-content:center; padding:0.5rem; }
     .main { margin-left:60px; padding:1.5rem; }
     .stats-grid { grid-template-columns:repeat(2,1fr); }
     .two-col { grid-template-columns:1fr; }
+    .role-banner { flex-direction:column; gap:10px; }
+    .verified-pill { margin-left:0; }
+    .job-actions { flex-wrap:wrap; }
+  }
+  @media (max-width:600px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; padding:1rem; }
+    .topbar { flex-direction:column; align-items:flex-start; gap:12px; }
+    .topbar-right { width:100%; justify-content:space-between; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+    .stat-card { padding:1rem; }
+    .stat-value { font-size:22px; }
+    .notif-panel { width:calc(100vw - 2rem); right:-1rem; }
+    .modal { max-height:95vh; }
   }
 </style>
 </head>
