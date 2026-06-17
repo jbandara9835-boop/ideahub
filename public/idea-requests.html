@@ -155,12 +155,27 @@
     .footer a { color:var(--gold); text-decoration:none; }
 
     @media (max-width:768px) {
-      .topnav { padding:0 16px; }
-      .hero { padding:28px 16px 20px; }
-      .search-row { flex-direction:column; }
-      .hero-stats { gap:16px; flex-wrap:wrap; }
-      .sort-bar, .active-bar { padding:10px 16px; }
-      .main { padding:16px; }
+      .topnav { padding:0 12px; gap:8px; }
+      .hero { padding:24px 12px 20px; }
+      .hero h1 { font-size:1.6rem; }
+      .search-row { flex-direction:column; gap:8px; }
+      .search-row input, .search-row button { width:100%; }
+      .hero-stats { gap:10px; flex-wrap:wrap; justify-content:center; }
+      .hero-stat { font-size:0.8rem; }
+      .adv-panel { margin:0 12px 16px; }
+      .sort-bar, .active-bar { padding:8px 12px; }
+      .sort-bar-inner { gap:6px; }
+      .status-tabs { overflow-x:auto; flex-wrap:nowrap; scrollbar-width:none; }
+      .status-tabs::-webkit-scrollbar { display:none; }
+      .status-tab { white-space:nowrap; font-size:0.72rem; padding:4px 10px; }
+      .sort-select { width:100%; margin-left:0; }
+      .main { padding:12px; }
+      .post-banner { flex-direction:column; gap:10px; }
+      .req-top { flex-direction:column; gap:6px; }
+      .req-footer { flex-direction:column; gap:8px; align-items:flex-start; }
+      .req-right { flex-wrap:wrap; gap:8px; }
+      .pagination { flex-wrap:wrap; gap:6px; }
+      .footer { padding:16px; }
     }
   </style>
 </head>
