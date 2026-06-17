@@ -120,6 +120,16 @@
   .login-link { text-align:center; font-size:14px; color:var(--muted); }
   .login-link a { color:var(--accent); text-decoration:none; font-weight:500; }
   .login-link a:hover { text-decoration:underline; }
+
+  @media (max-width: 480px) {
+    .card { padding: 1.75rem 1.25rem 1.5rem; border-radius: 16px; }
+    h1 { font-size: 22px; }
+    .row { grid-template-columns: 1fr; gap: 0; }
+    .role-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .role-emoji { font-size: 22px; }
+    .role-name { font-size: 11px; }
+    .role-desc { font-size: 9px; }
+  }
 </style>
 </head>
 <body>
