@@ -117,11 +117,30 @@
     .footer a { color:var(--gold); text-decoration:none; }
 
     @media (max-width:768px) {
-      .topnav { padding:0 16px; }
-      .hero { padding:48px 16px 36px; }
-      .hero h1 { font-size:2rem; }
-      .content { padding:24px 16px 40px; }
-      .role-tabs-section { padding:24px 16px 0; }
+      .topnav { padding:0 12px; gap:8px; }
+      .nav-links { display:none; }
+
+      .hero { padding:40px 16px 28px; }
+      .hero h1 { font-size:1.7rem; }
+      .hero p { font-size:0.9rem; }
+      .hero-btns { flex-direction:column; align-items:center; }
+      .btn-lg { width:100%; max-width:280px; justify-content:center; }
+
+      .role-tabs-section { padding:20px 12px 0; }
+      .role-tabs { gap:6px; justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+      .role-tabs::-webkit-scrollbar { display:none; }
+      .role-tab { white-space:nowrap; padding:7px 14px; font-size:0.8rem; }
+
+      .content { padding:20px 12px 40px; }
+      .steps { grid-template-columns:1fr; gap:12px; }
+      .overview-grid { grid-template-columns:1fr 1fr; gap:10px; }
+      .overview-card { padding:14px; }
+      .overview-icon { font-size:1.5rem; }
+
+      .cta-box { padding:24px 16px; }
+      .cta-btns { flex-direction:column; align-items:center; }
+
+      .footer { padding:16px; }
     }
   </style>
 </head>

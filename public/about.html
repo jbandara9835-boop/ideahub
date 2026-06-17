@@ -143,11 +143,35 @@ footer a:hover { color: var(--text); }
 .divider-section { height: 1px; background: var(--border); margin: 0 2rem; }
 
 @media (max-width: 768px) {
-  nav { padding: 1rem 1.25rem; }
+  nav { padding: 0.9rem 1rem; }
   .nav-links { display: none; }
-  .mission-grid, .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
-  section { padding: 3.5rem 1.25rem; }
-  footer { padding: 2rem 1.25rem; }
+  .nav-actions { gap: 6px; }
+  .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
+  .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
+
+  .hero { padding: 5rem 1rem 2.5rem; }
+  .page-title { font-size: clamp(42px, 14vw, 72px); }
+  .page-sub { font-size: 15px; }
+  .tab-nav { flex-wrap: wrap; gap: 6px; }
+  .tab-btn { padding: 0.5rem 1rem; font-size: 13px; }
+
+  section { padding: 3rem 1rem; }
+  .mission-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .mission-visual { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mission-stat { padding: 1rem; }
+  .mission-stat-val { font-size: 24px; }
+  .mission-text h2 { font-size: 26px; }
+
+  .values-grid { grid-template-columns: 1fr; gap: 12px; }
+
+  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .row2 { grid-template-columns: 1fr; }
+  .contact-form { padding: 1.5rem; }
+
+  .cta-title { font-size: clamp(32px, 10vw, 52px); }
+
+  footer { padding: 1.5rem 1rem; flex-direction: column; text-align: center; }
+  .footer-links { flex-wrap: wrap; justify-content: center; gap: 0.75rem; font-size: 12px; }
 }
 </style>
 </head>
