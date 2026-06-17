@@ -242,13 +242,27 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 
 @media (max-width: 900px) {
   .sidebar { width: 60px; padding: 1rem 0.5rem; }
-  .nav-item span:not(.nav-icon), .user-info, .logout-btn { display: none; }
+  .nav-item span:not(.nav-icon), .user-info, .logout-btn, .nav-section-label { display: none; }
   .logo { justify-content: center; }
   .nav-item { justify-content: center; padding: 0.6rem; }
   .user-card { justify-content: center; padding: 0.5rem; }
-  .main { margin-left: 60px; padding: 1.5rem; }
+  .main { margin-left: 60px; padding: 1.5rem; max-width: unset; }
   .wall-layout { grid-template-columns: 1fr; }
   .wall-sidebar { display: none; }
+  .filter-bar { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; padding-bottom: 4px; }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-sep { display: none; }
+}
+@media (max-width: 600px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 1rem; }
+  .topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .topbar-left { width: 100%; }
+  .post-btn { width: 100%; justify-content: center; }
+  .post-card { border-radius: 12px; }
+  .post-actions { flex-wrap: wrap; gap: 2px; }
+  .modal-overlay { padding: 0.5rem; }
+  .modal { padding: 1.25rem; border-radius: 14px; }
 }
 </style>
 </head>
