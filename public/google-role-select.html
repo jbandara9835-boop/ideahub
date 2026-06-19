@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Choose Your Role — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+    --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+    --text: #f0ede8; --muted: #6e6b65; --error: #ff6b6b; --success: #6ee7b7;
+  }
+  body {
+    background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1rem; position: relative; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; top: -30%; right: -20%; width: 60vw; height: 60vw;
+    background: radial-gradient(circle, rgba(245,200,66,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .grid-bg {
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 48px 48px; pointer-events: none;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 24px;
+    padding: 2.5rem 2.5rem 2rem; width: 100%; max-width: 560px;
+    position: relative; animation: fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+  .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 20px; height: 20px; fill: #0d0d0f; }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+  .user-greeting { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.75rem; }
+  .user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+  .user-avatar-placeholder { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-dim); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--accent); }
+  .user-name { font-size: 14px; font-weight: 600; }
+  .user-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  h1 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
+  .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 1.75rem; }
+  .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .role-card {
+    border: 1px solid var(--border); border-radius: 14px; padding: 1rem 0.75rem;
+    cursor: pointer; transition: all 0.2s; text-align: center; position: relative;
+  }
+  .role-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+  .role-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .role-check { position: absolute; top: 7px; right: 7px; width: 16px; height: 16px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; font-size: 9px; color: #0d0d0f; font-weight: 700; }
+  .role-card.selected .role-check { opacity: 1; }
+  .role-emoji { font-size: 26px; display: block; margin-bottom: 0.5rem; }
+  .role-name { font-size: 12px; font-weight: 600; display: block; color: var(--text); line-height: 1.3; }
+  .role-desc { font-size: 10px; color: var(--muted); display: block; margin-top: 3px; }
+  .role-card[data-role="idea_creator"].selected { border-color:#f5c842; background:rgba(245,200,66,0.1); }
+  .role-card[data-role="investor"].selected { border-color:#6ee7b7; background:rgba(110,231,183,0.1); }
+  .role-card[data-role="virtual_manager"].selected { border-color:#a78bfa; background:rgba(167,139,250,0.1); }
+  .role-card[data-role="patent_attorney"].selected { border-color:#60a5fa; background:rgba(96,165,250,0.1); }
+  .role-card[data-role="patent_seller"].selected { border-color:#fb923c; background:rgba(251,146,60,0.1); }
+  .role-card[data-role="corporate_services"].selected { border-color:#f472b6; background:rgba(244,114,182,0.1); }
+  .role-card[data-role="business_owner"].selected { border-color:#fb923c; background:rgba(251,146,60,0.1); }
+  .error-msg { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; color:var(--error); margin-bottom:1rem; display:none; }
+  .error-msg.show { display:block; }
+  .btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn:hover { opacity:0.9; transform:translateY(-1px); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @media (max-width: 480px) {
+    .card { padding: 1.75rem 1.25rem 1.5rem; }
+    .role-grid { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="card">
+  <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>
+    </div>
+    <span class="logo-text">IdeaHub</span>
+  </a>
+
+  <div class="user-greeting" id="userGreeting"></div>
+
+  <h1>Choose your role</h1>
+  <p class="subtitle">Select how you'll be using IdeaHub</p>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="role-grid">
+    <div class="role-card selected" data-role="idea_creator" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">💡</span>
+      <span class="role-name">Idea Creator</span>
+      <span class="role-desc">Post & sell ideas</span>
+    </div>
+    <div class="role-card" data-role="investor" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">💼</span>
+      <span class="role-name">Investor</span>
+      <span class="role-desc">Discover & fund</span>
+    </div>
+    <div class="role-card" data-role="virtual_manager" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🤝</span>
+      <span class="role-name">Virtual Manager</span>
+      <span class="role-desc">Manage & grow</span>
+    </div>
+    <div class="role-card" data-role="patent_attorney" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">⚖️</span>
+      <span class="role-name">Patent Attorney</span>
+      <span class="role-desc">Legal services</span>
+    </div>
+    <div class="role-card" data-role="patent_seller" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">📋</span>
+      <span class="role-name">Patent Seller</span>
+      <span class="role-desc">Sell patents</span>
+    </div>
+    <div class="role-card" data-role="corporate_services" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🏢</span>
+      <span class="role-name">Corporate</span>
+      <span class="role-desc">Business solutions</span>
+    </div>
+    <div class="role-card" data-role="business_owner" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🏭</span>
+      <span class="role-name">Business Owner</span>
+      <span class="role-desc">Expand your business</span>
+    </div>
+  </div>
+
+  <button class="btn" id="continueBtn" onclick="completeSignup()">
+    <div class="spinner" id="spinner"></div>
+    <span id="btnText">Create Account →</span>
+  </button>
+</div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+  const params = new URLSearchParams(window.location.search);
+  let profile = null;
+
+  try {
+    profile = JSON.parse(decodeURIComponent(params.get('profile')));
+  } catch(e) {
+    window.location.href = '/login';
+  }
+
+  if (!profile) window.location.href = '/login';
+
+  const greetingEl = document.getElementById('userGreeting');
+  if (profile.avatar_url) {
+    greetingEl.innerHTML = `<img class="user-avatar" src="${profile.avatar_url}" /><div><div class="user-name">${profile.first_name} ${profile.last_name || ''}</div><div class="user-email">${profile.email}</div></div>`;
+  } else {
+    const initials = (profile.first_name?.[0] || '') + (profile.last_name?.[0] || '');
+    greetingEl.innerHTML = `<div class="user-avatar-placeholder">${initials}</div><div><div class="user-name">${profile.first_name} ${profile.last_name || ''}</div><div class="user-email">${profile.email}</div></div>`;
+  }
+
+  let selectedRole = 'idea_creator';
+
+  function selectRole(el) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedRole = el.dataset.role;
+  }
+
+  async function completeSignup() {
+    const btn = document.getElementById('continueBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.classList.remove('show');
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Creating account...';
+    try {
+      const res = await fetch(`${API_URL}/api/auth/google-complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...profile, role: selectedRole })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      localStorage.setItem('ih_token', data.token);
+      localStorage.setItem('ih_user', JSON.stringify(data.user));
+      const dashMap = {
+        idea_creator: '/dashboard', patent_seller: '/dashboard',
+        investor: '/buyer-dashboard', corporate_services: '/buyer-dashboard',
+        virtual_manager: '/support-dashboard', patent_attorney: '/attorney-dashboard',
+        business_owner: '/business-dashboard', admin: '/admin'
+      };
+      window.location.href = dashMap[selectedRole] || '/dashboard';
+    } catch(err) {
+      errorMsg.textContent = err.message || 'Something went wrong.';
+      errorMsg.classList.add('show');
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Create Account →';
+    }
+  }
+</script>
+</body>
+</html>
