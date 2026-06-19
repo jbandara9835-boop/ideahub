@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Signing in...</title></head>
+<body style="background:#0d0d0f;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;color:#f0ede8;">
+<div style="text-align:center;">
+  <div style="font-size:32px;margin-bottom:1rem;">✅</div>
+  <div style="font-size:18px;">Signing you in...</div>
+</div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const user = JSON.parse(decodeURIComponent(params.get('user')));
+  if (token && user) {
+    localStorage.setItem('ih_token', token);
+    localStorage.setItem('ih_user', JSON.stringify(user));
+    const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/attorney-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard', admin:'/admin' };
+    window.location.href = dashMap[user.role] || '/dashboard';
+  } else {
+    window.location.href = '/login?error=google';
+  }
+</script>
+</body>
+</html>

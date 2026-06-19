@@ -9,6 +9,9 @@
   const { createClient } = require('@supabase/supabase-js');
   const multer = require('multer');
   const { Resend } = require('resend');
+  const passport = require('passport');
+  const GoogleStrategy = require('passport-google-oauth20').Strategy;
+  const session = require('express-session');
 
   // ── EMAIL HELPER ─────────────────────────────────────────────────────────────
   async function sendEmail(to, subject, html) {
@@ -30,7 +33,80 @@
   const app = express();
   app.use(cors());
   app.use(express.json());
+  app.use(session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false
+  }));
+  app.use(passport.initialize());
+  app.use(passport.session());
   app.use(express.static('public', { etag: false, maxAge: 0 }));
+
+  passport.serializeUser((user, done) => done(null, user));
+  passport.deserializeUser((user, done) => done(null, user));
+
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: 'https://ideahub.it.com/auth/google/callback'
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      const email = profile.emails[0].value;
+      const firstName = profile.name.givenName;
+      const lastName = profile.name.familyName || '';
+      const avatar = profile.photos[0]?.value || null;
+
+      // Check if user exists
+      let { data: user } = await supabase.from('users').select('*').eq('email', email).single();
+
+      if (!user) {
+        // Create new user
+        const { data: newUser, error } = await supabase.from('users').insert([{
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          password: '',
+          role: 'idea_creator',
+          avatar_url: avatar,
+          google_id: profile.id,
+          earnings: 0,
+          verified: true,
+        }]).select().single();
+        if (error) return done(error, null);
+        user = newUser;
+
+        // Welcome email
+        sendEmail(email, 'Welcome to IdeaHub! 🎉', `
+          <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+            <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
+            <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${firstName}! 👋</h2>
+            <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully via Google.</p>
+            <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Dashboard →</a>
+            <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+          </div>
+        `);
+      }
+
+      return done(null, user);
+    } catch(err) {
+      return done(err, null);
+    }
+  }));
+
+  // Google OAuth routes
+  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+  app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login?error=google' }), async (req, res) => {
+    const user = req.user;
+    const token = require('jsonwebtoken').sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const { password: _, ...safeUser } = user;
+    // Redirect to frontend with token
+    res.redirect(`/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify(safeUser))}`);
+  });
+
+  app.get('/auth/google/success', (req, res) => {
+    res.sendFile(__dirname + '/public/google-auth-success.html');
+  });
 
 app.get('/sitemap.xml', (req, res) => {
   res.setHeader('Content-Type', 'application/xml');
