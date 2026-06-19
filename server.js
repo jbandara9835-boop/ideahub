@@ -1844,7 +1844,64 @@ app.get('/robots.txt', (req, res) => {
     if (error) return res.status(500).json({ error: error.message });
     res.json(data||[]);
   });
+// ── SMS VERIFICATION ─────────────────────────────────────────────────────────
 
+const twilio = require('twilio');
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// SEND verification code
+app.post('/api/sms/send-code', authMiddleware, async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Phone number required' });
+
+  // Generate 6-digit code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
+
+  // Save code to DB
+  await supabase.from('sms_verifications').upsert([{
+    user_id: req.user.id,
+    phone,
+    code,
+    expires_at: expiresAt,
+    verified: false
+  }], { onConflict: 'user_id' });
+
+  try {
+    await twilioClient.messages.create({
+      body: `Your IdeaHub verification code is: ${code}. Valid for 10 minutes.`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phone
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Twilio error:', err.message);
+    res.status(500).json({ error: 'Failed to send SMS. Check phone number format (+1234567890).' });
+  }
+});
+
+// VERIFY code
+app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'Code required' });
+
+  const { data: record } = await supabase
+    .from('sms_verifications')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .eq('verified', false)
+    .single();
+
+  if (!record) return res.status(400).json({ error: 'No pending verification found' });
+  if (new Date(record.expires_at) < new Date()) return res.status(400).json({ error: 'Code expired. Please request a new one.' });
+  if (record.code !== code) return res.status(400).json({ error: 'Incorrect code. Please try again.' });
+
+  // Mark as verified
+  await supabase.from('sms_verifications').update({ verified: true }).eq('user_id', req.user.id);
+  await supabase.from('users').update({ phone: record.phone, phone_verified: true }).eq('id', req.user.id);
+
+  res.json({ success: true, message: 'Phone number verified!' });
+});
   // ── SETTINGS ──────────────────────────────────────────────────────────────────
 
   app.post('/api/auth/change-password', authMiddleware, async (req, res) => {
