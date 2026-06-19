@@ -89,6 +89,7 @@
 
       return done(null, user);
     } catch(err) {
+      console.error('Google OAuth error:', err.message || JSON.stringify(err));
       return done(err, null);
     }
   }));
