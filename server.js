@@ -60,34 +60,12 @@
       let { data: user } = await supabase.from('users').select('*').eq('email', email).single();
 
       if (!user) {
-        // Create new user
-        const { data: newUser, error } = await supabase.from('users').insert([{
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          password: '',
-          role: 'idea_creator',
-          avatar_url: avatar,
-          google_id: profile.id,
-          earnings: 0,
-          verified: true,
-        }]).select().single();
-        if (error) return done(error, null);
-        user = newUser;
-
-        // Welcome email
-        sendEmail(email, 'Welcome to IdeaHub! 🎉', `
-          <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-            <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
-            <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${firstName}! 👋</h2>
-            <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully via Google.</p>
-            <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Dashboard →</a>
-            <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
-          </div>
-        `);
+        // Don't create yet — send to role selection
+        return done(null, { email, first_name: firstName, last_name: lastName, avatar_url: avatar, google_id: profile.id, existed: false });
       }
 
-      return done(null, user);
+      // Existing user
+      return done(null, { ...user, existed: true });
     } catch(err) {
       console.error('Google OAuth error:', err.message || JSON.stringify(err));
       return done(err, null);
@@ -99,10 +77,16 @@
 
   app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login?error=google' }), async (req, res) => {
     const user = req.user;
-    const token = require('jsonwebtoken').sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
     const { password: _, ...safeUser } = user;
-    // Redirect to frontend with token
-    res.redirect(`/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify(safeUser))}`);
+
+    // Existing user — log straight in
+    if (user.existed) {
+      const token = require('jsonwebtoken').sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      return res.redirect(`/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify(safeUser))}`);
+    }
+
+    // New user — go to role selection
+    res.redirect(`/google-role-select?profile=${encodeURIComponent(JSON.stringify({ email: user.email, first_name: user.first_name, last_name: user.last_name, avatar_url: user.avatar_url, google_id: user.google_id }))}`);
   });
 
   app.get('/auth/google/success', (req, res) => {
@@ -1921,6 +1905,45 @@ app.get('/robots.txt', (req, res) => {
     if (error) return res.status(500).json({ error: error.message });
     res.json(data||[]);
   });
+  // Complete Google signup with selected role
+  app.post('/api/auth/google-complete', async (req, res) => {
+    const { email, first_name, last_name, avatar_url, google_id, role } = req.body;
+    if (!email || !role) return res.status(400).json({ error: 'Email and role required' });
+
+    // Check again if user exists (race condition protection)
+    let { data: existing } = await supabase.from('users').select('*').eq('email', email).single();
+    if (existing) {
+      const token = require('jsonwebtoken').sign({ id: existing.id, email: existing.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      const { password: _, ...safeUser } = existing;
+      return res.json({ token, user: safeUser });
+    }
+
+    const { data: newUser, error } = await supabase.from('users').insert([{
+      first_name, last_name, email,
+      password: '', role,
+      avatar_url: avatar_url || null,
+      google_id, earnings: 0, verified: true,
+    }]).select().single();
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Welcome email
+    sendEmail(email, 'Welcome to IdeaHub! 🎉', `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+        <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
+        <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${first_name}! 👋</h2>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully via Google.</p>
+        <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Dashboard →</a>
+        <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+      </div>
+    `);
+
+    const token = require('jsonwebtoken').sign({ id: newUser.id, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const { password: _, ...safeUser } = newUser;
+    res.json({ token, user: safeUser });
+  });
+
+  app.get('/google-role-select', (req, res) => res.sendFile(__dirname + '/public/google-role-select.html'));
 // ── SMS VERIFICATION ─────────────────────────────────────────────────────────
 
 const twilio = require('twilio');
