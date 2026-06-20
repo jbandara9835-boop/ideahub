@@ -442,6 +442,28 @@
             </select>
           </div>
         </div>
+
+        <div class="field">
+          <label for="country">Country *</label>
+          <select id="country" onchange="updatePreview()">
+            <option value="">Select country</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+            <option>Canada</option>
+            <option>Australia</option>
+            <option>India</option>
+            <option>Sri Lanka</option>
+            <option>Germany</option>
+            <option>France</option>
+            <option>Singapore</option>
+            <option>United Arab Emirates</option>
+            <option>Japan</option>
+            <option>China</option>
+            <option>Brazil</option>
+            <option>South Africa</option>
+            <option>Other</option>
+          </select>
+        </div>
       </div>
 
       <!-- Pricing -->
@@ -705,6 +727,7 @@
       document.getElementById('summary').value    = idea.summary     || '';
       document.getElementById('desc').value       = idea.description || '';
       document.getElementById('industry').value   = idea.industry    || '';
+      document.getElementById('country').value    = idea.country     || '';
       document.getElementById('ideaType').value   = idea.idea_type   || '';
       document.getElementById('price').value      = idea.price       || '';
       document.getElementById('visibility').value = idea.visibility  || '1';
@@ -895,6 +918,7 @@
     const desc = document.getElementById('desc').value.trim();
     const industry = document.getElementById('industry').value;
     const ideaType = document.getElementById('ideaType').value;
+    const country = document.getElementById('country').value;
     const price = document.getElementById('price').value;
     const visibility = document.getElementById('visibility').value;
     const level = document.querySelector('input[name="level"]:checked')?.value || '1';
@@ -926,7 +950,7 @@
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title, summary, desc, industry, ideaType, price, visibility, level, hasPatent, patentNumber, patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, country, price, visibility, level, hasPatent, patentNumber, patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
       });
 
       const data = await res.json();

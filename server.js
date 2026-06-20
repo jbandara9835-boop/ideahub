@@ -543,6 +543,7 @@ app.get('/robots.txt', (req, res) => {
         patent_number: patentNumber || '',
         icon: '💡',
         images: req.body.images || [],
+      country: req.body.country || null,
         creator_id: req.user.id,
         creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
         status: (hasPatent && patentCertUrl) ? 'under_review' : 'live',
