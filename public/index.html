@@ -463,11 +463,23 @@ footer a:hover { color: var(--text); }
   .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
   .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
 
-  .hero { padding: 6rem 1rem 3rem; }
-  .hero-title { font-size: clamp(48px, 16vw, 80px); }
-  .hero-sub { font-size: 15px; padding: 0 0.5rem; }
-  .hero-stats { gap: 1rem; flex-wrap: wrap; justify-content: center; }
-  .hero-stat-val { font-size: 22px; }
+  .hero { padding: 6rem 1rem 5rem; min-height: 100svh; }
+  .hero-title { font-size: clamp(40px, 14vw, 72px); }
+  .hero-sub { font-size: 14px; padding: 0 0.25rem; margin-bottom: 1.75rem; }
+  .hero-stats { gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+  .hero-stat-val { font-size: 20px; }
+  .hero-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; text-align: center; }
+
+  .hero-arrow { width: 34px; height: 34px; font-size: 14px; }
+  .hero-arrow-left { left: 0.4rem; }
+  .hero-arrow-right { right: 0.4rem; }
+  .hero-nav-dots { bottom: 1.1rem; gap: 6px; }
+  .hero-dot { width: 22px; height: 3px; }
+
+  .slide-tag { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; }
+  .hero-quote-mark { font-size: 50px; margin-bottom: 0.25rem; }
+  .hero-quote-text { font-size: clamp(20px, 6.5vw, 28px); padding: 0 0.5rem; margin-bottom: 1.1rem; }
+  .hero-quote-author { font-size: 13px; margin-bottom: 1.75rem; }
 
   #searchWrap { flex-direction: column; border-radius: 12px; }
   #searchWrap select { border-right: none; border-bottom: 1px solid var(--border); border-radius: 0; min-width: unset; width: 100%; padding: 0.7rem 1rem; }
