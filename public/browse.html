@@ -70,8 +70,10 @@
     .ideas-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }
     .idea-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; cursor:pointer; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; text-decoration:none; color:inherit; display:flex; flex-direction:column; }
     .idea-card:hover { transform:translateY(-3px); border-color:var(--gold); box-shadow:0 8px 32px rgba(245,197,24,0.08); }
-    .card-top { padding:20px 20px 0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-    .card-emoji { width:48px; height:48px; background:var(--surface2); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+    .card-banner { height:130px; width:100%; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; }
+.card-banner-icon { font-size:30px; opacity:0.55; }
+.card-top { padding:14px 20px 0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .card-emoji { display:none; }
     .card-badge { font-size:0.72rem; font-weight:600; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.03em; }
     .badge-prototype { background:rgba(139,92,246,0.15); color:#a78bfa; }
     .badge-market_ready { background:rgba(34,197,94,0.15); color:#4ade80; }
@@ -324,15 +326,32 @@
     return 'badge-'+(s||'concept').toLowerCase().replace(/ /g,'_');
   }
 
+  const bannerGradients = [
+    'linear-gradient(135deg,#1a2a4a,#2d3f6b)',
+    'linear-gradient(135deg,#2a1a3a,#4a2d6b)',
+    'linear-gradient(135deg,#1a3a2e,#2d6b4f)',
+    'linear-gradient(135deg,#3a2a1a,#6b4f2d)',
+    'linear-gradient(135deg,#3a1a2a,#6b2d4f)'
+  ];
+  function gradientFor(str) {
+    let hash = 0;
+    for (let i = 0; i < (str||'').length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return bannerGradients[Math.abs(hash) % bannerGradients.length];
+  }
+
   function cardHTML(idea) {
     const stage = levelLabel[idea.level] || idea.idea_type || 'Concept';
     const industry = idea.industry || idea.category || '';
     const avatarUrl = idea.creator_avatar || idea.avatar_url;
     const avatarHTML = avatarUrl ? `<img src="${avatarUrl}" alt="">` : (idea.creator_name||'U')[0].toUpperCase();
+    const hasImage = idea.images && idea.images.length > 0;
+    const bannerHTML = hasImage
+      ? `<div class="card-banner" style="background-image:url('${idea.images[0]}');"></div>`
+      : `<div class="card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="card-banner-icon">${emojiMap[industry]||'💡'}</span></div>`;
     return `
       <a class="idea-card" href="/idea?id=${idea.id}">
+        ${bannerHTML}
         <div class="card-top">
-          <div class="card-emoji">${emojiMap[industry]||'💡'}</div>
           <span class="card-badge ${stageClass(stage)}">${stage}</span>
         </div>
         <div class="card-body">
