@@ -238,6 +238,9 @@ nav {
 .slide-tag.tag-3 { background: rgba(110,231,183,0.1); color: var(--accent2); border: 1px solid rgba(110,231,183,0.25); }
 
 @media (max-width: 768px) {
+  #mobileSearchBar { display: block !important; }
+  #desktopSearchBar { display: none !important; }
+  body { padding-top: 0; }
   .hero-arrow { width: 36px; height: 36px; font-size: 15px; }
   .hero-arrow-left { left: 0.5rem; }
   .hero-arrow-right { right: 0.5rem; }
@@ -308,7 +311,7 @@ section { padding: 6rem 2rem; position: relative; }
   .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
   .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
 
-  .hero { padding: 1rem 1rem 5rem; min-height: 100svh; }
+  .hero { padding: 4.5rem 1rem 5rem; min-height: 100svh; }
   .hero-title { font-size: clamp(40px, 14vw, 72px); }
   .hero-sub { font-size: 14px; padding: 0 0.25rem; margin-bottom: 1.75rem; }
   .hero-stats { gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
@@ -561,8 +564,21 @@ footer a:hover { color: var(--text); }
   </div>
 </nav>
 
-<!-- PERSISTENT SEARCH BAR (always visible above slideshow, scrolls normally) -->
-<div style="position:relative;z-index:20;display:flex;justify-content:center;padding:6.5rem 2rem 0;">
+<!-- MOBILE-ONLY: compact fixed search bar under nav -->
+<div id="mobileSearchBar" style="display:none;position:fixed;top:60px;left:0;right:0;z-index:95;background:rgba(8,8,9,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0.6rem 1rem;">
+  <div style="display:flex;background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;">
+    <input
+      type="text" id="mobileSearchInput"
+      placeholder="Search ideas, industries..."
+      style="flex:1;background:none;border:none;padding:0.6rem 0.85rem;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
+      onkeydown="if(event.key==='Enter') doMobileSearch()"
+    />
+    <button onclick="doMobileSearch()" style="background:var(--accent);border:none;padding:0 1rem;font-size:16px;color:#080809;cursor:pointer;">🔍</button>
+  </div>
+</div>
+
+<!-- PERSISTENT SEARCH BAR (desktop, scrolls normally) -->
+<div id="desktopSearchBar" style="position:relative;z-index:20;display:flex;justify-content:center;padding:6.5rem 2rem 0;">
   <div style="width:100%;max-width:640px;">
     <div style="display:flex;background:rgba(17,17,20,0.92);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;transition:border-color 0.2s;box-shadow:0 8px 30px rgba(0,0,0,0.3);" id="searchWrap">
       <select id="searchCategory" style="background:var(--surface2);border:none;border-right:1px solid var(--border);padding:0 1rem;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;min-width:120px;">
@@ -1039,6 +1055,11 @@ footer a:hover { color: var(--text); }
 
   function quickSearch(category) {
     window.location.href = `/browse?category=${encodeURIComponent(category)}`;
+  }
+
+  function doMobileSearch() {
+    const query = document.getElementById('mobileSearchInput').value.trim();
+    window.location.href = query ? `/browse?search=${encodeURIComponent(query)}` : '/browse';
   }
 
   // Focus glow effect
