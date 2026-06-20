@@ -293,7 +293,37 @@ section { padding: 6rem 2rem; position: relative; }
 .idea-card:hover { border-color: rgba(245,200,66,0.25); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
 .idea-card:hover::before { opacity: 1; }
 
-.idea-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+@media (max-width: 768px) {
+  nav { padding: 0.9rem 1rem; }
+  .nav-links { display: none; }
+  .nav-actions { gap: 6px; }
+  .btn-ghost .idea-card { padding: 0; }
+.idea-card-banner {
+  height: 130px; width: 100%; background-size: cover; background-position: center;
+  display: flex; align-items: center; justify-content: center; position: relative;
+}
+.idea-card-banner-icon { font-size: 32px; opacity: 0.55; }
+.idea-card-body { padding: 1.5rem; }
+.idea-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }{ padding: 0.45rem 0.8rem; font-size: 13px; }
+  .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
+
+  .hero { padding: 6rem 1rem 5rem; min-height: 100svh; }
+  .hero-title { font-size: clamp(40px, 14vw, 72px); }
+  .hero-sub { font-size: 14px; padding: 0 0.25rem; margin-bottom: 1.75rem; }
+  .hero-stats { gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+  .hero-stat-val { font-size: 20px; }
+  .hero-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; text-align: center; }
+
+  .hero-arrow { width: 34px; height: 34px; font-size: 14px; }
+  .hero-arrow-left { left: 0.4rem; }
+  .hero-arrow-right { right: 0.4rem; }
+  .hero-nav-dots { bottom: 1.1rem; gap: 6px; }
+  .hero-dot { width: 22px; height: 3px; }
+
+  .slide-tag { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; }
+  .hero-quote-mark { font-size: 50px; margin-bottom: 0.25rem; }
+  .hero-quote-text { font-size: clamp(20px, 6.5vw, 28px); padding: 0 0.5rem; margin-bottom: 1.1rem; }
+  .hero-quote-author { font-size: 13px; margin-bottom: 1.75rem; }
 .idea-category {
   font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
   padding: 4px 10px; border-radius: 20px;
@@ -924,6 +954,20 @@ footer a:hover { color: var(--text); }
         return;
       }
 
+      const bannerIcons = { FinTech:'💳', HealthTech:'🏥', AgriTech:'🌾', EdTech:'📚', AI:'🤖', CleanTech:'♻️', Robotics:'🦾', SaaS:'☁️', 'E-Commerce':'🛒', Logistics:'🚚', 'Real Estate':'🏢', Other:'✦' };
+      const bannerGradients = [
+        'linear-gradient(135deg,#1a2a4a,#2d3f6b)',
+        'linear-gradient(135deg,#2a1a3a,#4a2d6b)',
+        'linear-gradient(135deg,#1a3a2e,#2d6b4f)',
+        'linear-gradient(135deg,#3a2a1a,#6b4f2d)',
+        'linear-gradient(135deg,#3a1a2a,#6b2d4f)'
+      ];
+      function gradientFor(str) {
+        let hash = 0;
+        for (let i = 0; i < (str||'').length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return bannerGradients[Math.abs(hash) % bannerGradients.length];
+      }
+
       grid.innerHTML = ideas.map(idea => {
         const initials = idea.creator_first_name
           ? (idea.creator_first_name[0] + (idea.creator_last_name?.[0] || '')).toUpperCase()
@@ -931,24 +975,32 @@ footer a:hover { color: var(--text); }
         const avatarHtml = idea.creator_avatar
           ? `<img src="${idea.creator_avatar}" />`
           : initials;
+        const industry = idea.industry || idea.category || 'Other';
+        const hasImage = idea.images && idea.images.length > 0;
+        const bannerHtml = hasImage
+          ? `<div class="idea-card-banner" style="background-image:url('${idea.images[0]}');"></div>`
+          : `<div class="idea-card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="idea-card-banner-icon">${bannerIcons[industry] || '✦'}</span></div>`;
         return `
           <a class="idea-card" href="/idea?id=${idea.id}">
-            <div class="idea-card-top">
-              <span class="idea-category">${idea.industry || idea.category || 'General'}</span>
-              <span class="idea-price">$${Number(idea.price || 0).toLocaleString()}</span>
-            </div>
-            <div class="idea-title">${idea.title || 'Untitled Idea'}</div>
-            <div class="idea-summary">${idea.summary || idea.description || ''}</div>
-            <div class="idea-card-foot">
-              <div class="idea-creator">
-                <div class="idea-creator-av">${avatarHtml}</div>
-                <div>
-                  <div>${idea.creator_first_name ? `${idea.creator_first_name} ${idea.creator_last_name || ''}` : 'Anonymous'}</div>
-                  <div style="color:var(--accent);font-size:11px;margin-top:2px;">${idea.creator_stars > 0 ? '★'.repeat(Math.round(idea.creator_stars)) + '☆'.repeat(5-Math.round(idea.creator_stars)) : '<span style="color:var(--muted);">No ratings yet</span>'}</div>
-                </div>
+            ${bannerHtml}
+            <div class="idea-card-body">
+              <div class="idea-card-top">
+                <span class="idea-category">${industry}</span>
+                <span class="idea-price">$${Number(idea.price || 0).toLocaleString()}</span>
               </div>
-              <div class="idea-meta">
-                👁 ${idea.views || 0}
+              <div class="idea-title">${idea.title || 'Untitled Idea'}</div>
+              <div class="idea-summary">${idea.summary || idea.description || ''}</div>
+              <div class="idea-card-foot">
+                <div class="idea-creator">
+                  <div class="idea-creator-av">${avatarHtml}</div>
+                  <div>
+                    <div>${idea.creator_first_name ? `${idea.creator_first_name} ${idea.creator_last_name || ''}` : 'Anonymous'}</div>
+                    <div style="color:var(--accent);font-size:11px;margin-top:2px;">${idea.creator_stars > 0 ? '★'.repeat(Math.round(idea.creator_stars)) + '☆'.repeat(5-Math.round(idea.creator_stars)) : '<span style="color:var(--muted);">No ratings yet</span>'}</div>
+                  </div>
+                </div>
+                <div class="idea-meta">
+                  👁 ${idea.views || 0}
+                </div>
               </div>
             </div>
           </a>
