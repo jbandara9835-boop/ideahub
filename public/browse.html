@@ -62,6 +62,28 @@
     .filter-inner { display:flex; align-items:center; gap:8px; overflow-x:auto; padding:12px 0; scrollbar-width:none; }
     .filter-inner::-webkit-scrollbar { display:none; }
     .sort-select { margin-left:auto; flex-shrink:0; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 12px; font-size:0.85rem; cursor:pointer; outline:none; }
+    .filter-toggle-btn { flex-shrink:0; background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 14px; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s; }
+    .filter-toggle-btn:hover { border-color:var(--gold); }
+    .filter-toggle-btn.active { background:var(--gold); border-color:var(--gold); color:#000; font-weight:600; }
+    .filter-count-badge { background:#000; color:var(--gold); border-radius:10px; font-size:0.7rem; padding:1px 6px; font-weight:700; }
+
+    .filter-panel { display:none; background:var(--surface); border-bottom:1px solid var(--border); padding:20px 32px; }
+    .filter-panel.open { display:block; }
+    .filter-panel-grid { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; }
+    .filter-group-label { font-size:0.78rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; display:block; }
+    .filter-range-row { display:flex; align-items:center; gap:8px; }
+    .filter-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.85rem; outline:none; }
+    .filter-input:focus { border-color:var(--gold); }
+    .filter-select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:0.85rem; outline:none; cursor:pointer; }
+    .filter-checkbox-row { display:flex; align-items:center; gap:8px; font-size:0.85rem; padding:6px 0; cursor:pointer; }
+    .filter-checkbox-row input { width:auto; cursor:pointer; }
+    .filter-radio-group { display:flex; flex-direction:column; gap:4px; }
+    .filter-actions { max-width:1400px; margin:16px auto 0; display:flex; justify-content:flex-end; gap:10px; }
+    .filter-clear-btn { background:none; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:8px 18px; font-size:0.85rem; cursor:pointer; }
+    .filter-clear-btn:hover { color:var(--text); border-color:var(--border-hover); }
+    .filter-apply-btn { background:var(--gold); border:none; color:#000; font-weight:600; border-radius:8px; padding:8px 22px; font-size:0.85rem; cursor:pointer; }
+    .filter-apply-btn:hover { background:var(--gold-dim); }
+    .country-checkbox-scroll { max-height:140px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:8px; background:var(--surface2); }
 
     .main { max-width:1400px; margin:0 auto; padding:28px 32px; }
     .results-count { color:var(--muted); font-size:0.9rem; margin-bottom:20px; }
@@ -144,6 +166,9 @@
 
       .pagination { flex-wrap:wrap; gap:6px; margin-top:24px; }
       .footer { padding:20px 16px; }
+      .filter-panel { padding:16px; }
+      .filter-panel-grid { grid-template-columns:1fr; gap:16px; }
+      .filter-actions { padding:0 16px; }
     }
   </style>
 </head>
@@ -191,15 +216,88 @@
 
 <div class="filter-bar">
   <div class="filter-inner">
-    <button class="chip" data-level="Market Ready">Market Ready</button>
-    <button class="chip" data-level="Prototype">Prototype</button>
-    <button class="chip" data-level="Concept">Concept</button>
+    <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilterPanel()">
+      ⚙ Filters <span class="filter-count-badge" id="filterCountBadge" style="display:none;">0</span>
+    </button>
     <select class="sort-select" id="sortSelect" onchange="applyFilters()">
       <option value="newest">Newest first</option>
       <option value="price_asc">Price: Low to High</option>
       <option value="price_desc">Price: High to Low</option>
       <option value="popular">Most Viewed</option>
     </select>
+  </div>
+</div>
+
+<div class="filter-panel" id="filterPanel">
+  <div class="filter-panel-grid">
+    <div>
+      <label class="filter-group-label">Price Range (USD)</label>
+      <div class="filter-range-row">
+        <input type="number" class="filter-input" id="priceMin" placeholder="Min" min="0" />
+        <span style="color:var(--muted);">–</span>
+        <input type="number" class="filter-input" id="priceMax" placeholder="Max" min="0" />
+      </div>
+    </div>
+
+    <div>
+      <label class="filter-group-label">Stage</label>
+      <div class="filter-radio-group" id="stageFilterGroup">
+        <label class="filter-checkbox-row"><input type="radio" name="stageFilter" value="" checked /> Any stage</label>
+        <label class="filter-checkbox-row"><input type="radio" name="stageFilter" value="Concept" /> Concept</label>
+        <label class="filter-checkbox-row"><input type="radio" name="stageFilter" value="Prototype" /> Prototype</label>
+        <label class="filter-checkbox-row"><input type="radio" name="stageFilter" value="Market Ready" /> Market Ready</label>
+      </div>
+    </div>
+
+    <div>
+      <label class="filter-group-label">Industry</label>
+      <select class="filter-select" id="industryFilter">
+        <option value="">Any industry</option>
+        <option>Technology</option>
+        <option>Health & Wellness</option>
+        <option>Education</option>
+        <option>Finance</option>
+        <option>Food & Beverage</option>
+        <option>E-commerce</option>
+        <option>Entertainment</option>
+        <option>Real Estate</option>
+        <option>Travel</option>
+        <option>Environment</option>
+        <option>Agriculture</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="filter-group-label">Date Posted</label>
+      <select class="filter-select" id="datePostedFilter">
+        <option value="">Any time</option>
+        <option value="week">Past week</option>
+        <option value="month">Past month</option>
+        <option value="3months">Past 3 months</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="filter-group-label">Min. Views</label>
+      <input type="number" class="filter-input" id="minViewsFilter" placeholder="e.g. 100" min="0" />
+    </div>
+
+    <div>
+      <label class="filter-group-label">Patent Status</label>
+      <label class="filter-checkbox-row"><input type="checkbox" id="patentVerifiedOnly" /> Verified patent only</label>
+    </div>
+
+    <div>
+      <label class="filter-group-label">Country</label>
+      <input type="text" class="filter-input" id="countrySearchFilter" placeholder="Search countries..." style="margin-bottom:6px;" oninput="renderCountryFilterList()" />
+      <div class="country-checkbox-scroll" id="countryFilterList"></div>
+    </div>
+  </div>
+
+  <div class="filter-actions">
+    <button class="filter-clear-btn" onclick="clearAdvancedFilters()">Clear all</button>
+    <button class="filter-apply-btn" onclick="applyFilters(); toggleFilterPanel();">Apply filters</button>
   </div>
 </div>
 
@@ -223,6 +321,62 @@
   let allIdeas = [], filteredIdeas = [], currentPage = 1;
   const PER_PAGE = 12;
   let activeCategory = 'all', activeLevel = null;
+  let selectedCountryFilters = [];
+
+  const ALL_COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba","Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
+
+  function toggleFilterPanel() {
+    const panel = document.getElementById('filterPanel');
+    const btn = document.getElementById('filterToggleBtn');
+    panel.classList.toggle('open');
+    btn.classList.toggle('active', panel.classList.contains('open'));
+    if (panel.classList.contains('open') && !document.getElementById('countryFilterList').innerHTML) {
+      renderCountryFilterList();
+    }
+  }
+
+  function renderCountryFilterList() {
+    const wrap = document.getElementById('countryFilterList');
+    const filter = (document.getElementById('countrySearchFilter').value || '').toLowerCase();
+    const list = ALL_COUNTRIES.filter(c => c.toLowerCase().includes(filter));
+    wrap.innerHTML = list.map(c => `
+      <label class="filter-checkbox-row">
+        <input type="checkbox" value="${c}" ${selectedCountryFilters.includes(c) ? 'checked' : ''} onchange="toggleCountryFilter('${c}', this.checked)" />
+        ${c}
+      </label>
+    `).join('');
+  }
+
+  function toggleCountryFilter(country, checked) {
+    if (checked) { if (!selectedCountryFilters.includes(country)) selectedCountryFilters.push(country); }
+    else selectedCountryFilters = selectedCountryFilters.filter(c => c !== country);
+  }
+
+  function clearAdvancedFilters() {
+    document.getElementById('priceMin').value = '';
+    document.getElementById('priceMax').value = '';
+    document.querySelector('input[name="stageFilter"][value=""]').checked = true;
+    document.getElementById('industryFilter').value = '';
+    document.getElementById('datePostedFilter').value = '';
+    document.getElementById('minViewsFilter').value = '';
+    document.getElementById('patentVerifiedOnly').checked = false;
+    selectedCountryFilters = [];
+    renderCountryFilterList();
+    applyFilters();
+  }
+
+  function countActiveFilters() {
+    let n = 0;
+    if (document.getElementById('priceMin').value) n++;
+    if (document.getElementById('priceMax').value) n++;
+    if (document.querySelector('input[name="stageFilter"]:checked')?.value) n++;
+    if (document.getElementById('industryFilter').value) n++;
+    if (document.getElementById('datePostedFilter').value) n++;
+    if (document.getElementById('minViewsFilter').value) n++;
+    if (document.getElementById('patentVerifiedOnly').checked) n++;
+    if (selectedCountryFilters.length) n++;
+    return n;
+  }
 
   function initNav() {
     // Support BOTH token key formats (ih_token from sidebar pages, token from public pages)
@@ -273,6 +427,17 @@
     const sort = document.getElementById('sortSelect').value;
     const levelMap = { 'Concept':1, 'Prototype':2, 'Market Ready':3 };
 
+    const priceMin = parseFloat(document.getElementById('priceMin').value) || null;
+    const priceMax = parseFloat(document.getElementById('priceMax').value) || null;
+    const stageFilter = document.querySelector('input[name="stageFilter"]:checked')?.value || '';
+    const industryFilterVal = document.getElementById('industryFilter').value;
+    const datePosted = document.getElementById('datePostedFilter').value;
+    const minViews = parseInt(document.getElementById('minViewsFilter').value) || null;
+    const patentOnly = document.getElementById('patentVerifiedOnly').checked;
+
+    const now = Date.now();
+    const dateThresholds = { week: 7*24*60*60*1000, month: 30*24*60*60*1000, '3months': 90*24*60*60*1000 };
+
     filteredIdeas = allIdeas.filter(idea => {
       const matchCat = activeCategory === 'all' || idea.category === activeCategory || idea.industry === activeCategory;
       const matchLevel = !activeLevel || idea.level === levelMap[activeLevel];
@@ -282,7 +447,18 @@
         (idea.summary||'').toLowerCase().includes(q) ||
         (idea.category||'').toLowerCase().includes(q) ||
         (idea.industry||'').toLowerCase().includes(q);
-      return matchCat && matchLevel && matchQ;
+
+      const matchPriceMin = priceMin === null || (idea.price||0) >= priceMin;
+      const matchPriceMax = priceMax === null || (idea.price||0) <= priceMax;
+      const matchStage = !stageFilter || idea.level === levelMap[stageFilter];
+      const matchIndustryFilter = !industryFilterVal || idea.industry === industryFilterVal || idea.category === industryFilterVal;
+      const matchDate = !datePosted || (now - new Date(idea.created_at).getTime()) <= dateThresholds[datePosted];
+      const matchViews = minViews === null || (idea.views||0) >= minViews;
+      const matchPatent = !patentOnly || idea.patent_verified;
+      const matchCountry = selectedCountryFilters.length === 0 ||
+        (idea.countries && (idea.countries.includes('ALL') || idea.countries.some(c => selectedCountryFilters.includes(c))));
+
+      return matchCat && matchLevel && matchQ && matchPriceMin && matchPriceMax && matchStage && matchIndustryFilter && matchDate && matchViews && matchPatent && matchCountry;
     });
 
     if (sort === 'price_asc') filteredIdeas.sort((a,b) => (a.price||0)-(b.price||0));
@@ -292,6 +468,11 @@
 
     currentPage = 1;
     renderPage();
+
+    const badge = document.getElementById('filterCountBadge');
+    const count = countActiveFilters();
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline-block' : 'none';
   }
 
   function renderPage() {
