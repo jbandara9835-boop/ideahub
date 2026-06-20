@@ -444,10 +444,16 @@
         </div>
 
         <div class="field">
-          <label for="country">Country *</label>
-          <select id="country" onchange="updatePreview()">
-            <option value="">Select country</option>
-          </select>
+          <label>Target Countries *</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;background:var(--accent-dim);border:1px solid rgba(245,200,66,0.25);border-radius:8px;padding:0.6rem 0.85rem;cursor:pointer;" onclick="toggleAllCountries()">
+            <div class="toggle" id="allCountriesToggle" style="flex-shrink:0;"><div class="toggle-knob"></div></div>
+            <span style="font-size:13px;font-weight:500;">🌍 Available in all countries</span>
+          </div>
+          <div id="countryCheckboxWrap" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:0.75rem;background:rgba(255,255,255,0.02);">
+            <input type="text" id="countrySearch" placeholder="Search countries..." oninput="filterCountryList()" style="margin-bottom:0.6rem;font-size:13px;padding:0.5rem 0.75rem;" />
+            <div id="countryCheckboxList" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;"></div>
+          </div>
+          <div id="countrySelectedSummary" style="font-size:12px;color:var(--muted);margin-top:0.5rem;">No countries selected</div>
         </div>
       </div>
 
@@ -605,17 +611,57 @@
 
   const ALL_COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba","Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
 
-  function populateCountryDropdown() {
-    const sel = document.getElementById('country');
-    if (!sel) return;
-    ALL_COUNTRIES.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
-      opt.textContent = c;
-      sel.appendChild(opt);
-    });
+  let selectedCountries = [];
+  let allCountriesMode = false;
+
+  function renderCountryCheckboxes(filter = '') {
+    const wrap = document.getElementById('countryCheckboxList');
+    if (!wrap) return;
+    const list = ALL_COUNTRIES.filter(c => c.toLowerCase().includes(filter.toLowerCase()));
+    wrap.innerHTML = list.map(c => `
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;padding:3px 0;cursor:pointer;">
+        <input type="checkbox" value="${c}" ${selectedCountries.includes(c) ? 'checked' : ''} onchange="toggleCountry('${c}', this.checked)" style="width:auto;margin:0;" />
+        ${c}
+      </label>
+    `).join('');
   }
-  populateCountryDropdown();
+
+  function filterCountryList() {
+    renderCountryCheckboxes(document.getElementById('countrySearch').value);
+  }
+
+  function toggleCountry(country, checked) {
+    if (checked) {
+      if (!selectedCountries.includes(country)) selectedCountries.push(country);
+    } else {
+      selectedCountries = selectedCountries.filter(c => c !== country);
+    }
+    updateCountrySummary();
+  }
+
+  function toggleAllCountries() {
+    allCountriesMode = !allCountriesMode;
+    document.getElementById('allCountriesToggle').classList.toggle('on', allCountriesMode);
+    document.getElementById('countryCheckboxWrap').style.display = allCountriesMode ? 'none' : 'block';
+    if (allCountriesMode) selectedCountries = [];
+    updateCountrySummary();
+  }
+
+  function updateCountrySummary() {
+    const el = document.getElementById('countrySelectedSummary');
+    if (allCountriesMode) {
+      el.textContent = '🌍 Available in all countries';
+      el.style.color = 'var(--accent)';
+    } else if (selectedCountries.length === 0) {
+      el.textContent = 'No countries selected';
+      el.style.color = 'var(--muted)';
+    } else {
+      el.textContent = `${selectedCountries.length} ${selectedCountries.length === 1 ? 'country' : 'countries'} selected: ${selectedCountries.slice(0,4).join(', ')}${selectedCountries.length > 4 ? '…' : ''}`;
+      el.style.color = 'var(--muted)';
+    }
+  }
+
+  renderCountryCheckboxes();
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
   let patentOn = false;
@@ -726,7 +772,15 @@
       document.getElementById('summary').value    = idea.summary     || '';
       document.getElementById('desc').value       = idea.description || '';
       document.getElementById('industry').value   = idea.industry    || '';
-      document.getElementById('country').value    = idea.country     || '';
+      if (idea.countries && idea.countries.length) {
+        if (idea.countries[0] === 'ALL') {
+          toggleAllCountries();
+        } else {
+          selectedCountries = [...idea.countries];
+          renderCountryCheckboxes();
+          updateCountrySummary();
+        }
+      }
       document.getElementById('ideaType').value   = idea.idea_type   || '';
       document.getElementById('price').value      = idea.price       || '';
       document.getElementById('visibility').value = idea.visibility  || '1';
@@ -917,7 +971,7 @@
     const desc = document.getElementById('desc').value.trim();
     const industry = document.getElementById('industry').value;
     const ideaType = document.getElementById('ideaType').value;
-    const country = document.getElementById('country').value;
+    const countries = allCountriesMode ? ['ALL'] : selectedCountries;
     const price = document.getElementById('price').value;
     const visibility = document.getElementById('visibility').value;
     const level = document.querySelector('input[name="level"]:checked')?.value || '1';
@@ -932,6 +986,7 @@
     if (!title) { errorMsg.textContent = 'Please enter an idea title.'; errorMsg.classList.add('show'); return; }
     if (!summary) { errorMsg.textContent = 'Please enter a short summary.'; errorMsg.classList.add('show'); return; }
     if (!industry) { errorMsg.textContent = 'Please select an industry.'; errorMsg.classList.add('show'); return; }
+    if (!allCountriesMode && selectedCountries.length === 0) { errorMsg.textContent = 'Please select at least one target country, or choose "Available in all countries".'; errorMsg.classList.add('show'); return; }
     if (!price || parseInt(price) < 1) { errorMsg.textContent = 'Please enter a valid price.'; errorMsg.classList.add('show'); return; }
 
     const btn = document.getElementById('submitBtn');
@@ -949,7 +1004,7 @@
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title, summary, desc, industry, ideaType, country, price, visibility, level, hasPatent, patentNumber, patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, countries, price, visibility, level, hasPatent, patentNumber, patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
       });
 
       const data = await res.json();
