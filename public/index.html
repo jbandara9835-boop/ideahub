@@ -308,7 +308,7 @@ section { padding: 6rem 2rem; position: relative; }
   .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
   .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
 
-  .hero { padding: 6rem 1rem 5rem; min-height: 100svh; }
+  .hero { padding: 10.5rem 1rem 5rem; min-height: 100svh; }
   .hero-title { font-size: clamp(40px, 14vw, 72px); }
   .hero-sub { font-size: 14px; padding: 0 0.25rem; margin-bottom: 1.75rem; }
   .hero-stats { gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
@@ -561,8 +561,46 @@ footer a:hover { color: var(--text); }
   </div>
 </nav>
 
+<!-- PERSISTENT SEARCH BAR (always visible above slideshow) -->
+<div style="position:fixed;top:74px;left:0;right:0;z-index:90;display:flex;justify-content:center;padding:1rem 2rem 0;pointer-events:none;">
+  <div style="width:100%;max-width:640px;pointer-events:auto;">
+    <div style="display:flex;background:rgba(17,17,20,0.92);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;transition:border-color 0.2s;box-shadow:0 8px 30px rgba(0,0,0,0.3);" id="searchWrap">
+      <select id="searchCategory" style="background:var(--surface2);border:none;border-right:1px solid var(--border);padding:0 1rem;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;min-width:120px;">
+        <option value="">All Areas</option>
+        <option value="FinTech">💳 FinTech</option>
+        <option value="HealthTech">🏥 HealthTech</option>
+        <option value="AgriTech">🌾 AgriTech</option>
+        <option value="EdTech">📚 EdTech</option>
+        <option value="AI">🤖 AI & ML</option>
+        <option value="CleanTech">♻️ CleanTech</option>
+        <option value="Robotics">🦾 Robotics</option>
+        <option value="SaaS">☁️ SaaS</option>
+        <option value="E-Commerce">🛒 E-Commerce</option>
+        <option value="Logistics">🚚 Logistics</option>
+        <option value="Real Estate">🏢 Real Estate</option>
+      </select>
+      <input
+        type="text" id="searchInput"
+        placeholder="Search ideas, industries, keywords..."
+        style="flex:1;background:none;border:none;padding:0.8rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
+        onkeydown="if(event.key==='Enter') doSearch()"
+      />
+      <button onclick="doSearch()" style="background:var(--accent);border:none;padding:0 1.4rem;font-size:13px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;color:#080809;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+        Search →
+      </button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+      <span style="font-size:11px;color:var(--muted);">Popular:</span>
+      <a onclick="quickSearch('FinTech')" style="font-size:11px;color:var(--accent);cursor:pointer;text-decoration:none;">FinTech</a>
+      <a onclick="quickSearch('AI')" style="font-size:11px;color:var(--accent);cursor:pointer;">AI & ML</a>
+      <a onclick="quickSearch('HealthTech')" style="font-size:11px;color:var(--accent);cursor:pointer;">HealthTech</a>
+      <a onclick="quickSearch('SaaS')" style="font-size:11px;color:var(--accent);cursor:pointer;">SaaS</a>
+    </div>
+  </div>
+</div>
+
 <!-- HERO SLIDESHOW -->
-<section class="hero" id="heroSection">
+<section class="hero" id="heroSection" style="padding-top:11rem;">
   <div class="hero-slides">
     <div class="hero-slide slide-0 active"></div>
     <div class="hero-slide slide-1"></div>
@@ -589,40 +627,6 @@ footer a:hover { color: var(--text); }
       Buy, sell, and invest in <span>breakthrough ideas</span>. Connect with attorneys, managers, and partners.
       <span>One platform. Infinite possibilities.</span>
     </p>
-    <div class="hero-search" style="width:100%;max-width:640px;margin-bottom:1.5rem;">
-      <div style="display:flex;background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;transition:border-color 0.2s;" id="searchWrap">
-        <select id="searchCategory" style="background:var(--surface2);border:none;border-right:1px solid var(--border);padding:0 1rem;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;min-width:120px;">
-          <option value="">All Areas</option>
-          <option value="FinTech">💳 FinTech</option>
-          <option value="HealthTech">🏥 HealthTech</option>
-          <option value="AgriTech">🌾 AgriTech</option>
-          <option value="EdTech">📚 EdTech</option>
-          <option value="AI">🤖 AI & ML</option>
-          <option value="CleanTech">♻️ CleanTech</option>
-          <option value="Robotics">🦾 Robotics</option>
-          <option value="SaaS">☁️ SaaS</option>
-          <option value="E-Commerce">🛒 E-Commerce</option>
-          <option value="Logistics">🚚 Logistics</option>
-          <option value="Real Estate">🏢 Real Estate</option>
-        </select>
-        <input
-          type="text" id="searchInput"
-          placeholder="Search ideas, industries, keywords..."
-          style="flex:1;background:none;border:none;padding:0.9rem 1rem;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
-          onkeydown="if(event.key==='Enter') doSearch()"
-        />
-        <button onclick="doSearch()" style="background:var(--accent);border:none;padding:0 1.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;color:#080809;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
-          Search →
-        </button>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
-        <span style="font-size:12px;color:var(--muted);">Popular:</span>
-        <a onclick="quickSearch('FinTech')" style="font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;">FinTech</a>
-        <a onclick="quickSearch('AI')" style="font-size:12px;color:var(--accent);cursor:pointer;">AI & ML</a>
-        <a onclick="quickSearch('HealthTech')" style="font-size:12px;color:var(--accent);cursor:pointer;">HealthTech</a>
-        <a onclick="quickSearch('SaaS')" style="font-size:12px;color:var(--accent);cursor:pointer;">SaaS</a>
-      </div>
-    </div>
     <div class="hero-actions">
       <a class="hero-btn-main" href="/browse">🔍 Browse All Ideas</a>
       <a class="hero-btn-sec" href="/signup">✦ Join Free — It's Quick</a>
