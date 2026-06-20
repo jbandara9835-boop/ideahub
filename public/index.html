@@ -168,6 +168,83 @@ nav {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ── HERO SLIDESHOW ── */
+.hero-slides { position: absolute; inset: 0; z-index: 0; }
+.hero-slide {
+  position: absolute; inset: 0;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.9s ease;
+  background-size: cover; background-position: center;
+}
+.hero-slide.active { opacity: 1; visibility: visible; }
+.hero-slide::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(8,8,9,0.55) 0%, rgba(8,8,9,0.88) 60%, rgba(8,8,9,0.98) 100%);
+}
+.hero-slide.slide-0 { background-image: linear-gradient(180deg, rgba(8,8,9,0.4), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=70'); }
+.hero-slide.slide-1 { background-image: linear-gradient(180deg, rgba(8,8,9,0.55), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1600&q=70'); }
+.hero-slide.slide-2 { background-image: linear-gradient(180deg, rgba(8,8,9,0.55), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1600&q=70'); }
+.hero-slide.slide-3 { background-image: linear-gradient(180deg, rgba(8,8,9,0.55), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1532012197267-da84d127e765?w=1600&q=70'); }
+
+.hero-content-panel { display: none; animation: fadeUp 0.7s ease both; }
+.hero-content-panel.active { display: flex; flex-direction: column; align-items: center; }
+
+.hero-quote-mark { font-family: 'Bebas Neue', sans-serif; font-size: 90px; line-height: 0.6; color: var(--accent); opacity: 0.5; margin-bottom: 0.5rem; }
+.hero-quote-text {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(28px, 4.5vw, 48px);
+  font-weight: 800; line-height: 1.25; max-width: 780px;
+  margin-bottom: 1.5rem;
+}
+.hero-quote-author { font-size: 16px; color: var(--accent); font-weight: 600; margin-bottom: 2.5rem; }
+.hero-quote-author span { color: var(--muted); font-weight: 400; }
+
+.hero-nav-dots {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 10px; z-index: 5;
+}
+.hero-dot {
+  width: 32px; height: 4px; border-radius: 4px;
+  background: rgba(255,255,255,0.18); border: none; cursor: pointer;
+  transition: background 0.3s; padding: 0; overflow: hidden; position: relative;
+}
+.hero-dot.active { background: rgba(255,255,255,0.3); }
+.hero-dot.active::after {
+  content: ''; position: absolute; inset: 0; background: var(--accent);
+  animation: dotFill 6s linear forwards;
+}
+@keyframes dotFill { from { width: 0%; } to { width: 100%; } }
+
+.hero-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  color: var(--text); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 5; font-size: 18px; transition: all 0.2s;
+}
+.hero-arrow:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); }
+.hero-arrow-left { left: 1.5rem; }
+.hero-arrow-right { right: 1.5rem; }
+
+.slide-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 600;
+  margin-bottom: 1.75rem; letter-spacing: 0.3px;
+}
+.slide-tag.tag-0 { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(245,200,66,0.25); }
+.slide-tag.tag-1 { background: rgba(251,146,60,0.1); color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+.slide-tag.tag-2 { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+.slide-tag.tag-3 { background: rgba(110,231,183,0.1); color: var(--accent2); border: 1px solid rgba(110,231,183,0.25); }
+
+@media (max-width: 768px) {
+  .hero-arrow { width: 36px; height: 36px; font-size: 15px; }
+  .hero-arrow-left { left: 0.5rem; }
+  .hero-arrow-right { right: 0.5rem; }
+  .hero-quote-text { font-size: clamp(22px, 6vw, 32px); }
+  .hero-quote-mark { font-size: 60px; }
+}
+
 /* ── SECTION SHARED ── */
 section { padding: 6rem 2rem; position: relative; }
 .section-label {
@@ -439,76 +516,121 @@ footer a:hover { color: var(--text); }
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg">
-    <div class="hero-bg-glow1"></div>
-    <div class="hero-bg-glow2"></div>
-    <div class="hero-bg-glow3"></div>
-    <div class="hero-grid"></div>
+<!-- HERO SLIDESHOW -->
+<section class="hero" id="heroSection">
+  <div class="hero-slides">
+    <div class="hero-slide slide-0 active"></div>
+    <div class="hero-slide slide-1"></div>
+    <div class="hero-slide slide-2"></div>
+    <div class="hero-slide slide-3"></div>
   </div>
+  <div class="hero-grid"></div>
 
-  <div class="hero-badge">
-    <span class="hero-badge-dot"></span>
-    The marketplace for ideas, innovation & investment
-  </div>
+  <button class="hero-arrow hero-arrow-left" onclick="changeSlide(-1)">‹</button>
+  <button class="hero-arrow hero-arrow-right" onclick="changeSlide(1)">›</button>
 
-  <h1 class="hero-title">
-    <span class="hero-title-line1">WHERE IDEAS</span>
-    <span class="hero-title-line2">BECOME</span>
-    <span class="hero-title-line1">EMPIRES</span>
-  </h1>
-
-  <p class="hero-sub">
-    Buy, sell, and invest in <span>breakthrough ideas</span>. Connect with attorneys, managers, and partners.
-    <span>One platform. Infinite possibilities.</span>
-  </p>
-
-  <div class="hero-search" style="width:100%;max-width:640px;margin-bottom:1.5rem;">
-    <div style="display:flex;background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;transition:border-color 0.2s;" id="searchWrap">
-      <select id="searchCategory" style="background:var(--surface2);border:none;border-right:1px solid var(--border);padding:0 1rem;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;min-width:120px;">
-        <option value="">All Areas</option>
-        <option value="FinTech">💳 FinTech</option>
-        <option value="HealthTech">🏥 HealthTech</option>
-        <option value="AgriTech">🌾 AgriTech</option>
-        <option value="EdTech">📚 EdTech</option>
-        <option value="AI">🤖 AI & ML</option>
-        <option value="CleanTech">♻️ CleanTech</option>
-        <option value="Robotics">🦾 Robotics</option>
-        <option value="SaaS">☁️ SaaS</option>
-        <option value="E-Commerce">🛒 E-Commerce</option>
-        <option value="Logistics">🚚 Logistics</option>
-        <option value="Real Estate">🏢 Real Estate</option>
-      </select>
-      <input
-        type="text" id="searchInput"
-        placeholder="Search ideas, industries, keywords..."
-        style="flex:1;background:none;border:none;padding:0.9rem 1rem;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
-        onkeydown="if(event.key==='Enter') doSearch()"
-      />
-      <button onclick="doSearch()" style="background:var(--accent);border:none;padding:0 1.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;color:#080809;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
-        Search →
-      </button>
+  <!-- SLIDE 0 — General marketplace -->
+  <div class="hero-content-panel active" data-slide="0">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      The marketplace for ideas, innovation & investment
     </div>
-    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
-      <span style="font-size:12px;color:var(--muted);">Popular:</span>
-      <a onclick="quickSearch('FinTech')" style="font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;" >FinTech</a>
-      <a onclick="quickSearch('AI')" style="font-size:12px;color:var(--accent);cursor:pointer;">AI & ML</a>
-      <a onclick="quickSearch('HealthTech')" style="font-size:12px;color:var(--accent);cursor:pointer;">HealthTech</a>
-      <a onclick="quickSearch('SaaS')" style="font-size:12px;color:var(--accent);cursor:pointer;">SaaS</a>
+    <h1 class="hero-title">
+      <span class="hero-title-line1">WHERE IDEAS</span>
+      <span class="hero-title-line2">BECOME</span>
+      <span class="hero-title-line1">EMPIRES</span>
+    </h1>
+    <p class="hero-sub">
+      Buy, sell, and invest in <span>breakthrough ideas</span>. Connect with attorneys, managers, and partners.
+      <span>One platform. Infinite possibilities.</span>
+    </p>
+    <div class="hero-search" style="width:100%;max-width:640px;margin-bottom:1.5rem;">
+      <div style="display:flex;background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;transition:border-color 0.2s;" id="searchWrap">
+        <select id="searchCategory" style="background:var(--surface2);border:none;border-right:1px solid var(--border);padding:0 1rem;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;min-width:120px;">
+          <option value="">All Areas</option>
+          <option value="FinTech">💳 FinTech</option>
+          <option value="HealthTech">🏥 HealthTech</option>
+          <option value="AgriTech">🌾 AgriTech</option>
+          <option value="EdTech">📚 EdTech</option>
+          <option value="AI">🤖 AI & ML</option>
+          <option value="CleanTech">♻️ CleanTech</option>
+          <option value="Robotics">🦾 Robotics</option>
+          <option value="SaaS">☁️ SaaS</option>
+          <option value="E-Commerce">🛒 E-Commerce</option>
+          <option value="Logistics">🚚 Logistics</option>
+          <option value="Real Estate">🏢 Real Estate</option>
+        </select>
+        <input
+          type="text" id="searchInput"
+          placeholder="Search ideas, industries, keywords..."
+          style="flex:1;background:none;border:none;padding:0.9rem 1rem;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
+          onkeydown="if(event.key==='Enter') doSearch()"
+        />
+        <button onclick="doSearch()" style="background:var(--accent);border:none;padding:0 1.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;color:#080809;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+          Search →
+        </button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+        <span style="font-size:12px;color:var(--muted);">Popular:</span>
+        <a onclick="quickSearch('FinTech')" style="font-size:12px;color:var(--accent);cursor:pointer;text-decoration:none;">FinTech</a>
+        <a onclick="quickSearch('AI')" style="font-size:12px;color:var(--accent);cursor:pointer;">AI & ML</a>
+        <a onclick="quickSearch('HealthTech')" style="font-size:12px;color:var(--accent);cursor:pointer;">HealthTech</a>
+        <a onclick="quickSearch('SaaS')" style="font-size:12px;color:var(--accent);cursor:pointer;">SaaS</a>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a class="hero-btn-main" href="/browse">🔍 Browse All Ideas</a>
+      <a class="hero-btn-sec" href="/signup">✦ Join Free — It's Quick</a>
     </div>
   </div>
 
-  <div class="hero-actions">
-    <a class="hero-btn-main" href="/browse">
-      🔍 Browse All Ideas
-    </a>
-    <a class="hero-btn-sec" href="/signup">
-      ✦ Join Free — It's Quick
-    </a>
+  <!-- SLIDE 1 — Idea creators & patent owners -->
+  <div class="hero-content-panel" data-slide="1">
+    <div class="slide-tag tag-1">💡 For Creators & Inventors</div>
+    <h1 class="hero-title">
+      <span class="hero-title-line1">GOT AN IDEA?</span>
+      <span class="hero-title-line2">GOT A PATENT?</span>
+      <span class="hero-title-line1" style="font-size:0.55em;opacity:0.6;">TURN IT INTO CAPITAL</span>
+    </h1>
+    <p class="hero-sub">
+      List your idea or patent on IdeaHub and reach <span>investors actively searching</span> for the next breakthrough. Set your price, stay in control, get paid securely through escrow.
+    </p>
+    <div class="hero-actions">
+      <a class="hero-btn-main" href="/signup?role=idea_creator">💡 List Your Idea</a>
+      <a class="hero-btn-sec" href="/signup?role=patent_seller">📋 List a Patent</a>
+    </div>
   </div>
 
-  <div class="hero-stats">
+  <!-- SLIDE 2 — Service providers -->
+  <div class="hero-content-panel" data-slide="2">
+    <div class="slide-tag tag-2">🤝 For Professionals</div>
+    <h1 class="hero-title">
+      <span class="hero-title-line1">LAWYERS.</span>
+      <span class="hero-title-line2">MANAGERS.</span>
+      <span class="hero-title-line1">YOUR NEXT CLIENT IS HERE.</span>
+    </h1>
+    <p class="hero-sub">
+      Patent attorneys, virtual managers, and corporate service providers — join IdeaHub to find <span>creators and investors who need your expertise</span>, every single day.
+    </p>
+    <div class="hero-actions">
+      <a class="hero-btn-main" href="/signup?role=patent_attorney">⚖️ Join as Attorney</a>
+      <a class="hero-btn-sec" href="/signup?role=virtual_manager">🧑‍💼 Become a Manager</a>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — Inspirational quote -->
+  <div class="hero-content-panel" data-slide="3">
+    <div class="slide-tag tag-3">✦ Why Ideas Matter</div>
+    <div class="hero-quote-mark">"</div>
+    <p class="hero-quote-text">Innovation distinguishes between a leader and a follower.</p>
+    <div class="hero-quote-author">Steve Jobs <span>— Co-founder, Apple</span></div>
+    <div class="hero-actions">
+      <a class="hero-btn-main" href="/browse">🔍 Explore Ideas</a>
+      <a class="hero-btn-sec" href="/signup">✦ Start Your Journey</a>
+    </div>
+  </div>
+
+  <div class="hero-stats" style="position:relative;z-index:2;margin-top:1rem;">
     <div>
       <div class="hero-stat-val" id="statIdeas">—</div>
       <div class="hero-stat-label">Ideas Listed</div>
@@ -521,6 +643,13 @@ footer a:hover { color: var(--text); }
       <div class="hero-stat-val" id="statDeals">—</div>
       <div class="hero-stat-label">Deals Closed</div>
     </div>
+  </div>
+
+  <div class="hero-nav-dots" id="heroDots">
+    <button class="hero-dot active" onclick="goToSlide(0)"></button>
+    <button class="hero-dot" onclick="goToSlide(1)"></button>
+    <button class="hero-dot" onclick="goToSlide(2)"></button>
+    <button class="hero-dot" onclick="goToSlide(3)"></button>
   </div>
 </section>
 
@@ -692,6 +821,41 @@ footer a:hover { color: var(--text); }
 
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+
+  // ── HERO SLIDESHOW ──
+  let currentSlide = 0;
+  const totalSlides = 4;
+  let slideInterval = null;
+
+  function showSlide(idx) {
+    document.querySelectorAll('.hero-slide').forEach((el, i) => el.classList.toggle('active', i === idx));
+    document.querySelectorAll('.hero-content-panel').forEach((el) => el.classList.toggle('active', parseInt(el.dataset.slide) === idx));
+    document.querySelectorAll('.hero-dot').forEach((el, i) => el.classList.toggle('active', i === idx));
+    currentSlide = idx;
+  }
+
+  function changeSlide(dir) {
+    showSlide((currentSlide + dir + totalSlides) % totalSlides);
+    resetAutoplay();
+  }
+
+  function goToSlide(idx) {
+    showSlide(idx);
+    resetAutoplay();
+  }
+
+  function startAutoplay() {
+    slideInterval = setInterval(() => {
+      showSlide((currentSlide + 1) % totalSlides);
+    }, 6000);
+  }
+
+  function resetAutoplay() {
+    clearInterval(slideInterval);
+    startAutoplay();
+  }
+
+  startAutoplay();
 
   // Redirect logged-in users to their dashboard
   const token = localStorage.getItem('ih_token');
