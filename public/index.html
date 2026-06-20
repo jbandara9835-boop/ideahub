@@ -293,18 +293,19 @@ section { padding: 6rem 2rem; position: relative; }
 .idea-card:hover { border-color: rgba(245,200,66,0.25); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
 .idea-card:hover::before { opacity: 1; }
 
-@media (max-width: 768px) {
-  nav { padding: 0.9rem 1rem; }
-  .nav-links { display: none; }
-  .nav-actions { gap: 6px; }
-  .btn-ghost .idea-card { padding: 0; }
+.idea-card { padding: 0; }
 .idea-card-banner {
   height: 130px; width: 100%; background-size: cover; background-position: center;
   display: flex; align-items: center; justify-content: center; position: relative;
 }
 .idea-card-banner-icon { font-size: 32px; opacity: 0.55; }
 .idea-card-body { padding: 1.5rem; }
-.idea-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }{ padding: 0.45rem 0.8rem; font-size: 13px; }
+
+@media (max-width: 768px) {
+  nav { padding: 0.9rem 1rem; }
+  .nav-links { display: none; }
+  .nav-actions { gap: 6px; }
+  .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
   .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
 
   .hero { padding: 6rem 1rem 5rem; min-height: 100svh; }
@@ -324,6 +325,8 @@ section { padding: 6rem 2rem; position: relative; }
   .hero-quote-mark { font-size: 50px; margin-bottom: 0.25rem; }
   .hero-quote-text { font-size: clamp(20px, 6.5vw, 28px); padding: 0 0.5rem; margin-bottom: 1.1rem; }
   .hero-quote-author { font-size: 13px; margin-bottom: 1.75rem; }
+}
+.idea-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 .idea-category {
   font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
   padding: 4px 10px; border-radius: 20px;
