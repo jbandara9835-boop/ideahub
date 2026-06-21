@@ -237,10 +237,28 @@ nav {
 .slide-tag.tag-2 { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
 .slide-tag.tag-3 { background: rgba(110,231,183,0.1); color: var(--accent2); border: 1px solid rgba(110,231,183,0.25); }
 
+/* ── BOTTOM TAB BAR (mobile only) ── */
+.bottom-tabbar {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 95;
+  background: rgba(8,8,9,0.96); backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+}
+.tabbar-inner { display: flex; justify-content: space-around; align-items: center; }
+.tabbar-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  text-decoration: none; color: var(--muted); font-size: 10px;
+  padding: 4px 12px; transition: color 0.15s; flex: 1;
+}
+.tabbar-item.active { color: var(--accent); }
+.tabbar-icon { font-size: 19px; line-height: 1; }
+
 @media (max-width: 768px) {
+  .bottom-tabbar { display: block; }
+  body { padding-bottom: 56px; }
   #mobileSearchBar { display: block !important; }
   #desktopSearchBar { display: none !important; }
-  body { padding-top: 0; }
   .hero-arrow { width: 36px; height: 36px; font-size: 15px; }
   .hero-arrow-left { left: 0.5rem; }
   .hero-arrow-right { right: 0.5rem; }
@@ -565,7 +583,7 @@ footer a:hover { color: var(--text); }
 </nav>
 
 <!-- MOBILE-ONLY: compact fixed search bar under nav -->
-<div id="mobileSearchBar" style="display:none;position:fixed;top:60px;left:0;right:0;z-index:95;background:rgba(8,8,9,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0.6rem 1rem;">
+<div id="mobileSearchBar" style="display:none;position:fixed;top:60px;left:0;right:0;z-index:95;background:rgba(8,8,9,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0.6rem 1rem;transition:transform 0.25s ease;">
   <div style="display:flex;background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;">
     <input
       type="text" id="mobileSearchInput"
@@ -884,8 +902,68 @@ footer a:hover { color: var(--text); }
   <div>© 2026 <a href="https://picela.co" target="_blank" style="color:var(--muted);text-decoration:none;">Picela</a>. All rights reserved.</div>
 </footer>
 
+<!-- BOTTOM TAB BAR (mobile only) -->
+<nav class="bottom-tabbar" id="bottomTabbar">
+  <div class="tabbar-inner">
+    <a class="tabbar-item active" href="/" data-tab="home">
+      <span class="tabbar-icon">🏠</span><span>Home</span>
+    </a>
+    <a class="tabbar-item" href="/browse" data-tab="marketplace">
+      <span class="tabbar-icon">🔍</span><span>Marketplace</span>
+    </a>
+    <a class="tabbar-item" href="/messages" data-tab="messages">
+      <span class="tabbar-icon">💬</span><span>Messages</span>
+    </a>
+    <a class="tabbar-item" href="/dashboard" id="tabDashboard" data-tab="dashboard">
+      <span class="tabbar-icon">⚡</span><span>Dashboard</span>
+    </a>
+  </div>
+</nav>
+
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+
+  // ── BOTTOM TAB BAR: point Dashboard tab to correct role dashboard ──
+  (function setupTabbar() {
+    const tUser = JSON.parse(localStorage.getItem('ih_user') || 'null');
+    const dashMap = {
+      idea_creator: '/dashboard', patent_seller: '/dashboard',
+      investor: '/buyer-dashboard', corporate_services: '/buyer-dashboard',
+      virtual_manager: '/support-dashboard', patent_attorney: '/attorney-dashboard',
+      business_owner: '/business-dashboard', admin: '/admin'
+    };
+    const dashTab = document.getElementById('tabDashboard');
+    if (dashTab) {
+      dashTab.href = tUser ? (dashMap[tUser.role] || '/dashboard') : '/login';
+    }
+    // Highlight active tab based on current path
+    const path = window.location.pathname;
+    document.querySelectorAll('.tabbar-item').forEach(item => {
+      const tab = item.dataset.tab;
+      const isActive =
+        (tab === 'home' && path === '/') ||
+        (tab === 'marketplace' && path === '/browse') ||
+        (tab === 'messages' && path === '/messages') ||
+        (tab === 'dashboard' && path.includes('dashboard'));
+      item.classList.toggle('active', isActive);
+    });
+  })();
+
+  // ── AUTO-HIDE SEARCH BAR ON SCROLL (mobile) ──
+  (function setupScrollHideSearch() {
+    let lastScrollY = window.scrollY;
+    const bar = document.getElementById('mobileSearchBar');
+    if (!bar) return;
+    window.addEventListener('scroll', () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY && currentY > 80) {
+        bar.style.transform = 'translateY(-100%)';
+      } else {
+        bar.style.transform = 'translateY(0)';
+      }
+      lastScrollY = currentY;
+    }, { passive: true });
+  })();
 
   // ── HERO SLIDESHOW ──
   let currentSlide = 0;
