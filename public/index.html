@@ -250,6 +250,14 @@ nav {
 }
 .tabbar-item.active { color: var(--accent); }
 .tabbar-icon { font-size: 19px; line-height: 1; }
+.tabbar-post-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--accent); color: #080809;
+  font-size: 20px; font-weight: 700; text-decoration: none;
+  margin-top: -14px; box-shadow: 0 4px 14px rgba(245,200,66,0.4);
+  flex-shrink: 0;
+}
 
 
 
@@ -903,6 +911,7 @@ footer a:hover { color: var(--text); }
     <a class="tabbar-item" href="/browse" data-tab="marketplace">
       <span class="tabbar-icon">🔍</span><span>Marketplace</span>
     </a>
+    <a class="tabbar-post-btn" href="/submit" id="tabPostBtn">+</a>
     <a class="tabbar-item" href="/messages" data-tab="messages">
       <span class="tabbar-icon">💬</span><span>Messages</span>
     </a>
@@ -927,6 +936,10 @@ footer a:hover { color: var(--text); }
     const dashTab = document.getElementById('tabDashboard');
     if (dashTab) {
       dashTab.href = tUser ? (dashMap[tUser.role] || '/dashboard') : '/login';
+    }
+    const postBtn = document.getElementById('tabPostBtn');
+    if (postBtn) {
+      postBtn.href = tUser ? '/submit' : '/login';
     }
     // Highlight active tab based on current path
     const path = window.location.pathname;
