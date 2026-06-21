@@ -383,18 +383,25 @@
   (function setupScrollHideSearch() {
     if (window.innerWidth > 768) return;
     let lastScrollY = window.scrollY;
+    let ticking = false;
     const bar = document.querySelector('.hero-search');
     if (!bar) return;
     window.addEventListener('scroll', () => {
-      const currentY = window.scrollY;
-      if (currentY > lastScrollY && currentY > 80) {
-        bar.style.transform = 'translateY(-80px)';
-        bar.style.opacity = '0';
-      } else {
-        bar.style.transform = 'translateY(0)';
-        bar.style.opacity = '1';
-      }
-      lastScrollY = currentY;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const delta = currentY - lastScrollY;
+        if (delta > 5 && currentY > 80) {
+          bar.style.transform = 'translateY(-80px)';
+          bar.style.opacity = '0';
+        } else if (delta < -5) {
+          bar.style.transform = 'translateY(0)';
+          bar.style.opacity = '1';
+        }
+        lastScrollY = currentY;
+        ticking = false;
+      });
     }, { passive: true });
   })();
 
