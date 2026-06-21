@@ -46,9 +46,24 @@
     .hero-search { max-width:600px; margin:0 auto 20px; display:flex; gap:8px; }
 
     #mobileSearchBar { display:none; position:fixed; top:60px; left:0; right:0; z-index:95; background:rgba(10,10,10,0.97); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:0.6rem 1rem; transition:transform 0.25s ease; }
-    #mobileSearchBar .msb-inner { display:flex; background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    #mobileSearchBar .msb-inner { display:flex; background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; position:relative; }
     #mobileSearchBar input { flex:1; background:none; border:none; padding:0.6rem 0.85rem; font-size:13px; color:var(--text); outline:none; }
     #mobileSearchBar button { background:var(--gold); border:none; padding:0 1rem; font-size:16px; color:#000; cursor:pointer; }
+
+    .search-suggest-wrap { position:relative; flex:1; }
+    .search-suggest-dropdown {
+      display:none; position:absolute; top:calc(100% + 6px); left:0; right:0;
+      background:var(--surface); border:1px solid var(--border); border-radius:10px;
+      max-height:280px; overflow-y:auto; z-index:200; box-shadow:0 12px 30px rgba(0,0,0,0.5);
+    }
+    .search-suggest-dropdown.show { display:block; }
+    .suggest-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; font-size:0.85rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
+    .suggest-item:last-child { border-bottom:none; }
+    .suggest-item:hover { background:var(--surface2); }
+    .suggest-item-icon { font-size:14px; opacity:0.7; flex-shrink:0; }
+    .suggest-item-text { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .suggest-item-type { font-size:0.7rem; color:var(--muted); flex-shrink:0; text-transform:uppercase; letter-spacing:0.03em; }
+    .suggest-empty { padding:14px; text-align:center; color:var(--muted); font-size:0.82rem; }
     .hero-search input { flex:1; background:var(--surface); border:1.5px solid var(--border); border-radius:10px; padding:13px 20px; color:var(--text); font-size:1rem; outline:none; transition:border-color 0.2s; }
     .hero-search input:focus { border-color:var(--gold); }
     .hero-search button { background:var(--gold); color:#000; border:none; border-radius:10px; padding:13px 24px; font-size:0.95rem; font-weight:600; cursor:pointer; }
@@ -229,7 +244,10 @@
 
 <div id="mobileSearchBar">
   <div class="msb-inner">
-    <input type="text" id="mobileSearchInput" placeholder="Search ideas, industries..." onkeydown="if(event.key==='Enter') doMobileSearch()" />
+    <div class="search-suggest-wrap">
+      <input type="text" id="mobileSearchInput" placeholder="Search ideas, industries..." autocomplete="off" oninput="handleSuggestInput(this.value, 'mobileSuggestDropdown')" onkeydown="if(event.key==='Enter'){ doMobileSearch(); }" onfocus="handleSuggestInput(this.value, 'mobileSuggestDropdown')" />
+      <div class="search-suggest-dropdown" id="mobileSuggestDropdown"></div>
+    </div>
     <button onclick="doMobileSearch()">🔍</button>
   </div>
 </div>
@@ -238,7 +256,10 @@
   <h1>Discover <span>Ideas</span> that change everything</h1>
   <p>Browse thousands of ideas from creators around the world</p>
   <div class="hero-search">
-    <input type="text" id="searchInput" placeholder="Search by title, keyword, or category…" />
+    <div class="search-suggest-wrap">
+      <input type="text" id="searchInput" placeholder="Search by title, keyword, or category…" autocomplete="off" oninput="handleSuggestInput(this.value, 'desktopSuggestDropdown')" onfocus="handleSuggestInput(this.value, 'desktopSuggestDropdown')" />
+      <div class="search-suggest-dropdown" id="desktopSuggestDropdown"></div>
+    </div>
     <button onclick="applyFilters()">Search</button>
   </div>
   <div class="cat-chips" id="catChips">
@@ -422,7 +443,66 @@
     document.getElementById('searchInput').value = query;
     applyFilters();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    hideAllSuggestDropdowns();
   }
+
+  function hideAllSuggestDropdowns() {
+    document.querySelectorAll('.search-suggest-dropdown').forEach(d => d.classList.remove('show'));
+  }
+
+  function handleSuggestInput(value, dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    if (!dropdown) return;
+    const q = value.trim().toLowerCase();
+    if (!q) { dropdown.classList.remove('show'); return; }
+
+    const industrySet = new Set();
+    const titleMatches = [];
+    allIdeas.forEach(idea => {
+      const industry = idea.industry || idea.category;
+      if (industry && industry.toLowerCase().includes(q)) industrySet.add(industry);
+      if (idea.title && idea.title.toLowerCase().includes(q) && titleMatches.length < 6) {
+        titleMatches.push(idea);
+      }
+    });
+    const industryMatches = [...industrySet].slice(0, 4);
+
+    if (!titleMatches.length && !industryMatches.length) {
+      dropdown.innerHTML = `<div class="suggest-empty">No matches found</div>`;
+      dropdown.classList.add('show');
+      return;
+    }
+
+    let html = '';
+    industryMatches.forEach(ind => {
+      html += `<div class="suggest-item" onclick="selectSuggestion('${ind.replace(/'/g, "\\'")}', '${dropdownId}')">
+        <span class="suggest-item-icon">${emojiMap[ind] || '🏷️'}</span>
+        <span class="suggest-item-text">${ind}</span>
+        <span class="suggest-item-type">Industry</span>
+      </div>`;
+    });
+    titleMatches.forEach(idea => {
+      html += `<div class="suggest-item" onclick="selectSuggestion('${(idea.title||'').replace(/'/g, "\\'")}', '${dropdownId}')">
+        <span class="suggest-item-icon">💡</span>
+        <span class="suggest-item-text">${idea.title}</span>
+        <span class="suggest-item-type">Idea</span>
+      </div>`;
+    });
+    dropdown.innerHTML = html;
+    dropdown.classList.add('show');
+  }
+
+  function selectSuggestion(value, dropdownId) {
+    document.getElementById('searchInput').value = value;
+    document.getElementById('mobileSearchInput').value = value;
+    hideAllSuggestDropdowns();
+    applyFilters();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-suggest-wrap')) hideAllSuggestDropdowns();
+  });
 
   const ALL_COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba","Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
 
