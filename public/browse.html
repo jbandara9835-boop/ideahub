@@ -43,7 +43,12 @@
     .hero h1 { font-size:2.2rem; font-weight:800; margin-bottom:8px; }
     .hero h1 span { color:var(--gold); }
     .hero p { color:var(--muted); font-size:1rem; margin-bottom:24px; }
-    .hero-search { max-width:600px; margin:0 auto 20px; display:flex; gap:8px; transition: transform 0.25s ease, opacity 0.25s ease; }
+    .hero-search { max-width:600px; margin:0 auto 20px; display:flex; gap:8px; }
+
+    #mobileSearchBar { display:none; position:fixed; top:60px; left:0; right:0; z-index:95; background:rgba(10,10,10,0.97); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:0.6rem 1rem; transition:transform 0.25s ease; }
+    #mobileSearchBar .msb-inner { display:flex; background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    #mobileSearchBar input { flex:1; background:none; border:none; padding:0.6rem 0.85rem; font-size:13px; color:var(--text); outline:none; }
+    #mobileSearchBar button { background:var(--gold); border:none; padding:0 1rem; font-size:16px; color:#000; cursor:pointer; }
     .hero-search input { flex:1; background:var(--surface); border:1.5px solid var(--border); border-radius:10px; padding:13px 20px; color:var(--text); font-size:1rem; outline:none; transition:border-color 0.2s; }
     .hero-search input:focus { border-color:var(--gold); }
     .hero-search button { background:var(--gold); color:#000; border:none; border-radius:10px; padding:13px 24px; font-size:0.95rem; font-weight:600; cursor:pointer; }
@@ -169,6 +174,9 @@
       .nav-links a { padding:6px 10px; font-size:0.8rem; }
       .btn-back-dash { padding:6px 10px; font-size:0.8rem; }
 
+      #mobileSearchBar { display: block; }
+      body { padding-top: 60px; }
+
       .hero { padding:24px 16px 20px; }
       .hero h1 { font-size:1.5rem; }
       .hero p { font-size:0.875rem; }
@@ -218,6 +226,13 @@
     <a href="/profile" class="nav-avatar" id="navAvatar"></a>
   </div>
 </nav>
+
+<div id="mobileSearchBar">
+  <div class="msb-inner">
+    <input type="text" id="mobileSearchInput" placeholder="Search ideas, industries..." onkeydown="if(event.key==='Enter') doMobileSearch()" />
+    <button onclick="doMobileSearch()">🔍</button>
+  </div>
+</div>
 
 <section class="hero">
   <h1>Discover <span>Ideas</span> that change everything</h1>
@@ -379,12 +394,11 @@
     if (postBtn) postBtn.href = tUser ? '/submit' : '/login';
   })();
 
-  // ── AUTO-HIDE SEARCH BAR ON SCROLL (mobile) ──
+  // ── AUTO-HIDE FIXED MOBILE SEARCH BAR ON SCROLL ──
   (function setupScrollHideSearch() {
-    if (window.innerWidth > 768) return;
     let lastScrollY = window.scrollY;
     let ticking = false;
-    const bar = document.querySelector('.hero-search');
+    const bar = document.getElementById('mobileSearchBar');
     if (!bar) return;
     window.addEventListener('scroll', () => {
       if (ticking) return;
@@ -393,17 +407,22 @@
         const currentY = window.scrollY;
         const delta = currentY - lastScrollY;
         if (delta > 5 && currentY > 80) {
-          bar.style.transform = 'translateY(-80px)';
-          bar.style.opacity = '0';
+          bar.style.transform = 'translateY(-100%)';
         } else if (delta < -5) {
           bar.style.transform = 'translateY(0)';
-          bar.style.opacity = '1';
         }
         lastScrollY = currentY;
         ticking = false;
       });
     }, { passive: true });
   })();
+
+  function doMobileSearch() {
+    const query = document.getElementById('mobileSearchInput').value.trim();
+    document.getElementById('searchInput').value = query;
+    applyFilters();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   const ALL_COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba","Cyprus","Czechia","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
 
