@@ -254,17 +254,7 @@ nav {
 .tabbar-item.active { color: var(--accent); }
 .tabbar-icon { font-size: 19px; line-height: 1; }
 
-@media (max-width: 768px) {
-  .bottom-tabbar { display: block; }
-  body { padding-bottom: 56px; }
-  #mobileSearchBar { display: block !important; }
-  #desktopSearchBar { display: none !important; }
-  .hero-arrow { width: 36px; height: 36px; font-size: 15px; }
-  .hero-arrow-left { left: 0.5rem; }
-  .hero-arrow-right { right: 0.5rem; }
-  .hero-quote-text { font-size: clamp(22px, 6vw, 32px); }
-  .hero-quote-mark { font-size: 60px; }
-}
+
 
 /* ── SECTION SHARED ── */
 section { padding: 6rem 2rem; position: relative; }
@@ -511,13 +501,18 @@ footer a:hover { color: var(--text); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
 @media (max-width: 768px) {
+  .bottom-tabbar { display: block; }
+  body { padding-bottom: 56px; }
+  #mobileSearchBar { display: block !important; }
+  #desktopSearchBar { display: none !important; }
+
   nav { padding: 0.9rem 1rem; }
   .nav-links { display: none; }
   .nav-actions { gap: 6px; }
   .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
   .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
 
-  .hero { padding: 6rem 1rem 5rem; min-height: 100svh; }
+  .hero { padding: 4.5rem 1rem 5rem; min-height: 100svh; }
   .hero-title { font-size: clamp(40px, 14vw, 72px); }
   .hero-sub { font-size: 14px; padding: 0 0.25rem; margin-bottom: 1.75rem; }
   .hero-stats { gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
