@@ -952,8 +952,8 @@ footer a:hover { color: var(--text); }
     <a class="tabbar-item" href="/messages" data-tab="messages">
       <span class="tabbar-icon">💬</span><span>Messages</span>
     </a>
-    <a class="tabbar-item" href="/dashboard" id="tabDashboard" data-tab="dashboard">
-      <span class="tabbar-icon">⚡</span><span>Dashboard</span>
+    <a class="tabbar-item" href="/wall" data-tab="wall">
+      <span class="tabbar-icon">📌</span><span>IdeaWall</span>
     </a>
   </div>
 </nav>
@@ -970,10 +970,6 @@ footer a:hover { color: var(--text); }
       virtual_manager: '/support-dashboard', patent_attorney: '/attorney-dashboard',
       business_owner: '/business-dashboard', admin: '/admin'
     };
-    const dashTab = document.getElementById('tabDashboard');
-    if (dashTab) {
-      dashTab.href = tUser ? (dashMap[tUser.role] || '/dashboard') : '/login';
-    }
     const postBtn = document.getElementById('tabPostBtn');
     if (postBtn) {
       postBtn.href = tUser ? '/submit' : '/login';
@@ -986,7 +982,7 @@ footer a:hover { color: var(--text); }
         (tab === 'home' && path === '/') ||
         (tab === 'marketplace' && path === '/browse') ||
         (tab === 'messages' && path === '/messages') ||
-        (tab === 'dashboard' && path.includes('dashboard'));
+        (tab === 'wall' && path === '/wall');
       item.classList.toggle('active', isActive);
     });
   })();
