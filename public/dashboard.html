@@ -402,13 +402,25 @@
   }
 
   async function loadDashboard() {
+    // Refresh user data from backend to get latest avatar
+    try {
+      const userRes = await fetch(`${API_URL}/api/user`, { headers:{ Authorization:`Bearer ${token}` } });
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        localStorage.setItem('ih_user', JSON.stringify(userData));
+        Object.assign(user, userData);
+      }
+    } catch(err) { console.error('Failed to refresh user data:', err); }
+    
     // Init sidebar user info
     renderSidebar();
     if (user) {
-      const avatarUrl = user.avatar_url || user.avatarUrl;
+      const avatarUrl = user.avatar_url || user.avatarUrl || user.profile_image || user.profileImage;
+      console.log('User object:', user);
+      console.log('Avatar URL:', avatarUrl);
       const avatarEl = document.getElementById('sidebarAvatar');
       if (avatarEl) {
-        if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" />`;
+        if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
         else document.getElementById('sidebarAvatarText').textContent = user.first_name?.[0] || '?';
       }
       const sbName = document.getElementById('sidebarName');
