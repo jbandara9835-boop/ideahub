@@ -142,8 +142,9 @@
     .new-idea-btn { display:none; }
     .main { margin-left:0; padding:1rem; }
     .topbar { flex-direction:column; align-items:flex-start; gap:12px; }
-    .topbar-right { width:100%; justify-content:space-between; }
+    .topbar > div:first-child { gap:12px !important; }
     .topbar-user-info { display:none; }
+    .topbar-right { width:100%; justify-content:space-between; }
     .menu-toggle { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border:1px solid var(--border); border-radius:10px; background:var(--surface); font-size:20px; }
     .stats-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
     .stat-card { padding:1rem; }
@@ -244,9 +245,18 @@
 
 <main class="main">
   <div class="topbar">
-    <div>
-      <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
-      <div class="page-subtitle">Here's what's happening with your ideas</div>
+    <div style="display:flex; align-items:center; gap:2rem; flex:1;">
+      <div>
+        <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+        <div class="page-subtitle">Here's what's happening with your ideas</div>
+      </div>
+      <div class="topbar-user" id="topbarUser" onclick="toggleUserMenu(event)">
+        <div class="topbar-user-avatar" id="topbarUserAvatar"><span id="topbarUserAvatarText">?</span></div>
+        <div class="topbar-user-info">
+          <div class="topbar-user-name" id="topbarUserName">Loading...</div>
+          <div class="topbar-user-role" id="topbarUserRole">—</div>
+        </div>
+      </div>
     </div>
     <div class="topbar-right">
       <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
@@ -262,13 +272,6 @@
           <div class="notif-list" id="notifList">
             <div class="notif-empty">Loading...</div>
           </div>
-        </div>
-      </div>
-      <div class="topbar-user" id="topbarUser" onclick="toggleUserMenu(event)">
-        <div class="topbar-user-avatar" id="topbarUserAvatar"><span id="topbarUserAvatarText">?</span></div>
-        <div class="topbar-user-info">
-          <div class="topbar-user-name" id="topbarUserName">Loading...</div>
-          <div class="topbar-user-role" id="topbarUserRole">—</div>
         </div>
       </div>
     </div>
