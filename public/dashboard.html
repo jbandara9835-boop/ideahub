@@ -194,36 +194,7 @@
     body { padding-bottom:56px; }
   }
 
-  /* ── BOTTOM TAB BAR (mobile only) ── */
-  .bottom-tabbar {
-    display: none;
-    position: fixed !important; top: auto !important; bottom: 0px !important;
-    left: 0 !important; right: 0 !important; width: 100%; z-index: 9999;
-    height: 56px; background: #0d0d0f;
-    border-top: 2px solid var(--accent);
-    padding: 6px 0 max(6px, env(safe-area-inset-bottom));
-    box-sizing: border-box;
-  }
-  .tabbar-inner { display:flex; justify-content:space-around; align-items:center; height:100%; }
-  .tabbar-item {
-    display:flex; flex-direction:column; align-items:center; gap:2px;
-    text-decoration:none; color:var(--muted); font-size:10px;
-    padding:4px 12px; transition:color 0.15s; flex:1;
-  }
-  .tabbar-item.active { color:var(--accent); }
-  .tabbar-icon { font-size:19px; line-height:1; }
-  .tabbar-post-btn {
-    display:flex; align-items:center; justify-content:center;
-    width:38px; height:38px; border-radius:50%;
-    background:var(--accent); color:#0d0d0f;
-    font-size:20px; font-weight:700; text-decoration:none;
-    margin-top:-14px; box-shadow:0 4px 14px rgba(245,200,66,0.4);
-    flex-shrink:0;
-  }
-  @media (max-width:768px) {
-    .bottom-tabbar { display:block; }
-    body { padding-bottom:56px; }
-  }
+  
 </style>
 </head>
 <body>
