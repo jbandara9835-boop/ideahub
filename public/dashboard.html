@@ -41,6 +41,15 @@
   .new-idea-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; display:flex; align-items:center; gap:6px; text-decoration:none; transition:opacity 0.2s; }
   .new-idea-btn:hover { opacity:0.9; }
 
+  /* TOPBAR USER PROFILE */
+  .topbar-user { display:flex; align-items:center; gap:10px; cursor:pointer; padding:0.4rem 0.6rem; border-radius:10px; transition:background 0.15s; }
+  .topbar-user:hover { background:rgba(255,255,255,0.05); }
+  .topbar-user-avatar { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
+  .topbar-user-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+  .topbar-user-info { display:flex; flex-direction:column; min-width:0; }
+  .topbar-user-name { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .topbar-user-role { font-size:11px; color:var(--muted); }
+
   /* NOTIFICATION BELL */
   .topbar-right { display:flex; align-items:center; gap:12px; }
   .notif-bell { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:10px; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:all 0.15s; }
@@ -134,6 +143,7 @@
     .main { margin-left:0; padding:1rem; }
     .topbar { flex-direction:column; align-items:flex-start; gap:12px; }
     .topbar-right { width:100%; justify-content:space-between; }
+    .topbar-user-info { display:none; }
     .menu-toggle { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border:1px solid var(--border); border-radius:10px; background:var(--surface); font-size:20px; }
     .stats-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
     .stat-card { padding:1rem; }
@@ -254,6 +264,13 @@
           </div>
         </div>
       </div>
+      <div class="topbar-user" id="topbarUser" onclick="toggleUserMenu(event)">
+        <div class="topbar-user-avatar" id="topbarUserAvatar"><span id="topbarUserAvatarText">?</span></div>
+        <div class="topbar-user-info">
+          <div class="topbar-user-name" id="topbarUserName">Loading...</div>
+          <div class="topbar-user-role" id="topbarUserRole">—</div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="stats-grid">
@@ -347,8 +364,9 @@
   }
   document.addEventListener('click', (e) => {
     const card = document.getElementById('userCard');
+    const topbarUser = document.getElementById('topbarUser');
     const menu = document.getElementById('userMenu');
-    if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
+    if (menu && card && topbarUser && !card.contains(e.target) && !topbarUser.contains(e.target)) menu.style.display = 'none';
   });
 
   function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
@@ -384,6 +402,17 @@
         const stars = user.profile_stars || 0;
         starEl.innerHTML = [1,2,3,4,5].map(i => `<span style="color:${i<=stars?'#f5c842':'#3a3a3a'}">★</span>`).join('');
       }
+      
+      // Init topbar user info
+      const topbarAvatarEl = document.getElementById('topbarUserAvatar');
+      if (topbarAvatarEl) {
+        if (avatarUrl) topbarAvatarEl.innerHTML = `<img src="${avatarUrl}" />`;
+        else document.getElementById('topbarUserAvatarText').textContent = user.first_name?.[0] || '?';
+      }
+      const topbarName = document.getElementById('topbarUserName');
+      if (topbarName) topbarName.textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
+      document.getElementById('topbarUserRole').textContent = user.role?.replace(/_/g,' ') || '—';
+      
       document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.first_name||'there'} 👋`;
     }
 
