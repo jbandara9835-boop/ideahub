@@ -120,11 +120,18 @@
     .idea-row > div:nth-child(4),
     .idea-row > div:nth-child(5) { display:none; }
   }
+  .menu-toggle { display:none; border:none; background:none; color:var(--text); cursor:pointer; }
+  .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:150; }
+
   @media (max-width:600px) {
-    .sidebar { display:flex; width:60px; padding:1rem 0.5rem; }
-    .main { margin-left:60px; padding:1rem; }
+    .sidebar { display:flex; width:280px; padding:1.5rem 1rem; transform:translateX(-100%); transition:transform 0.25s ease; z-index:200; }
+    .sidebar.open { transform:translateX(0); }
+    .sidebar-overlay.show { display:block; }
+    .logo { display:none; }
+    .main { margin-left:0; padding:1rem; }
     .topbar { flex-direction:column; align-items:flex-start; gap:12px; }
     .topbar-right { width:100%; justify-content:space-between; }
+    .menu-toggle { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border:1px solid var(--border); border-radius:10px; background:var(--surface); font-size:20px; }
     .stats-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
     .stat-card { padding:1rem; }
     .stat-value { font-size:22px; }
@@ -220,6 +227,7 @@
     <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
   </div>
 </aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <main class="main">
   <div class="topbar">
@@ -228,6 +236,7 @@
       <div class="page-subtitle">Here's what's happening with your ideas</div>
     </div>
     <div class="topbar-right">
+      <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
       <div class="notif-bell" id="notifBell" onclick="toggleNotifPanel()">
         🔔
         <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
@@ -312,6 +321,22 @@
   }
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href = '/login'; }
+
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  }
+
+  function closeSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  }
 
   function toggleUserMenu() {
     const menu = document.getElementById('userMenu');
