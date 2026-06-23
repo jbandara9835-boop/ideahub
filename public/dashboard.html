@@ -281,6 +281,13 @@
           </div>
         </div>
       </div>
+      <div class="topbar-user" id="topbarUser" onclick="toggleUserMenu()">
+        <div class="topbar-user-avatar" id="topbarUserAvatar"><span id="topbarUserAvatarText">?</span></div>
+        <div class="topbar-user-info">
+          <div class="topbar-user-name" id="topbarUserName">Loading...</div>
+          <div class="topbar-user-role" id="topbarUserRole">—</div>
+        </div>
+      </div>
     </div>
   </div>
   <div style="display:flex; align-items:center; justify-content:space-between; gap:2rem; margin-bottom:2rem;">
@@ -327,7 +334,7 @@
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
   const token = localStorage.getItem('ih_token');
-  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
+  let user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
   if (!token || !user) window.location.href = '/login';
 
@@ -404,7 +411,7 @@
   async function loadDashboard() {
     // Refresh user data from backend to get latest avatar
     try {
-      const userRes = await fetch(`${API_URL}/api/user`, { headers:{ Authorization:`Bearer ${token}` } });
+      const userRes = await fetch(`${API_URL}/api/auth/me`, { headers:{ Authorization:`Bearer ${token}` } });
       if (userRes.ok) {
         const userData = await userRes.json();
         localStorage.setItem('ih_user', JSON.stringify(userData));
@@ -415,7 +422,7 @@
     // Init sidebar user info
     renderSidebar();
     if (user) {
-      const avatarUrl = user.avatar_url || user.avatarUrl || user.profile_image || user.profileImage;
+      const avatarUrl = (user.avatar_url || user.avatarUrl || user.avatar || user.profile_image || user.profileImage || user.picture || user.photoUrl || user.profile_picture || user.image || user.photo || user.avatarPath || user.avatarUrl)?.toString().trim() || null;
       console.log('User object:', user);
       console.log('Avatar URL:', avatarUrl);
       const avatarEl = document.getElementById('sidebarAvatar');
