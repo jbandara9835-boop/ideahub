@@ -283,11 +283,12 @@
       </div>
     </div>
   </div>
-  <div style="display:flex; align-items:center; gap:2rem; margin-bottom:2rem;">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:2rem; margin-bottom:2rem;">
     <div>
       <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
       <div class="page-subtitle">Here's what's happening with your ideas</div>
     </div>
+    <div class="avatar" id="welcomeAvatar" style="width:48px; height:48px; flex-shrink:0;"><span id="welcomeAvatarText">?</span></div>
   </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">Ideas Posted</div><div class="stat-value" id="statIdeas">—</div><div class="stat-sub">total ideas</div></div>
@@ -428,6 +429,13 @@
       const topbarName = document.getElementById('topbarUserName');
       if (topbarName) topbarName.textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
       document.getElementById('topbarUserRole').textContent = user.role?.replace(/_/g,' ') || '—';
+      
+      // Init welcome section avatar
+      const welcomeAvatarEl = document.getElementById('welcomeAvatar');
+      if (welcomeAvatarEl) {
+        if (avatarUrl) welcomeAvatarEl.innerHTML = `<img src="${avatarUrl}" />`;
+        else document.getElementById('welcomeAvatarText').textContent = user.first_name?.[0] || '?';
+      }
       
       document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.first_name||'there'} 👋`;
     }
