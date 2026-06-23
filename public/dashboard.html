@@ -17,6 +17,7 @@
 
   .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
+  .logo-link { display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit; }
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
   .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
@@ -120,8 +121,8 @@
     .idea-row > div:nth-child(5) { display:none; }
   }
   @media (max-width:600px) {
-    .sidebar { display:none; }
-    .main { margin-left:0; padding:1rem; }
+    .sidebar { display:flex; width:60px; padding:1rem 0.5rem; }
+    .main { margin-left:60px; padding:1rem; }
     .topbar { flex-direction:column; align-items:flex-start; gap:12px; }
     .topbar-right { width:100%; justify-content:space-between; }
     .stats-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
@@ -196,8 +197,10 @@
 <body>
 <aside class="sidebar">
   <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
+    <a class="logo-link" href="/">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+      <span class="logo-text">IdeaHub</span>
+    </a>
   </div>
   <nav class="nav" id="sidebarNav"></nav>
   <div class="user-card" id="userCard" onclick="toggleUserMenu()">
