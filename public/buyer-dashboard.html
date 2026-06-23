@@ -124,24 +124,58 @@
     .two-col { grid-template-columns:1fr; }
     .actions-grid { grid-template-columns:repeat(2,1fr); }
   }
+  .menu-toggle { display:none; border:none; background:none; color:var(--text); cursor:pointer; font-size:20px; }
+  .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:150; }
+  .topbar-left { display:flex; align-items:center; gap:1rem; flex:1; }
+  .topbar-logo { display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit; }
+  .topbar-logo-icon { width:28px; height:28px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .topbar-logo-icon svg { width:16px; height:16px; fill:#0d0d0f; }
+  .topbar-logo-text { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .topbar-user { display:flex; align-items:center; gap:10px; cursor:pointer; padding:0.4rem 0.6rem; border-radius:10px; transition:background 0.15s; }
+  .topbar-user:hover { background:rgba(255,255,255,0.05); }
+  .topbar-user-avatar { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
+  .topbar-user-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+  /* ── BOTTOM TAB BAR ── */
+  .bottom-tabbar { display:none; position:fixed !important; top:auto !important; bottom:0px !important; left:0 !important; right:0 !important; width:100%; z-index:9999; height:56px; background:#0d0d0f; border-top:2px solid var(--accent); padding:6px 0 max(6px,env(safe-area-inset-bottom)); box-sizing:border-box; }
+  .tabbar-inner { display:flex; justify-content:space-around; align-items:center; height:100%; }
+  .tabbar-item { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:var(--muted); font-size:10px; padding:4px 12px; transition:color 0.15s; flex:1; }
+  .tabbar-item.active { color:var(--accent); }
+  .tabbar-icon { font-size:19px; line-height:1; }
+  .tabbar-post-btn { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:var(--accent); color:#0d0d0f; font-size:20px; font-weight:700; text-decoration:none; margin-top:-14px; box-shadow:0 4px 14px rgba(245,200,66,0.4); flex-shrink:0; }
+
+  @media (max-width:768px) {
+    .bottom-tabbar { display:block; }
+    body { padding-bottom:56px; }
+  }
   @media (max-width:600px) {
-    .sidebar { display:none; }
+    .sidebar { display:flex; width:280px; height:calc(100vh - 70px); padding:1.5rem 1rem; transform:translateX(-100%); transition:transform 0.25s ease; z-index:200; }
+    .sidebar.open { transform:translateX(0); }
+    .sidebar-overlay.show { display:block; }
+    .logo { display:none; }
+    .browse-btn { display:none; }
     .main { margin-left:0; padding:1rem; }
-    .topbar { flex-direction:column; align-items:flex-start; gap:12px; }
-    .topbar-right { width:100%; justify-content:space-between; }
+    .topbar { flex-direction:row; align-items:center; gap:12px; margin-bottom:1rem; }
+    .topbar-left { gap:8px; }
+    .topbar-logo-text { display:none; }
+    .topbar-right { width:auto; justify-content:flex-end; }
+    .menu-toggle { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border:1px solid var(--border); border-radius:10px; background:var(--surface); font-size:20px; }
     .stats-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
     .stat-card { padding:1rem; }
     .stat-value { font-size:22px; }
     .actions-grid { grid-template-columns:repeat(2,1fr); }
     .notif-panel { width:calc(100vw - 2rem); right:-1rem; }
+    .two-col { grid-template-columns:1fr; }
   }
 </style>
 </head>
 <body>
 <aside class="sidebar">
   <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
+    <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+      <span class="logo-text">IdeaHub</span>
+    </a>
   </div>
   <nav class="nav" id="sidebarNav"></nav>
   <div class="user-card" id="userCard" onclick="toggleUserMenu()">
@@ -161,12 +195,16 @@
     <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
   </div>
 </aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <main class="main">
   <div class="topbar">
-    <div>
-      <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
-      <div class="page-subtitle">Here's your IdeaHub overview</div>
+    <div class="topbar-left">
+      <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
+      <a class="topbar-logo" href="/">
+        <div class="topbar-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+        <span class="topbar-logo-text">IdeaHub</span>
+      </a>
     </div>
     <div class="topbar-right">
       <div class="notif-bell" id="notifBell" onclick="toggleNotifPanel()">
@@ -214,6 +252,17 @@
     <div id="escrowList"></div>
   </div>
 </main>
+
+<!-- BOTTOM TAB BAR (mobile only) -->
+<nav class="bottom-tabbar" id="bottomTabbar">
+  <div class="tabbar-inner">
+    <a class="tabbar-item" href="/" data-tab="home"><span class="tabbar-icon">🏠</span><span>Home</span></a>
+    <a class="tabbar-item" href="/browse" data-tab="marketplace"><span class="tabbar-icon">🔍</span><span>Marketplace</span></a>
+    <a class="tabbar-post-btn" href="/browse" id="tabPostBtn">+</a>
+    <a class="tabbar-item" href="/messages" data-tab="messages"><span class="tabbar-icon">💬</span><span>Messages</span></a>
+    <a class="tabbar-item" href="/wall" data-tab="wall"><span class="tabbar-icon">📌</span><span>IdeaWall</span></a>
+  </div>
+</nav>
 
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
@@ -443,6 +492,38 @@
   loadDashboard();
   loadUnreadCount();
   setInterval(loadUnreadCount, 30000);
+
+  // ── SIDEBAR TOGGLE (mobile) ──
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  }
+  function closeSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  }
+
+  // ── BOTTOM TAB BAR ──
+  (function setupTabbar() {
+    const postBtn = document.getElementById('tabPostBtn');
+    if (postBtn) postBtn.href = user ? '/browse' : '/login';
+    const path = window.location.pathname;
+    document.querySelectorAll('.tabbar-item').forEach(item => {
+      const tab = item.dataset.tab;
+      const isActive =
+        (tab === 'home' && path === '/') ||
+        (tab === 'marketplace' && path === '/browse') ||
+        (tab === 'messages' && path === '/messages') ||
+        (tab === 'wall' && path === '/wall');
+      item.classList.toggle('active', isActive);
+    });
+  })();
 </script>
 </body>
 </html>
