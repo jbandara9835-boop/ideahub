@@ -228,6 +228,10 @@ app.get('/robots.txt', (req, res) => {
   app.get('/how-it-works', (req, res) => {
     res.sendFile(__dirname + '/public/how-it-works.html');
   });
+  app.get('/terms', (req, res) => res.sendFile(__dirname + '/public/terms.html'));
+  app.get('/privacy', (req, res) => res.sendFile(__dirname + '/public/privacy.html'));
+  app.get('/cookies', (req, res) => res.sendFile(__dirname + '/public/cookies.html'));
+  app.get('/refunds', (req, res) => res.sendFile(__dirname + '/public/refunds.html'));
   app.get('/contact', (req, res) => {
     res.redirect('/about#contact');
   });
@@ -543,7 +547,7 @@ app.get('/robots.txt', (req, res) => {
         patent_number: patentNumber || '',
         icon: '💡',
         images: req.body.images || [],
-      country: req.body.country || null,
+      countries: req.body.countries || [],
         creator_id: req.user.id,
         creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
         status: (hasPatent && patentCertUrl) ? 'under_review' : 'live',
