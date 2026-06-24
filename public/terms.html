@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terms of Service — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+  --border: rgba(255,255,255,0.08);
+  --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
+  --text: #f0ede8; --muted: #6e6b65;
+}
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+nav { position: sticky; top: 0; z-index: 100; background: rgba(13,13,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+.nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.nav-logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--accent); }
+.hero { background: linear-gradient(135deg, #0d0d0f, #16161a); border-bottom: 1px solid var(--border); padding: 4rem 2rem 3rem; text-align: center; }
+.hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 700; margin-bottom: 0.75rem; }
+.hero h1 span { color: var(--accent); }
+.hero p { color: var(--muted); font-size: 15px; }
+.container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.toc { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 2rem; margin-bottom: 3rem; }
+.toc h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+.toc ol { padding-left: 1.25rem; display: flex; flex-direction: column; gap: 6px; }
+.toc ol li a { color: var(--accent); text-decoration: none; font-size: 14px; }
+.toc ol li a:hover { text-decoration: underline; }
+.section { margin-bottom: 3rem; scroll-margin-top: 80px; }
+.section h2 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); color: var(--accent); }
+.section h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.section p { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 1rem; }
+.section ul, .section ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.section ul li, .section ol li { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 0.35rem; }
+.highlight { background: var(--accent-dim); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: 14px; line-height: 1.7; }
+footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: 13px; }
+footer a { color: var(--accent); text-decoration: none; }
+@media (max-width: 600px) { .nav-links { display: none; } .hero { padding: 2.5rem 1rem 2rem; } .container { padding: 2rem 1rem 4rem; } }
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    IdeaHub
+  </a>
+  <div class="nav-links">
+    <a href="/terms" class="active">Terms</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refunds">Refunds</a>
+    <a href="/">Home</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Terms of <span>Service</span></h1>
+  <p>Last updated: June 2026 &nbsp;·&nbsp; Governed by the laws of Sri Lanka</p>
+</div>
+
+<div class="container">
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#acceptance">Acceptance of Terms</a></li>
+      <li><a href="#definitions">Definitions</a></li>
+      <li><a href="#eligibility">Eligibility</a></li>
+      <li><a href="#accounts">User Accounts</a></li>
+      <li><a href="#roles">User Roles & Responsibilities</a></li>
+      <li><a href="#ideas">Idea Listings</a></li>
+      <li><a href="#transactions">Transactions & Escrow</a></li>
+      <li><a href="#payments">Payments & Fees</a></li>
+      <li><a href="#ip">Intellectual Property</a></li>
+      <li><a href="#prohibited">Prohibited Conduct</a></li>
+      <li><a href="#disclaimer">Disclaimers</a></li>
+      <li><a href="#liability">Limitation of Liability</a></li>
+      <li><a href="#termination">Termination</a></li>
+      <li><a href="#governing">Governing Law</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ol>
+  </div>
+
+  <div class="section" id="acceptance">
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing or using IdeaHub ("the Platform"), operated by <strong>Picela (Pvt) Ltd</strong>, a company incorporated under the laws of Sri Lanka ("Picela", "we", "us", or "our"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, you may not use the Platform.</p>
+    <p>We reserve the right to modify these Terms at any time. We will notify you of material changes by posting a notice on the Platform or by email. Your continued use after any changes constitutes acceptance of the revised Terms.</p>
+  </div>
+
+  <div class="section" id="definitions">
+    <h2>2. Definitions</h2>
+    <ul>
+      <li><strong>"Platform"</strong> means the IdeaHub website at ideahub.it.com and all related services.</li>
+      <li><strong>"User"</strong> means any registered individual or entity using the Platform.</li>
+      <li><strong>"Creator"</strong> means a User who lists ideas or patents for sale.</li>
+      <li><strong>"Buyer"</strong> means a User who purchases or expresses interest in ideas or patents.</li>
+      <li><strong>"Service Provider"</strong> means attorneys, virtual managers, and corporate services providers registered on the Platform.</li>
+      <li><strong>"Listing"</strong> means any idea, patent, or business expansion opportunity posted on the Platform.</li>
+      <li><strong>"Escrow"</strong> means the payment holding mechanism used to secure transactions between Buyers and Creators.</li>
+      <li><strong>"Content"</strong> means all text, images, data, and other material submitted by Users.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="eligibility">
+    <h2>3. Eligibility</h2>
+    <p>You must be at least 18 years of age to use the Platform. By registering, you represent and warrant that you are 18 or older and have the legal capacity to enter into a binding agreement.</p>
+    <p>If you are registering on behalf of a company or organisation, you represent that you have the authority to bind that entity to these Terms.</p>
+  </div>
+
+  <div class="section" id="accounts">
+    <h2>4. User Accounts</h2>
+    <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify us immediately at <a href="mailto:support@ideahub.it.com" style="color:var(--accent);">support@ideahub.it.com</a> of any unauthorised use of your account.</p>
+    <p>You may not share your account with others or create multiple accounts for the same person. We reserve the right to suspend or terminate accounts that violate these Terms.</p>
+  </div>
+
+  <div class="section" id="roles">
+    <h2>5. User Roles & Responsibilities</h2>
+    <h3>Idea Creators & Patent Sellers</h3>
+    <p>You warrant that any idea or patent you list is your original work or that you have the legal right to sell or license it. You are solely responsible for the accuracy, completeness, and legality of your Listings.</p>
+    <h3>Investors & Corporate Buyers</h3>
+    <p>You agree to conduct due diligence before purchasing any idea or patent. IdeaHub does not guarantee the commercial viability, novelty, or patentability of any Listing.</p>
+    <h3>Service Providers</h3>
+    <p>Patent attorneys and virtual managers must provide accurate professional credentials. Verified status is granted at IdeaHub's sole discretion and may be revoked at any time.</p>
+    <h3>Business Owners</h3>
+    <p>You warrant that your business listings are accurate and that you have the authority to offer franchise, licensing, or partnership arrangements described.</p>
+  </div>
+
+  <div class="section" id="ideas">
+    <h2>6. Idea Listings</h2>
+    <p>IdeaHub is a marketplace that connects Creators with Buyers. We do not pre-screen, verify, or endorse any Listing. You acknowledge that:</p>
+    <ul>
+      <li>IdeaHub does not guarantee the uniqueness or novelty of any idea.</li>
+      <li>Ideas listed may not be patented or patentable.</li>
+      <li>Similar ideas may already exist in the market.</li>
+      <li>The commercial value of any idea is subjective and not guaranteed.</li>
+    </ul>
+    <div class="highlight">Creators retain full ownership of their ideas until a transaction is completed and confirmed by both parties through the escrow system.</div>
+    <p>We reserve the right to remove any Listing that violates these Terms, infringes third-party rights, or is otherwise objectionable, without prior notice.</p>
+  </div>
+
+  <div class="section" id="transactions">
+    <h2>7. Transactions & Escrow</h2>
+    <p>All transactions on IdeaHub are processed through our escrow system. When a Buyer initiates a purchase:</p>
+    <ol>
+      <li>Payment is held in escrow by IdeaHub.</li>
+      <li>The Creator delivers the agreed materials or IP transfer documentation.</li>
+      <li>The Buyer confirms receipt and satisfaction.</li>
+      <li>Funds are released to the Creator upon confirmation.</li>
+    </ol>
+    <p>If a dispute arises, IdeaHub may act as a neutral mediator but is not obligated to resolve disputes or guarantee outcomes. IdeaHub's decision in disputes is final.</p>
+    <p>Escrow funds will be held for a maximum of 30 days after delivery. If the Buyer fails to confirm or dispute within this period, funds will be automatically released to the Creator.</p>
+  </div>
+
+  <div class="section" id="payments">
+    <h2>8. Payments & Fees</h2>
+    <p>IdeaHub charges a platform fee on completed transactions. Current fee rates are displayed on the Platform and may be updated with 14 days' notice.</p>
+    <p>Payments are processed via PayPal. By making a payment, you also agree to PayPal's Terms of Service. IdeaHub is not responsible for payment processing errors by PayPal.</p>
+    <p>All fees are non-refundable except as described in our <a href="/refunds" style="color:var(--accent);">Refund Policy</a>. Prices displayed on the Platform are in US Dollars (USD) unless otherwise stated.</p>
+  </div>
+
+  <div class="section" id="ip">
+    <h2>9. Intellectual Property</h2>
+    <p>All content on the Platform excluding User-submitted Content — including logos, design, code, and text — is owned by Picela (Pvt) Ltd and protected under applicable intellectual property laws.</p>
+    <p>By submitting Content to the Platform, you grant IdeaHub a non-exclusive, worldwide, royalty-free licence to display, reproduce, and promote your Content solely for operating the Platform.</p>
+    <p>You retain ownership of your Content. You warrant that your Content does not infringe any third-party intellectual property rights.</p>
+  </div>
+
+  <div class="section" id="prohibited">
+    <h2>10. Prohibited Conduct</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Post false, misleading, or fraudulent Listings.</li>
+      <li>Infringe any third party's intellectual property, privacy, or other rights.</li>
+      <li>Use the Platform for any unlawful purpose.</li>
+      <li>Attempt to reverse-engineer, hack, or disrupt the Platform.</li>
+      <li>Create fake accounts or manipulate ratings and reviews.</li>
+      <li>Circumvent fees by conducting transactions off-platform.</li>
+      <li>Send unsolicited communications (spam) to other Users.</li>
+      <li>Upload malware or any malicious code.</li>
+    </ul>
+    <p>Violation of these prohibitions may result in immediate account termination and, where applicable, legal action.</p>
+  </div>
+
+  <div class="section" id="disclaimer">
+    <h2>11. Disclaimers</h2>
+    <div class="highlight">The Platform is provided "as is" and "as available" without warranties of any kind, express or implied. IdeaHub does not warrant that the Platform will be uninterrupted, error-free, or free of viruses.</div>
+    <p>IdeaHub is a marketplace platform only. We are not a party to any transaction between Users and accept no responsibility for the quality, safety, legality, or delivery of any Listing.</p>
+  </div>
+
+  <div class="section" id="liability">
+    <h2>12. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by Sri Lankan law, Picela (Pvt) Ltd shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill, arising from your use of the Platform.</p>
+    <p>Our total liability to you for any claim arising from your use of the Platform shall not exceed the amount you paid to IdeaHub in the 12 months preceding the claim.</p>
+  </div>
+
+  <div class="section" id="termination">
+    <h2>13. Termination</h2>
+    <p>We may suspend or terminate your account at any time, with or without cause, with or without notice. Upon termination, your right to use the Platform ceases immediately.</p>
+    <p>You may terminate your account at any time by contacting us. Termination does not affect any obligations you incurred prior to termination, including payment obligations for completed transactions.</p>
+  </div>
+
+  <div class="section" id="governing">
+    <h2>14. Governing Law</h2>
+    <p>These Terms shall be governed by and construed in accordance with the laws of the Democratic Socialist Republic of Sri Lanka. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts of Sri Lanka.</p>
+  </div>
+
+  <div class="section" id="contact">
+    <h2>15. Contact Us</h2>
+    <p>If you have any questions about these Terms, please contact us:</p>
+    <ul>
+      <li><strong>Company:</strong> Picela (Pvt) Ltd</li>
+      <li><strong>Platform:</strong> IdeaHub (ideahub.it.com)</li>
+      <li><strong>Email:</strong> <a href="mailto:legal@ideahub.it.com" style="color:var(--accent);">legal@ideahub.it.com</a></li>
+      <li><strong>Support:</strong> <a href="mailto:support@ideahub.it.com" style="color:var(--accent);">support@ideahub.it.com</a></li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  © 2026 <a href="https://picela.co">Picela (Pvt) Ltd</a>. All rights reserved. &nbsp;·&nbsp;
+  <a href="/terms">Terms</a> &nbsp;·&nbsp;
+  <a href="/privacy">Privacy</a> &nbsp;·&nbsp;
+  <a href="/cookies">Cookies</a> &nbsp;·&nbsp;
+  <a href="/refunds">Refunds</a>
+</footer>
+</body>
+</html>

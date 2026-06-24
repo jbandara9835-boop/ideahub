@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacy Policy — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg: #0d0d0f; --surface: #16161a; --border: rgba(255,255,255,0.08); --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12); --text: #f0ede8; --muted: #6e6b65; }
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+nav { position: sticky; top: 0; z-index: 100; background: rgba(13,13,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+.nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.nav-logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--accent); }
+.hero { background: linear-gradient(135deg, #0d0d0f, #16161a); border-bottom: 1px solid var(--border); padding: 4rem 2rem 3rem; text-align: center; }
+.hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 700; margin-bottom: 0.75rem; }
+.hero h1 span { color: var(--accent); }
+.hero p { color: var(--muted); font-size: 15px; }
+.container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.toc { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 2rem; margin-bottom: 3rem; }
+.toc h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+.toc ol { padding-left: 1.25rem; display: flex; flex-direction: column; gap: 6px; }
+.toc ol li a { color: var(--accent); text-decoration: none; font-size: 14px; }
+.section { margin-bottom: 3rem; scroll-margin-top: 80px; }
+.section h2 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); color: var(--accent); }
+.section h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.section p { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 1rem; }
+.section ul, .section ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.section ul li, .section ol li { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 0.35rem; }
+.highlight { background: var(--accent-dim); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: 14px; line-height: 1.7; }
+.data-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 14px; }
+.data-table th { background: var(--surface); color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; padding: 0.75rem 1rem; text-align: left; border: 1px solid var(--border); }
+.data-table td { padding: 0.75rem 1rem; border: 1px solid var(--border); color: rgba(240,237,232,0.85); line-height: 1.6; }
+footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: 13px; }
+footer a { color: var(--accent); text-decoration: none; }
+@media (max-width: 600px) { .nav-links { display: none; } .hero { padding: 2.5rem 1rem 2rem; } .container { padding: 2rem 1rem 4rem; } .data-table { font-size: 12px; } }
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    IdeaHub
+  </a>
+  <div class="nav-links">
+    <a href="/terms">Terms</a>
+    <a href="/privacy" class="active">Privacy</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refunds">Refunds</a>
+    <a href="/">Home</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Privacy <span>Policy</span></h1>
+  <p>Last updated: June 2026 &nbsp;·&nbsp; Picela (Pvt) Ltd</p>
+</div>
+
+<div class="container">
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#data-collected">Data We Collect</a></li>
+      <li><a href="#how-we-use">How We Use Your Data</a></li>
+      <li><a href="#sharing">Data Sharing</a></li>
+      <li><a href="#retention">Data Retention</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#rights">Your Rights</a></li>
+      <li><a href="#cookies-ref">Cookies</a></li>
+      <li><a href="#third-party">Third-Party Services</a></li>
+      <li><a href="#children">Children's Privacy</a></li>
+      <li><a href="#changes">Changes to This Policy</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ol>
+  </div>
+
+  <div class="section" id="overview">
+    <h2>1. Overview</h2>
+    <p>Picela (Pvt) Ltd ("Picela", "we", "us", "our") operates IdeaHub at ideahub.it.com. This Privacy Policy explains how we collect, use, store, and share your personal information when you use our Platform.</p>
+    <div class="highlight">We are committed to protecting your privacy. We collect only what we need, use it only for stated purposes, and never sell your personal data to third parties.</div>
+  </div>
+
+  <div class="section" id="data-collected">
+    <h2>2. Data We Collect</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th>Category</th><th>Examples</th><th>How Collected</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Identity Data</td><td>First name, last name, username</td><td>Registration form, Google OAuth</td></tr>
+        <tr><td>Contact Data</td><td>Email address, phone number</td><td>Registration, profile settings</td></tr>
+        <tr><td>Profile Data</td><td>Avatar, bio, role, specialisations, country</td><td>Profile page</td></tr>
+        <tr><td>Transaction Data</td><td>Purchase history, amounts, status</td><td>Platform transactions</td></tr>
+        <tr><td>Content Data</td><td>Ideas, patents, messages, listings</td><td>User submissions</td></tr>
+        <tr><td>Usage Data</td><td>Pages visited, clicks, time on site</td><td>Automatically via cookies</td></tr>
+        <tr><td>Device Data</td><td>IP address, browser type, device type</td><td>Automatically</td></tr>
+        <tr><td>Verification Data</td><td>Professional licences, degrees</td><td>Voluntary upload (attorneys)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="how-we-use">
+    <h2>3. How We Use Your Data</h2>
+    <p>We use your personal data for the following purposes:</p>
+    <ul>
+      <li><strong>Account management</strong> — to create and maintain your account.</li>
+      <li><strong>Platform operation</strong> — to facilitate transactions, messaging, and marketplace features.</li>
+      <li><strong>Verification</strong> — to verify attorney credentials and user identities where required.</li>
+      <li><strong>Communications</strong> — to send transactional emails (e.g. purchase confirmations, notifications). We use Resend for email delivery.</li>
+      <li><strong>SMS verification</strong> — to verify phone numbers via SMS (AWS SNS).</li>
+      <li><strong>Payments</strong> — to process transactions via PayPal.</li>
+      <li><strong>Security</strong> — to detect fraud, abuse, and policy violations.</li>
+      <li><strong>Analytics</strong> — to understand how the Platform is used and improve it.</li>
+      <li><strong>Legal compliance</strong> — to comply with applicable laws and regulations.</li>
+    </ul>
+  </div>
+
+  <div class="section" id="sharing">
+    <h2>4. Data Sharing</h2>
+    <p>We do not sell your personal data. We may share your data with:</p>
+    <h3>Other Users</h3>
+    <p>Your public profile, listings, and ratings are visible to other Users. Messages are shared between conversation participants only.</p>
+    <h3>Service Providers</h3>
+    <ul>
+      <li><strong>Railway</strong> — hosting and infrastructure</li>
+      <li><strong>Supabase</strong> — database and file storage</li>
+      <li><strong>Resend</strong> — transactional email delivery</li>
+      <li><strong>AWS SNS</strong> — SMS verification</li>
+      <li><strong>PayPal</strong> — payment processing</li>
+      <li><strong>Google</strong> — OAuth sign-in</li>
+    </ul>
+    <p>These providers process data only as necessary to provide their services and are bound by confidentiality obligations.</p>
+    <h3>Legal Requirements</h3>
+    <p>We may disclose your data if required by law, court order, or to protect the rights, property, or safety of Picela, our Users, or the public.</p>
+  </div>
+
+  <div class="section" id="retention">
+    <h2>5. Data Retention</h2>
+    <p>We retain your personal data for as long as your account is active or as needed to provide services. If you delete your account, we will delete or anonymise your personal data within 90 days, except where we are required by law to retain it longer.</p>
+    <p>Transaction records may be retained for up to 7 years for accounting and legal compliance purposes.</p>
+  </div>
+
+  <div class="section" id="security">
+    <h2>6. Security</h2>
+    <p>We implement industry-standard security measures including HTTPS encryption, hashed passwords, and access controls. However, no system is completely secure. We encourage you to use a strong, unique password and to contact us immediately if you suspect unauthorised access to your account.</p>
+  </div>
+
+  <div class="section" id="rights">
+    <h2>7. Your Rights</h2>
+    <p>You have the following rights regarding your personal data:</p>
+    <ul>
+      <li><strong>Access</strong> — request a copy of the data we hold about you.</li>
+      <li><strong>Correction</strong> — request correction of inaccurate data.</li>
+      <li><strong>Deletion</strong> — request deletion of your data (subject to legal retention requirements).</li>
+      <li><strong>Portability</strong> — request your data in a portable format.</li>
+      <li><strong>Objection</strong> — object to processing of your data for marketing purposes.</li>
+    </ul>
+    <p>To exercise any of these rights, contact us at <a href="mailto:privacy@ideahub.it.com" style="color:var(--accent);">privacy@ideahub.it.com</a>. We will respond within 30 days.</p>
+  </div>
+
+  <div class="section" id="cookies-ref">
+    <h2>8. Cookies</h2>
+    <p>We use cookies and similar technologies to operate the Platform and analyse usage. For full details, see our <a href="/cookies" style="color:var(--accent);">Cookie Policy</a>.</p>
+  </div>
+
+  <div class="section" id="third-party">
+    <h2>9. Third-Party Services</h2>
+    <p>The Platform integrates with third-party services including Google OAuth and PayPal. When you use these services, their own privacy policies apply. We encourage you to review their policies:</p>
+    <ul>
+      <li><a href="https://policies.google.com/privacy" target="_blank" style="color:var(--accent);">Google Privacy Policy</a></li>
+      <li><a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" style="color:var(--accent);">PayPal Privacy Policy</a></li>
+    </ul>
+  </div>
+
+  <div class="section" id="children">
+    <h2>10. Children's Privacy</h2>
+    <p>The Platform is not directed at children under 18. We do not knowingly collect personal data from children. If we become aware that a child has provided us with personal data, we will delete it promptly.</p>
+  </div>
+
+  <div class="section" id="changes">
+    <h2>11. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by posting a notice on the Platform or by email. Your continued use of the Platform after changes are posted constitutes your acceptance of the updated policy.</p>
+  </div>
+
+  <div class="section" id="contact">
+    <h2>12. Contact Us</h2>
+    <p>For privacy-related queries or to exercise your data rights:</p>
+    <ul>
+      <li><strong>Company:</strong> Picela (Pvt) Ltd</li>
+      <li><strong>Email:</strong> <a href="mailto:privacy@ideahub.it.com" style="color:var(--accent);">privacy@ideahub.it.com</a></li>
+      <li><strong>Support:</strong> <a href="mailto:support@ideahub.it.com" style="color:var(--accent);">support@ideahub.it.com</a></li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  © 2026 <a href="https://picela.co">Picela (Pvt) Ltd</a>. All rights reserved. &nbsp;·&nbsp;
+  <a href="/terms">Terms</a> &nbsp;·&nbsp;
+  <a href="/privacy">Privacy</a> &nbsp;·&nbsp;
+  <a href="/cookies">Cookies</a> &nbsp;·&nbsp;
+  <a href="/refunds">Refunds</a>
+</footer>
+</body>
+</html>

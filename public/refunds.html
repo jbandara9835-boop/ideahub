@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Refund Policy — IdeaHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg: #0d0d0f; --surface: #16161a; --border: rgba(255,255,255,0.08); --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12); --text: #f0ede8; --muted: #6e6b65; --success: #6ee7b7; --error: #ff6b6b; }
+body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+nav { position: sticky; top: 0; z-index: 100; background: rgba(13,13,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+.nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.nav-logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--accent); }
+.hero { background: linear-gradient(135deg, #0d0d0f, #16161a); border-bottom: 1px solid var(--border); padding: 4rem 2rem 3rem; text-align: center; }
+.hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 700; margin-bottom: 0.75rem; }
+.hero h1 span { color: var(--accent); }
+.hero p { color: var(--muted); font-size: 15px; }
+.container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+.section { margin-bottom: 3rem; scroll-margin-top: 80px; }
+.section h2 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); color: var(--accent); }
+.section h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.section p { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 1rem; }
+.section ul, .section ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.section ul li, .section ol li { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 0.35rem; }
+.highlight { background: var(--accent-dim); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: 14px; line-height: 1.7; }
+.scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 1.5rem 0; }
+.scenario-card { border-radius: 12px; padding: 1.25rem; }
+.scenario-card.eligible { background: rgba(110,231,183,0.08); border: 1px solid rgba(110,231,183,0.25); }
+.scenario-card.not-eligible { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.25); }
+.scenario-card h4 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 0.75rem; }
+.scenario-card.eligible h4 { color: var(--success); }
+.scenario-card.not-eligible h4 { color: var(--error); }
+.scenario-card ul { padding-left: 1.25rem; }
+.scenario-card ul li { font-size: 13px; line-height: 1.7; color: rgba(240,237,232,0.8); margin-bottom: 0.25rem; }
+.steps { counter-reset: steps; }
+.step { display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: flex-start; }
+.step-num { width: 32px; height: 32px; background: var(--accent-dim); border: 1px solid rgba(245,200,66,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.step-content h4 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.step-content p { font-size: 14px; color: rgba(240,237,232,0.75); line-height: 1.6; margin: 0; }
+footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: 13px; }
+footer a { color: var(--accent); text-decoration: none; }
+@media (max-width: 600px) { .nav-links { display: none; } .hero { padding: 2.5rem 1rem 2rem; } .container { padding: 2rem 1rem 4rem; } .scenario-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
+    IdeaHub
+  </a>
+  <div class="nav-links">
+    <a href="/terms">Terms</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/cookies">Cookies</a>
+    <a href="/refunds" class="active">Refunds</a>
+    <a href="/">Home</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Refund <span>Policy</span></h1>
+  <p>Last updated: June 2026 &nbsp;·&nbsp; Picela (Pvt) Ltd</p>
+</div>
+
+<div class="container">
+  <div class="section">
+    <h2>Overview</h2>
+    <div class="highlight">IdeaHub uses an escrow system specifically designed to protect both Buyers and Creators. Funds are only released to the Creator after the Buyer confirms receipt. This is your primary protection — please do not confirm receipt until you are satisfied.</div>
+    <p>This Refund Policy applies to all transactions made through IdeaHub (ideahub.it.com), operated by Picela (Pvt) Ltd. By making a purchase, you agree to this policy.</p>
+  </div>
+
+  <div class="section">
+    <h2>Escrow Protection</h2>
+    <p>All idea and patent purchases on IdeaHub are held in escrow until:</p>
+    <ol>
+      <li>The Creator delivers the agreed materials, IP transfer documents, or other deliverables.</li>
+      <li>The Buyer confirms receipt and satisfaction.</li>
+    </ol>
+    <p>Until you confirm as a Buyer, funds remain in escrow and can be disputed. <strong>Do not confirm receipt unless you are satisfied with what you received.</strong></p>
+    <p>Escrow funds are automatically released to the Creator if neither confirmation nor dispute is raised within <strong>30 days</strong> of delivery notification.</p>
+  </div>
+
+  <div class="section">
+    <h2>When Refunds Are Available</h2>
+    <div class="scenario-grid">
+      <div class="scenario-card eligible">
+        <h4>✅ Eligible for Refund</h4>
+        <ul>
+          <li>Creator fails to deliver within the agreed timeframe</li>
+          <li>Delivered materials are fundamentally different from the listing description</li>
+          <li>Creator is found to have misrepresented ownership of the idea or patent</li>
+          <li>Transaction is cancelled before delivery begins</li>
+          <li>Technical error resulted in duplicate payment</li>
+          <li>Creator account is terminated by IdeaHub for fraud</li>
+        </ul>
+      </div>
+      <div class="scenario-card not-eligible">
+        <h4>❌ Not Eligible for Refund</h4>
+        <ul>
+          <li>Buyer confirmed receipt and later changed their mind</li>
+          <li>Idea did not generate expected commercial results</li>
+          <li>Buyer found a similar idea elsewhere after purchase</li>
+          <li>Subjective dissatisfaction after confirmation</li>
+          <li>Platform fees (non-refundable in all cases)</li>
+          <li>Disputes raised after the 30-day escrow window</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Service Provider Fees</h2>
+    <p>Fees paid to Patent Attorneys, Virtual Managers, or other Service Providers are subject to the individual service agreement between the Buyer and the Service Provider.</p>
+    <p>IdeaHub does not guarantee the outcome of any legal, management, or advisory service. Refund disputes for service fees must be raised within 14 days of service completion.</p>
+  </div>
+
+  <div class="section">
+    <h2>Platform Fees</h2>
+    <p>IdeaHub's platform fees (charged as a percentage of each transaction) are <strong>non-refundable</strong> in all circumstances, including in cases where a transaction is subsequently refunded to the Buyer. These fees cover the operational costs of the Platform.</p>
+  </div>
+
+  <div class="section">
+    <h2>How to Request a Refund</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Raise a Dispute Before Confirming</h4>
+          <p>If you are not satisfied with delivery, do not click "Confirm Receipt". Instead, contact the Creator through the in-platform messaging system to resolve the issue.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Contact IdeaHub Support</h4>
+          <p>If you cannot resolve the issue with the Creator, email us at <a href="mailto:support@ideahub.it.com" style="color:var(--accent);">support@ideahub.it.com</a> with your transaction ID, a description of the issue, and any supporting evidence.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Review Period</h4>
+          <p>We will review your request within 5 business days. We may contact both parties for additional information. Our decision is final.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Refund Processing</h4>
+          <p>Approved refunds are returned to the original PayPal account within 5–10 business days. Processing times may vary depending on PayPal and your bank.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Chargebacks</h2>
+    <p>We strongly encourage you to contact us before initiating a chargeback with PayPal or your bank. Chargebacks that are later found to be unjustified may result in account suspension and recovery of funds plus a chargeback fee.</p>
+    <p>We will always cooperate with legitimate chargeback disputes and provide PayPal with full transaction records.</p>
+  </div>
+
+  <div class="section">
+    <h2>Contact Us</h2>
+    <p>For refund requests or payment disputes:</p>
+    <ul>
+      <li><strong>Company:</strong> Picela (Pvt) Ltd</li>
+      <li><strong>Email:</strong> <a href="mailto:support@ideahub.it.com" style="color:var(--accent);">support@ideahub.it.com</a></li>
+      <li><strong>Response time:</strong> Within 2 business days</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  © 2026 <a href="https://picela.co">Picela (Pvt) Ltd</a>. All rights reserved. &nbsp;·&nbsp;
+  <a href="/terms">Terms</a> &nbsp;·&nbsp;
+  <a href="/privacy">Privacy</a> &nbsp;·&nbsp;
+  <a href="/cookies">Cookies</a> &nbsp;·&nbsp;
+  <a href="/refunds">Refunds</a>
+</footer>
+</body>
+</html>
