@@ -479,7 +479,7 @@
     let html = '';
     industryMatches.forEach(ind => {
       html += `<div class="suggest-item" onclick="selectSuggestion('${ind.replace(/'/g, "\\'")}', '${dropdownId}')">
-        <span class="suggest-item-icon">${emojiMap[ind] || '🏷️'}</span>
+        <span class="suggest-item-icon" style="display:none;"></span>
         <span class="suggest-item-text">${ind}</span>
         <span class="suggest-item-type">Industry</span>
       </div>`;
