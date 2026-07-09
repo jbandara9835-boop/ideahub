@@ -81,7 +81,7 @@
     .step-desc { font-size:0.82rem; color:var(--muted); line-height:1.6; }
 
     /* VIDEO PLACEHOLDER */
-    .video-placeholder { background:var(--surface); border:2px dashed var(--border); border-radius:var(--radius); padding:60px 20px; text-align:center; margin-bottom:48px; cursor:pointer; transition:border-color 0.2s; }
+    .video-placeholder { display:none; }
     .video-placeholder:hover { border-color:rgba(245,197,24,0.4); }
     .video-icon { font-size:3rem; margin-bottom:12px; }
     .video-placeholder h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
@@ -175,12 +175,12 @@
 <div class="role-tabs-section">
   <div class="section-label">I am a…</div>
   <div class="role-tabs">
-    <button class="role-tab active" onclick="showSection('overview', this)">🌟 Overview</button>
-    <button class="role-tab" onclick="showSection('creator', this)">💡 Idea Creator</button>
-    <button class="role-tab" onclick="showSection('investor', this)">💰 Investor</button>
-    <button class="role-tab" onclick="showSection('business', this)">🏢 Business Owner</button>
-    <button class="role-tab" onclick="showSection('support', this)">🤝 Support Pro</button>
-    <button class="role-tab" onclick="showSection('buyer', this)">🛒 Idea Buyer</button>
+    <button class="role-tab active" onclick="showSection('overview', this)">Overview</button>
+    <button class="role-tab" onclick="showSection('creator', this)">Idea Creator</button>
+    <button class="role-tab" onclick="showSection('investor', this)">Investor</button>
+    <button class="role-tab" onclick="showSection('business', this)">Business Owner</button>
+    <button class="role-tab" onclick="showSection('support', this)">Support Pro</button>
+    <button class="role-tab" onclick="showSection('buyer', this)">Idea Buyer</button>
   </div>
 </div>
 
@@ -228,7 +228,7 @@
     </div>
     <div class="cta-box">
       <h3>Ready to get started?</h3>
-      <p>Join thousands of creators, investors and professionals already on IdeaHub.</p>
+      <p>Join creators, investors and professionals already on IdeaHub.</p>
       <div class="cta-btns">
         <a href="/signup" class="btn-lg btn-primary-lg">Create Free Account →</a>
         <a href="/browse" class="btn-lg btn-secondary-lg">Browse the Marketplace</a>
