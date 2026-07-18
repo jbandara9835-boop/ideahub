@@ -467,12 +467,18 @@ footer a:hover { color: var(--text); }
     const btnText = document.getElementById('btnText');
     btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Sending...';
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstName, lastName: document.getElementById('lastName').value.trim(), email, role: document.getElementById('role').value, subject: document.getElementById('subject').value, message })
       });
-    } catch {}
-    successMsg.classList.add('show');
+      if (!res.ok) throw new Error('Failed');
+      successMsg.classList.add('show');
+    } catch {
+      errorMsg.textContent = 'Failed to send. Please try again.';
+      errorMsg.classList.add('show');
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Send Message →';
+      return;
+    }
     btnText.textContent = '✅ Sent!';
     document.getElementById('message').value = '';
     setTimeout(() => { btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Send Message →'; }, 3000);

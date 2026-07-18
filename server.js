@@ -2286,7 +2286,32 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
 
     res.json({ message: 'Password reset successfully!' });
   });
+// ── CONTACT FORM ─────────────────────────────────────────────
+app.post('/api/contact', async (req, res) => {
+  const { firstName, lastName, email, role, subject, message } = req.body;
+  if (!firstName || !email || !message) {
+    return res.status(400).json({ error: 'Required fields missing' });
+  }
 
+  await sendEmail(
+    'jbandara9835@gmail.com',
+    `📩 New Contact Form: ${subject || 'General Inquiry'} — IdeaHub`,
+    `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+      <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub — Contact Form</div>
+      <p><strong>Name:</strong> ${firstName} ${lastName || ''}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Role:</strong> ${role || 'Not specified'}</p>
+      <p><strong>Subject:</strong> ${subject || 'Not specified'}</p>
+      <p style="margin-top:16px;"><strong>Message:</strong></p>
+      <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-top:8px;color:#9a9080;">${message}</div>
+      <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Sent from ideahub.it.com/about</p>
+    </div>
+    `
+  );
+
+  res.json({ success: true });
+});
   // ── HEALTH CHECK & KEEP-ALIVE ─────────────────────────────────────────────────
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
