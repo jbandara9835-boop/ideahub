@@ -2293,6 +2293,9 @@ app.post('/api/contact', async (req, res) => {
     return res.status(400).json({ error: 'Required fields missing' });
   }
 
+  console.log('Contact form received from:', email);
+  console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+  console.log('RESEND_FROM:', process.env.RESEND_FROM);
   await sendEmail(
     'jbandara9835@gmail.com',
     `📩 New Contact Form: ${subject || 'General Inquiry'} — IdeaHub`,
