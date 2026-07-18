@@ -35,7 +35,8 @@ nav {
 }
 .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .nav-logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.nav-logo-icon svg { width: 18px; height: 18px; fill: #080809; }
+.nav-logo-icon svg { width: 18px; height: 18px; fill: #080809; display:none; }
+.nav-logo-icon::after { content: '💡'; font-size: 16px; }
 .nav-logo-text { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: var(--text); }
 .nav-links { display: flex; align-items: center; gap: 2rem; }
 .nav-links a { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
@@ -304,27 +305,27 @@ footer a:hover { color: var(--text); }
 <section class="contact-section" id="contact">
   <div class="container">
     <div class="reveal" style="text-align:center;max-width:500px;margin:0 auto 3rem;">
-      <div class="section-label" style="color:var(--accent2);">Get In Touch</div>
+      <div class="section-label">Get In Touch</div>
       <h2 style="font-family:'Cabinet Grotesk',sans-serif;font-size:34px;font-weight:900;">We'd love to hear from you</h2>
       <p style="font-size:15px;color:var(--muted);margin-top:0.75rem;">Questions, partnerships, or just curious? Our team responds within 24 hours.</p>
     </div>
     <div class="contact-grid reveal">
       <div class="contact-info">
-        <a class="contact-method" href="mailto:hello@ideahub.it.com">
+        <a class="contact-method" href="mailto:jbandara9835@gmail.com">
           <div class="contact-method-icon">📧</div>
           <div>
             <div class="contact-method-title">General Enquiries</div>
             <div class="contact-method-val">hello@ideahub.it.com</div>
           </div>
         </a>
-        <a class="contact-method" href="mailto:support@ideahub.it.com">
+        <a class="contact-method" href="mailto:jbandara9835@gmail.com">
           <div class="contact-method-icon">🛟</div>
           <div>
             <div class="contact-method-title">Support</div>
             <div class="contact-method-val">support@ideahub.it.com</div>
           </div>
         </a>
-        <a class="contact-method" href="mailto:partnerships@ideahub.it.com">
+        <a class="contact-method" href="mailto:jbandara9835@gmail.com">
           <div class="contact-method-icon">🤝</div>
           <div>
             <div class="contact-method-title">Partnerships</div>
