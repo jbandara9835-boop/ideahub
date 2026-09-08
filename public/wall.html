@@ -419,22 +419,22 @@ function renderSidebar() {
   if (!nav || !user) return;
   nav.innerHTML = `
     <div class="nav-section-label">My Account</div>
-    <a class="nav-item ${['dashboard','buyer-dashboard','business-dashboard','support-dashboard'].some(d=>path.includes(d))?'active':''}" href="${dashMap[user.role]||'/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item ${path==='/profile'?'active':''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+    <a class="nav-item ${['dashboard','buyer-dashboard','business-dashboard','support-dashboard'].some(d=>path.includes(d))?'active':''}" href="${dashMap[user.role]||'/dashboard'}"><span>Dashboard</span></a>
+    <a class="nav-item ${path==='/profile'?'active':''}" href="/profile"><span>My Profile</span></a>
     <div class="nav-section-label">Marketplace</div>
-    <a class="nav-item ${path==='/browse'?'active':''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-    <a class="nav-item ${path==='/idea-requests'?'active':''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
-    <a class="nav-item ${path==='/wall'?'active':''}" href="/wall"><span class="nav-icon">🧱</span><span>IdeaWall</span></a>
+    <a class="nav-item ${path==='/browse'?'active':''}" href="/browse"><span>Marketplace</span></a>
+    <a class="nav-item ${path==='/idea-requests'?'active':''}" href="/idea-requests"><span>Request an Idea</span></a>
+    <a class="nav-item ${path==='/wall'?'active':''}" href="/wall"><span>IdeaWall</span></a>
     <div class="nav-section-label">Activity</div>
-    <a class="nav-item ${path==='/messages'?'active':''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item ${path==='/transactions'?'active':''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+    <a class="nav-item ${path==='/messages'?'active':''}" href="/messages"><span>Messages</span></a>
+    <a class="nav-item ${path==='/transactions'?'active':''}" href="/transactions"><span>Wallet</span></a>
   `;
 }
 
 if (user) {
   renderSidebar();
   document.getElementById('postBtn').style.display = 'flex';
-  document.getElementById('backBtn').href = dashMap[user.role] || '/dashboard';
+  document.getElementById('backBtn').href = '/';
   const avatarUrl = user.avatar_url || user.avatarUrl;
   const avatarEl = document.getElementById('sidebarAvatar');
   if (avatarEl) {
