@@ -17,13 +17,13 @@
   async function sendEmail(to, subject, html) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const { data, error } = await resend.emails.send({
         from: process.env.RESEND_FROM,
         to,
         subject,
         html
       });
-      console.log('Email sent to:', to);
+      if (error) { console.error('Resend rejected email to', to, '-', error.message || JSON.stringify(error)); return; } console.log('Email sent to:', to, 'id:', data?.id);
     } catch(err) {
       console.error('Email error:', err.message);
     }
