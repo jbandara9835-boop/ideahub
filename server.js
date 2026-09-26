@@ -137,6 +137,7 @@ app.get('/robots.txt', (req, res) => {
     process.env.SUPABASE_URL,
     process.env.SUPABASE_KEY
   );
+       require('./chatbot')(app, supabase);
   // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
   app.get('/discover', (req, res) => {
     res.sendFile(__dirname + '/public/discover.html');
