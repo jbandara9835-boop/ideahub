@@ -400,7 +400,7 @@ app.get('/robots.txt', (req, res) => {
     if (qualification !== undefined) updateData.qualification = qualification;
     if (profile_complete !== undefined) updateData.profile_complete = profile_complete;
     if (profile_stars !== undefined) updateData.profile_stars = profile_stars;
-    if (verification_status !== undefined) updateData.verification_status = verification_status;
+    if (verification_status === 'pending') updateData.verification_status = 'pending';
     if (verification_submitted_at !== undefined) updateData.verification_submitted_at = verification_submitted_at;
 
     const { data: user, error } = await supabase
@@ -551,7 +551,7 @@ app.get('/robots.txt', (req, res) => {
       countries: req.body.countries || [],
         creator_id: req.user.id,
         creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
-        status: (hasPatent && patentCertUrl) ? 'under_review' : 'live',
+        status: (hasPatent && req.body.patentCertUrl) ? 'under_review' : 'live',
         patent_jurisdiction: req.body.patentJurisdiction || '',
         patent_verified: false,
         patent_cert_url: req.body.patentCertUrl || '',
