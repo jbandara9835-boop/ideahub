@@ -332,7 +332,7 @@ app.get('/robots.txt', (req, res) => {
         <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${firstName}! 👋</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully. You're now part of the global marketplace where ideas become empires.</p>
         <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:24px;">Go to Dashboard →</a>
-        <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+        <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela (Pvt) Ltd</p>
       </div>
     `);
 
@@ -741,7 +741,7 @@ app.get('/robots.txt', (req, res) => {
           <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">${buyer?.first_name || 'A buyer'} has locked <strong style="color:#f5c842;">$${idea.price.toLocaleString()}</strong> in escrow for your idea <strong>"${idea.title}"</strong>.</p>
           <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Deliver the idea materials to the buyer. Once they confirm delivery, funds will be released to your wallet.</p>
           <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Transaction →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela (Pvt) Ltd</p>
         </div>
       `);
     }
@@ -774,7 +774,7 @@ app.get('/robots.txt', (req, res) => {
           <h2 style="margin-bottom:8px;">Your idea was sold! 🏆</h2>
           <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">The buyer confirmed delivery and <strong style="color:#f5c842;">$${tx.amount.toLocaleString()}</strong> has been added to your IdeaHub wallet.</p>
           <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Wallet →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela (Pvt) Ltd</p>
         </div>
       `);
     }
@@ -832,7 +832,7 @@ app.get('/robots.txt', (req, res) => {
           <h2 style="margin-bottom:8px;">New message from ${senderName}</h2>
           <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-bottom:20px;color:#9a9080;">"${text.slice(0,200)}${text.length>200?'...':''}"</div>
           <a href="https://ideahub.it.com/messages?user=${req.user.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Reply →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela (Pvt) Ltd</p>
         </div>
       `);
     }
@@ -1261,7 +1261,7 @@ app.get('/robots.txt', (req, res) => {
           <h2 style="margin-bottom:8px;">New proposal received! 📝</h2>
           <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;"><strong>${creator?.first_name || 'A creator'} ${creator?.last_name || ''}</strong> submitted a proposal for your request <strong>"${request.title}"</strong>.</p>
           <a href="https://ideahub.it.com/request-detail?id=${req.params.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Review Proposal →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela (Pvt) Ltd</p>
         </div>
       `);
     }
@@ -1940,7 +1940,7 @@ app.get('/robots.txt', (req, res) => {
         <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${first_name}! 👋</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully via Google.</p>
         <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Dashboard →</a>
-        <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+        <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela (Pvt) Ltd</p>
       </div>
     `);
 
@@ -2247,14 +2247,14 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
 
     // Send email
     const resetLink = `https://ideahub.it.com/reset-password?token=${token}`;
-    await sendEmail(email, '🔑 Reset your IdeaHub password', `
+    await sendEmail(email, 'Reset your IdeaHub password', `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
         <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
         <h2 style="margin-bottom:8px;">Reset your password</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${user.first_name}, we received a request to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>
         <a href="${resetLink}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:20px;">Reset Password →</a>
         <p style="color:#6e6b65;font-size:12px;margin-top:16px;">If you didn't request this, ignore this email. Your password won't change.</p>
-        <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela</a></p>
+        <p style="color:#6e6b65;font-size:12px;">IdeaHub by <a href="https://picela.co" style="color:#f5c842;">Picela (Pvt) Ltd</p>
       </div>
     `);
 
