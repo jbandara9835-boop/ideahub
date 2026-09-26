@@ -313,7 +313,7 @@ app.get('/robots.txt', (req, res) => {
         last_name: lastName || '',
         email,
         password: hashed,
-        role: role || 'idea_creator',
+        role: role || 'idea_creator', signup_country: req.headers['cf-ipcountry'] || null,
         earnings: 0,
         verified: false,
       }])
@@ -1928,7 +1928,7 @@ app.get('/robots.txt', (req, res) => {
       first_name, last_name, email,
       password: '', role,
       avatar_url: avatar_url || null,
-      google_id, earnings: 0, verified: true,
+      google_id, earnings: 0, verified: true, signup_country: req.headers['cf-ipcountry'] || null,
     }]).select().single();
 
     if (error) return res.status(500).json({ error: error.message });
