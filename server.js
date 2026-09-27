@@ -290,7 +290,8 @@ app.get('/robots.txt', (req, res) => {
   // ── AUTH ─────────────────────────────────────────────────────────────────────
 
   // SIGNUP
-  app.post('/api/auth/signup', async (req, res) => {
+  async function verifyTurnstile(token, ip) { if (!process.env.TURNSTILE_SECRET_KEY) return true; if (!token) return false; try { const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ secret: process.env.TURNSTILE_SECRET_KEY, response: token, remoteip: ip || '' }) }); const d = await r.json(); return d.success === true; } catch (e) { console.error('Turnstile error:', e.message); return false; } }
+  app.post('/api/auth/signup', async (req, res) => { if (!(await verifyTurnstile(req.body.turnstileToken, req.headers['cf-connecting-ip']))) return res.status(400).json({ error: 'Security check failed. Please refresh the page and try again.' });
     const { firstName, lastName, email, password, role } = req.body;
     if (!firstName || !email || !password) {
       return res.status(400).json({ error: 'First name, email and password are required' });
@@ -2288,7 +2289,7 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
     res.json({ message: 'Password reset successfully!' });
   });
 // ── CONTACT FORM ─────────────────────────────────────────────
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.body.turnstileToken, req.headers['cf-connecting-ip']))) return res.status(400).json({ error: 'Security check failed. Please refresh the page and try again.' });
   const { firstName, lastName, email, role, subject, message } = req.body;
   if (!firstName || !email || !message) {
     return res.status(400).json({ error: 'Required fields missing' });

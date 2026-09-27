@@ -190,7 +190,7 @@
   function scroll() { body.scrollTop = body.scrollHeight; }
   function safeUrl(u) { return typeof u === 'string' && u.startsWith('/') && !u.startsWith('//') ? u : '#'; }
   function getToken() {
-    try { return localStorage.getItem('token') || localStorage.getItem('ideahub_token') || null; }
+    try { return localStorage.getItem('ih_token') || localStorage.getItem('token') || null; }
     catch { return null; }
   }
 })();

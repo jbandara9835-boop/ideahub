@@ -132,6 +132,7 @@
     .role-desc { font-size: 9px; }
   }
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 <div class="grid-bg"></div>
@@ -236,6 +237,8 @@
 
   <div class="divider">or</div>
 
+  <div class="cf-turnstile" data-sitekey="0x4AAAAAAFE9paUQCecOa3fg" data-theme="dark" style="display:flex;justify-content:center;margin-bottom:0.75rem;"></div>
+
   <button class="btn" id="signupBtn" onclick="handleSignup()">
     <div class="spinner" id="spinner"></div>
     <span id="btnText">Create account</span>
@@ -310,7 +313,7 @@
       const res = await fetch(`${API_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email, password, role }),
+        body: JSON.stringify({ firstName, lastName, email, password, role, turnstileToken: document.querySelector('[name="cf-turnstile-response"]')?.value || '' }),
       });
 
       const data = await res.json();
@@ -338,6 +341,7 @@
 
     } catch (err) {
       errorMsg.textContent = err.message || 'Something went wrong.';
+      if (window.turnstile) turnstile.reset();
       errorMsg.classList.add('show');
       btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Create account';
     }

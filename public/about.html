@@ -176,6 +176,7 @@ footer a:hover { color: var(--text); }
   .footer-links { flex-wrap: wrap; justify-content: center; gap: 0.75rem; font-size: 12px; }
 }
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -376,6 +377,7 @@ footer a:hover { color: var(--text); }
           </select>
         </div>
         <div class="field"><label>Message</label><textarea id="message" placeholder="Tell us how we can help..."></textarea></div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFE9paUQCecOa3fg" data-theme="dark" style="margin-bottom:0.5rem;"></div>
         <button class="submit-btn" id="submitBtn" onclick="sendMessage()">
           <div class="spinner" id="spinner"></div>
           <span id="btnText">Send Message →</span>
@@ -471,18 +473,20 @@ footer a:hover { color: var(--text); }
     try {
       const res = await fetch('/api/contact', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName: document.getElementById('lastName').value.trim(), email, role: document.getElementById('role').value, subject: document.getElementById('subject').value, message })
+        body: JSON.stringify({ firstName, lastName: document.getElementById('lastName').value.trim(), email, role: document.getElementById('role').value, subject: document.getElementById('subject').value, message, turnstileToken: document.querySelector('[name="cf-turnstile-response"]')?.value || '' })
       });
-      if (!res.ok) throw new Error('Failed');
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Failed to send. Please try again.'); }
       successMsg.classList.add('show');
-    } catch {
-      errorMsg.textContent = 'Failed to send. Please try again.';
+    } catch (err) {
+      errorMsg.textContent = err.message || 'Failed to send. Please try again.';
+      if (window.turnstile) turnstile.reset();
       errorMsg.classList.add('show');
       btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Send Message →';
       return;
     }
     btnText.textContent = '✅ Sent!';
     document.getElementById('message').value = '';
+    if (window.turnstile) turnstile.reset();
     setTimeout(() => { btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Send Message →'; }, 3000);
   }
 
