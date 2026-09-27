@@ -375,7 +375,18 @@
 
   async function loadIdea() {
     try {
-      const res = await fetch(`${API_URL}/api/ideas/${ideaId}`);
+      const res = await fetch(`${API_URL}/api/ideas/${ideaId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {});
+      if (res.status === 403) {
+        document.getElementById('breadcrumbTitle').textContent = 'Members only';
+        document.getElementById('pageContent').innerHTML = `
+          <div style="text-align:center;padding:4rem;color:var(--muted);">
+            <div style="font-size:48px;margin-bottom:1rem;">🔒</div>
+            <div style="font-size:16px;color:var(--text);margin-bottom:0.5rem;">This idea is only visible to verified members.</div>
+            <div style="font-size:14px;">${token ? 'Complete your profile and verify your phone to get verified.' : 'Sign in with a verified account to view it.'}</div>
+            <a href="${token ? '/profile' : '/login'}" style="color:var(--accent);font-size:14px;margin-top:1rem;display:inline-block;">${token ? 'Go to my profile →' : 'Sign in →'}</a>
+          </div>`;
+        return;
+      }
       if (!res.ok) throw new Error('Idea not found');
       const idea = await res.json();
       currentIdea = idea;
@@ -430,6 +441,10 @@
             <div class="section-card">
               <div class="section-title">📄 Full Description</div>
               <div class="idea-description">${idea.description}</div>
+            </div>` : idea.description_locked ? `
+            <div class="section-card">
+              <div class="section-title">🔒 Full Description</div>
+              <div style="font-size:14px;color:var(--muted);line-height:1.7;">The full description is shared with the buyer once payment is held in escrow, so the creator's idea stays protected. Have questions first? <a href="#" onclick="event.preventDefault();openModal()" style="color:var(--accent);">Message the creator</a>.</div>
             </div>` : ''}
 
             <div class="section-card">

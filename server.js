@@ -122,7 +122,8 @@ app.get('/robots.txt', (req, res) => {
       .from('ideas')
       .select('id, title, price, views, status')
       .eq('creator_id', req.params.id)
-      .eq('status', 'live');
+      .eq('status', 'live')
+      .or('visibility.is.null,visibility.eq.1');
 
     res.json({
       ...user,
@@ -254,6 +255,7 @@ app.get('/robots.txt', (req, res) => {
       .from('ideas')
       .select('id, title, summary, industry, price, views, creator_id, creator_name')
       .eq('status', 'live')
+      .or('visibility.is.null,visibility.eq.1')
       .order('views', { ascending: false })
       .limit(limit);
     if (error) return res.status(500).json({ error: error.message });
@@ -399,8 +401,6 @@ app.get('/robots.txt', (req, res) => {
     if (phone !== undefined) updateData.phone = phone;
     if (expert_area !== undefined) updateData.expert_area = expert_area;
     if (qualification !== undefined) updateData.qualification = qualification;
-    if (profile_complete !== undefined) updateData.profile_complete = profile_complete;
-    if (profile_stars !== undefined) updateData.profile_stars = profile_stars;
     if (verification_status === 'pending') updateData.verification_status = 'pending';
     if (verification_submitted_at !== undefined) updateData.verification_submitted_at = verification_submitted_at;
 
@@ -422,8 +422,20 @@ app.get('/robots.txt', (req, res) => {
       }
     }
 
-    const { password: _, ...safeUser } = user;
-    res.json({ ...safeUser, firstName: user.first_name, lastName: user.last_name });
+    // Profile completeness and stars are calculated here — never taken from the browser
+    const { count: specCount } = await supabase.from('user_specializations')
+      .select('*', { count: 'exact', head: true }).eq('user_id', req.user.id);
+    const checks = ['first_name', 'last_name', 'country', 'phone', 'bio', 'tagline', 'expert_area', 'qualification', 'city', 'address_line1', 'avatar_url']
+      .map(f => String(user[f] ?? '').trim() !== '');
+    checks.push((specCount || 0) > 0);
+    const pct = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+    const extra = { profile_complete: pct >= 80 };
+    if (pct >= 80 && (user.profile_stars || 0) < 1) extra.profile_stars = 1;
+    const { data: finalUser } = await supabase.from('users').update(extra).eq('id', req.user.id).select().single();
+    const out = finalUser || user;
+
+    const { password: _, ...safeUser } = out;
+    res.json({ ...safeUser, firstName: out.first_name, lastName: out.last_name });
   });
 
   // ── IDEAS ─────────────────────────────────────────────────────────────────────
@@ -493,6 +505,26 @@ app.get('/robots.txt', (req, res) => {
     }
   });
 
+  // ── IDEA PRIVACY ─────────────────────────────────────────────────────────────
+  // Full description + patent/ID documents are never sent to the public.
+  // Owner and admin see everything; buyers (escrow/completed) also see the description.
+  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url'];
+  async function viewerContext(req) {
+    const t = req.headers.authorization?.split(' ')[1];
+    if (!t) return { id: null, role: null, verified: false };
+    try {
+      const decoded = jwt.verify(t, process.env.JWT_SECRET);
+      const { data } = await supabase.from('users').select('id, role, verification_status').eq('id', decoded.id).single();
+      return { id: data?.id || null, role: data?.role || null, verified: data?.verification_status === 'verified' };
+    } catch { return { id: null, role: null, verified: false }; }
+  }
+  function publicIdea(idea) {
+    const copy = { ...idea };
+    PRIVATE_IDEA_FIELDS.forEach(f => delete copy[f]);
+    copy.description_locked = !!idea.description;
+    return copy;
+  }
+
   // GET all ideas
   app.get('/api/ideas', async (req, res) => {
     let query = supabase.from('ideas').select('*, creator:creator_id(tagline, avatar_url, profile_stars)').eq('status', 'live');
@@ -509,7 +541,15 @@ app.get('/robots.txt', (req, res) => {
 
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
-    res.json(data || []);
+    // visibility: 1 = everyone, 2 = verified members only, 3 = private (direct link only)
+    const viewer = await viewerContext(req);
+    const visible = (data || []).filter(i => {
+      const v = Number(i.visibility) || 1;
+      if (v === 1) return true;
+      if (viewer.role === 'admin' || (viewer.id && i.creator_id === viewer.id)) return true;
+      return v === 2 && viewer.verified;
+    });
+    res.json(visible.map(publicIdea));
   });
 
   // GET single idea
@@ -521,8 +561,32 @@ app.get('/robots.txt', (req, res) => {
       .single();
 
     if (!idea || error) return res.status(404).json({ error: 'Idea not found' });
-    await supabase.from('ideas').update({ views: (idea.views || 0) + 1 }).eq('id', idea.id);
-    res.json(idea);
+
+    const viewer = await viewerContext(req);
+    const isOwner = !!viewer.id && viewer.id === idea.creator_id;
+    const isAdmin = viewer.role === 'admin';
+    let isBuyer = false;
+    if (viewer.id && !isOwner) {
+      const { data: tx } = await supabase.from('transactions').select('id')
+        .eq('idea_id', idea.id).eq('buyer_id', viewer.id).in('status', ['escrow', 'completed', 'disputed']).limit(1);
+      isBuyer = !!(tx && tx.length);
+    }
+    const privileged = isOwner || isAdmin || isBuyer;
+
+    // Under review / rejected / hidden ideas are not public
+    if (!privileged && !['live', 'escrow', 'sold'].includes(idea.status)) {
+      return res.status(404).json({ error: 'Idea not found' });
+    }
+    // Verified-members-only listings (visibility 3 = private: the direct link is the invite)
+    if (!privileged && Number(idea.visibility) === 2 && !viewer.verified) {
+      return res.status(403).json({ error: 'This idea is only visible to verified members.', code: 'verified_only' });
+    }
+
+    if (!isOwner) await supabase.from('ideas').update({ views: (idea.views || 0) + 1 }).eq('id', idea.id);
+    if (isOwner || isAdmin) return res.json(idea);
+    const out = publicIdea(idea);
+    if (isBuyer) { out.description = idea.description; out.description_locked = false; }
+    res.json(out);
   });
 
   // POST new idea
@@ -630,7 +694,8 @@ app.get('/robots.txt', (req, res) => {
       .from('ideas')
       .select('id, title, price, views, status')
       .eq('creator_id', req.params.id)
-      .eq('status', 'live');
+      .eq('status', 'live')
+      .or('visibility.is.null,visibility.eq.1');
 
     res.json({ ...user, specializations: specializations || [], ideas: ideas || [] });
   });

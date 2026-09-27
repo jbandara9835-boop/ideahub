@@ -605,7 +605,8 @@
 
   async function loadIdeas() {
     try {
-      const res = await fetch(`${API_URL}/api/ideas?status=live&limit=200`);
+      const authToken = localStorage.getItem('ih_token') || localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/ideas?status=live&limit=200`, authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {});
       const data = await res.json();
       allIdeas = data.ideas || data || [];
       document.getElementById('statIdeas').textContent = allIdeas.length;
