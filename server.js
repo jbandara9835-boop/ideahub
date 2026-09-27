@@ -139,6 +139,7 @@ app.get('/robots.txt', (req, res) => {
     process.env.SUPABASE_KEY
   );
        require('./chatbot')(app, supabase); require('./bots')(app, supabase, sendEmail);
+  const escrow = require('./escrow')(supabase, sendEmail);
   // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
   app.get('/discover', (req, res) => {
     res.sendFile(__dirname + '/public/discover.html');
@@ -781,6 +782,8 @@ app.get('/robots.txt', (req, res) => {
     const { ideaId, paymentMethod } = req.body;
     const { data: idea } = await supabase.from('ideas').select('*').eq('id', ideaId).single();
     if (!idea) return res.status(404).json({ error: 'Idea not found' });
+    if (idea.creator_id === req.user.id) return res.status(400).json({ error: 'You cannot buy your own idea.' });
+    if (idea.status !== 'live') return res.status(400).json({ error: 'This idea is not available for purchase.' });
 
     const fee = Math.round(idea.price * 0.08);
     const { data: tx, error } = await supabase
@@ -815,37 +818,133 @@ app.get('/robots.txt', (req, res) => {
     res.status(201).json(tx);
   });
 
+  // Buyer confirms delivery → release payment
   app.put('/api/transactions/:id/confirm', authMiddleware, async (req, res) => {
     const { data: tx } = await supabase.from('transactions').select('*').eq('id', req.params.id).single();
     if (!tx) return res.status(404).json({ error: 'Transaction not found' });
     if (tx.buyer_id !== req.user.id) return res.status(403).json({ error: 'Only the buyer can confirm' });
+    if (!['escrow', 'disputed'].includes(tx.status)) return res.status(400).json({ error: 'This deal is already settled.' });
+    try {
+      const updated = await escrow.releaseTransaction(tx.id, 'buyer');
+      if (!updated) return res.status(400).json({ error: 'This deal is already settled.' });
+      res.json(updated);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+  });
 
-    const { data: updated, error } = await supabase
-      .from('transactions')
-      .update({ status: 'completed', completed_at: new Date().toISOString() })
-      .eq('id', tx.id).select().single();
+  // Seller marks the idea as delivered → starts the 7-day confirmation window
+  app.put('/api/transactions/:id/deliver', authMiddleware, async (req, res) => {
+    const { data: tx } = await supabase.from('transactions').select('*').eq('id', req.params.id).single();
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
+    if (tx.seller_id !== req.user.id) return res.status(403).json({ error: 'Only the seller can mark this delivered' });
+    if (tx.status !== 'escrow') return res.status(400).json({ error: 'Only deals in escrow can be marked delivered.' });
+    if (tx.delivered_at) return res.status(400).json({ error: 'Already marked as delivered.' });
 
+    const now = new Date();
+    const { data: updated, error } = await supabase.from('transactions')
+      .update({ delivered_at: now.toISOString(), buyer_reminders: 0 }).eq('id', tx.id).eq('status', 'escrow').select().single();
     if (error) return res.status(500).json({ error: error.message });
 
-    const { data: seller } = await supabase.from('users').select('earnings').eq('id', tx.seller_id).single();
-    await supabase.from('users').update({ earnings: (seller?.earnings || 0) + tx.amount }).eq('id', tx.seller_id);
-    await supabase.from('ideas').update({ status: 'sold' }).eq('id', tx.idea_id);
+    const note = String(req.body?.note || '').trim().slice(0, 2000);
+    if (note) await supabase.from('messages').insert([{ from_id: tx.seller_id, to_id: tx.buyer_id, text: note, idea_id: tx.idea_id }]);
 
-    // Email seller — payment released
-    const { data: sellerUser } = await supabase.from('users').select('email, first_name').eq('id', tx.seller_id).single();
-    if (sellerUser?.email) {
-      sendEmail(sellerUser.email, `💰 Payment Released — $${tx.amount.toLocaleString()} added to your wallet`, `
-        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
-          <h2 style="margin-bottom:8px;">Your idea was sold! 🏆</h2>
-          <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">The buyer confirmed delivery and <strong style="color:#f5c842;">$${tx.amount.toLocaleString()}</strong> has been added to your IdeaHub wallet.</p>
-          <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Wallet →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
-        </div>
-      `);
-    }
-
+    const deadline = new Date(now.getTime() + 7 * 86400000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    await escrow.notify(tx.buyer_id, { type: 'delivered', title: '📦 Idea Delivered', message: `The creator delivered "${tx.idea_title}". Please confirm or open a dispute by ${deadline}, otherwise the payment is released automatically.`, link: '/transactions' });
+    await escrow.emailUser(tx.buyer_id, `"${tx.idea_title}" has been delivered`, 'Your idea has been delivered',
+      `The creator marked <strong>"${escrow.esc(tx.idea_title)}"</strong> as delivered. Please review what you received and confirm, or open a dispute if something is wrong.<br><br>If you do nothing, the payment is released to the creator automatically on <strong>${deadline}</strong>.`,
+      'Review and confirm', '/transactions');
     res.json(updated);
+  });
+
+  // Buyer opens a dispute → payment is frozen until IdeaHub decides
+  app.post('/api/transactions/:id/dispute', authMiddleware, async (req, res) => {
+    const reason = String(req.body?.reason || '').trim().slice(0, 2000);
+    if (reason.length < 10) return res.status(400).json({ error: 'Please describe the problem (at least 10 characters).' });
+    const { data: tx } = await supabase.from('transactions').select('*').eq('id', req.params.id).single();
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
+    if (tx.buyer_id !== req.user.id) return res.status(403).json({ error: 'Only the buyer can open a dispute' });
+    if (tx.status !== 'escrow') return res.status(400).json({ error: 'Only deals in escrow can be disputed.' });
+
+    const { data: updated, error } = await supabase.from('transactions')
+      .update({ status: 'disputed', disputed_at: new Date().toISOString(), dispute_reason: reason })
+      .eq('id', tx.id).eq('status', 'escrow').select().single();
+    if (error) return res.status(500).json({ error: error.message });
+
+    await escrow.notify(tx.seller_id, { type: 'disputed', title: '⚠️ Dispute Opened', message: `The buyer opened a dispute on "${tx.idea_title}". The payment is on hold while IdeaHub reviews it.`, link: '/transactions' });
+    const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
+    for (const a of admins || []) await escrow.notify(a.id, { type: 'disputed', title: '⚠️ New Dispute', message: `Dispute on "${tx.idea_title}" (${escrow.money(tx.amount)}): ${reason.slice(0, 120)}`, link: '/admin' });
+    await sendEmail(process.env.ADMIN_EMAIL || 'jbandara9835@gmail.com', `Dispute opened: "${tx.idea_title}"`,
+      escrow.emailShell('A buyer opened a dispute', `Deal #${escrow.esc(tx.id)}: <strong>"${escrow.esc(tx.idea_title)}"</strong> for ${escrow.money(tx.amount)}.<br><br><em>${escrow.esc(reason)}</em>`, 'Open admin panel', '/admin'));
+    res.json(updated);
+  });
+
+  // Buyer rates the creator after a completed purchase (once per deal)
+  app.post('/api/transactions/:id/rate', authMiddleware, async (req, res) => {
+    const stars = parseInt(req.body?.stars, 10);
+    const review = String(req.body?.review || '').trim().slice(0, 1000);
+    if (!(stars >= 1 && stars <= 5)) return res.status(400).json({ error: 'Stars must be between 1 and 5' });
+    const { data: tx } = await supabase.from('transactions').select('*').eq('id', req.params.id).single();
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
+    if (tx.buyer_id !== req.user.id) return res.status(403).json({ error: 'Only the buyer can rate this deal' });
+    if (tx.status !== 'completed') return res.status(400).json({ error: 'You can rate once the deal is completed.' });
+
+    const { data, error } = await supabase.from('deal_ratings').insert([{
+      transaction_id: String(tx.id), idea_id: tx.idea_id, seller_id: tx.seller_id, buyer_id: tx.buyer_id, stars, review: review || null
+    }]).select().single();
+    if (error) {
+      if (error.code === '23505') return res.status(400).json({ error: 'You have already rated this deal.' });
+      return res.status(500).json({ error: error.message });
+    }
+    await escrow.notify(tx.seller_id, { type: 'new_rating', title: '⭐ New Rating', message: `A buyer rated you ${stars}/5 for "${tx.idea_title}".`, link: `/public-profile?id=${tx.seller_id}` });
+    res.status(201).json(data);
+  });
+
+  // Public reviews + rating summary for a profile
+  app.get('/api/users/:id/reviews', async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ error: 'Invalid user' });
+    const [dealRes, hireRes, userRes] = await Promise.all([
+      supabase.from('deal_ratings').select('stars, review, created_at, idea:idea_id(title), buyer:buyer_id(first_name)')
+        .eq('seller_id', id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('ratings').select('stars, review, created_at, rater:rater_user_id(first_name)')
+        .eq('rated_user_id', id).order('created_at', { ascending: false }).limit(50),
+      supabase.from('users').select('profile_stars, rating_avg, rating_count, deals_completed').eq('id', id).single()
+    ]);
+    const reviews = [
+      ...(dealRes.data || []).map(r => ({ stars: r.stars, review: r.review, created_at: r.created_at, reviewer: r.buyer?.first_name || 'Buyer', context: r.idea?.title ? `Bought "${r.idea.title}"` : 'Idea purchase' })),
+      ...(hireRes.data || []).map(r => ({ stars: r.stars, review: r.review, created_at: r.created_at, reviewer: r.rater?.first_name || 'Client', context: 'Hired for a service' }))
+    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const u = userRes.data || {};
+    res.json({
+      profile_stars: u.profile_stars || 0, rating_avg: u.rating_avg, rating_count: u.rating_count || reviews.length,
+      deals_completed: u.deals_completed || 0, reviews
+    });
+  });
+
+  // Admin: list open disputes
+  app.get('/api/admin/disputes', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const { data, error } = await supabase.from('transactions')
+      .select('*, buyer:buyer_id(first_name, last_name, email), seller:seller_id(first_name, last_name, email)')
+      .eq('status', 'disputed').order('disputed_at', { ascending: true });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  });
+
+  // Admin: settle a dispute — outcome 'release' (pay seller) or 'refund' (back to buyer)
+  app.put('/api/admin/transactions/:id/resolve', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const { outcome } = req.body || {};
+    const note = String(req.body?.note || '').trim().slice(0, 1000);
+    try {
+      const result = outcome === 'release' ? await escrow.releaseTransaction(req.params.id, 'admin', note)
+        : outcome === 'refund' ? await escrow.refundTransaction(req.params.id, note)
+        : undefined;
+      if (result === undefined) return res.status(400).json({ error: "outcome must be 'release' or 'refund'" });
+      if (!result) return res.status(400).json({ error: 'This deal is already settled.' });
+      res.json(result);
+    } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
   app.get('/api/transactions', authMiddleware, async (req, res) => {
@@ -854,7 +953,13 @@ app.get('/robots.txt', (req, res) => {
       .or(`buyer_id.eq.${req.user.id},seller_id.eq.${req.user.id}`)
       .order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
-    res.json(data || []);
+    const ids = (data || []).map(t => String(t.id));
+    let rated = new Set();
+    if (ids.length) {
+      const { data: rs } = await supabase.from('deal_ratings').select('transaction_id').in('transaction_id', ids);
+      rated = new Set((rs || []).map(r => String(r.transaction_id)));
+    }
+    res.json((data || []).map(t => ({ ...t, rated: rated.has(String(t.id)) })));
   });
 
   // ── MESSAGES ─────────────────────────────────────────────────────────────────

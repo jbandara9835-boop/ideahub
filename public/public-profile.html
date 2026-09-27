@@ -47,6 +47,14 @@
   .idea-price { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent); }
 
   .empty { color: var(--muted); font-size: 14px; }
+  .hero-rating { font-size: 14px; color: var(--accent); margin-top: 6px; letter-spacing: 1px; }
+  .hero-rating span { color: var(--muted); letter-spacing: 0; font-size: 12px; margin-left: 6px; }
+  .review { border-bottom: 1px solid var(--border); padding: 0.85rem 0; }
+  .review:last-child { border-bottom: none; padding-bottom: 0; }
+  .review-head { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
+  .review-stars { color: var(--accent); letter-spacing: 1px; }
+  .review-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .review-text { font-size: 14px; line-height: 1.6; margin-top: 6px; }
 
   .msg-btn { width: 100%; background: var(--accent); color: #0d0d0f; border: none; border-radius: 10px; padding: 0.85rem; font-size: 15px; font-weight: 600; font-family: 'Syne', sans-serif; cursor: pointer; margin-top: 1rem; transition: opacity 0.2s; }
   .msg-btn:hover { opacity: 0.9; }
@@ -96,9 +104,15 @@
 
   if (!userId) window.location.href = '/';
 
-  fetch(`${API_URL}/api/users/${userId}/public`)
-    .then(r => r.json())
-    .then(user => {
+  function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+  function starText(n) { const k = Math.max(0, Math.min(5, Math.round(n || 0))); return '★'.repeat(k) + '☆'.repeat(5 - k); }
+
+  Promise.all([
+    fetch(`${API_URL}/api/users/${userId}/public`).then(r => { if (!r.ok) throw new Error('not found'); return r.json(); }),
+    fetch(`${API_URL}/api/users/${userId}/reviews`).then(r => r.ok ? r.json() : null).catch(() => null)
+  ])
+    .then(([user, rv]) => {
+      rv = rv || { profile_stars: 0, rating_count: 0, deals_completed: 0, reviews: [] };
       const initials = ((user.first_name?.[0] || '') + (user.last_name?.[0] || '')).toUpperCase() || '?';
       const joinYear = new Date(user.created_at).getFullYear();
       const roleLabel = (user.role || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -118,6 +132,7 @@
             <div class="hero-name">${user.first_name || ''} ${user.last_name || ''}</div>
             <div class="hero-role">${roleLabel}</div>
             ${user.tagline ? `<div class="hero-tagline">"${user.tagline}"</div>` : ''}
+            <div class="hero-rating">${rv.profile_stars > 0 ? starText(rv.profile_stars) : '<span style="margin-left:0">No ratings yet</span>'}<span>${rv.rating_count ? `${rv.rating_avg ? Number(rv.rating_avg).toFixed(1) + ' from ' : ''}${rv.rating_count} rating${rv.rating_count === 1 ? '' : 's'} · ` : ''}${rv.deals_completed || 0} deal${rv.deals_completed === 1 ? '' : 's'} completed</span></div>
             <div class="hero-meta">📍 ${[user.city, user.state, user.country].filter(Boolean).join(', ') || 'Location not set'} &nbsp;·&nbsp; Member since ${joinYear}</div>
             <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
               ${user.is_verified ? '<div class="verified-badge">✅ Verified User</div>' : '<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted)">⏳ Unverified</div>'}
@@ -131,7 +146,7 @@
         <div class="section">
           <div class="section-title">🎯 Specializations</div>
           <div class="spec-grid">
-            ${specs.map(s => `<span class="spec-tag">${s.specialization}</span>`).join('')}
+            ${specs.map(s => `<span class="spec-tag">${escHtml(s.subject || s.specialization || '')}</span>`).join('')}
           </div>
         </div>` : ''}
 
@@ -151,8 +166,18 @@
           </div>`}
         </div>
 
+        <div class="section">
+          <div class="section-title">⭐ Reviews (${rv.reviews.length})</div>
+          ${rv.reviews.length === 0 ? '<div class="empty">No reviews yet.</div>' : rv.reviews.slice(0, 20).map(r => `
+            <div class="review">
+              <div class="review-head"><span class="review-stars">${starText(r.stars)}</span><span style="color:var(--muted);font-size:12px;">${new Date(r.created_at).toLocaleDateString('en-US', { month:'short', year:'numeric' })}</span></div>
+              <div class="review-meta">${escHtml(r.reviewer)} · ${escHtml(r.context)}</div>
+              ${r.review ? `<div class="review-text">${escHtml(r.review)}</div>` : ''}
+            </div>`).join('')}
+        </div>
+
         ${!isOwnProfile ? `
-        <button class="msg-btn" onclick="window.location.href='/messages'">💬 Message ${user.first_name || 'Creator'}</button>
+        <button class="msg-btn" onclick="window.location.href='/messages?user=${encodeURIComponent(userId)}'">💬 Message ${user.first_name || 'Creator'}</button>
         ` : ''}
       `;
     })

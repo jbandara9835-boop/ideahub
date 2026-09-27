@@ -269,6 +269,7 @@
     </div>
     <div class="avatar" id="welcomeAvatar" style="width:48px; height:48px; flex-shrink:0;"><span id="welcomeAvatarText">?</span></div>
   </div>
+  <a id="deliveryBanner" href="/transactions" style="display:none;text-decoration:none;color:var(--text);background:var(--accent-dim);border:1px solid rgba(245,200,66,0.35);border-radius:12px;padding:0.9rem 1.2rem;margin-bottom:1.5rem;font-size:14px;"></a>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">Ideas Posted</div><div class="stat-value" id="statIdeas">—</div><div class="stat-sub">total ideas</div></div>
     <div class="stat-card"><div class="stat-label">Total Views</div><div class="stat-value" id="statViews">—</div><div class="stat-sub">across all ideas</div></div>
@@ -552,6 +553,26 @@
 
   loadDashboard();
   loadUnreadCount();
+
+  // ── Sales waiting for delivery / disputes ──
+  (async function loadDeliveryBanner() {
+    try {
+      const res = await fetch(`${API_URL}/api/transactions`, { headers:{ Authorization:`Bearer ${token}` } });
+      if (!res.ok) return;
+      const txs = await res.json();
+      const myId = user?.id;
+      const toDeliver = txs.filter(t => t.seller_id === myId && t.status === 'escrow' && !t.delivered_at);
+      const disputed = txs.filter(t => t.seller_id === myId && t.status === 'disputed');
+      const parts = [];
+      if (toDeliver.length) parts.push(`📦 <strong>${toDeliver.length} sale${toDeliver.length > 1 ? 's' : ''}</strong> waiting for you to deliver. The buyer has paid into escrow; deliver and mark it delivered to get paid.`);
+      if (disputed.length) parts.push(`⚠️ <strong>${disputed.length} sale${disputed.length > 1 ? 's are' : ' is'}</strong> disputed and on hold while IdeaHub reviews it.`);
+      if (parts.length) {
+        const el = document.getElementById('deliveryBanner');
+        el.innerHTML = parts.join('<br>') + ' <span style="color:var(--accent);">Open wallet →</span>';
+        el.style.display = 'block';
+      }
+    } catch (e) {}
+  })();
   setInterval(loadUnreadCount, 30000);
 
   // ── BOTTOM TAB BAR ──

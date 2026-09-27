@@ -68,8 +68,8 @@
 
   /* TABLE */
   .tx-table { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-  .tx-head { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 120px 100px; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .tx-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 120px 100px; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.15s; font-size: 14px; }
+  .tx-head { display: grid; grid-template-columns: 2fr 0.8fr 0.8fr 1fr 130px 200px; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .tx-row { display: grid; grid-template-columns: 2fr 0.8fr 0.8fr 1fr 130px 200px; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.15s; font-size: 14px; }
   .tx-row:last-child { border-bottom: none; }
   .tx-row:hover { background: rgba(255,255,255,0.02); }
 
@@ -90,6 +90,29 @@
 
   .confirm-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600; font-family: 'Syne', sans-serif; cursor: pointer; transition: opacity 0.2s; }
   .confirm-btn:hover { opacity: 0.85; }
+  .badge-disputed { background: rgba(255,107,107,0.15); color: var(--error); }
+  .badge-refunded { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .badge-delivered { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .tx-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .ghost-btn { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  .ghost-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ghost-btn.danger:hover { border-color: var(--error); color: var(--error); }
+  .tx-note { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.75rem; width: 100%; max-width: 440px; }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 0.35rem; }
+  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1rem; line-height: 1.5; }
+  .modal textarea { width: 100%; min-height: 110px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; resize: vertical; }
+  .modal textarea:focus { border-color: var(--accent); }
+  .star-pick { display: flex; gap: 6px; margin-bottom: 1rem; }
+  .star-pick button { background: none; border: none; font-size: 30px; color: #3a3a3a; cursor: pointer; padding: 0; line-height: 1; }
+  .star-pick button.on { color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 1rem; }
+  .modal-primary { flex: 1; background: var(--accent); color: #0d0d0f; border: none; border-radius: 8px; padding: 0.75rem; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; }
+  .modal-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .modal-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1.25rem; color: var(--muted); cursor: pointer; }
+  .modal-error { color: var(--error); font-size: 13px; margin-top: 0.6rem; display: none; }
 
   .empty { text-align: center; padding: 4rem 1rem; color: var(--muted); }
   .empty-icon { font-size: 40px; margin-bottom: 1rem; }
@@ -107,7 +130,7 @@
     .user-card { justify-content: center; padding: 0.5rem; }
     .main { margin-left: 60px; padding: 1.5rem; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .tx-head, .tx-row { grid-template-columns: 2fr 1fr 1fr 100px; }
+    .tx-head, .tx-row { grid-template-columns: 2fr 1fr 1fr 200px; }
     .tx-head > *:nth-child(3), .tx-row > *:nth-child(3),
     .tx-head > *:nth-child(4), .tx-row > *:nth-child(4) { display: none; }
   }
@@ -259,6 +282,22 @@
   </div>
 </main>
 
+<div class="modal-overlay" id="actionModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="star-pick" id="starPick" style="display:none;">
+      <button type="button" data-v="1">★</button><button type="button" data-v="2">★</button><button type="button" data-v="3">★</button><button type="button" data-v="4">★</button><button type="button" data-v="5">★</button>
+    </div>
+    <textarea id="modalText"></textarea>
+    <div class="modal-error" id="modalError"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" type="button" onclick="closeModal()">Cancel</button>
+      <button class="modal-primary" type="button" id="modalSubmit" onclick="submitModal()">Submit</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -367,8 +406,23 @@
 
     body.innerHTML = filtered.map(tx => {
       const isSale = tx.seller_id === myId;
-      const badge = tx.status === 'completed' ? 'badge-completed' : tx.status === 'escrow' ? 'badge-escrow' : 'badge-pending';
-      const canConfirm = tx.status === 'escrow' && tx.buyer_id === myId;
+      const delivered = tx.status === 'escrow' && !!tx.delivered_at;
+      const statusKey = delivered ? 'delivered' : tx.status;
+      const badge = { completed:'badge-completed', escrow:'badge-escrow', delivered:'badge-delivered', disputed:'badge-disputed', refunded:'badge-refunded' }[statusKey] || 'badge-pending';
+      const statusLabel = { escrow:'In escrow', delivered:'Delivered', disputed:'Disputed', completed:'Completed', refunded:'Refunded' }[statusKey] || tx.status;
+      const releaseDate = tx.delivered_at ? new Date(new Date(tx.delivered_at).getTime() + 7*86400000).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+      let actions = '<span class="tx-note">—</span>';
+      if (!isSale) {
+        if (tx.status === 'escrow' && !delivered) actions = `<span class="tx-note">Waiting for delivery</span><button class="ghost-btn danger" onclick="openDispute('${tx.id}')">Dispute</button>`;
+        else if (delivered) actions = `<button class="confirm-btn" onclick="confirmTx('${tx.id}')">Confirm</button><button class="ghost-btn danger" onclick="openDispute('${tx.id}')">Dispute</button><span class="tx-note">Auto-releases ${releaseDate}</span>`;
+        else if (tx.status === 'disputed') actions = `<span class="tx-note">Under review by IdeaHub</span>`;
+        else if (tx.status === 'completed' && !tx.rated) actions = `<button class="confirm-btn" onclick="openRate('${tx.id}')">⭐ Rate</button>`;
+        else if (tx.status === 'completed') actions = `<span class="tx-note">Rated, thank you</span>`;
+      } else {
+        if (tx.status === 'escrow' && !delivered) actions = `<button class="confirm-btn" onclick="openDeliver('${tx.id}')">Mark delivered</button>`;
+        else if (delivered) actions = `<span class="tx-note">Awaiting buyer · auto-releases ${releaseDate}</span>`;
+        else if (tx.status === 'disputed') actions = `<span class="tx-note">Payment on hold: buyer opened a dispute</span>`;
+      }
 
       return `
         <div class="tx-row">
@@ -382,26 +436,92 @@
           <div>${isSale ? '<span style="color:var(--success);font-size:12px;font-weight:500;">Sale</span>' : '<span style="color:var(--accent);font-size:12px;font-weight:500;">Purchase</span>'}</div>
           <div style="color:var(--muted)">$${(tx.fee || 0).toLocaleString()}</div>
           <div class="${isSale ? 'amount-sale' : 'amount-purchase'}">${isSale ? '+' : '-'}$${(tx.amount || 0).toLocaleString()}</div>
-          <div><span class="badge ${badge}">${tx.status}</span></div>
-          <div>
-            ${canConfirm ? `<button class="confirm-btn" onclick="confirmTx('${tx.id}')">Confirm</button>` : '—'}
-          </div>
+          <div><span class="badge ${badge}">${statusLabel}</span></div>
+          <div class="tx-actions">${actions}</div>
         </div>
       `;
     }).join('');
   }
 
   async function confirmTx(id) {
-    if (!confirm('Confirm this transaction? This will release payment to the seller.')) return;
+    if (!confirm('Confirm you received the idea? This releases the payment to the seller.')) return;
     try {
       const res = await fetch(`${API_URL}/api/transactions/${id}/confirm`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) loadTransactions();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { alert(data.error || 'Failed to confirm transaction.'); return; }
+      await loadTransactions();
+      openRate(id);
     } catch (err) {
       alert('Failed to confirm transaction.');
     }
+  }
+
+  // ── Deliver / dispute / rate modal ──
+  let modalMode = null, modalTxId = null, modalStars = 0;
+  function openModalFor(mode, id, title, sub, placeholder, submitText, showStars) {
+    modalMode = mode; modalTxId = id; modalStars = 0;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalSub').textContent = sub;
+    document.getElementById('modalText').value = '';
+    document.getElementById('modalText').placeholder = placeholder;
+    document.getElementById('modalSubmit').textContent = submitText;
+    document.getElementById('modalSubmit').disabled = false;
+    document.getElementById('modalError').style.display = 'none';
+    document.getElementById('starPick').style.display = showStars ? 'flex' : 'none';
+    paintStars();
+    document.getElementById('actionModal').classList.add('show');
+  }
+  function closeModal() { document.getElementById('actionModal').classList.remove('show'); }
+  function paintStars() {
+    document.querySelectorAll('#starPick button').forEach(b => b.classList.toggle('on', Number(b.dataset.v) <= modalStars));
+  }
+  document.querySelectorAll('#starPick button').forEach(b => b.addEventListener('click', () => { modalStars = Number(b.dataset.v); paintStars(); }));
+  document.getElementById('actionModal').addEventListener('click', e => { if (e.target.id === 'actionModal') closeModal(); });
+
+  function openDeliver(id) {
+    openModalFor('deliver', id, 'Mark as delivered',
+      'Share the idea materials with the buyer (you can also send files through Messages). The buyer then has 7 days to confirm or dispute before the payment is released automatically.',
+      'Optional message to the buyer, e.g. where to find the documents...', 'Mark delivered', false);
+  }
+  function openDispute(id) {
+    openModalFor('dispute', id, 'Open a dispute',
+      'The payment stays on hold while IdeaHub reviews what happened. Please explain the problem clearly.',
+      'What went wrong? (at least 10 characters)', 'Open dispute', false);
+  }
+  function openRate(id) {
+    const tx = allTx.find(t => String(t.id) === String(id));
+    if (!tx || tx.status !== 'completed' || tx.rated || tx.buyer_id !== myId) return;
+    openModalFor('rate', id, 'Rate the creator',
+      `How was your experience buying "${tx.idea_title || 'this idea'}"? Your rating appears on the creator's public profile.`,
+      'Optional review for other buyers...', 'Submit rating', true);
+  }
+
+  async function submitModal() {
+    const text = document.getElementById('modalText').value.trim();
+    const errEl = document.getElementById('modalError');
+    const showErr = m => { errEl.textContent = m; errEl.style.display = 'block'; };
+    errEl.style.display = 'none';
+    let url, method, body;
+    if (modalMode === 'deliver') { url = `/api/transactions/${modalTxId}/deliver`; method = 'PUT'; body = { note: text }; }
+    else if (modalMode === 'dispute') {
+      if (text.length < 10) return showErr('Please describe the problem (at least 10 characters).');
+      url = `/api/transactions/${modalTxId}/dispute`; method = 'POST'; body = { reason: text };
+    } else if (modalMode === 'rate') {
+      if (!modalStars) return showErr('Please choose 1 to 5 stars.');
+      url = `/api/transactions/${modalTxId}/rate`; method = 'POST'; body = { stars: modalStars, review: text };
+    } else return;
+    const btn = document.getElementById('modalSubmit');
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API_URL}${url}`, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { btn.disabled = false; return showErr(data.error || 'Something went wrong.'); }
+      closeModal();
+      loadTransactions();
+    } catch (e) { btn.disabled = false; showErr('Connection problem. Please try again.'); }
   }
 
   const isInvestor = user?.role === 'investor';
@@ -455,7 +575,10 @@
 
   initWalletUI();
 
-  loadTransactions();
+  loadTransactions().then(() => {
+    const rateId = new URLSearchParams(window.location.search).get('rate');
+    if (rateId) openRate(rateId);
+  });
 </script>
 <script src="/chat-widget.js" defer></script></body>
 </html>

@@ -6,6 +6,7 @@
 // Optional Railway variable: ADMIN_EMAIL (who receives the daily digest)
 // ─────────────────────────────────────────────────────────────────────────────
 const cron = require('node-cron');
+const makeEscrow = require('./escrow');
 const jwt = require('jsonwebtoken');
 
 const TZ = 'Asia/Colombo';
@@ -212,13 +213,115 @@ async function runNudge(supabase, sendEmail) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BOT 5 — Escrow watchdog (daily at 6:45, before the digest)
+// Delivered but not confirmed: remind buyer on day 2 and day 5, auto-release on day 7.
+// Not delivered: remind seller on day 3 and day 7; after 14 days it's flagged in the digest.
+// Same 7-day auto-completion for delivered Idea Requests.
+// ─────────────────────────────────────────────────────────────────────────────
+const DAY = 86400000;
+async function runEscrow(supabase, escrow) {
+  const now = Date.now();
+  let released = 0, buyerReminders = 0, sellerReminders = 0, stale = 0, requestsReleased = 0;
+
+  // 1. Delivered purchases waiting for the buyer
+  const { data: delivered, error: e1 } = await supabase.from('transactions')
+    .select('*').eq('status', 'escrow').not('delivered_at', 'is', null);
+  if (e1) throw e1;
+  for (const tx of delivered || []) {
+    const age = (now - new Date(tx.delivered_at).getTime()) / DAY;
+    const sent = tx.buyer_reminders || 0;
+    if (age >= 7) {
+      if (await escrow.releaseTransaction(tx.id, 'auto')) released++;
+    } else if ((age >= 5 && sent < 2) || (age >= 2 && sent < 1)) {
+      const daysLeft = Math.max(1, Math.ceil(7 - age));
+      await escrow.notify(tx.buyer_id, { type: 'confirm_reminder', title: '⏳ Please confirm your purchase', message: `"${tx.idea_title}" was delivered. Confirm or open a dispute within ${daysLeft} day${daysLeft > 1 ? 's' : ''}, otherwise the payment is released automatically.`, link: '/transactions' });
+      await escrow.emailUser(tx.buyer_id, `Reminder: confirm "${tx.idea_title}"`, 'Please confirm your purchase',
+        `The creator delivered <strong>"${escrow.esc(tx.idea_title)}"</strong>. If everything is fine, please confirm. If something is wrong, open a dispute.<br><br>In <strong>${daysLeft} day${daysLeft > 1 ? 's' : ''}</strong> the payment will be released to the creator automatically.`,
+        'Review purchase', '/transactions');
+      await supabase.from('transactions').update({ buyer_reminders: age >= 5 ? 2 : 1 }).eq('id', tx.id);
+      buyerReminders++;
+    }
+  }
+
+  // 2. Purchases not yet delivered
+  const { data: waiting, error: e2 } = await supabase.from('transactions')
+    .select('*').eq('status', 'escrow').is('delivered_at', null);
+  if (e2) throw e2;
+  for (const tx of waiting || []) {
+    const age = (now - new Date(tx.created_at).getTime()) / DAY;
+    const sent = tx.seller_reminders || 0;
+    if (age >= 14) stale++;
+    if ((age >= 7 && sent < 2) || (age >= 3 && sent < 1)) {
+      await escrow.notify(tx.seller_id, { type: 'deliver_reminder', title: '📦 Buyer is waiting', message: `"${tx.idea_title}" was paid ${Math.floor(age)} days ago. Share the idea materials with the buyer and mark it delivered to get paid.`, link: '/transactions' });
+      await escrow.emailUser(tx.seller_id, `Reminder: deliver "${tx.idea_title}"`, 'Your buyer is waiting',
+        `A buyer paid for <strong>"${escrow.esc(tx.idea_title)}"</strong> ${Math.floor(age)} days ago and the money is held in escrow. Send them the idea materials through Messages, then click <strong>Mark delivered</strong> in your wallet to start the payout.`,
+        'Open wallet', '/transactions');
+      await supabase.from('transactions').update({ seller_reminders: age >= 7 ? 2 : 1 }).eq('id', tx.id);
+      sellerReminders++;
+    }
+  }
+
+  // 3. Delivered Idea Requests waiting for the investor
+  const { data: reqs, error: e3 } = await supabase.from('idea_requests')
+    .select('*').eq('status', 'delivered').not('delivered_at', 'is', null);
+  if (e3) throw e3;
+  for (const r of reqs || []) {
+    const age = (now - new Date(r.delivered_at).getTime()) / DAY;
+    const sent = r.buyer_reminders || 0;
+    if (age >= 7) {
+      if (await escrow.releaseRequest(r.id)) requestsReleased++;
+    } else if ((age >= 5 && sent < 2) || (age >= 2 && sent < 1)) {
+      const daysLeft = Math.max(1, Math.ceil(7 - age));
+      await escrow.notify(r.investor_id, { type: 'confirm_reminder', title: '⏳ Please review the delivered idea', message: `The creator delivered "${r.title}". Confirm or dispute within ${daysLeft} day${daysLeft > 1 ? 's' : ''}, otherwise payment is released automatically.`, link: `/request/${r.id}` });
+      await supabase.from('idea_requests').update({ buyer_reminders: age >= 5 ? 2 : 1 }).eq('id', r.id);
+      buyerReminders++;
+    }
+  }
+
+  return `Auto-released ${released} purchase${released === 1 ? '' : 's'} and ${requestsReleased} request${requestsReleased === 1 ? '' : 's'}, ${buyerReminders} buyer reminder${buyerReminders === 1 ? '' : 's'}, ${sellerReminders} seller reminder${sellerReminders === 1 ? '' : 's'}, ${stale} undelivered for 14+ days`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOT 6 — Star ratings (daily at 00:15)
+// 3+ ratings → stars = rounded average of real ratings (idea purchases + hired services).
+// Fewer → stars untouched (keeps the profile-completion star). Also counts completed deals.
+// ─────────────────────────────────────────────────────────────────────────────
+const MIN_RATINGS_FOR_STARS = 3;
+async function runRatings(supabase) {
+  const [deal, hire, sales, reqs] = await Promise.all([
+    supabase.from('deal_ratings').select('seller_id, stars'),
+    supabase.from('ratings').select('rated_user_id, stars'),
+    supabase.from('transactions').select('seller_id').eq('status', 'completed'),
+    supabase.from('idea_requests').select('selected_creator_id').eq('status', 'completed'),
+  ]);
+  for (const r of [deal, hire, sales, reqs]) if (r.error) throw r.error;
+
+  const stats = {};
+  const get = id => (stats[id] = stats[id] || { sum: 0, count: 0, deals: 0 });
+  for (const r of deal.data || []) { const s = get(r.seller_id); s.sum += r.stars; s.count++; }
+  for (const r of hire.data || []) { const s = get(r.rated_user_id); s.sum += r.stars; s.count++; }
+  for (const t of sales.data || []) get(t.seller_id).deals++;
+  for (const r of reqs.data || []) if (r.selected_creator_id) get(r.selected_creator_id).deals++;
+
+  let updated = 0, starred = 0;
+  for (const [id, s] of Object.entries(stats)) {
+    const update = { rating_count: s.count, deals_completed: s.deals, rating_avg: s.count ? Math.round((s.sum / s.count) * 100) / 100 : null };
+    if (s.count >= MIN_RATINGS_FOR_STARS) { update.profile_stars = Math.max(1, Math.round(s.sum / s.count)); starred++; }
+    const { error } = await supabase.from('users').update(update).eq('id', id);
+    if (error) throw error;
+    updated++;
+  }
+  return `Updated ${updated} profile${updated === 1 ? '' : 's'}, ${starred} with rating-based stars`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // BOT 2 — Admin Daily Digest (daily at 7:00 Sri Lanka time)
 // ─────────────────────────────────────────────────────────────────────────────
 async function buildDigest(supabase) {
   const since = hoursAgoISO(24);
 
   const [newUsers, newIdeas, newRequests, newBusinesses, txs, chats,
-         pendingVerifUsers, pendingRoles, pendingPatents, totalUsers, liveIdeas, botRuns] = await Promise.all([
+         pendingVerifUsers, pendingRoles, pendingPatents, totalUsers, liveIdeas, botRuns, openDisputes] = await Promise.all([
     safe('new users', () => supabase.from('users')
       .select('first_name, last_name, role, signup_country, created_at')
       .gte('created_at', since).order('created_at', { ascending: false }), []),
@@ -247,6 +350,9 @@ async function buildDigest(supabase) {
     safe('bot runs', () => supabase.from('bot_runs')
       .select('bot, status, details, created_at').gte('created_at', hoursAgoISO(25))
       .order('created_at', { ascending: false }), []),
+    safe('open disputes', () => supabase.from('transactions')
+      .select('id, idea_title, amount, disputed_at, dispute_reason').eq('status', 'disputed')
+      .order('disputed_at', { ascending: true }), []),
   ]);
 
   const newEscrows = txs.filter(t => t.created_at >= since);
@@ -255,7 +361,7 @@ async function buildDigest(supabase) {
   const zeroResult = chats.filter(c => c.result_count === 0).slice(0, 8);
   const pendingVerif = pendingVerifUsers.length;
   const verifDetails = pendingVerifUsers.map(u => ({ name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email, missing: verificationMissing(u) }));
-  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0);
+  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0) + openDisputes.length;
   // latest run per bot
   const lastRuns = {};
   for (const r of botRuns) if (!lastRuns[r.bot]) lastRuns[r.bot] = r;
@@ -263,7 +369,7 @@ async function buildDigest(supabase) {
   return {
     newUsers, newIdeas, newRequests, newBusinesses, newEscrows, completed, feesEarned,
     chats, zeroResult, pendingVerif, pendingRoles, pendingPatents, pendingTotal,
-    totalUsers, liveIdeas, verifDetails, lastRuns
+    totalUsers, liveIdeas, verifDetails, lastRuns, openDisputes
   };
 }
 
@@ -284,11 +390,12 @@ function digestHtml(d) {
         <td style="padding:6px 0;border-bottom:1px solid #222;color:#8a8680;text-align:right;white-space:nowrap;">${right}</td></tr>`;
 
   const actions = [];
+  if (d.openDisputes.length) actions.push(`${d.openDisputes.length} disputed deal${d.openDisputes.length > 1 ? 's' : ''} waiting for your decision`);
   if (d.pendingVerif) actions.push(`${d.pendingVerif} user verification${d.pendingVerif > 1 ? 's' : ''} pending (not yet passing the automatic checks)`);
   if (d.pendingRoles) actions.push(`${d.pendingRoles} role switch request${d.pendingRoles > 1 ? 's' : ''} waiting`);
   if (d.pendingPatents) actions.push(`${d.pendingPatents} patent idea${d.pendingPatents > 1 ? 's' : ''} under review`);
 
-  const botNames = { verification: 'Verification', trending: 'Trending scores', nudge: 'Day-3 nudges', digest: 'Digest' };
+  const botNames = { escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
   const botLines = Object.keys(botNames).filter(b => b !== 'digest').map(b => {
     const r = d.lastRuns[b];
     const state = !r ? 'no run in the last 24h' : r.status === 'ok' ? esc(r.details || 'ok') : `<span style="color:#ff6b6b;">FAILED: ${esc(r.details || '')}</span>`;
@@ -309,6 +416,7 @@ function digestHtml(d) {
 
     ${section('Needs your attention', actions.length
       ? `<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.8;">${actions.map(a => `<li>${esc(a)}</li>`).join('')}</ul>
+         ${d.openDisputes.length ? list(d.openDisputes.slice(0, 10), t => row(`Dispute: ${esc(t.idea_title)} <span style="color:#8a8680;">· ${esc((t.dispute_reason || '').slice(0, 80))}</span>`, money(t.amount)), '') : ''}
          ${d.verifDetails.length ? list(d.verifDetails.slice(0, 10), v => row(esc(v.name), esc(v.missing.join(', ') || 'ready')), '') : ''}
          <p style="margin:8px 0 0;"><a href="${SITE}/admin" style="color:#f5c842;">Open admin panel</a></p>`
       : `<p style="color:#8a8680;font-size:13px;margin:0;">Nothing waiting for review.</p>`)}
@@ -357,7 +465,10 @@ async function runDigest(supabase, sendEmail) {
 // Scheduler + admin test endpoint
 // ─────────────────────────────────────────────────────────────────────────────
 module.exports = function registerBots(app, supabase, sendEmail) {
+  const escrow = makeEscrow(supabase, sendEmail);
   const BOTS = {
+    escrow: () => runEscrow(supabase, escrow),
+    ratings: () => runRatings(supabase),
     trending: () => runTrending(supabase),
     verification: () => runVerification(supabase, sendEmail),
     digest: () => runDigest(supabase, sendEmail),
@@ -380,7 +491,9 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   }
 
   cron.schedule('0 0 * * *', () => run('trending'), { timezone: TZ });   // midnight
+  cron.schedule('15 0 * * *', () => run('ratings'), { timezone: TZ });   // 12:15 AM
   cron.schedule('30 6 * * *', () => run('verification'), { timezone: TZ }); // 6:30 AM
+  cron.schedule('45 6 * * *', () => run('escrow'), { timezone: TZ });    // 6:45 AM
   cron.schedule('0 7 * * *', () => run('digest'), { timezone: TZ });     // 7:00 AM
   cron.schedule('0 10 * * *', () => run('nudge'), { timezone: TZ });     // 10:00 AM
 
@@ -398,5 +511,5 @@ module.exports = function registerBots(app, supabase, sendEmail) {
     res.json(await run(req.params.name));
   });
 
-  console.log('  🤖  Bots scheduled: trending 00:00, verification 06:30, digest 07:00, nudge 10:00 (Asia/Colombo)');
+  console.log('  🤖  Bots scheduled: trending 00:00, ratings 00:15, verification 06:30, escrow 06:45, digest 07:00, nudge 10:00 (Asia/Colombo)');
 };
