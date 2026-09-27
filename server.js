@@ -931,6 +931,30 @@ app.get('/robots.txt', (req, res) => {
     res.json(data || []);
   });
 
+  // Admin: every idea with full details (patent review, moderation)
+  app.get('/api/admin/ideas', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const { data, error } = await supabase.from('ideas').select('*').order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  });
+
+  // Admin: approve or reject a user's verification request
+  app.put('/api/admin/users/:id/verification', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const status = req.body?.status;
+    if (!['verified', 'unverified'].includes(status)) return res.status(400).json({ error: "status must be 'verified' or 'unverified'" });
+    const reason = String(req.body?.reason || '').trim().slice(0, 500);
+    const { data: u, error } = await supabase.from('users').update({ verification_status: status }).eq('id', req.params.id).select('id').single();
+    if (error || !u) return res.status(400).json({ error: error?.message || 'User not found' });
+    await escrow.notify(u.id, status === 'verified'
+      ? { type: 'verification_approved', title: '✅ Your profile is verified', message: 'Your IdeaHub profile now shows the verified badge.', link: '/profile' }
+      : { type: 'verification_rejected', title: '❌ Verification not approved', message: `Your verification request was not approved.${reason ? ' Reason: ' + reason : ''} You can update your profile and submit again.`, link: '/profile' });
+    res.json({ success: true });
+  });
+
   // Admin: settle a dispute — outcome 'release' (pay seller) or 'refund' (back to buyer)
   app.put('/api/admin/transactions/:id/resolve', authMiddleware, async (req, res) => {
     const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
