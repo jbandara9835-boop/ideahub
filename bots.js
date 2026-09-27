@@ -83,13 +83,142 @@ async function runTrending(supabase) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BOT 3 — Verification (daily at 6:30, before the digest)
+// Auto-approves pending users who pass ALL checks; the rest stay pending and
+// are listed in the digest with what they're missing.
+// Profile completeness is computed here from real fields — the browser-sent
+// profile_complete value is NOT trusted.
+// ─────────────────────────────────────────────────────────────────────────────
+const PROFILE_FIELDS = ['first_name', 'last_name', 'avatar_url', 'tagline', 'bio', 'country', 'city', 'phone'];
+const MIN_PROFILE_PCT = 80;
+const MIN_ACCOUNT_DAYS = 3;
+const VERIF_COLS = 'id, email, role, created_at, phone_verified, ' + PROFILE_FIELDS.slice().filter((f, i, a) => a.indexOf(f) === i).join(', ');
+
+function profilePct(u) {
+  const filled = PROFILE_FIELDS.filter(f => String(u[f] ?? '').trim() !== '').length;
+  return Math.round((filled / PROFILE_FIELDS.length) * 100);
+}
+function verificationMissing(u) {
+  const missing = [];
+  if (!u.phone_verified) missing.push('phone not verified');
+  const pct = profilePct(u);
+  if (pct < MIN_PROFILE_PCT) missing.push(`profile ${pct}% complete (needs ${MIN_PROFILE_PCT}%)`);
+  const ageDays = (Date.now() - new Date(u.created_at).getTime()) / 86400000;
+  if (ageDays < MIN_ACCOUNT_DAYS) missing.push(`account ${Math.floor(ageDays)} day${Math.floor(ageDays) === 1 ? '' : 's'} old (needs ${MIN_ACCOUNT_DAYS})`);
+  return missing;
+}
+
+async function runVerification(supabase, sendEmail) {
+  const { data: pending, error } = await supabase.from('users')
+    .select(VERIF_COLS).eq('verification_status', 'pending');
+  if (error) throw error;
+
+  let approved = 0, waiting = 0;
+  for (const u of pending || []) {
+    if (verificationMissing(u).length) { waiting++; continue; }
+
+    const { error: upErr } = await supabase.from('users')
+      .update({ verification_status: 'verified' })
+      .eq('id', u.id).eq('verification_status', 'pending');
+    if (upErr) throw upErr;
+    approved++;
+
+    await supabase.from('notifications').insert([{
+      user_id: u.id, type: 'verification_approved',
+      title: 'Your profile is verified',
+      message: 'Your IdeaHub profile now shows the verified badge.',
+      link: '/profile'
+    }]);
+    if (u.email) {
+      await sendEmail(u.email, 'Your IdeaHub profile is now verified', `
+        <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+          <h2 style="margin:0 0 12px;">You're verified, ${esc(u.first_name || 'there')}</h2>
+          <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your profile now shows the verified badge, so buyers and partners can see you're a confirmed member.</p>
+          <a href="${SITE}/profile" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View your profile</a>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
+        </div>`);
+    }
+  }
+  return `Approved ${approved}, still pending ${waiting}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOT 4 — Day-3 nudge (daily at 10:00)
+// One email to users who signed up 3–7 days ago and haven't done the main
+// thing for their role yet. Sent once per user (users.nudge_sent_at).
+// ─────────────────────────────────────────────────────────────────────────────
+const NEXT_STEPS = {
+  idea_creator:       { title: 'List your first idea', text: 'Ideas with a clear summary and a fair price get the most attention from buyers. Listing one takes about five minutes, and you stay in control of what buyers see before they pay.', cta: 'List an idea', path: '/submit' },
+  patent_seller:      { title: 'List your first patent', text: 'Buyers are looking for protected ideas. Add your patent number when you list and it goes through our verification, so buyers can trust it.', cta: 'List a patent', path: '/submit' },
+  investor:           { title: 'Find your first opportunity', text: 'Browse ideas by industry and budget, or post an Idea Request describing exactly what you want and let creators pitch to you.', cta: 'Browse ideas', path: '/browse' },
+  business_owner:     { title: 'List your business', text: 'Investors and partners on IdeaHub are looking for franchise, licensing and partnership opportunities. A listing takes about ten minutes.', cta: 'List your business', path: '/list-business' },
+  virtual_manager:    { title: 'Set up your service profile', text: 'Creators and investors search for professionals by role, country and rate. A complete profile is how they find you.', cta: 'Set up profile', path: '/support-profile' },
+  patent_attorney:    { title: 'Set up your service profile', text: 'Idea creators need patent help. A complete profile with your jurisdictions and rate is how they find you.', cta: 'Set up profile', path: '/support-profile' },
+  corporate_services: { title: 'Set up your service profile', text: 'New businesses on IdeaHub need corporate services. A complete profile is how they find you.', cta: 'Set up profile', path: '/support-profile' },
+};
+
+async function hasRows(supabase, table, col, id) {
+  const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true }).eq(col, id);
+  if (error) { console.error(`Nudge check ${table}.${col} failed:`, error.message); return true; } // on error, don't nudge
+  return (count || 0) > 0;
+}
+async function isActive(supabase, u) {
+  if (await hasRows(supabase, 'messages', 'from_id', u.id)) return true;
+  switch (u.role) {
+    case 'idea_creator':
+    case 'patent_seller':      return hasRows(supabase, 'ideas', 'creator_id', u.id);
+    case 'investor':           return (await hasRows(supabase, 'idea_requests', 'investor_id', u.id)) || hasRows(supabase, 'transactions', 'buyer_id', u.id);
+    case 'business_owner':     return hasRows(supabase, 'business_listings', 'owner_id', u.id);
+    case 'virtual_manager':
+    case 'patent_attorney':
+    case 'corporate_services': return hasRows(supabase, 'support_profiles', 'user_id', u.id);
+    default:                   return true; // admins and unknown roles: never nudge
+  }
+}
+
+async function runNudge(supabase, sendEmail) {
+  const { data: users, error } = await supabase.from('users')
+    .select('id, email, first_name, role, created_at, ' + PROFILE_FIELDS.filter(f => f !== 'first_name').join(', '))
+    .is('nudge_sent_at', null)
+    .lte('created_at', hoursAgoISO(72))
+    .gte('created_at', hoursAgoISO(168))
+    .limit(50);
+  if (error) throw error;
+
+  let sent = 0, active = 0;
+  for (const u of users || []) {
+    const step = NEXT_STEPS[u.role];
+    if (!step || !u.email || await isActive(supabase, u)) { active++; continue; }
+
+    const pct = profilePct(u);
+    const profileTip = pct < MIN_PROFILE_PCT
+      ? `<p style="color:#9a9080;line-height:1.7;margin:20px 0 0;font-size:14px;">Tip: your profile is ${pct}% complete. Adding a photo, a short bio and your country helps people trust you. <a href="${SITE}/profile" style="color:#f5c842;">Finish your profile</a></p>`
+      : '';
+
+    await sendEmail(u.email, `${step.title}, ${u.first_name || 'there'}`, `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+        <h2 style="margin:0 0 12px;">${esc(step.title)}</h2>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${esc(u.first_name || 'there')}, thanks for joining IdeaHub a few days ago. ${esc(step.text)}</p>
+        <a href="${SITE}${step.path}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">${esc(step.cta)}</a>
+        ${profileTip}
+        <p style="color:#6e6b65;font-size:12px;margin-top:28px;">Questions? Just use the contact form at ${SITE}/about. This is a one-time reminder.<br>IdeaHub by Picela (Pvt) Ltd</p>
+      </div>`);
+    await supabase.from('users').update({ nudge_sent_at: new Date().toISOString() }).eq('id', u.id);
+    sent++;
+  }
+  return `Nudged ${sent}, already active ${active}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // BOT 2 — Admin Daily Digest (daily at 7:00 Sri Lanka time)
 // ─────────────────────────────────────────────────────────────────────────────
 async function buildDigest(supabase) {
   const since = hoursAgoISO(24);
 
   const [newUsers, newIdeas, newRequests, newBusinesses, txs, chats,
-         pendingVerif, pendingRoles, pendingPatents, totalUsers, liveIdeas, lastTrending] = await Promise.all([
+         pendingVerifUsers, pendingRoles, pendingPatents, totalUsers, liveIdeas, botRuns] = await Promise.all([
     safe('new users', () => supabase.from('users')
       .select('first_name, last_name, role, signup_country, created_at')
       .gte('created_at', since).order('created_at', { ascending: false }), []),
@@ -106,8 +235,8 @@ async function buildDigest(supabase) {
     safe('chat logs', () => supabase.from('chat_logs')
       .select('question, result_count, created_at').gte('created_at', since)
       .order('created_at', { ascending: false }), []),
-    countOf(supabase, 'pending verifications', s => s.from('users')
-      .select('*', { count: 'exact', head: true }).eq('verification_status', 'pending')),
+    safe('pending verifications', () => supabase.from('users')
+      .select(VERIF_COLS).eq('verification_status', 'pending'), []),
     countOf(supabase, 'pending role requests', s => s.from('role_switch_requests')
       .select('*', { count: 'exact', head: true }).eq('status', 'pending')),
     countOf(supabase, 'patents under review', s => s.from('ideas')
@@ -115,21 +244,26 @@ async function buildDigest(supabase) {
     countOf(supabase, 'total users', s => s.from('users').select('*', { count: 'exact', head: true })),
     countOf(supabase, 'live ideas', s => s.from('ideas')
       .select('*', { count: 'exact', head: true }).eq('status', 'live')),
-    safe('last trending run', () => supabase.from('bot_runs')
-      .select('status, details, created_at').eq('bot', 'trending')
-      .order('created_at', { ascending: false }).limit(1), []),
+    safe('bot runs', () => supabase.from('bot_runs')
+      .select('bot, status, details, created_at').gte('created_at', hoursAgoISO(25))
+      .order('created_at', { ascending: false }), []),
   ]);
 
   const newEscrows = txs.filter(t => t.created_at >= since);
   const completed = txs.filter(t => t.status === 'completed' && t.completed_at && t.completed_at >= since);
   const feesEarned = completed.reduce((s, t) => s + Number(t.fee || 0), 0);
   const zeroResult = chats.filter(c => c.result_count === 0).slice(0, 8);
-  const pendingTotal = (pendingVerif || 0) + (pendingRoles || 0) + (pendingPatents || 0);
+  const pendingVerif = pendingVerifUsers.length;
+  const verifDetails = pendingVerifUsers.map(u => ({ name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email, missing: verificationMissing(u) }));
+  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0);
+  // latest run per bot
+  const lastRuns = {};
+  for (const r of botRuns) if (!lastRuns[r.bot]) lastRuns[r.bot] = r;
 
   return {
     newUsers, newIdeas, newRequests, newBusinesses, newEscrows, completed, feesEarned,
     chats, zeroResult, pendingVerif, pendingRoles, pendingPatents, pendingTotal,
-    totalUsers, liveIdeas, lastTrending: lastTrending[0] || null
+    totalUsers, liveIdeas, verifDetails, lastRuns
   };
 }
 
@@ -150,13 +284,16 @@ function digestHtml(d) {
         <td style="padding:6px 0;border-bottom:1px solid #222;color:#8a8680;text-align:right;white-space:nowrap;">${right}</td></tr>`;
 
   const actions = [];
-  if (d.pendingVerif) actions.push(`${d.pendingVerif} user verification${d.pendingVerif > 1 ? 's' : ''} waiting`);
+  if (d.pendingVerif) actions.push(`${d.pendingVerif} user verification${d.pendingVerif > 1 ? 's' : ''} pending (not yet passing the automatic checks)`);
   if (d.pendingRoles) actions.push(`${d.pendingRoles} role switch request${d.pendingRoles > 1 ? 's' : ''} waiting`);
   if (d.pendingPatents) actions.push(`${d.pendingPatents} patent idea${d.pendingPatents > 1 ? 's' : ''} under review`);
 
-  const trend = d.lastTrending
-    ? `Trending scores last updated ${fmtDate(d.lastTrending.created_at)} (${esc(d.lastTrending.status)}${d.lastTrending.details ? ': ' + esc(d.lastTrending.details) : ''})`
-    : 'Trending bot has not run yet';
+  const botNames = { verification: 'Verification', trending: 'Trending scores', nudge: 'Day-3 nudges', digest: 'Digest' };
+  const botLines = Object.keys(botNames).filter(b => b !== 'digest').map(b => {
+    const r = d.lastRuns[b];
+    const state = !r ? 'no run in the last 24h' : r.status === 'ok' ? esc(r.details || 'ok') : `<span style="color:#ff6b6b;">FAILED: ${esc(r.details || '')}</span>`;
+    return `${botNames[b]}: ${state}`;
+  }).join('<br>');
 
   return `
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:28px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
@@ -172,6 +309,7 @@ function digestHtml(d) {
 
     ${section('Needs your attention', actions.length
       ? `<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.8;">${actions.map(a => `<li>${esc(a)}</li>`).join('')}</ul>
+         ${d.verifDetails.length ? list(d.verifDetails.slice(0, 10), v => row(esc(v.name), esc(v.missing.join(', ') || 'ready')), '') : ''}
          <p style="margin:8px 0 0;"><a href="${SITE}/admin" style="color:#f5c842;">Open admin panel</a></p>`
       : `<p style="color:#8a8680;font-size:13px;margin:0;">Nothing waiting for review.</p>`)}
 
@@ -200,8 +338,9 @@ function digestHtml(d) {
     ${d.zeroResult.length ? `<p style="color:#8a8680;font-size:12px;margin:6px 0 0;">These show what people want that isn't listed yet.</p>` : ''}
 
     ${section('Totals', `<p style="font-size:13px;margin:0;line-height:1.8;">
-      ${esc(n(d.totalUsers))} users · ${esc(n(d.liveIdeas))} live ideas<br>
-      <span style="color:#8a8680;">${trend}</span></p>`)}
+      ${esc(n(d.totalUsers))} users · ${esc(n(d.liveIdeas))} live ideas</p>`)}
+
+    ${section('Bots (last 24 hours)', `<p style="font-size:13px;margin:0;line-height:1.8;color:#8a8680;">${botLines}</p>`)}
 
     <p style="color:#6e6b65;font-size:11px;margin-top:28px;">Sent automatically by IdeaHub at 7:00 AM Sri Lanka time.</p>
   </div>`;
@@ -220,7 +359,9 @@ async function runDigest(supabase, sendEmail) {
 module.exports = function registerBots(app, supabase, sendEmail) {
   const BOTS = {
     trending: () => runTrending(supabase),
+    verification: () => runVerification(supabase, sendEmail),
     digest: () => runDigest(supabase, sendEmail),
+    nudge: () => runNudge(supabase, sendEmail),
   };
 
   async function run(name) {
@@ -239,7 +380,9 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   }
 
   cron.schedule('0 0 * * *', () => run('trending'), { timezone: TZ });   // midnight
+  cron.schedule('30 6 * * *', () => run('verification'), { timezone: TZ }); // 6:30 AM
   cron.schedule('0 7 * * *', () => run('digest'), { timezone: TZ });     // 7:00 AM
+  cron.schedule('0 10 * * *', () => run('nudge'), { timezone: TZ });     // 10:00 AM
 
   // Admin-only manual trigger, for testing: POST /api/admin/bots/digest/run
   app.post('/api/admin/bots/:name/run', async (req, res) => {
@@ -255,5 +398,5 @@ module.exports = function registerBots(app, supabase, sendEmail) {
     res.json(await run(req.params.name));
   });
 
-  console.log('  🤖  Bots scheduled: trending (00:00), digest (07:00) Asia/Colombo');
+  console.log('  🤖  Bots scheduled: trending 00:00, verification 06:30, digest 07:00, nudge 10:00 (Asia/Colombo)');
 };
