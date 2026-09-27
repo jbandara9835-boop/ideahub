@@ -296,6 +296,7 @@
       ⚙ Filters <span class="filter-count-badge" id="filterCountBadge" style="display:none;">0</span>
     </button>
     <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+      <option value="trending" selected>Trending</option>
       <option value="newest">Newest first</option>
       <option value="price_asc">Price: Low to High</option>
       <option value="price_desc">Price: High to Low</option>
@@ -658,6 +659,7 @@
     if (sort === 'price_asc') filteredIdeas.sort((a,b) => (a.price||0)-(b.price||0));
     else if (sort === 'price_desc') filteredIdeas.sort((a,b) => (b.price||0)-(a.price||0));
     else if (sort === 'popular') filteredIdeas.sort((a,b) => (b.views||0)-(a.views||0));
+    else if (sort === 'trending') filteredIdeas.sort((a,b) => (Number(b.trending_score)||0)-(Number(a.trending_score)||0) || new Date(b.created_at)-new Date(a.created_at));
     else filteredIdeas.sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
 
     currentPage = 1;

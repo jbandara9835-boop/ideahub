@@ -52,7 +52,7 @@ const TOOLS = [
         min_price: { type: 'number', description: 'Minimum price in USD.' },
         max_price: { type: 'number', description: 'Maximum price in USD.' },
         patent_only: { type: 'boolean', description: 'true to return only ideas that have a patent.' },
-        sort: { type: 'string', enum: ['popular', 'newest', 'price_low', 'price_high'], description: 'Default popular.' },
+        sort: { type: 'string', enum: ['trending', 'popular', 'newest', 'price_low', 'price_high'], description: 'trending = most engagement recently (default), popular = most views of all time.' },
         limit: { type: 'integer', description: 'How many results (1-8). Default 5.' }
       }
     }
@@ -154,9 +154,9 @@ const toolHandlers = {
     const kw = keywordFilter(input.keyword, ['title', 'summary']);
     if (kw) q = q.or(kw);
     const sorts = {
-      newest: ['created_at', false], price_low: ['price', true], price_high: ['price', false]
+      popular: ['views', false], newest: ['created_at', false], price_low: ['price', true], price_high: ['price', false]
     };
-    const [col, asc] = sorts[input.sort] || ['views', false];
+    const [col, asc] = sorts[input.sort] || ['trending_score', false];
     const { data, error } = await q.order(col, { ascending: asc }).limit(lim(input.limit));
     if (error) throw error;
     return {
