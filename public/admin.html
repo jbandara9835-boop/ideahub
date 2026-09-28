@@ -225,6 +225,7 @@
     <button class="tab active" onclick="switchTab('certs', this)">📜 Certificates <span class="tab-count red" id="tabCertCount">0</span></button>
     <button class="tab" onclick="switchTab('roles', this)">🔄 Role Requests <span class="tab-count red" id="tabRoleCount">0</span></button>
     <button class="tab" onclick="switchTab('disputes', this)">⚖️ Disputes <span class="tab-count red" id="tabDisputeCount">0</span></button>
+    <button class="tab" onclick="switchTab('withdrawals', this)">💸 Withdrawals <span class="tab-count red" id="tabWithdrawCount">0</span></button>
     <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
     <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
     <button class="tab" onclick="switchTab('ideas', this)">💡 Ideas <span class="tab-count" id="tabIdeaCount">0</span></button>
@@ -251,6 +252,12 @@
   <div class="tab-content" id="tab-disputes">
     <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">The buyer's payment is on hold for each deal below. Read the reason, check the Messages between them if needed, then release the payment to the seller or refund the buyer. Both sides are notified of your decision.</div>
     <div id="disputesList"><div class="loading"><div class="spin"></div> Loading disputes...</div></div>
+  </div>
+
+  <!-- WITHDRAWALS TAB -->
+  <div class="tab-content" id="tab-withdrawals">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Send the money by bank transfer or PayPal first, then click <strong>Mark as paid</strong> and enter the transfer reference. The seller is notified and emailed. Rejecting returns the amount to their available balance.</div>
+    <div id="withdrawalsList"><div class="loading"><div class="spin"></div> Loading withdrawals...</div></div>
   </div>
 
   <!-- USERS TAB -->
@@ -322,7 +329,7 @@
   const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', admin:'Admin' };
   const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
 
-  let allCerts = []; let allUsers = []; let allHires = []; let allIdeas = []; let allRoleRequests = []; let allDisputes = [];
+  let allCerts = []; let allUsers = []; let allHires = []; let allIdeas = []; let allRoleRequests = []; let allDisputes = []; let allWithdrawals = [];
   function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
   let activeCertFilter = 'pending';
   let rejectCertId = null;
@@ -560,6 +567,64 @@
     } catch(e) { alert('Something went wrong.'); }
   }
 
+  // WITHDRAWALS
+  function renderWithdrawals() {
+    const el = document.getElementById('withdrawalsList');
+    if (!allWithdrawals.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">💸</div><div class="empty-text">No withdrawal requests yet</div></div>`; return; }
+    const pending = allWithdrawals.filter(w => w.status === 'requested');
+    const done = allWithdrawals.filter(w => w.status !== 'requested');
+    const detailRows = w => {
+      const d = w.details || {};
+      const rows = w.method === 'paypal' ? [['PayPal email', d.paypal_email]]
+        : [['Account name', d.account_name], ['Bank', d.bank_name], ['Account no.', d.account_number], ['Branch', d.branch], ['SWIFT', d.swift], ['Country', d.country]];
+      return rows.filter(r => r[1]).map(r => `<div class="cert-detail"><div class="cert-detail-label">${r[0]}</div><div class="cert-detail-val" style="font-size:13px;user-select:all;">${escHtml(r[1])}</div></div>`).join('');
+    };
+    el.innerHTML = (pending.length ? pending.map(w => `
+      <div class="cert-card pending">
+        <div class="cert-top">
+          <div class="cert-user-info">
+            <div class="cert-user-name">${escHtml(`${w.user?.first_name||''} ${w.user?.last_name||''}`.trim() || 'Seller')} · <span style="color:var(--accent);">$${Number(w.amount).toLocaleString()}</span></div>
+            <div class="cert-user-role">${escHtml(w.user?.email||'')} · requested ${formatDate(w.requested_at)} · ${w.method === 'paypal' ? 'PayPal' : 'Bank transfer'}</div>
+          </div>
+          <span class="cert-status-badge pending">⏳ To pay</span>
+        </div>
+        <div class="cert-details">${detailRows(w)}</div>
+        <div class="cert-actions">
+          <button class="btn-approve" onclick="processWithdrawal(${w.id},'paid')">✅ Mark as paid</button>
+          <button class="btn-reject-cert" onclick="processWithdrawal(${w.id},'rejected')">❌ Reject</button>
+        </div>
+      </div>`).join('') : `<div class="empty" style="padding:1.5rem;"><div class="empty-text">Nothing to pay out right now</div></div>`)
+    + (done.length ? `<div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin:1.5rem 0 0.75rem;">History</div>
+      <div class="user-table">${done.map(w => `
+        <div class="user-row" style="grid-template-columns:2fr 1fr 1fr 1.5fr 130px;">
+          <div>${escHtml(`${w.user?.first_name||''} ${w.user?.last_name||''}`.trim())}</div>
+          <div style="font-weight:600;">$${Number(w.amount).toLocaleString()}</div>
+          <div style="font-size:13px;color:var(--muted);">${formatDate(w.processed_at)}</div>
+          <div style="font-size:12px;color:var(--muted);">${escHtml(w.reference || w.admin_note || '')}</div>
+          <div>${w.status === 'paid' ? '<span style="color:var(--success);font-size:12px;">✅ Paid</span>' : '<span style="color:var(--error);font-size:12px;">❌ Rejected</span>'}</div>
+        </div>`).join('')}</div>` : '');
+  }
+
+  async function processWithdrawal(id, status) {
+    let reference = '', note = '';
+    if (status === 'paid') {
+      reference = prompt('Transfer reference (bank ref or PayPal transaction ID):');
+      if (!reference) return;
+      note = prompt('Optional note for the seller:') || '';
+    } else {
+      note = prompt('Reason (shown to the seller):');
+      if (note === null) return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/admin/withdrawals/${id}`, {
+        method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body: JSON.stringify({ status, reference, note })
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadAll(); else alert(d.error || 'Failed');
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
   // USER VERIFICATION
   async function setVerification(id, status) {
     let reason = '';
@@ -710,14 +775,16 @@
 
   async function loadAll() {
     try {
-      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes] = await Promise.all([
+      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes] = await Promise.all([
         fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/users`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/ideas`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/hire/incoming`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/role-requests`, { headers:{ Authorization:`Bearer ${token}` } }),
-        fetch(`${API_URL}/api/admin/disputes`, { headers:{ Authorization:`Bearer ${token}` } })
+        fetch(`${API_URL}/api/admin/disputes`, { headers:{ Authorization:`Bearer ${token}` } }),
+        fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } })
       ]);
+      allWithdrawals = withdrawalsRes.ok ? await withdrawalsRes.json() : [];
       allDisputes = disputesRes.ok ? await disputesRes.json() : [];
 
       allIdeas = ideasRes.ok ? await ideasRes.json() : [];
@@ -743,6 +810,8 @@
       renderCerts();
       renderRoleRequests();
       renderDisputes();
+      renderWithdrawals();
+      document.getElementById('tabWithdrawCount').textContent = allWithdrawals.filter(w => w.status === 'requested').length;
       document.getElementById('tabDisputeCount').textContent = allDisputes.length;
       renderUsers(allUsers);
       renderHires(allHires);

@@ -356,6 +356,13 @@
   async function handleBuy() {
     if (!token) { window.location.href = '/login'; return; }
     if (!currentIdea) return;
+    const payCfg = await fetch(`${API_URL}/api/payments/config`).then(r => r.json()).catch(() => ({ purchasesOpen: false }));
+    if (!payCfg.purchasesOpen) {
+      alert('Online payments are launching soon.\n\nIn the meantime, message the creator to discuss this idea.');
+      openModal();
+      return;
+    }
+    if (payCfg.provider === 'test' && !confirm('TEST MODE: no real payment will be taken for this purchase. Continue?')) return;
     if (!confirm(`Purchase "${currentIdea.title}" for ${formatPrice(currentIdea.price)}?\n\nPayment will be held in escrow until you confirm delivery.`)) return;
 
     try {

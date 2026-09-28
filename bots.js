@@ -321,7 +321,7 @@ async function buildDigest(supabase) {
   const since = hoursAgoISO(24);
 
   const [newUsers, newIdeas, newRequests, newBusinesses, txs, chats,
-         pendingVerifUsers, pendingRoles, pendingPatents, totalUsers, liveIdeas, botRuns, openDisputes] = await Promise.all([
+         pendingVerifUsers, pendingRoles, pendingPatents, totalUsers, liveIdeas, botRuns, openDisputes, pendingWithdrawals] = await Promise.all([
     safe('new users', () => supabase.from('users')
       .select('first_name, last_name, role, signup_country, created_at')
       .gte('created_at', since).order('created_at', { ascending: false }), []),
@@ -353,6 +353,8 @@ async function buildDigest(supabase) {
     safe('open disputes', () => supabase.from('transactions')
       .select('id, idea_title, amount, disputed_at, dispute_reason').eq('status', 'disputed')
       .order('disputed_at', { ascending: true }), []),
+    safe('pending withdrawals', () => supabase.from('withdrawals')
+      .select('id, amount, method, requested_at').eq('status', 'requested'), []),
   ]);
 
   const newEscrows = txs.filter(t => t.created_at >= since);
@@ -361,7 +363,7 @@ async function buildDigest(supabase) {
   const zeroResult = chats.filter(c => c.result_count === 0).slice(0, 8);
   const pendingVerif = pendingVerifUsers.length;
   const verifDetails = pendingVerifUsers.map(u => ({ name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email, missing: verificationMissing(u) }));
-  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0) + openDisputes.length;
+  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0) + openDisputes.length + pendingWithdrawals.length;
   // latest run per bot
   const lastRuns = {};
   for (const r of botRuns) if (!lastRuns[r.bot]) lastRuns[r.bot] = r;
@@ -369,7 +371,7 @@ async function buildDigest(supabase) {
   return {
     newUsers, newIdeas, newRequests, newBusinesses, newEscrows, completed, feesEarned,
     chats, zeroResult, pendingVerif, pendingRoles, pendingPatents, pendingTotal,
-    totalUsers, liveIdeas, verifDetails, lastRuns, openDisputes
+    totalUsers, liveIdeas, verifDetails, lastRuns, openDisputes, pendingWithdrawals
   };
 }
 
@@ -390,6 +392,7 @@ function digestHtml(d) {
         <td style="padding:6px 0;border-bottom:1px solid #222;color:#8a8680;text-align:right;white-space:nowrap;">${right}</td></tr>`;
 
   const actions = [];
+  if (d.pendingWithdrawals.length) actions.push(`${d.pendingWithdrawals.length} withdrawal${d.pendingWithdrawals.length > 1 ? 's' : ''} to pay out (${money(d.pendingWithdrawals.reduce((s, w) => s + Number(w.amount), 0))} total)`);
   if (d.openDisputes.length) actions.push(`${d.openDisputes.length} disputed deal${d.openDisputes.length > 1 ? 's' : ''} waiting for your decision`);
   if (d.pendingVerif) actions.push(`${d.pendingVerif} user verification${d.pendingVerif > 1 ? 's' : ''} pending (not yet passing the automatic checks)`);
   if (d.pendingRoles) actions.push(`${d.pendingRoles} role switch request${d.pendingRoles > 1 ? 's' : ''} waiting`);

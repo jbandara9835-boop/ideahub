@@ -24,6 +24,7 @@ function emailShell(heading, bodyHtml, ctaText, ctaPath) {
 }
 
 module.exports = function makeEscrow(supabase, sendEmail) {
+  const payments = require('./payments')(supabase);
   async function notify(userId, { type, title, message, link }) {
     if (!userId) return;
     const { error } = await supabase.from('notifications').insert([{ user_id: userId, type, title, message, link: link || null }]);
@@ -53,6 +54,8 @@ module.exports = function makeEscrow(supabase, sendEmail) {
     if (!tx) return null; // already released or refunded
 
     await addEarnings(tx.seller_id, tx.amount);
+    await payments.record({ kind: 'release', userId: tx.seller_id, amount: tx.amount, transactionId: tx.id, meta: { release_type: releaseType } });
+    await payments.record({ kind: 'fee', userId: null, amount: tx.fee, transactionId: tx.id });
     await supabase.from('ideas').update({ status: 'sold' }).eq('id', tx.idea_id);
 
     const title = tx.idea_title || 'your idea';
@@ -83,6 +86,7 @@ module.exports = function makeEscrow(supabase, sendEmail) {
     const tx = rows && rows[0];
     if (!tx) return null;
 
+    await payments.record({ kind: 'refund', userId: tx.buyer_id, amount: tx.total, transactionId: tx.id, meta: { note: note || null } });
     await supabase.from('ideas').update({ status: 'live' }).eq('id', tx.idea_id).eq('status', 'escrow');
     const title = tx.idea_title || 'the idea';
     await notify(tx.buyer_id, { type: 'deal_refunded', title: '↩️ Purchase Refunded', message: `Your purchase of "${title}" was refunded.${note ? ' Note: ' + note : ''}`, link: '/transactions' });
@@ -101,7 +105,10 @@ module.exports = function makeEscrow(supabase, sendEmail) {
     if (error) throw error;
     const r = rows && rows[0];
     if (!r) return null;
-    if (r.selected_creator_id && r.escrow_amount) await addEarnings(r.selected_creator_id, r.escrow_amount);
+    if (r.selected_creator_id && r.escrow_amount) {
+      await addEarnings(r.selected_creator_id, r.escrow_amount);
+      await payments.record({ kind: 'release', userId: r.selected_creator_id, amount: r.escrow_amount, meta: { idea_request_id: r.id, release_type: 'auto' } });
+    }
     await notify(r.selected_creator_id, { type: 'completed', title: '💰 Payment Released!', message: `"${r.title}" was completed automatically 7 days after delivery. ${money(r.escrow_amount)} has been added to your earnings.`, link: `/request/${r.id}` });
     await notify(r.investor_id, { type: 'completed', title: '✅ Request Completed', message: `"${r.title}" was completed automatically 7 days after delivery.`, link: `/request/${r.id}` });
     return r;

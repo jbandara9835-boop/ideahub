@@ -113,6 +113,12 @@
   .modal-primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .modal-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1.25rem; color: var(--muted); cursor: pointer; }
   .modal-error { color: var(--error); font-size: 13px; margin-top: 0.6rem; display: none; }
+  .wd-label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin: 0.25rem 0 0.35rem; }
+  .wd-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; margin-bottom: 0.5rem; }
+  .wd-input:focus { border-color: var(--accent); }
+  .wd-method.on { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .wd-row { display: flex; justify-content: space-between; gap: 10px; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .wd-row:last-child { border-bottom: none; }
 
   .empty { text-align: center; padding: 4rem 1rem; color: var(--muted); }
   .empty-icon { font-size: 40px; margin-bottom: 1rem; }
@@ -189,9 +195,9 @@
     <div>
       <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Available to Withdraw</div>
       <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent);" id="walletBalance">—</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;">From completed sales</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="walletSub">From completed sales</div>
     </div>
-    <button onclick="alert('Withdrawal feature coming soon! We are integrating Stripe payouts.')" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Withdraw Funds</button>
+    <button onclick="openWithdraw()" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Withdraw Funds</button>
   </div>
 
   <div id="investorWalletHero" style="display:none;background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(96,165,250,0.05));border:1px solid rgba(96,165,250,0.3);border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
@@ -200,7 +206,11 @@
       <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#60a5fa;" id="investorTotalSpent">—</div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px;">Across all purchases</div>
     </div>
-    <button onclick="alert('Top-up feature coming soon! We are integrating Stripe payments.')" style="background:#60a5fa;color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Add Funds</button>
+  </div>
+
+  <div id="withdrawalsCard" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+    <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:0.75rem;">Withdrawals</div>
+    <div id="withdrawalsList"></div>
   </div>
 
   <!-- STATS -->
@@ -281,6 +291,33 @@
     </div>
   </div>
 </main>
+
+<div class="modal-overlay" id="withdrawModal">
+  <div class="modal">
+    <div class="modal-title">Withdraw funds</div>
+    <div class="modal-sub" id="wdSub">IdeaHub sends withdrawals manually, usually within 3 business days.</div>
+    <label class="wd-label">Amount (USD)</label>
+    <input class="wd-input" type="number" id="wdAmount" min="10" step="0.01" />
+    <label class="wd-label">Send to</label>
+    <div style="display:flex;gap:8px;margin-bottom:0.75rem;">
+      <button type="button" class="ghost-btn wd-method on" data-m="bank" onclick="setWdMethod('bank')">🏦 Bank transfer</button>
+      <button type="button" class="ghost-btn wd-method" data-m="paypal" onclick="setWdMethod('paypal')">PayPal</button>
+    </div>
+    <div id="wdBank">
+      <input class="wd-input" id="wdAccName" placeholder="Account holder name" />
+      <input class="wd-input" id="wdBankName" placeholder="Bank name" />
+      <input class="wd-input" id="wdAccNo" placeholder="Account number / IBAN" />
+      <div style="display:flex;gap:8px;"><input class="wd-input" id="wdBranch" placeholder="Branch" /><input class="wd-input" id="wdSwift" placeholder="SWIFT (international)" /></div>
+      <input class="wd-input" id="wdCountry" placeholder="Bank country" />
+    </div>
+    <div id="wdPaypal" style="display:none;"><input class="wd-input" id="wdPaypalEmail" placeholder="PayPal email" /></div>
+    <div class="modal-error" id="wdError"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" type="button" onclick="closeWithdraw()">Cancel</button>
+      <button class="modal-primary" type="button" id="wdSubmit" onclick="submitWithdraw()">Request withdrawal</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="actionModal">
   <div class="modal">
@@ -573,9 +610,94 @@
     }
   }
 
+  // ── Wallet balance & withdrawals ──
+  let walletData = null, myWithdrawals = [], wdMethod = 'bank';
+  async function loadWallet() {
+    if (isInvestor) return;
+    try {
+      const [wRes, lRes] = await Promise.all([
+        fetch(`${API_URL}/api/wallet`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      if (wRes.ok) {
+        walletData = await wRes.json();
+        document.getElementById('walletBalance').textContent = '$' + walletData.available.toLocaleString();
+        const bits = [];
+        if (walletData.pending) bits.push(`$${walletData.pending.toLocaleString()} being paid out`);
+        if (walletData.withdrawn) bits.push(`$${walletData.withdrawn.toLocaleString()} withdrawn so far`);
+        document.getElementById('walletSub').textContent = bits.length ? bits.join(' · ') : 'From completed sales';
+      }
+      myWithdrawals = lRes.ok ? await lRes.json() : [];
+      const card = document.getElementById('withdrawalsCard');
+      if (myWithdrawals.length) {
+        card.style.display = 'block';
+        const label = { requested: '⏳ Processing', paid: '✅ Sent', rejected: '❌ Not processed' };
+        document.getElementById('withdrawalsList').innerHTML = myWithdrawals.map(w => `
+          <div class="wd-row">
+            <div><strong>$${Number(w.amount).toLocaleString()}</strong> <span style="color:var(--muted);">· ${w.method === 'paypal' ? 'PayPal' : 'Bank transfer'} · ${formatDate(w.requested_at)}</span>
+              ${w.reference ? `<div class="tx-note">Ref: ${w.reference}</div>` : ''}${w.admin_note ? `<div class="tx-note">${w.admin_note}</div>` : ''}</div>
+            <div>${label[w.status] || w.status}</div>
+          </div>`).join('');
+      }
+    } catch (e) {}
+  }
+
+  function setWdMethod(m) {
+    wdMethod = m;
+    document.querySelectorAll('.wd-method').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+    document.getElementById('wdBank').style.display = m === 'bank' ? 'block' : 'none';
+    document.getElementById('wdPaypal').style.display = m === 'paypal' ? 'block' : 'none';
+  }
+  function openWithdraw() {
+    if (!walletData) { alert('Loading your balance, please try again in a moment.'); return; }
+    if (myWithdrawals.some(w => w.status === 'requested')) { alert('You already have a withdrawal being processed.'); return; }
+    if (walletData.available < 10) { alert('You need at least $10 available to withdraw.'); return; }
+    document.getElementById('wdAmount').value = walletData.available;
+    document.getElementById('wdSub').textContent = `Available: $${walletData.available.toLocaleString()}. IdeaHub sends withdrawals manually, usually within 3 business days.`;
+    // Prefill from the last withdrawal
+    const last = myWithdrawals.find(w => w.details);
+    if (last) {
+      setWdMethod(last.method);
+      const d = last.details || {};
+      document.getElementById('wdAccName').value = d.account_name || '';
+      document.getElementById('wdBankName').value = d.bank_name || '';
+      document.getElementById('wdAccNo').value = d.account_number || '';
+      document.getElementById('wdBranch').value = d.branch || '';
+      document.getElementById('wdSwift').value = d.swift || '';
+      document.getElementById('wdCountry').value = d.country || '';
+      document.getElementById('wdPaypalEmail').value = d.paypal_email || '';
+    }
+    document.getElementById('wdError').style.display = 'none';
+    document.getElementById('wdSubmit').disabled = false;
+    document.getElementById('withdrawModal').classList.add('show');
+  }
+  function closeWithdraw() { document.getElementById('withdrawModal').classList.remove('show'); }
+  document.getElementById('withdrawModal').addEventListener('click', e => { if (e.target.id === 'withdrawModal') closeWithdraw(); });
+
+  async function submitWithdraw() {
+    const err = document.getElementById('wdError');
+    const v = id => document.getElementById(id).value.trim();
+    const body = {
+      amount: Number(v('wdAmount')), method: wdMethod,
+      details: wdMethod === 'paypal' ? { paypal_email: v('wdPaypalEmail') }
+        : { account_name: v('wdAccName'), bank_name: v('wdBankName'), account_number: v('wdAccNo'), branch: v('wdBranch'), swift: v('wdSwift'), country: v('wdCountry') }
+    };
+    const btn = document.getElementById('wdSubmit');
+    btn.disabled = true; err.style.display = 'none';
+    try {
+      const res = await fetch(`${API_URL}/api/withdrawals`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { err.textContent = data.error || 'Something went wrong.'; err.style.display = 'block'; btn.disabled = false; return; }
+      closeWithdraw();
+      loadWallet();
+      alert('Withdrawal requested. You will be notified when it is sent.');
+    } catch (e) { err.textContent = 'Connection problem. Please try again.'; err.style.display = 'block'; btn.disabled = false; }
+  }
+
   initWalletUI();
 
   loadTransactions().then(() => {
+    loadWallet();
     const rateId = new URLSearchParams(window.location.search).get('rate');
     if (rateId) openRate(rateId);
   });

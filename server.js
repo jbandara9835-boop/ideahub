@@ -140,6 +140,7 @@ app.get('/robots.txt', (req, res) => {
   );
        require('./chatbot')(app, supabase); require('./bots')(app, supabase, sendEmail);
   const escrow = require('./escrow')(supabase, sendEmail);
+  const payments = require('./payments')(supabase);
   // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
   app.get('/discover', (req, res) => {
     res.sendFile(__dirname + '/public/discover.html');
@@ -784,6 +785,11 @@ app.get('/robots.txt', (req, res) => {
     if (!idea) return res.status(404).json({ error: 'Idea not found' });
     if (idea.creator_id === req.user.id) return res.status(400).json({ error: 'You cannot buy your own idea.' });
     if (idea.status !== 'live') return res.status(400).json({ error: 'This idea is not available for purchase.' });
+    if (!payments.purchasesOpen()) return res.status(403).json({ error: 'Online payments are launching soon. Message the creator to discuss this idea in the meantime.', code: 'payments_closed' });
+
+    // Reserve the idea first so two buyers can't purchase it at the same moment
+    const { data: claimed } = await supabase.from('ideas').update({ status: 'escrow' }).eq('id', idea.id).eq('status', 'live').select('id');
+    if (!claimed || !claimed.length) return res.status(400).json({ error: 'This idea was just purchased by someone else.' });
 
     const fee = Math.round(idea.price * 0.08);
     const { data: tx, error } = await supabase
@@ -796,8 +802,16 @@ app.get('/robots.txt', (req, res) => {
       }])
       .select().single();
 
-    if (error) return res.status(500).json({ error: error.message });
-    await supabase.from('ideas').update({ status: 'escrow' }).eq('id', idea.id);
+    if (error) {
+      await supabase.from('ideas').update({ status: 'live' }).eq('id', idea.id);
+      return res.status(500).json({ error: error.message });
+    }
+    const charge = await payments.chargePurchase(tx);
+    if (!charge.ok) {
+      await supabase.from('transactions').update({ status: 'failed' }).eq('id', tx.id);
+      await supabase.from('ideas').update({ status: 'live' }).eq('id', idea.id);
+      return res.status(402).json({ error: charge.error || 'Payment failed.' });
+    }
 
     // Email seller — escrow locked
     const { data: seller } = await supabase.from('users').select('email, first_name').eq('id', idea.creator_id).single();
@@ -816,6 +830,89 @@ app.get('/robots.txt', (req, res) => {
     }
 
     res.status(201).json(tx);
+  });
+
+  // ── PAYMENTS & WALLET ───────────────────────────────────────────────────────
+  app.get('/api/payments/config', (req, res) => {
+    res.json({ provider: payments.provider(), purchasesOpen: payments.purchasesOpen() });
+  });
+
+  app.get('/api/wallet', authMiddleware, async (req, res) => {
+    try { res.json(await payments.wallet(req.user.id)); }
+    catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.get('/api/withdrawals', authMiddleware, async (req, res) => {
+    const { data, error } = await supabase.from('withdrawals')
+      .select('id, amount, method, status, reference, admin_note, requested_at, processed_at, details')
+      .eq('user_id', req.user.id).order('requested_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  });
+
+  const MIN_WITHDRAWAL = 10;
+  app.post('/api/withdrawals', authMiddleware, async (req, res) => {
+    const amount = Math.round(Number(req.body?.amount) * 100) / 100;
+    const method = req.body?.method === 'paypal' ? 'paypal' : 'bank';
+    const d = req.body?.details || {};
+    const clean = v => String(v || '').trim().slice(0, 120);
+    const details = method === 'paypal'
+      ? { paypal_email: clean(d.paypal_email) }
+      : { account_name: clean(d.account_name), bank_name: clean(d.bank_name), account_number: clean(d.account_number), branch: clean(d.branch), swift: clean(d.swift), country: clean(d.country) };
+    if (!(amount >= MIN_WITHDRAWAL)) return res.status(400).json({ error: `The minimum withdrawal is $${MIN_WITHDRAWAL}.` });
+    if (method === 'paypal' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(details.paypal_email)) return res.status(400).json({ error: 'Please enter a valid PayPal email.' });
+    if (method === 'bank' && (!details.account_name || !details.bank_name || !details.account_number)) return res.status(400).json({ error: 'Please enter the account name, bank name and account number.' });
+
+    const { data: open } = await supabase.from('withdrawals').select('id').eq('user_id', req.user.id).eq('status', 'requested').limit(1);
+    if (open && open.length) return res.status(400).json({ error: 'You already have a withdrawal being processed.' });
+    const w = await payments.wallet(req.user.id);
+    if (amount > w.available) return res.status(400).json({ error: `You can withdraw up to $${w.available.toLocaleString()}.` });
+
+    const { data, error } = await supabase.from('withdrawals')
+      .insert([{ user_id: req.user.id, amount, method, details, status: 'requested' }]).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+
+    const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
+    for (const a of admins || []) await escrow.notify(a.id, { type: 'withdrawal_request', title: '💸 Withdrawal Request', message: `A seller requested $${amount.toLocaleString()} via ${method === 'paypal' ? 'PayPal' : 'bank transfer'}.`, link: '/admin' });
+    res.status(201).json(data);
+  });
+
+  app.get('/api/admin/withdrawals', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const { data, error } = await supabase.from('withdrawals')
+      .select('*, user:user_id(first_name, last_name, email, earnings)').order('requested_at', { ascending: false }).limit(200);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  });
+
+  // Admin marks a withdrawal as paid (after sending the money) or rejects it
+  app.put('/api/admin/withdrawals/:id', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const status = req.body?.status;
+    if (!['paid', 'rejected'].includes(status)) return res.status(400).json({ error: "status must be 'paid' or 'rejected'" });
+    const reference = String(req.body?.reference || '').trim().slice(0, 120);
+    const note = String(req.body?.note || '').trim().slice(0, 500);
+    if (status === 'paid' && !reference) return res.status(400).json({ error: 'Enter the transfer reference so the payout can be traced.' });
+
+    const { data: rows, error } = await supabase.from('withdrawals')
+      .update({ status, reference: reference || null, admin_note: note || null, processed_at: new Date().toISOString(), processed_by: req.user.id })
+      .eq('id', req.params.id).eq('status', 'requested').select();
+    if (error) return res.status(500).json({ error: error.message });
+    const w = rows && rows[0];
+    if (!w) return res.status(400).json({ error: 'This withdrawal was already processed.' });
+
+    if (status === 'paid') {
+      await payments.record({ kind: 'payout', userId: w.user_id, amount: w.amount, withdrawalId: w.id, ref: reference, meta: { method: w.method } });
+      await escrow.notify(w.user_id, { type: 'withdrawal_paid', title: '✅ Withdrawal Sent', message: `$${Number(w.amount).toLocaleString()} was sent to your ${w.method === 'paypal' ? 'PayPal' : 'bank account'}. Reference: ${reference}`, link: '/transactions' });
+      await escrow.emailUser(w.user_id, `Your withdrawal of $${Number(w.amount).toLocaleString()} was sent`, 'Withdrawal sent',
+        `We sent <strong style="color:#f5c842;">$${Number(w.amount).toLocaleString()}</strong> to your ${w.method === 'paypal' ? 'PayPal account' : 'bank account'}.<br>Reference: <strong>${escrow.esc(reference)}</strong>${note ? '<br><br>' + escrow.esc(note) : ''}<br><br>Bank transfers can take a few business days to appear.`,
+        'View wallet', '/transactions');
+    } else {
+      await escrow.notify(w.user_id, { type: 'withdrawal_rejected', title: '❌ Withdrawal Not Processed', message: `Your withdrawal of $${Number(w.amount).toLocaleString()} was not processed.${note ? ' Reason: ' + note : ''} The amount is back in your available balance.`, link: '/transactions' });
+    }
+    res.json(w);
   });
 
   // Buyer confirms delivery → release payment
