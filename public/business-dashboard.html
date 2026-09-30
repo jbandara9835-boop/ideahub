@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Business Dashboard — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
   :root {
@@ -20,7 +24,7 @@
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
-  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:18px; font-weight:700; }
   .nav { flex:1; display:flex; flex-direction:column; gap:2px; overflow-y:auto; scrollbar-width:none; }
   .nav::-webkit-scrollbar { display:none; }
   .nav-section-label { font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:1.5px; padding:0.75rem 0.75rem 0.25rem; }
@@ -36,9 +40,9 @@
 
   .main { margin-left:220px; padding:2rem 2.5rem; }
   .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; }
-  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; }
+  .page-title { font-family:'Cabinet Grotesk',sans-serif; font-size:24px; font-weight:700; }
   .page-sub { font-size:14px; color:var(--muted); margin-top:2px; }
-  .new-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; }
+  .new-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; }
   .new-btn:hover { opacity:0.9; }
 
   /* NOTIFICATION BELL */
@@ -49,7 +53,7 @@
   .notif-panel { position:absolute; top:60px; right:0; width:360px; max-height:440px; background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.5); z-index:300; display:none; flex-direction:column; overflow:hidden; }
   .notif-panel.show { display:flex; }
   .notif-panel-header { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.1rem; border-bottom:1px solid var(--border); }
-  .notif-panel-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; }
+  .notif-panel-title { font-family:'Cabinet Grotesk',sans-serif; font-size:14px; font-weight:700; }
   .notif-mark-all { background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer; }
   .notif-list { overflow-y:auto; flex:1; }
   .notif-item { display:flex; gap:10px; padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
@@ -65,19 +69,19 @@
   .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:2rem; }
   .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.5rem; }
   .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; }
-  .stat-value { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; }
+  .stat-value { font-family:'Cabinet Grotesk',sans-serif; font-size:26px; font-weight:700; }
   .stat-value.yellow { color:var(--accent); }
   .stat-value.green { color:var(--success); }
   .stat-value.blue { color:var(--blue); }
 
   .section-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
   .section-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); }
-  .section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; }
+  .section-title { font-family:'Cabinet Grotesk',sans-serif; font-size:15px; font-weight:600; }
 
   .listing-row { display:flex; align-items:center; gap:14px; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
   .listing-row:last-child { border-bottom:none; }
   .listing-row:hover { background:rgba(255,255,255,0.02); }
-  .listing-logo { width:40px; height:40px; border-radius:10px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'Syne',sans-serif; }
+  .listing-logo { width:40px; height:40px; border-radius:10px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'Cabinet Grotesk',sans-serif; }
   .listing-info { flex:1; min-width:0; }
   .listing-name { font-weight:600; font-size:14px; }
   .listing-meta { font-size:12px; color:var(--muted); margin-top:2px; }
@@ -122,7 +126,7 @@
   .topbar-logo { display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit; }
   .topbar-logo-icon { width:28px; height:28px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .topbar-logo-icon svg { width:16px; height:16px; fill:#0d0d0f; }
-  .topbar-logo-text { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .topbar-logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:16px; font-weight:700; }
   .topbar-search { display:flex; align-items:center; gap:8px; flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.5rem 1rem; margin:0 0.5rem; }
   .topbar-search input { background:none; border:none; color:var(--text); flex:1; font-size:13px; outline:none; }
   .topbar-search input::placeholder { color:var(--muted); }
@@ -233,6 +237,10 @@
       <a class="new-btn" href="/list-business">+ List Business</a>
     </div>
   </div>
+  <div style="margin-bottom:1.75rem;">
+    <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+    <div class="page-subtitle" style="color:var(--muted);font-size:14px;margin-top:4px;">Manage your business listings and applications</div>
+  </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">My Listings</div><div class="stat-value yellow" id="statListings">—</div></div>
     <div class="stat-card"><div class="stat-label">Total Applications</div><div class="stat-value blue" id="statApps">—</div></div>
@@ -252,7 +260,7 @@
 <!-- MEETUP MODAL -->
 <div id="meetupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:1rem;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:440px;">
-    <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:0.5rem;">📅 Schedule Meetup</h3>
+    <h3 style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:0.5rem;">📅 Schedule Meetup</h3>
     <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Set a meetup time with this investor</p>
     <div style="margin-bottom:1rem;"><label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Meetup Type</label>
       <select id="meetupType" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;appearance:none;">
@@ -264,7 +272,7 @@
       <input type="text" id="meetupLocation" placeholder="e.g. Zoom link or office address" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" /></div>
     <div style="display:flex;gap:10px;">
       <button onclick="closeMeetup()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:0.75rem 1.25rem;font-size:14px;color:var(--muted);cursor:pointer;">Cancel</button>
-      <button onclick="confirmMeetup()" style="flex:1;background:var(--accent);color:#0d0d0f;border:none;border-radius:8px;padding:0.75rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Schedule Meetup</button>
+      <button onclick="confirmMeetup()" style="flex:1;background:var(--accent);color:#0d0d0f;border:none;border-radius:8px;padding:0.75rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;cursor:pointer;">Schedule Meetup</button>
     </div>
   </div>
 </div>
@@ -332,7 +340,7 @@
       else document.getElementById('sidebarAvatarText').textContent = user.first_name?.[0]||'?';
     }
     document.getElementById('sidebarName').textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
-    document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.first_name||'there'} 👋`;
+    (document.getElementById('welcomeTitle')||{}).textContent = `Welcome back, ${user.first_name||'there'} 👋`;
   }
 
   function timeAgo(d) {
@@ -428,7 +436,10 @@
             </div>
           </div>`;
         }).join('');
-    } catch(err) { console.error(err); }
+     } catch(err) {
+      console.error(err);
+      ['listingsList','applicationsList'].forEach(id => { const el = document.getElementById(id); if (el && /Loading/.test(el.textContent)) el.innerHTML = '<div class="empty" style="font-size:13px">Couldn\'t load this right now. Please refresh the page.</div>'; });
+    }
   }
 
   // ── NOTIFICATIONS ──

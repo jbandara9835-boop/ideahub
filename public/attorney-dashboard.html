@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Attorney Dashboard — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -41,14 +45,14 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 
 /* TOPBAR */
 .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-.page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+.page-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 24px; font-weight: 800; }
 .page-title span { color: var(--blue); }
 
 /* VERIFICATION BANNER */
 .verify-banner { background: linear-gradient(135deg, rgba(96,165,250,0.12), rgba(167,139,250,0.08)); border: 1px solid rgba(96,165,250,0.25); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
-.verify-banner-text h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.verify-banner-text h3 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 .verify-banner-text p { font-size: 13px; color: var(--muted); }
-.btn-blue { background: var(--blue); color: #0d0d0f; border: none; border-radius: 8px; padding: 0.6rem 1.25rem; font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: opacity 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn-blue { background: var(--blue); color: #0d0d0f; border: none; border-radius: 8px; padding: 0.6rem 1.25rem; font-size: 13px; font-weight: 700; font-family: 'Cabinet Grotesk', sans-serif; cursor: pointer; transition: opacity 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .btn-blue:hover { opacity: 0.85; }
 
 /* NOTIFICATION BELL */
@@ -59,7 +63,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 .notif-panel { position:absolute; top:60px; right:0; width:360px; max-height:440px; background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.5); z-index:300; display:none; flex-direction:column; overflow:hidden; }
 .notif-panel.show { display:flex; }
 .notif-panel-header { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.1rem; border-bottom:1px solid var(--border); }
-.notif-panel-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; }
+.notif-panel-title { font-family:'Cabinet Grotesk',sans-serif; font-size:14px; font-weight:700; }
 .notif-mark-all { background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer; }
 .notif-list { overflow-y:auto; flex:1; }
 .notif-item { display:flex; gap:10px; padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
@@ -76,7 +80,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 2rem; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; }
 .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
-.stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.stat-value { font-family: 'Cabinet Grotesk', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
 .stat-value.blue { color: var(--blue); }
 .stat-value.green { color: var(--success); }
 .stat-value.yellow { color: var(--accent); }
@@ -98,7 +102,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 16px; transition: border-color 0.2s; }
 .card:hover { border-color: var(--border-hover); }
 .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem; gap: 10px; }
-.card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+.card-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 15px; font-weight: 700; }
 .card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; gap: 12px; flex-wrap: wrap; }
 .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
 .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
@@ -140,7 +144,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .modal-overlay.open { opacity: 1; pointer-events: all; }
 .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; padding: 2rem; }
-.modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
 .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
 .modal-close:hover { color: var(--text); }
 
@@ -189,7 +193,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 .topbar-logo { display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit; }
 .topbar-logo-icon { width:28px; height:28px; background:var(--blue); border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .topbar-logo-icon svg { width:16px; height:16px; fill:#0d0d0f; }
-.topbar-logo-text { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+.topbar-logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:16px; font-weight:700; }
 .topbar-search { display:flex; align-items:center; gap:8px; flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.5rem 1rem; margin:0 0.5rem; }
 .topbar-search input { background:none; border:none; color:var(--text); flex:1; font-size:13px; outline:none; }
 .topbar-search input::placeholder { color:var(--muted); }
@@ -255,7 +259,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
   <div class="logo">
     <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
       <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-      <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">IdeaHub</span>
+      <span style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;">IdeaHub</span>
     </a>
   </div>
   <nav class="nav" id="sidebarNav"></nav>
@@ -355,17 +359,17 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
   <div class="section active" id="section-overview">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
       <div>
-        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Recent Cases</div>
+        <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Recent Cases</div>
         <div id="recentCases"><div style="display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;padding:2rem 0;justify-content:center;"><div class="spin"></div> Loading...</div></div>
       </div>
       <div>
-        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Pending Hire Requests</div>
+        <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Pending Hire Requests</div>
         <div id="recentHire"><div style="display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;padding:2rem 0;justify-content:center;"><div class="spin"></div> Loading...</div></div>
       </div>
     </div>
 
     <div style="margin-top:1.5rem;">
-      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Case Types I Handle</div>
+      <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:15px;font-weight:700;margin-bottom:1rem;">Case Types I Handle</div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;text-align:center;flex:1;min-width:130px;">
           <div style="font-size:24px;margin-bottom:6px;">📋</div>
@@ -437,7 +441,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
   <!-- QUALIFICATIONS -->
   <div class="section" id="section-qualifications">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;margin-bottom:20px;">
-      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:0.5rem;">🎓 Attorney Qualifications</div>
+      <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:0.5rem;">🎓 Attorney Qualifications</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);">Submit your qualifications for admin verification. Once verified, you'll get a ✅ Verified Attorney badge and access to more features.</div>
 
       <div id="qualStatus"></div>
@@ -533,7 +537,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
     </div>
     <div class="msg error" id="caseError"></div>
     <div class="msg success" id="caseSuccess"></div>
-    <button class="btn-blue" onclick="createCase()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;">
+    <button class="btn-blue" onclick="createCase()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:15px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;">
       <div class="spinner" id="caseSpinner"></div>
       <span id="caseBtnText">Create Case</span>
     </button>
@@ -585,7 +589,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
     </div>
     <div class="msg error" id="uploadError"></div>
     <div class="msg success" id="uploadSuccess"></div>
-    <button class="btn-blue" onclick="uploadDocument()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">
+    <button class="btn-blue" onclick="uploadDocument()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;">
       <div class="spinner" id="uploadSpinner"></div>
       <span id="uploadBtnText">Upload Document</span>
     </button>
@@ -620,7 +624,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
     </div>
     <div class="msg error" id="verifError"></div>
     <div class="msg success" id="verifSuccess"></div>
-    <button class="btn-blue" onclick="submitVerifRequest()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">
+    <button class="btn-blue" onclick="submitVerifRequest()" style="width:100%;padding:0.85rem;margin-top:0.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;">
       <div class="spinner" id="verifSpinner"></div>
       <span id="verifBtnText">Submit Verification Request</span>
     </button>
@@ -1033,7 +1037,7 @@ async function openCaseDetail(caseId) {
         <div style="font-size:14px;font-weight:500;">${formatDate(c.deadline)}</div>
       </div>
     </div>
-    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:0.75rem;">Update Status</div>
+    <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:0.75rem;">Update Status</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;">
       <button class="btn-sm btn-ghost" onclick="updateCaseStatus(${c.id},'open')">Open</button>
       <button class="btn-sm btn-ghost" onclick="updateCaseStatus(${c.id},'in_progress')">In Progress</button>
@@ -1041,7 +1045,7 @@ async function openCaseDetail(caseId) {
       <button class="btn-sm btn-success" onclick="updateCaseStatus(${c.id},'completed')">✅ Complete</button>
       <button class="btn-sm btn-danger" onclick="updateCaseStatus(${c.id},'closed')">Close</button>
     </div>
-    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:0.75rem;">Case Notes</div>
+    <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:0.75rem;">Case Notes</div>
     <textarea id="caseNotes" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;resize:vertical;min-height:80px;line-height:1.6;" placeholder="Add notes about this case...">${c.notes||''}</textarea>
     <div style="display:flex;gap:8px;margin-top:0.75rem;flex-wrap:wrap;">
       <button class="btn-sm btn-primary" onclick="saveNotes(${c.id})">Save Notes</button>

@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Settings — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -38,7 +42,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
 .back-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; color: var(--muted); font-size: 13px; text-decoration: none; transition: all 0.2s; }
 .back-btn:hover { color: var(--text); }
-.page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+.page-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 24px; font-weight: 800; }
 
 .settings-layout { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
 
@@ -51,7 +55,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 
 /* SETTINGS CARDS */
 .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; margin-bottom: 20px; }
-.settings-card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px; }
+.settings-card-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px; }
 .settings-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
 
 .field { margin-bottom: 1rem; }
@@ -75,7 +79,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 .toggle.on .toggle-knob { transform: translateX(18px); }
 
 /* SAVE BTN */
-.save-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 10px; padding: 0.75rem 1.75rem; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+.save-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 10px; padding: 0.75rem 1.75rem; font-size: 14px; font-weight: 700; font-family: 'Cabinet Grotesk', sans-serif; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
 .save-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
@@ -128,7 +132,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <a href="/" style="text-decoration:none;color:inherit;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">IdeaHub</a>
+    <a href="/" style="text-decoration:none;color:inherit;font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;">IdeaHub</a>
   </div>
   <nav class="nav" id="sidebarNav"></nav>
   <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">

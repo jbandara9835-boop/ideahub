@@ -5,18 +5,23 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Request — IdeaHub</title>
-  <style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<style>
     * { margin:0; padding:0; box-sizing:border-box; }
     :root {
-      --bg:#0a0a0a; --surface:#141414; --surface2:#1c1c1c;
-      --border:#2a2a2a; --gold:#f5c518; --gold-dim:#c49a10;
+      --bg:#080809; --surface:#141414; --surface2:#1c1c1c;
+      --border:#2a2a2a; --gold:#f5c842; --gold-dim:#c49a10;
       --text:#f0f0f0; --muted:#888; --radius:12px;
       --green:#4ade80; --blue:#60a5fa; --purple:#a78bfa; --error:#ff6b6b;
     }
-    body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',system-ui,sans-serif; min-height:100vh; }
 
     /* NAV */
-    .topnav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; gap:16px; }
+    .topnav { position:sticky; top:0; z-index:100; background:rgba(8,8,9,0.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; gap:16px; }
     .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-size:1.15rem; font-weight:700; flex-shrink:0; }
     .nav-logo .logo-icon { width:32px; height:32px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
     .nav-right { display:flex; align-items:center; gap:8px; margin-left:auto; }
@@ -149,20 +154,8 @@
 </head>
 <body>
 
-<nav class="topnav">
-  <a href="/" class="nav-logo"><div class="logo-icon">💡</div><span>IdeaHub</span></a>
-  <a href="/idea-requests" class="back-link">← Back to Requests</a>
-  <div class="nav-right">
-    <div id="guestNav" style="display:flex;align-items:center;gap:8px;">
-      <a href="/login">Sign in</a>
-      <a href="/signup" class="btn-gold">Join free</a>
-    </div>
-    <div class="nav-user" id="userNav">
-      <a href="/dashboard" class="btn-outline" id="dashboardLink" style="padding:6px 14px;text-decoration:none;font-size:0.875rem;">My Dashboard</a>
-      <a href="/profile" class="nav-avatar" id="navAvatar"></a>
-    </div>
-  </div>
-</nav>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+<a href="/idea-requests" class="back-link" style="display:inline-block;margin:1.25rem 0 0 2rem;">← Back to Requests</a>
 
 <main class="main">
   <div id="pageContent">

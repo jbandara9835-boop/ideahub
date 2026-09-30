@@ -14,7 +14,11 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" id="twTitle" content="Idea — IdeaHub" />
 <meta name="twitter:description" id="twDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -30,7 +34,7 @@
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
-  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:18px; font-weight:700; }
   .nav { flex:1; display:flex; flex-direction:column; gap:2px; overflow-y:auto; scrollbar-width:none; }
   .nav::-webkit-scrollbar { display:none; }
   .nav-item { display:flex; align-items:center; padding:0.55rem 0.75rem; border-radius:8px; font-size:13.5px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
@@ -60,7 +64,7 @@
   /* LEFT */
   .idea-header { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; margin-bottom:20px; }
   .idea-icon-lg { font-size:48px; margin-bottom:1rem; display:block; }
-  .idea-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.5px; line-height:1.2; margin-bottom:1rem; }
+  .idea-title { font-family:'Cabinet Grotesk',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.5px; line-height:1.2; margin-bottom:1rem; }
   .idea-tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1.25rem; }
 
   .badge { display:inline-flex; align-items:center; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; }
@@ -74,7 +78,7 @@
   .idea-summary { font-size:16px; color:var(--muted); line-height:1.6; padding:1rem; background:var(--surface2); border-radius:10px; border-left:3px solid var(--accent); }
 
   .section-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
-  .section-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .section-title { font-family:'Cabinet Grotesk',sans-serif; font-size:16px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
 
   .idea-description { font-size:14px; line-height:1.8; color:var(--text); white-space:pre-wrap; }
 
@@ -97,7 +101,7 @@
 
   /* RIGHT STICKY */
   .buy-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; position:sticky; top:2rem; }
-  .price-big { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; color:var(--accent); letter-spacing:-1px; margin-bottom:4px; }
+  .price-big { font-family:'Cabinet Grotesk',sans-serif; font-size:36px; font-weight:800; color:var(--accent); letter-spacing:-1px; margin-bottom:4px; }
   .price-sub { font-size:13px; color:var(--muted); margin-bottom:1.5rem; }
 
   .fee-breakdown { background:var(--surface2); border-radius:10px; padding:1rem; margin-bottom:1.25rem; }
@@ -105,7 +109,7 @@
   .fee-row.total { border-top:1px solid var(--border); margin-top:6px; padding-top:10px; font-weight:600; font-size:14px; }
   .fee-row.total .fee-val { color:var(--accent); }
 
-  .buy-btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
+  .buy-btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
   .buy-btn:hover { opacity:0.9; transform:translateY(-1px); }
   .buy-btn:active { transform:scale(0.98); }
   .buy-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
@@ -121,13 +125,13 @@
   .modal-overlay.show { opacity:1; pointer-events:all; }
   .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2rem; width:100%; max-width:440px; animation:fadeUp 0.25s ease; }
   @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-  .modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:0.5rem; }
+  .modal-title { font-family:'Cabinet Grotesk',sans-serif; font-size:18px; font-weight:700; margin-bottom:0.5rem; }
   .modal-sub { font-size:13px; color:var(--muted); margin-bottom:1.25rem; }
   .modal textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; resize:none; min-height:120px; line-height:1.6; transition:border-color 0.2s; }
   .modal textarea:focus { border-color:var(--accent); }
   .modal textarea::placeholder { color:var(--muted); }
   .modal-actions { display:flex; gap:10px; margin-top:1rem; }
-  .modal-send { flex:1; background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.75rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; }
+  .modal-send { flex:1; background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.75rem; font-size:14px; font-weight:700; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; }
   .modal-cancel { background:none; border:1px solid var(--border); border-radius:8px; padding:0.75rem 1.25rem; font-size:14px; color:var(--muted); cursor:pointer; }
   .modal-cancel:hover { color:var(--text); }
 
@@ -175,7 +179,7 @@
   </div>
   <nav class="nav" id="sidebarNav"></nav>
   <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
+    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
   </div>
   <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
     <div class="avatar-sm" id="sidebarAvatar">?</div>

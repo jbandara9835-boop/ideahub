@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Creator Profile — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -19,7 +23,7 @@
   .topbar { display: flex; align-items: center; gap: 12px; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); }
   .back-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; color: var(--muted); font-size: 13px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
   .back-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
-  .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-left: auto; }
+  .logo-text { font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 700; margin-left: auto; }
 
   .main { max-width: 800px; margin: 0 auto; padding: 2rem; }
 
@@ -27,14 +31,14 @@
   .big-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--accent-dim); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: var(--accent); flex-shrink: 0; overflow: hidden; }
   .big-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
   .hero-info { flex: 1; }
-  .hero-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .hero-name { font-family: 'Cabinet Grotesk', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
   .hero-role { font-size: 13px; color: var(--accent); margin-bottom: 6px; }
   .hero-tagline { font-size: 14px; color: var(--muted); }
   .hero-meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
   .verified-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(110,231,183,0.1); border: 1px solid rgba(110,231,183,0.3); border-radius: 20px; padding: 3px 10px; font-size: 12px; color: var(--success); margin-top: 8px; }
 
   .section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
-  .section-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .section-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
 
   .spec-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .spec-tag { background: var(--accent-dim); border: 1px solid rgba(245,200,66,0.2); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--accent); }
@@ -44,7 +48,7 @@
   .idea-item:hover { border-color: var(--accent); }
   .idea-item-title { font-size: 14px; font-weight: 500; color: var(--text); }
   .idea-item-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .idea-price { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent); }
+  .idea-price { font-family: 'Cabinet Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent); }
 
   .empty { color: var(--muted); font-size: 14px; }
   .hero-rating { font-size: 14px; color: var(--accent); margin-top: 6px; letter-spacing: 1px; }
@@ -56,16 +60,13 @@
   .review-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .review-text { font-size: 14px; line-height: 1.6; margin-top: 6px; }
 
-  .msg-btn { width: 100%; background: var(--accent); color: #0d0d0f; border: none; border-radius: 10px; padding: 0.85rem; font-size: 15px; font-weight: 600; font-family: 'Syne', sans-serif; cursor: pointer; margin-top: 1rem; transition: opacity 0.2s; }
+  .msg-btn { width: 100%; background: var(--accent); color: #0d0d0f; border: none; border-radius: 10px; padding: 0.85rem; font-size: 15px; font-weight: 600; font-family: 'Cabinet Grotesk', sans-serif; cursor: pointer; margin-top: 1rem; transition: opacity 0.2s; }
   .msg-btn:hover { opacity: 0.9; }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <a class="back-btn" onclick="history.back()">← Back</a>
-  <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-</div>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
 
 <div class="main">
   <div id="profileContent">

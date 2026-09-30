@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Choose Your Role — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -38,13 +42,13 @@
   .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
   .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
   .logo-icon svg { width: 20px; height: 20px; fill: #0d0d0f; }
-  .logo-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+  .logo-text { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 700; }
   .user-greeting { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.75rem; }
   .user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
   .user-avatar-placeholder { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-dim); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--accent); }
   .user-name { font-size: 14px; font-weight: 600; }
   .user-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  h1 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
+  h1 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
   .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 1.75rem; }
   .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
   .role-card {
@@ -67,7 +71,7 @@
   .role-card[data-role="business_owner"].selected { border-color:#fb923c; background:rgba(251,146,60,0.1); }
   .error-msg { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); border-radius:8px; padding:0.6rem 0.9rem; font-size:13px; color:var(--error); margin-bottom:1rem; display:none; }
   .error-msg.show { display:block; }
-  .btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
   .btn:hover { opacity:0.9; transform:translateY(-1px); }
   .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
   .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.2); border-top-color:#0d0d0f; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }

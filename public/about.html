@@ -14,7 +14,11 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="About & Contact — IdeaHub" />
 <meta name="twitter:description" content="Learn about IdeaHub, the global marketplace connecting idea creators, investors, attorneys, and managers." />
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -180,25 +184,7 @@ footer a:hover { color: var(--text); }
 </head>
 <body>
 
-<nav>
-  <a class="nav-logo" href="/">
-    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="nav-logo-text">IdeaHub</span>
-  </a>
-  <div class="nav-links">
-    <a href="/browse">Marketplace</a>
-    <a href="/businesses">Business Expansion</a>
-    <a href="/idea-requests">Request an Idea</a>
-    <a href="/find-support">Support Services</a>
-    <a href="/how-it-works">How It Works</a>
-    <a href="/wall">IdeaWall</a>
-    <a href="/about" class="active">About</a>
-  </div>
-  <div class="nav-actions">
-    <a class="btn-ghost" href="/login">Sign In</a>
-    <a class="btn-primary" href="/signup">Join Free →</a>
-  </div>
-</nav>
+<header id="siteNav" data-overlay></header><script src="/site-nav.js"></script>
 
 <!-- HERO -->
 <section class="hero">

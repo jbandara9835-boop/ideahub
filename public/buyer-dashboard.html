@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Buyer Dashboard — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
   :root {
@@ -19,7 +23,7 @@
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
-  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:18px; font-weight:700; }
   .nav { flex:1; display:flex; flex-direction:column; gap:2px; overflow-y:auto; scrollbar-width:none; }
   .nav::-webkit-scrollbar { display:none; }
   .nav-section-label { font-size:10px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:1.5px; padding:0.75rem 0.75rem 0.25rem; }
@@ -35,9 +39,9 @@
 
   .main { margin-left:220px; padding:2rem 2.5rem; }
   .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; }
-  .page-title { font-family:'Syne',sans-serif; font-size:24px; font-weight:700; letter-spacing:-0.5px; }
+  .page-title { font-family:'Cabinet Grotesk',sans-serif; font-size:24px; font-weight:700; letter-spacing:-0.5px; }
   .page-subtitle { font-size:14px; color:var(--muted); margin-top:2px; }
-  .browse-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Syne',sans-serif; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; }
+  .browse-btn { background:var(--accent); color:#0d0d0f; border:none; border-radius:8px; padding:0.6rem 1.2rem; font-size:14px; font-weight:600; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; }
 
   /* NOTIFICATION BELL */
   .topbar-right { display:flex; align-items:center; gap:12px; }
@@ -47,7 +51,7 @@
   .notif-panel { position:absolute; top:60px; right:0; width:360px; max-height:440px; background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.5); z-index:300; display:none; flex-direction:column; overflow:hidden; }
   .notif-panel.show { display:flex; }
   .notif-panel-header { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.1rem; border-bottom:1px solid var(--border); }
-  .notif-panel-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; }
+  .notif-panel-title { font-family:'Cabinet Grotesk',sans-serif; font-size:14px; font-weight:700; }
   .notif-mark-all { background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer; }
   .notif-list { overflow-y:auto; flex:1; }
   .notif-item { display:flex; gap:10px; padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
@@ -64,7 +68,7 @@
   .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.5rem; transition:border-color 0.2s; }
   .stat-card:hover { border-color:var(--border-hover); }
   .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; }
-  .stat-value { font-family:'Syne',sans-serif; font-size:28px; font-weight:700; letter-spacing:-1px; }
+  .stat-value { font-family:'Cabinet Grotesk',sans-serif; font-size:28px; font-weight:700; letter-spacing:-1px; }
   .stat-value.accent { color:var(--accent); }
   .stat-value.blue { color:#60a5fa; }
   .stat-sub { font-size:12px; color:var(--muted); margin-top:4px; }
@@ -83,7 +87,7 @@
 
   .section-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
   .section-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid var(--border); }
-  .section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; }
+  .section-title { font-family:'Cabinet Grotesk',sans-serif; font-size:15px; font-weight:600; }
   .section-link { font-size:12px; color:var(--accent); text-decoration:none; }
 
   .purchase-row { display:flex; align-items:center; gap:12px; padding:1rem 1.5rem; border-bottom:1px solid var(--border); transition:background 0.15s; }
@@ -141,7 +145,7 @@
   .topbar-logo { display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit; }
   .topbar-logo-icon { width:28px; height:28px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .topbar-logo-icon svg { width:16px; height:16px; fill:#0d0d0f; }
-  .topbar-logo-text { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .topbar-logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:16px; font-weight:700; }
   .topbar-user { display:flex; align-items:center; gap:10px; cursor:pointer; padding:0.4rem 0.6rem; border-radius:10px; transition:background 0.15s; }
   .topbar-user:hover { background:rgba(255,255,255,0.05); }
   .topbar-user-avatar { width:36px; height:36px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--accent); flex-shrink:0; overflow:hidden; }
@@ -242,6 +246,10 @@
     </div>
   </div>
   <div id="roleBadge"></div>
+  <div style="margin-bottom:1.75rem;">
+    <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+    <div class="page-subtitle" style="color:var(--muted);font-size:14px;margin-top:4px;">Track your purchases, deals and messages</div>
+  </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">Ideas Purchased</div><div class="stat-value accent" id="statPurchased">—</div><div class="stat-sub">total bought</div></div>
     <div class="stat-card"><div class="stat-label">Total Spent</div><div class="stat-value" id="statSpent">—</div><div class="stat-sub">all time</div></div>
@@ -344,7 +352,7 @@
       const stars = user.profile_stars || 0;
       starEl.innerHTML = [1,2,3,4,5].map(i => `<span style="color:${i<=stars?'#f5c842':'#3a3a3a'}">★</span>`).join('');
     }
-    document.getElementById('welcomeTitle').textContent = `Welcome back, ${user.first_name||'there'} 👋`;
+    (document.getElementById('welcomeTitle')||{}).textContent = `Welcome back, ${user.first_name||'there'} 👋`;
     const role = user.role || 'investor';
     document.getElementById('roleBadge').innerHTML = `<div class="role-badge ${role}" style="margin-bottom:1.5rem;">${roleEmoji[role]||'👤'} ${roleMap[role]||role}</div>`;
   }

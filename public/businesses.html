@@ -14,17 +14,22 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Business Expansion — IdeaHub" />
     <meta name="twitter:description" content="Browse franchise, license, joint venture, and distribution opportunities from established businesses worldwide." />
-    <style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       :root {
-        --bg: #0a0a0a; --surface: #141414; --surface2: #1c1c1c;
-        --border: #2a2a2a; --gold: #f5c518; --gold-dim: #c49a10;
+        --bg: #080809; --surface: #141414; --surface2: #1c1c1c;
+        --border: #2a2a2a; --gold: #f5c842; --gold-dim: #c49a10;
         --text: #f0f0f0; --muted: #888; --radius: 12px;
       }
-      body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+      body { background: var(--bg); color: var(--text); font-family:'DM Sans',system-ui,sans-serif; min-height: 100vh; }
 
       /* NAV */
-      .topnav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; gap:24px; }
+      .topnav { position:sticky; top:0; z-index:100; background:rgba(8,8,9,0.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; gap:24px; }
       .nav-logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-size:1.15rem; font-weight:700; flex-shrink:0; }
       .nav-logo .logo-icon { width:32px; height:32px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
       .nav-links { display:flex; align-items:center; gap:8px; margin-left:auto; }
@@ -41,7 +46,7 @@
       .nav-list-btn.visible { display:inline-flex; align-items:center; gap:6px; }
 
       /* HERO */
-      .hero { background:linear-gradient(135deg,#0a0a0a 0%,#0d1008 50%,#0a0a0a 100%); border-bottom:1px solid var(--border); padding:28px 32px 20px; text-align:center; }
+      .hero { background:linear-gradient(135deg,#080809 0%,#0d1008 50%,#080809 100%); border-bottom:1px solid var(--border); padding:28px 32px 20px; text-align:center; }
       .hero h1 { font-size:2.2rem; font-weight:800; margin-bottom:8px; }
       .hero h1 span { color:var(--gold); }
       .hero p { color:var(--muted); font-size:1rem; margin-bottom:24px; }
@@ -165,30 +170,7 @@
   </head>
   <body>
 
-  <nav class="topnav">
-    <a href="/" class="nav-logo">
-      <div class="logo-icon">💡</div>
-      <span>IdeaHub</span>
-    </a>
-    <div class="nav-links" style="display:flex;align-items:center;gap:1.5rem;margin:0 auto;">
-      <a href="/browse" style="color:#888;font-size:14px;text-decoration:none;">Marketplace</a>
-      <a href="/businesses" style="color:#888;font-size:14px;text-decoration:none;">Business Expansion</a>
-      <a href="/idea-requests" style="color:#888;font-size:14px;text-decoration:none;">Request an Idea</a>
-      <a href="/find-support" style="color:#888;font-size:14px;text-decoration:none;">Support Services</a>
-      <a href="/how-it-works" style="color:#888;font-size:14px;text-decoration:none;">How It Works</a>
-      <a href="/wall" style="color:#888;font-size:14px;text-decoration:none;">IdeaWall</a>
-      <a href="/about" style="color:#888;font-size:14px;text-decoration:none;">About</a>
-    </div>
-    <div class="nav-links" id="guestNav">
-      <a href="/login">Sign in</a>
-      <a href="/signup" class="btn-join">Join free</a>
-    </div>
-    <div class="nav-user" id="userNav">
-      <a href="/list-business" class="nav-list-btn" id="listBizBtn">+ List Business</a>
-      <a href="/dashboard" class="nav-dashboard-btn" id="dashboardLink">My Dashboard</a>
-      <a href="/profile" class="nav-avatar" id="navAvatar"></a>
-    </div>
-  </nav>
+<header id="siteNav" data-extra="list-business"></header><script src="/site-nav.js"></script>
 
   <section class="hero">
     <h1>Business <span>Expansion</span></h1>

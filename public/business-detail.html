@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Business — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -20,7 +24,7 @@
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
-  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:18px; font-weight:700; }
   .nav { flex:1; display:flex; flex-direction:column; gap:4px; }
   .nav-item { display:flex; align-items:center; gap:10px; padding:0.6rem 0.75rem; border-radius:8px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
   .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
@@ -43,11 +47,11 @@
   .detail-grid { display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
 
   .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
-  .card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  .card-title { font-family:'Cabinet Grotesk',sans-serif; font-size:15px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
 
   .biz-header { display:flex; align-items:flex-start; gap:16px; margin-bottom:1.25rem; }
-  .biz-logo-lg { width:64px; height:64px; border-radius:14px; background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'Syne',sans-serif; }
-  .biz-name-lg { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px; margin-bottom:4px; }
+  .biz-logo-lg { width:64px; height:64px; border-radius:14px; background:var(--accent-dim); border:1px solid rgba(245,200,66,0.3); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'Cabinet Grotesk',sans-serif; }
+  .biz-name-lg { font-family:'Cabinet Grotesk',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px; margin-bottom:4px; }
   .biz-tagline-lg { font-size:14px; color:var(--muted); margin-bottom:0.75rem; }
 
   .type-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; margin-right:6px; margin-bottom:6px; }
@@ -75,7 +79,7 @@
   input:focus, textarea:focus, select:focus { border-color:var(--accent); background:var(--accent-dim); }
   input::placeholder, textarea::placeholder { color:var(--muted); }
 
-  .btn-primary { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.85rem; font-size:14px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity 0.2s; }
+  .btn-primary { background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.85rem; font-size:14px; font-weight:700; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity 0.2s; }
   .btn-primary:hover { opacity:0.9; }
   .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
 
@@ -135,7 +139,7 @@
     <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
   </nav>
   <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
+    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
   </div>
   <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
     <div class="avatar-sm" id="sidebarAvatar">?</div>
@@ -359,7 +363,7 @@
             <!-- INVESTMENT CARD -->
             <div class="card">
               <div class="card-title">💰 Investment Range</div>
-              <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;">
+              <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;">
                 ${b.investment_min&&b.investment_max ? `$${b.investment_min.toLocaleString()} — $${b.investment_max.toLocaleString()}` : b.investment_min ? `From $${b.investment_min.toLocaleString()}` : b.investment_max ? `Up to $${b.investment_max.toLocaleString()}` : 'Negotiable'}
               </div>
               <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Required investment range</div>

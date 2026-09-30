@@ -5,32 +5,36 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Cookie Policy — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --bg: #0d0d0f; --surface: #16161a; --border: rgba(255,255,255,0.08); --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12); --text: #f0ede8; --muted: #6e6b65; }
 body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
 nav { position: sticky; top: 0; z-index: 100; background: rgba(13,13,15,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
 .nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .nav-logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
 .nav-links { display: flex; gap: 1.5rem; }
 .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
 .nav-links a:hover, .nav-links a.active { color: var(--accent); }
 .hero { background: linear-gradient(135deg, #0d0d0f, #16161a); border-bottom: 1px solid var(--border); padding: 4rem 2rem 3rem; text-align: center; }
-.hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 700; margin-bottom: 0.75rem; }
+.hero h1 { font-family: 'Cabinet Grotesk', sans-serif; font-size: clamp(28px, 5vw, 48px); font-weight: 700; margin-bottom: 0.75rem; }
 .hero h1 span { color: var(--accent); }
 .hero p { color: var(--muted); font-size: 15px; }
 .container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
 .section { margin-bottom: 3rem; scroll-margin-top: 80px; }
-.section h2 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); color: var(--accent); }
-.section h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.section h2 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); color: var(--accent); }
+.section h3 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 16px; font-weight: 600; margin: 1.5rem 0 0.5rem; }
 .section p { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 1rem; }
 .section ul li { font-size: 15px; line-height: 1.8; color: rgba(240,237,232,0.85); margin-bottom: 0.35rem; }
 .section ul { padding-left: 1.5rem; margin-bottom: 1rem; }
 .highlight { background: var(--accent-dim); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0; font-size: 14px; line-height: 1.7; }
 .cookie-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
-.cookie-card h4 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
+.cookie-card h4 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
 .cookie-card p { font-size: 13px; color: rgba(240,237,232,0.7); line-height: 1.6; margin: 0; }
 .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 .badge-required { background: rgba(110,231,183,0.15); color: #6ee7b7; }
@@ -41,19 +45,7 @@ footer a { color: var(--accent); text-decoration: none; }
 </style>
 </head>
 <body>
-<nav>
-  <a class="nav-logo" href="/">
-    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    IdeaHub
-  </a>
-  <div class="nav-links">
-    <a href="/terms">Terms</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/cookies" class="active">Cookies</a>
-    <a href="/refunds">Refunds</a>
-    <a href="/">Home</a>
-  </div>
-</nav>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
 
 <div class="hero">
   <h1>Cookie <span>Policy</span></h1>

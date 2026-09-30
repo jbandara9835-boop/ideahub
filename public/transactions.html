@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Wallet — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,7 +33,7 @@
   .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2.5rem; padding: 0 0.5rem; }
   .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
   .logo-icon svg { width: 18px; height: 18px; fill: #0d0d0f; }
-  .logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .logo-text { font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
   .nav { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; scrollbar-width: none; }
   .nav::-webkit-scrollbar { display: none; }
   .nav-item { display: flex; align-items: center; padding: 0.55rem 0.75rem; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: none; width: 100%; text-align: left; }
@@ -49,13 +53,13 @@
   .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
   .back-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; color: var(--muted); font-size: 13px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
   .back-btn:hover { color: var(--text); border-color: var(--border-hover); }
-  .page-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
 
   /* STATS */
   .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 2rem; }
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; }
   .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
-  .stat-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -1px; }
+  .stat-value { font-family: 'Cabinet Grotesk', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -1px; }
   .stat-value.green { color: var(--success); }
   .stat-value.yellow { color: var(--accent); }
   .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -88,7 +92,7 @@
   .amount-sale { color: var(--success); font-weight: 600; }
   .amount-purchase { color: var(--error); font-weight: 600; }
 
-  .confirm-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600; font-family: 'Syne', sans-serif; cursor: pointer; transition: opacity 0.2s; }
+  .confirm-btn { background: var(--accent); color: #0d0d0f; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600; font-family: 'Cabinet Grotesk', sans-serif; cursor: pointer; transition: opacity 0.2s; }
   .confirm-btn:hover { opacity: 0.85; }
   .badge-disputed { background: rgba(255,107,107,0.15); color: var(--error); }
   .badge-refunded { background: rgba(255,255,255,0.08); color: var(--muted); }
@@ -101,7 +105,7 @@
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: none; align-items: center; justify-content: center; padding: 1rem; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.75rem; width: 100%; max-width: 440px; }
-  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 0.35rem; }
+  .modal-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 0.35rem; }
   .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1rem; line-height: 1.5; }
   .modal textarea { width: 100%; min-height: 110px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; resize: vertical; }
   .modal textarea:focus { border-color: var(--accent); }
@@ -109,7 +113,7 @@
   .star-pick button { background: none; border: none; font-size: 30px; color: #3a3a3a; cursor: pointer; padding: 0; line-height: 1; }
   .star-pick button.on { color: var(--accent); }
   .modal-actions { display: flex; gap: 10px; margin-top: 1rem; }
-  .modal-primary { flex: 1; background: var(--accent); color: #0d0d0f; border: none; border-radius: 8px; padding: 0.75rem; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; }
+  .modal-primary { flex: 1; background: var(--accent); color: #0d0d0f; border: none; border-radius: 8px; padding: 0.75rem; font-weight: 700; font-family: 'Cabinet Grotesk', sans-serif; cursor: pointer; }
   .modal-primary:disabled { opacity: 0.5; cursor: not-allowed; }
   .modal-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1.25rem; color: var(--muted); cursor: pointer; }
   .modal-error { color: var(--error); font-size: 13px; margin-top: 0.6rem; display: none; }
@@ -164,7 +168,7 @@
   </div>
   <nav class="nav" id="sidebarNav"></nav>
   <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Syne',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
+    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
   </div>
   <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
     <div class="avatar-sm" id="sidebarAvatar">?</div>
@@ -194,22 +198,22 @@
   <div id="creatorWalletHero" style="background:linear-gradient(135deg,rgba(245,200,66,0.15),rgba(245,200,66,0.05));border:1px solid rgba(245,200,66,0.3);border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
     <div>
       <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Available to Withdraw</div>
-      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent);" id="walletBalance">—</div>
+      <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:36px;font-weight:800;color:var(--accent);" id="walletBalance">—</div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="walletSub">From completed sales</div>
     </div>
-    <button onclick="openWithdraw()" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Withdraw Funds</button>
+    <button onclick="openWithdraw()" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Withdraw Funds</button>
   </div>
 
   <div id="investorWalletHero" style="display:none;background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(96,165,250,0.05));border:1px solid rgba(96,165,250,0.3);border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
     <div>
       <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Total Invested</div>
-      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#60a5fa;" id="investorTotalSpent">—</div>
+      <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:36px;font-weight:800;color:#60a5fa;" id="investorTotalSpent">—</div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px;">Across all purchases</div>
     </div>
   </div>
 
   <div id="withdrawalsCard" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
-    <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:0.75rem;">Withdrawals</div>
+    <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:15px;font-weight:700;margin-bottom:0.75rem;">Withdrawals</div>
     <div id="withdrawalsList"></div>
   </div>
 

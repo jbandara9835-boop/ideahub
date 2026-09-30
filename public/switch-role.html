@@ -5,7 +5,11 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Switch Role — IdeaHub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -26,9 +30,9 @@
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2rem; text-decoration:none; }
   .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
   .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
-  .logo-text { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--text); }
+  .logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:18px; font-weight:700; color:var(--text); }
 
-  h1 { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; margin-bottom:6px; }
+  h1 { font-family:'Cabinet Grotesk',sans-serif; font-size:26px; font-weight:800; margin-bottom:6px; }
   .subtitle { font-size:14px; color:var(--muted); margin-bottom:2rem; }
 
   .current-role-bar { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem 1.25rem; margin-bottom:2rem; display:flex; align-items:center; gap:12px; }
@@ -54,7 +58,7 @@
 
   /* FORM */
   .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:1.25rem; }
-  .card-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .card-title { font-family:'Cabinet Grotesk',sans-serif; font-size:15px; font-weight:700; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
   .field { margin-bottom:1rem; }
   .field label { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.4px; }
   .field input, .field textarea, .field select { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem 1rem; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
@@ -79,7 +83,7 @@
   .success-msg { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.3); border-radius:8px; padding:0.9rem; font-size:14px; color:var(--success); margin-bottom:1rem; text-align:center; display:none; }
   .success-msg.show { display:block; }
 
-  .btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; margin-top:0.25rem; transition:opacity 0.2s,transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; margin-top:0.25rem; transition:opacity 0.2s,transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
   .btn:hover { opacity:0.9; transform:translateY(-1px); }
   .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
   .btn.orange { background:var(--orange); color:#fff; }
