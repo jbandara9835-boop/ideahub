@@ -350,7 +350,44 @@
     .main { margin-left: 60px; padding: 1.5rem; }
     .form-grid { grid-template-columns: 1fr; }
     .preview-card { position: static; }
+    .orig-top { align-items: flex-start; }
   }
+
+  /* ── ORIGINALITY CHECK ── */
+  .orig-box { margin-top: 1.25rem; border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.2rem; background: rgba(255,255,255,0.02); }
+  .orig-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .orig-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .orig-ai { font-size: 10px; font-weight: 700; letter-spacing: .5px; color: var(--accent); background: var(--accent-dim); border-radius: 999px; padding: 2px 8px; }
+  .orig-intro { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .orig-btn { background: none; border: 1px solid var(--accent); color: var(--accent); border-radius: 8px; padding: 0.55rem 1rem; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: background .2s; }
+  .orig-btn:hover { background: var(--accent-dim); }
+  .orig-btn:disabled { opacity: .6; cursor: wait; }
+  .orig-result { margin-top: 1rem; display: none; }
+  .orig-result.show { display: block; }
+  .orig-top { display: flex; gap: 16px; align-items: center; }
+  .orig-ring { --p: 0; --c: var(--accent); width: 72px; height: 72px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: conic-gradient(var(--c) calc(var(--p) * 1%), rgba(255,255,255,0.07) 0); }
+  .orig-ring span { width: 58px; height: 58px; border-radius: 50%; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 20px; line-height: 1; }
+  .orig-ring small { font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 9px; color: var(--muted); margin-top: 3px; }
+  .orig-verdict { font-weight: 700; font-size: 15px; }
+  .orig-summary { font-size: 13px; color: #b9b4aa; margin-top: 4px; line-height: 1.5; }
+  .orig-sec { margin-top: 1rem; }
+  .orig-sec-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin-bottom: 6px; }
+  .orig-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.03); margin-bottom: 6px; font-size: 13px; line-height: 1.45; }
+  .orig-item a { color: var(--text); font-weight: 600; text-decoration: none; }
+  .orig-item a:hover { color: var(--accent); }
+  .orig-item .orig-note { color: var(--muted); font-size: 12.5px; }
+  .orig-pct { margin-left: auto; flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .orig-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .orig-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
+  .orig-patent { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 600; }
+  .orig-patent:hover { text-decoration: underline; }
+  .orig-tips { margin: 0; padding-left: 1.1rem; font-size: 13px; color: #b9b4aa; line-height: 1.6; }
+  .orig-foot { font-size: 11.5px; color: var(--muted); margin-top: 1rem; line-height: 1.5; }
+  .orig-stale { display: none; font-size: 12.5px; color: var(--accent); margin-top: 10px; }
+  .orig-stale.show { display: block; }
+  .orig-err { font-size: 13px; color: var(--error); margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -569,6 +606,16 @@
               ⏳ After submission, admin will verify your documents within 1-2 business days. Your idea will show <strong style="color:var(--accent);">✅ Verified Patent</strong> once approved.
             </div>
           </div>
+        </div>
+
+        <div class="orig-box" id="origBox">
+          <div class="orig-head">
+            <div class="orig-title">🔍 Originality check <span class="orig-ai">AI</span></div>
+            <button type="button" class="orig-btn" id="origBtn" onclick="runOriginality()">Check originality</button>
+          </div>
+          <div class="orig-intro" id="origIntro">See whether similar ideas, products or patents already exist before you list. Your idea is also checked automatically when you submit.</div>
+          <div class="orig-stale" id="origStale">✏️ You've changed your idea since this check. Check again to update it.</div>
+          <div class="orig-result" id="origResult"></div>
         </div>
 
         <div class="error-msg" id="errorMsg"></div>
@@ -805,6 +852,7 @@
       }
 
       updatePreview();
+      if (idea.originality) { origHash = origKey(origFields()); renderOriginality(idea.originality); }
     })
     .catch(e => console.error('Edit load failed:', e));
 }
@@ -969,6 +1017,96 @@
       document.getElementById('patentNumberField').style.display = patentOn ? 'block' : 'none';
     }
   }
+
+
+  // ── ORIGINALITY CHECK ──────────────────────────────────────────────────────
+  let origHash = null;
+  const ORIG_VERDICT = {
+    original:         { label: 'Looks original', color: '#6ee7b7' },
+    distinctive:      { label: 'Distinctive', color: '#a3e635' },
+    similar_exists:   { label: 'Similar ideas exist', color: '#f5c842' },
+    likely_duplicate: { label: 'Very close to existing ideas', color: '#ff6b6b' }
+  };
+  function origEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  function origFields() {
+    return {
+      title: document.getElementById('title').value.trim(),
+      summary: document.getElementById('summary').value.trim(),
+      desc: document.getElementById('desc').value.trim(),
+      industry: document.getElementById('industry').value,
+      ideaType: document.getElementById('ideaType').value
+    };
+  }
+  function origKey(f) { return [f.title, f.summary, f.desc, f.industry, f.ideaType].join('|').toLowerCase().replace(/\s+/g, ' '); }
+
+  async function runOriginality() {
+    const f = origFields();
+    const box = document.getElementById('origResult');
+    if (!f.title || !f.summary) {
+      box.innerHTML = '<div class="orig-err">Add a title and a short summary first.</div>'; box.classList.add('show'); return;
+    }
+    const btn = document.getElementById('origBtn');
+    btn.disabled = true; btn.textContent = 'Checking…';
+    box.innerHTML = '<div class="orig-intro">Comparing with listings on IdeaHub and known products… this takes a few seconds.</div>'; box.classList.add('show');
+    try {
+      const res = await fetch(`${API_URL}/api/originality/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('ih_token')}` },
+        body: JSON.stringify({ ...f, ideaId: editId || null })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Check failed');
+      origHash = origKey(f);
+      renderOriginality(data);
+    } catch (e) {
+      box.innerHTML = `<div class="orig-err">${origEsc(e.message || 'Something went wrong. Please try again.')}</div>`;
+    } finally {
+      btn.disabled = false; btn.textContent = 'Check again';
+    }
+  }
+
+  function renderOriginality(r) {
+    if (!r) return;
+    const v = ORIG_VERDICT[r.verdict] || ORIG_VERDICT.similar_exists;
+    const box = document.getElementById('origResult');
+    let h = `<div class="orig-top">
+        <div class="orig-ring" style="--p:${Number(r.score) || 0};--c:${v.color}"><span>${Number(r.score) || 0}<small>/ 100</small></span></div>
+        <div><div class="orig-verdict" style="color:${v.color}">${v.label}</div><div class="orig-summary">${origEsc(r.summary)}</div></div>
+      </div>`;
+    const sim = r.similar || [];
+    if (sim.length || r.private_similar) {
+      h += `<div class="orig-sec"><div class="orig-sec-title">Similar listings on IdeaHub</div>`;
+      h += sim.map(s => `<div class="orig-item"><div><a href="/idea?id=${encodeURIComponent(s.id)}" target="_blank" rel="noopener">${origEsc(s.title)}</a><div class="orig-note">${origEsc(s.reason)}</div></div><span class="orig-pct">${Number(s.similarity) || 0}% alike</span></div>`).join('');
+      if (r.private_similar) h += `<div class="orig-item"><div class="orig-note">🔒 ${r.private_similar} similar private listing${r.private_similar > 1 ? 's' : ''} (details hidden)</div></div>`;
+      h += `</div>`;
+    }
+    if ((r.known_products || []).length) {
+      h += `<div class="orig-sec"><div class="orig-sec-title">Existing products that may overlap</div>` +
+        r.known_products.map(p => `<div class="orig-item"><div><strong>${origEsc(p.name)}</strong><div class="orig-note">${origEsc(p.note)}</div></div></div>`).join('') + `</div>`;
+    }
+    if ((r.patent_keywords || []).length) {
+      h += `<div class="orig-sec"><div class="orig-sec-title">Patent search</div><div class="orig-chips">` +
+        r.patent_keywords.map(k => `<span class="orig-chip">${origEsc(k)}</span>`).join('') + `</div>` +
+        (r.patent_url && /^https:\/\/patents\.google\.com\//.test(r.patent_url) ? `<a class="orig-patent" href="${origEsc(r.patent_url)}" target="_blank" rel="noopener">Search Google Patents ↗</a>` : '') + `</div>`;
+    }
+    if ((r.suggestions || []).length) {
+      h += `<div class="orig-sec"><div class="orig-sec-title">How to stand out</div><ul class="orig-tips">` +
+        r.suggestions.map(s => `<li>${origEsc(s)}</li>`).join('') + `</ul></div>`;
+    }
+    h += `<div class="orig-foot">AI estimate${r.checked_at ? ' · checked ' + new Date(r.checked_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : ''}. It can miss things and isn't legal advice — for a patent, search the patent databases or ask a patent attorney.</div>`;
+    box.innerHTML = h; box.classList.add('show');
+    document.getElementById('origIntro').style.display = 'none';
+    document.getElementById('origStale').classList.remove('show');
+    document.getElementById('origBtn').textContent = 'Check again';
+  }
+
+  ['title', 'summary', 'desc', 'industry', 'ideaType'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) ['input', 'change'].forEach(evt => el.addEventListener(evt, () => {
+      if (origHash !== null && origKey(origFields()) !== origHash) document.getElementById('origStale').classList.add('show');
+      else document.getElementById('origStale').classList.remove('show');
+    }));
+  });
 
   async function handleSubmit() {
     const title = document.getElementById('title').value.trim();

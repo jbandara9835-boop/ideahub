@@ -326,7 +326,7 @@ async function buildDigest(supabase) {
       .select('first_name, last_name, role, signup_country, created_at')
       .gte('created_at', since).order('created_at', { ascending: false }), []),
     safe('new ideas', () => supabase.from('ideas')
-      .select('id, title, price, industry, status, creator_name, created_at')
+      .select('id, title, price, industry, status, creator_name, created_at, originality_score')
       .gte('created_at', since).order('created_at', { ascending: false }), []),
     safe('new requests', () => supabase.from('idea_requests')
       .select('id, title, industry, budget_max, created_at').gte('created_at', since), []),
@@ -396,6 +396,8 @@ function digestHtml(d) {
   if (d.openDisputes.length) actions.push(`${d.openDisputes.length} disputed deal${d.openDisputes.length > 1 ? 's' : ''} waiting for your decision`);
   if (d.pendingVerif) actions.push(`${d.pendingVerif} user verification${d.pendingVerif > 1 ? 's' : ''} pending (not yet passing the automatic checks)`);
   if (d.pendingRoles) actions.push(`${d.pendingRoles} role switch request${d.pendingRoles > 1 ? 's' : ''} waiting`);
+  const lowOrig = d.newIdeas.filter(i => i.originality_score != null && i.originality_score < 40);
+  if (lowOrig.length) actions.push(`${lowOrig.length} new idea${lowOrig.length > 1 ? 's' : ''} scored low on originality (under 40) — see Admin → Ideas`);
   if (d.pendingPatents) actions.push(`${d.pendingPatents} patent idea${d.pendingPatents > 1 ? 's' : ''} under review`);
 
   const botNames = { escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
@@ -429,7 +431,7 @@ function digestHtml(d) {
                esc(u.signup_country || '')), 'No new signups.'))}
 
     ${section(`New ideas (${d.newIdeas.length})`, list(d.newIdeas.slice(0, 10),
-      i => row(`<a href="${SITE}/idea?id=${i.id}" style="color:#f0ede8;">${esc(i.title)}</a> <span style="color:#8a8680;">· ${esc(i.creator_name || '')}${i.status !== 'live' ? ' · ' + esc(i.status) : ''}</span>`,
+      i => row(`<a href="${SITE}/idea?id=${i.id}" style="color:#f0ede8;">${esc(i.title)}</a> <span style="color:#8a8680;">· ${esc(i.creator_name || '')}${i.status !== 'live' ? ' · ' + esc(i.status) : ''}${i.originality_score != null ? ` · <span style="color:${i.originality_score >= 70 ? '#6ee7b7' : i.originality_score >= 40 ? '#f5c842' : '#ff6b6b'};">originality ${Number(i.originality_score)}</span>` : ''}</span>`,
                money(i.price)), 'No new ideas.'))}
 
     ${(d.newRequests.length || d.newBusinesses.length) ? section('Other new listings', list([

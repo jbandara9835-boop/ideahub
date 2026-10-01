@@ -141,6 +141,7 @@ app.get('/robots.txt', (req, res) => {
        require('./chatbot')(app, supabase); require('./bots')(app, supabase, sendEmail);
   const escrow = require('./escrow')(supabase, sendEmail);
   const payments = require('./payments')(supabase);
+  const originality = require('./originality')(supabase);
   // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
   app.get('/discover', (req, res) => {
     res.sendFile(__dirname + '/public/discover.html');
@@ -510,7 +511,7 @@ app.get('/robots.txt', (req, res) => {
   // ── IDEA PRIVACY ─────────────────────────────────────────────────────────────
   // Full description + patent/ID documents are never sent to the public.
   // Owner and admin see everything; buyers (escrow/completed) also see the description.
-  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url'];
+  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url', 'originality', 'originality_score', 'originality_checked_at'];
   async function viewerContext(req) {
     const t = req.headers.authorization?.split(' ')[1];
     if (!t) return { id: null, role: null, verified: false };
@@ -519,6 +520,10 @@ app.get('/robots.txt', (req, res) => {
       const { data } = await supabase.from('users').select('id, role, verification_status').eq('id', decoded.id).single();
       return { id: data?.id || null, role: data?.role || null, verified: data?.verification_status === 'verified' };
     } catch { return { id: null, role: null, verified: false }; }
+  }
+  // The creator's own view: originality report without other people's private listings
+  function ownerIdea(idea) {
+    return idea && idea.originality ? { ...idea, originality: originality.forCreator(idea.originality) } : idea;
   }
   function publicIdea(idea) {
     const copy = { ...idea };
@@ -585,7 +590,8 @@ app.get('/robots.txt', (req, res) => {
     }
 
     if (!isOwner) await supabase.from('ideas').update({ views: (idea.views || 0) + 1 }).eq('id', idea.id);
-    if (isOwner || isAdmin) return res.json(idea);
+    if (isAdmin) return res.json(idea);
+    if (isOwner) return res.json(ownerIdea(idea));
     const out = publicIdea(idea);
     if (isBuyer) { out.description = idea.description; out.description_locked = false; }
     res.json(out);
@@ -593,8 +599,6 @@ app.get('/robots.txt', (req, res) => {
 
   // POST new idea
   app.post('/api/ideas', authMiddleware, async (req, res) => {
-      console.log('POST /api/ideas called by user:', req.user.id);
-    console.log('Body:', req.body);
     const { title, summary, desc, industry, ideaType, price, level, visibility, engLevel, hasPatent, patentNumber } = req.body;
     if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
 
@@ -630,6 +634,7 @@ app.get('/robots.txt', (req, res) => {
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
+    originality.checkInBackground(idea, req.user.id);
 
     // Share to IdeaWall if requested
     if (req.body.shareToWall && idea) {
@@ -674,7 +679,8 @@ app.get('/robots.txt', (req, res) => {
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-    res.json(idea);
+    originality.checkInBackground(idea, req.user.id);
+    res.json(ownerIdea(idea));
   });
 
   // GET public user profile
@@ -762,7 +768,7 @@ app.get('/robots.txt', (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) return res.status(500).json({ error: error.message });
-    res.json(data || []);
+    res.json((data || []).map(ownerIdea));
   });
 
   // DELETE idea
@@ -1028,6 +1034,31 @@ app.get('/robots.txt', (req, res) => {
     res.json(data || []);
   });
 
+  // ── ORIGINALITY CHECK ────────────────────────────────────────────────────────
+  // Creator presses "Check originality" on the submit page (counts toward a daily limit)
+  app.post('/api/originality/check', authMiddleware, async (req, res) => {
+    const b = req.body || {};
+    const ideaId = b.ideaId ? parseInt(b.ideaId, 10) || null : null;
+    const out = await originality.check(
+      { title: b.title, summary: b.summary, desc: b.desc, industry: b.industry, ideaType: b.ideaType },
+      { userId: req.user.id, ideaId, manual: true });
+    if (out.error) return res.status(out.status || 400).json({ error: out.error });
+    res.json(originality.forCreator(out.result));
+  });
+
+  // Admin: re-run the check on any idea (ignores the cache)
+  app.post('/api/admin/ideas/:id/originality', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const { data: idea } = await supabase.from('ideas').select('*').eq('id', req.params.id).single();
+    if (!idea) return res.status(404).json({ error: 'Idea not found' });
+    const out = await originality.check(
+      { title: idea.title, summary: idea.summary, desc: idea.description, industry: idea.industry, ideaType: idea.idea_type },
+      { userId: idea.creator_id, ideaId: idea.id, force: true });
+    if (out.error) return res.status(out.status || 400).json({ error: out.error });
+    res.json(out.result);
+  });
+
   // Admin: every idea with full details (patent review, moderation)
   app.get('/api/admin/ideas', authMiddleware, async (req, res) => {
     const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
@@ -1232,7 +1263,7 @@ app.get('/robots.txt', (req, res) => {
       supabase.from('users').select('earnings').eq('id', req.user.id).single(),
     ]);
 
-    const ideas = ideasRes.data || [];
+    const ideas = (ideasRes.data || []).map(ownerIdea);
     res.json({
       ideasPosted: ideas.length,
       totalViews: ideas.reduce((s, i) => s + (i.views || 0), 0),

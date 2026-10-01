@@ -292,10 +292,13 @@
 
   <!-- IDEAS TAB -->
   <div class="tab-content" id="tab-ideas">
-    <input class="search-input" id="ideaSearch" placeholder="🔍 Search ideas..." oninput="filterIdeas()" />
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <input class="search-input" id="ideaSearch" placeholder="🔍 Search ideas..." oninput="filterIdeas()" style="flex:1;min-width:220px;" />
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-bottom:1rem;cursor:pointer;"><input type="checkbox" id="ideaFlagged" onchange="filterIdeas()" /> Low originality only (under 40)</label>
+    </div>
     <div class="user-table">
-      <div class="user-head" style="grid-template-columns:2fr 1fr 1fr 1fr 100px;">
-        <div>Idea</div><div>Industry</div><div>Price</div><div>Creator</div><div>Status</div>
+      <div class="user-head" style="grid-template-columns:2fr 1fr 1fr 1fr 110px 100px;">
+        <div>Idea</div><div>Industry</div><div>Price</div><div>Creator</div><div>Originality</div><div>Status</div>
       </div>
       <div id="ideasList"><div class="loading"><div class="spin"></div> Loading ideas...</div></div>
     </div>
@@ -677,22 +680,70 @@
   // IDEAS
   function filterIdeas() {
     const q = document.getElementById('ideaSearch').value.toLowerCase();
-    const filtered = allIdeas.filter(i => (i.title||'').toLowerCase().includes(q) || (i.industry||'').toLowerCase().includes(q));
+    const flagged = document.getElementById('ideaFlagged')?.checked;
+    const filtered = allIdeas.filter(i => ((i.title||'').toLowerCase().includes(q) || (i.industry||'').toLowerCase().includes(q))
+      && (!flagged || (i.originality_score != null && i.originality_score < 40)));
     renderIdeas(filtered);
   }
+
+  const ORIG_LABEL = { original:'Looks original', distinctive:'Distinctive', similar_exists:'Similar ideas exist', likely_duplicate:'Very close to existing ideas' };
+  function origColor(s) { return s == null ? 'var(--muted)' : s >= 70 ? '#6ee7b7' : s >= 40 ? '#f5c842' : '#ff6b6b'; }
+  let openOrigId = null;
 
   function renderIdeas(ideas) {
     const el = document.getElementById('ideasList');
     if (!ideas.length) { el.innerHTML='<div class="empty"><div class="empty-icon">💡</div><div class="empty-text">No ideas found</div></div>'; return; }
     el.innerHTML = ideas.map(i => `
-      <div class="user-row" style="grid-template-columns:2fr 1fr 1fr 1fr 100px;">
-        <div style="font-weight:500;">${i.icon||'💡'} ${i.title}</div>
-        <div style="font-size:13px;color:var(--muted);">${i.industry||'—'}</div>
-        <div style="font-weight:600;color:var(--accent);">$${(i.price||0).toLocaleString()}</div>
-        <div style="font-size:13px;color:var(--muted);">${i.creator_name||'—'}</div>
-        <div><span class="badge badge-${i.status||'live'}">${i.status||'live'}</span></div>
+      <div class="user-row" style="grid-template-columns:2fr 1fr 1fr 1fr 110px 100px;cursor:pointer;" onclick="toggleOrig(${Number(i.id)})" title="Show originality report">
+        <div style="font-weight:500;">${escHtml(i.icon||'💡')} ${escHtml(i.title)}</div>
+        <div style="font-size:13px;color:var(--muted);">${escHtml(i.industry||'—')}</div>
+        <div style="font-weight:600;color:var(--accent);">$${Number(i.price||0).toLocaleString()}</div>
+        <div style="font-size:13px;color:var(--muted);">${escHtml(i.creator_name||'—')}</div>
+        <div>${i.originality_score != null
+          ? `<span style="display:inline-block;min-width:44px;text-align:center;font-weight:700;font-size:12px;padding:3px 8px;border-radius:999px;color:${origColor(i.originality_score)};border:1px solid ${origColor(i.originality_score)};">${Number(i.originality_score)}</span>`
+          : '<span style="font-size:12px;color:var(--muted);">Not checked</span>'}</div>
+        <div><span class="badge badge-${escHtml(i.status||'live')}">${escHtml(i.status||'live')}</span></div>
+      </div>
+      <div id="orig-${Number(i.id)}" style="display:${openOrigId === i.id ? 'block' : 'none'};padding:1rem 1.5rem 1.25rem;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02);font-size:13px;">
+        ${origReport(i)}
       </div>
     `).join('');
+  }
+
+  function origReport(i) {
+    const r = i.originality;
+    const btn = `<button onclick="event.stopPropagation();recheckOrig(${Number(i.id)}, this)" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">${r ? '↻ Re-check' : 'Run check'}</button>`;
+    if (!r) return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><span style="color:var(--muted);">No originality check yet. Ideas are checked automatically when submitted or edited.</span>${btn}</div>`;
+    const sec = (title, body) => `<div style="margin-top:12px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px;">${title}</div>${body}</div>`;
+    let h = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+      <div><div style="font-weight:700;color:${origColor(r.score)};">${Number(r.score)}/100 · ${escHtml(ORIG_LABEL[r.verdict] || r.verdict)}</div>
+      <div style="color:var(--muted);margin-top:4px;line-height:1.5;">${escHtml(r.summary)}</div></div>${btn}</div>`;
+    if ((r.similar||[]).length) h += sec('Similar listings', r.similar.map(s =>
+      `<div style="padding:6px 0;"><a href="/idea?id=${encodeURIComponent(s.id)}" target="_blank" style="color:var(--text);font-weight:600;">${escHtml(s.title)}</a> <span style="color:var(--muted);">· ${Number(s.similarity)}% alike${s.public ? '' : ' · 🔒 private'}</span><div style="color:var(--muted);">${escHtml(s.reason)}</div></div>`).join(''));
+    if ((r.known_products||[]).length) h += sec('Known products', r.known_products.map(p => `<div style="padding:4px 0;"><strong>${escHtml(p.name)}</strong> <span style="color:var(--muted);">— ${escHtml(p.note)}</span></div>`).join(''));
+    if ((r.patent_keywords||[]).length) h += sec('Patent keywords', `${r.patent_keywords.map(k => `<span style="display:inline-block;margin:0 6px 6px 0;padding:3px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;">${escHtml(k)}</span>`).join('')}
+      ${r.patent_url && /^https:\/\/patents\.google\.com\//.test(r.patent_url) ? `<div><a href="${escHtml(r.patent_url)}" target="_blank" style="color:var(--accent);">Search Google Patents ↗</a></div>` : ''}`);
+    h += `<div style="margin-top:10px;font-size:11.5px;color:var(--muted);">Checked ${r.checked_at ? new Date(r.checked_at).toLocaleString() : ''} · AI estimate</div>`;
+    return h;
+  }
+
+  function toggleOrig(id) {
+    const el = document.getElementById('orig-' + id); if (!el) return;
+    const show = el.style.display === 'none';
+    el.style.display = show ? 'block' : 'none';
+    openOrigId = show ? id : null;
+  }
+
+  async function recheckOrig(id, btn) {
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+      const res = await fetch(`${API_URL}/api/admin/ideas/${id}/originality`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Check failed');
+      const idea = allIdeas.find(x => x.id === id);
+      if (idea) { idea.originality = d; idea.originality_score = d.score; idea.originality_checked_at = d.checked_at; }
+      openOrigId = id; filterIdeas();
+    } catch (e) { alert(e.message); btn.disabled = false; btn.textContent = '↻ Re-check'; }
   }
 
   // HIRES
