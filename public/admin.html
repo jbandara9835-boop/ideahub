@@ -136,6 +136,10 @@
   .badge-in_progress { background:rgba(167,139,250,0.15); color:var(--purple); }
   .badge-completed { background:rgba(110,231,183,0.15); color:var(--success); }
   .badge-cancelled { background:rgba(255,107,107,0.15); color:var(--error); }
+  .badge-live { background:rgba(110,231,183,0.15); color:var(--success); }
+  .badge-under_review, .badge-escrow { background:rgba(245,200,66,0.15); color:var(--accent); }
+  .badge-rejected { background:rgba(255,107,107,0.15); color:var(--error); }
+  .badge-sold { background:rgba(96,165,250,0.15); color:var(--blue); }
 
   /* REJECT MODAL */
   .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity 0.2s; }
@@ -294,6 +298,9 @@
   <div class="tab-content" id="tab-ideas">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <input class="search-input" id="ideaSearch" placeholder="🔍 Search ideas..." oninput="filterIdeas()" style="flex:1;min-width:220px;" />
+      <select id="ideaStatus" onchange="filterIdeas()" style="margin-bottom:1rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0.7rem 0.9rem;font-size:13px;font-family:inherit;">
+        <option value="">All statuses</option><option value="live">Live</option><option value="under_review">Under review</option><option value="rejected">Rejected</option><option value="escrow">In escrow</option><option value="sold">Sold</option>
+      </select>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-bottom:1rem;cursor:pointer;"><input type="checkbox" id="ideaFlagged" onchange="filterIdeas()" /> Low originality only (under 40)</label>
     </div>
     <div class="user-table">
@@ -681,8 +688,10 @@
   function filterIdeas() {
     const q = document.getElementById('ideaSearch').value.toLowerCase();
     const flagged = document.getElementById('ideaFlagged')?.checked;
-    const filtered = allIdeas.filter(i => ((i.title||'').toLowerCase().includes(q) || (i.industry||'').toLowerCase().includes(q))
-      && (!flagged || (i.originality_score != null && i.originality_score < 40)));
+    const st = document.getElementById('ideaStatus')?.value || '';
+    const filtered = allIdeas.filter(i => ((i.title||'').toLowerCase().includes(q) || (i.industry||'').toLowerCase().includes(q) || (i.creator_name||'').toLowerCase().includes(q))
+      && (!flagged || (i.originality_score != null && i.originality_score < 40))
+      && (!st || (i.status || 'live') === st));
     renderIdeas(filtered);
   }
 
@@ -702,12 +711,50 @@
         <div>${i.originality_score != null
           ? `<span style="display:inline-block;min-width:44px;text-align:center;font-weight:700;font-size:12px;padding:3px 8px;border-radius:999px;color:${origColor(i.originality_score)};border:1px solid ${origColor(i.originality_score)};">${Number(i.originality_score)}</span>`
           : '<span style="font-size:12px;color:var(--muted);">Not checked</span>'}</div>
-        <div><span class="badge badge-${escHtml(i.status||'live')}">${escHtml(i.status||'live')}</span></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="badge badge-${escHtml(i.status||'live')}">${escHtml((i.status||'live').replace('_',' '))}</span><span style="color:var(--muted);font-size:11px;">▾</span></div>
       </div>
       <div id="orig-${Number(i.id)}" style="display:${openOrigId === i.id ? 'block' : 'none'};padding:1rem 1.5rem 1.25rem;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02);font-size:13px;">
+        ${modBar(i)}
         ${origReport(i)}
       </div>
     `).join('');
+  }
+
+  function modBar(i) {
+    const s = i.status || 'live';
+    const btn = (label, color, action) => `<button onclick="event.stopPropagation();moderateIdea(${Number(i.id)}, '${action}', this)" style="background:none;border:1px solid ${color};color:${color};border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;">${label}</button>`;
+    const acts = [];
+    if (['under_review', 'rejected'].includes(s)) acts.push(btn('✅ Approve & make live', '#6ee7b7', 'approve'));
+    if (['live', 'under_review'].includes(s)) acts.push(btn('❌ Reject / take down', '#ff6b6b', 'reject'));
+    const note = s === 'escrow' ? 'A purchase is in progress, so this idea can\'t be taken down. Use the Disputes tab if there is a problem.'
+      : s === 'sold' ? 'This idea has been sold.' : s === 'rejected' ? 'Rejected. The creator was told why and can edit and resubmit; it then comes back here as “under review”.'
+      : s === 'under_review' ? 'Waiting for your review.' + (i.has_patent ? ' Patent documents are in the Patent Reviews tab.' : '') : '';
+    return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border);">
+      ${acts.join('')}
+      <a href="/idea?id=${encodeURIComponent(i.id)}" target="_blank" onclick="event.stopPropagation()" style="font-size:13px;color:var(--accent);margin-left:4px;">View listing ↗</a>
+      ${note ? `<span style="font-size:12.5px;color:var(--muted);flex-basis:100%;">${note}</span>` : ''}
+    </div>`;
+  }
+
+  async function moderateIdea(id, action, btn) {
+    const idea = allIdeas.find(x => x.id === id);
+    let reason = '';
+    if (action === 'reject') {
+      reason = prompt(`Reason for taking down "${idea ? idea.title : 'this idea'}"?\nThe creator will see this in a notification and an email.`, idea && idea.originality_score != null && idea.originality_score < 40 ? 'This idea is very similar to an existing listing. Please make it more distinctive and resubmit.' : '');
+      if (reason === null) return;
+      if (!reason.trim()) { alert('Please give a reason.'); return; }
+    } else if (!confirm(`Approve "${idea ? idea.title : 'this idea'}" and make it live?`)) return;
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/ideas/${id}/moderate`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action, reason })
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Failed');
+      if (idea) idea.status = d.status;
+      openOrigId = id; filterIdeas();
+    } catch (e) { alert(e.message); btn.disabled = false; }
   }
 
   function origReport(i) {

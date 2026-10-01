@@ -659,6 +659,9 @@ app.get('/robots.txt', (req, res) => {
   app.put('/api/ideas/:id', authMiddleware, async (req, res) => {
     const { title, summary, desc, industry, ideaType, price, level, visibility, hasPatent, patentNumber } = req.body;
     if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
+    // A taken-down idea goes back to the admin for review once the creator edits it
+    const { data: current } = await supabase.from('ideas').select('status').eq('id', req.params.id).eq('creator_id', req.user.id).single();
+    const resubmit = current?.status === 'rejected';
 
     const { data: idea, error } = await supabase
       .from('ideas')
@@ -672,6 +675,7 @@ app.get('/robots.txt', (req, res) => {
         visibility: parseInt(visibility) || 1,
         has_patent: hasPatent || false,
         patent_number: patentNumber || '',
+        ...(resubmit ? { status: 'under_review' } : {}),
       })
       .eq('id', req.params.id)
       .eq('creator_id', req.user.id)
@@ -1057,6 +1061,37 @@ app.get('/robots.txt', (req, res) => {
       { userId: idea.creator_id, ideaId: idea.id, force: true });
     if (out.error) return res.status(out.status || 400).json({ error: out.error });
     res.json(out.result);
+  });
+
+  // Admin: approve (make live) or reject (take down) any idea, with a reason sent to the creator
+  app.put('/api/admin/ideas/:id/moderate', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const action = req.body?.action;
+    const reason = String(req.body?.reason || '').trim().slice(0, 500);
+    if (!['approve', 'reject'].includes(action)) return res.status(400).json({ error: "action must be 'approve' or 'reject'" });
+    if (action === 'reject' && !reason) return res.status(400).json({ error: 'Please give a reason. The creator will see it.' });
+
+    // Never touch an idea with a deal in progress or completed
+    const from = action === 'approve' ? ['under_review', 'rejected'] : ['live', 'under_review'];
+    const { data: rows, error } = await supabase.from('ideas')
+      .update({ status: action === 'approve' ? 'live' : 'rejected' })
+      .eq('id', req.params.id).in('status', from).select();
+    if (error) return res.status(500).json({ error: error.message });
+    const idea = rows && rows[0];
+    if (!idea) return res.status(400).json({ error: action === 'approve'
+      ? 'Only ideas that are under review or rejected can be approved.'
+      : 'Only live or under-review ideas can be rejected. Ideas with a deal in progress or sold can\'t be taken down.' });
+
+    if (action === 'approve') {
+      await escrow.notify(idea.creator_id, { type: 'idea_approved', title: '✅ Your idea is live', message: `"${idea.title}" was approved and is now live on the marketplace.`, link: `/idea?id=${idea.id}` });
+    } else {
+      await escrow.notify(idea.creator_id, { type: 'idea_rejected', title: '❌ Your idea was taken down', message: `"${idea.title}" was removed from the marketplace. Reason: ${reason} You can edit it and resubmit for review.`, link: `/submit?edit=${idea.id}` });
+      await escrow.emailUser(idea.creator_id, `Your idea "${idea.title}" needs changes`, 'Your idea was taken down',
+        `<strong>"${escrow.esc(idea.title)}"</strong> was removed from the IdeaHub marketplace.<br><br><strong>Reason:</strong> ${escrow.esc(reason)}<br><br>You can edit the idea and resubmit it. We'll review it again.`,
+        'Edit your idea', `/submit?edit=${idea.id}`);
+    }
+    res.json(idea);
   });
 
   // Admin: every idea with full details (patent review, moderation)
