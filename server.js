@@ -141,7 +141,7 @@ app.get('/robots.txt', (req, res) => {
        require('./chatbot')(app, supabase); require('./bots')(app, supabase, sendEmail);
   const escrow = require('./escrow')(supabase, sendEmail);
   const payments = require('./payments')(supabase);
-  const originality = require('./originality')(supabase);
+  const originality = require('./originality')(supabase, escrow);
   // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
   app.get('/discover', (req, res) => {
     res.sendFile(__dirname + '/public/discover.html');
@@ -256,7 +256,7 @@ app.get('/robots.txt', (req, res) => {
     const limit = parseInt(req.query.limit) || 6;
     const { data, error } = await supabase
       .from('ideas')
-      .select('id, title, summary, industry, price, views, creator_id, creator_name')
+      .select('id, title, summary, industry, price, views, creator_id, creator_name, originality, originality_score')
       .eq('status', 'live')
       .or('visibility.is.null,visibility.eq.1')
       .order('views', { ascending: false })
@@ -266,7 +266,8 @@ app.get('/robots.txt', (req, res) => {
       const { data: creator } = await supabase
         .from('users').select('first_name, last_name, avatar_url, profile_stars')
         .eq('id', idea.creator_id).single();
-      return { ...idea, creator_first_name: creator?.first_name || '', creator_last_name: creator?.last_name || '', creator_avatar: creator?.avatar_url || null, creator_stars: creator?.profile_stars || 0 };
+      const { originality: _o, originality_score: _s, ...rest } = idea;
+      return { ...rest, originality_rating: originality.rating(idea), creator_first_name: creator?.first_name || '', creator_last_name: creator?.last_name || '', creator_avatar: creator?.avatar_url || null, creator_stars: creator?.profile_stars || 0 };
     }));
     res.json(enriched);
   });
@@ -511,7 +512,7 @@ app.get('/robots.txt', (req, res) => {
   // ── IDEA PRIVACY ─────────────────────────────────────────────────────────────
   // Full description + patent/ID documents are never sent to the public.
   // Owner and admin see everything; buyers (escrow/completed) also see the description.
-  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url', 'originality', 'originality_score', 'originality_checked_at'];
+  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url', 'originality', 'originality_score', 'originality_checked_at', 'moderation'];
   async function viewerContext(req) {
     const t = req.headers.authorization?.split(' ')[1];
     if (!t) return { id: null, role: null, verified: false };
@@ -523,10 +524,11 @@ app.get('/robots.txt', (req, res) => {
   }
   // The creator's own view: originality report without other people's private listings
   function ownerIdea(idea) {
-    return idea && idea.originality ? { ...idea, originality: originality.forCreator(idea.originality) } : idea;
+    if (!idea) return idea;
+    return { ...idea, originality: originality.forCreator(idea.originality), originality_rating: originality.rating(idea) };
   }
   function publicIdea(idea) {
-    const copy = { ...idea };
+    const copy = { ...idea, originality_rating: originality.rating(idea) };
     PRIVATE_IDEA_FIELDS.forEach(f => delete copy[f]);
     copy.description_locked = !!idea.description;
     return copy;
@@ -590,7 +592,7 @@ app.get('/robots.txt', (req, res) => {
     }
 
     if (!isOwner) await supabase.from('ideas').update({ views: (idea.views || 0) + 1 }).eq('id', idea.id);
-    if (isAdmin) return res.json(idea);
+    if (isAdmin) return res.json({ ...idea, originality_rating: originality.rating(idea) });
     if (isOwner) return res.json(ownerIdea(idea));
     const out = publicIdea(idea);
     if (isBuyer) { out.description = idea.description; out.description_locked = false; }
@@ -1074,8 +1076,10 @@ app.get('/robots.txt', (req, res) => {
 
     // Never touch an idea with a deal in progress or completed
     const from = action === 'approve' ? ['under_review', 'rejected'] : ['live', 'under_review'];
+    const { data: before } = await supabase.from('ideas').select('originality').eq('id', req.params.id).single();
     const { data: rows, error } = await supabase.from('ideas')
-      .update({ status: action === 'approve' ? 'live' : 'rejected' })
+      .update({ status: action === 'approve' ? 'live' : 'rejected',
+        moderation: { by: 'admin', action, note: reason || null, hash: before?.originality?.hash || null, at: new Date().toISOString() } })
       .eq('id', req.params.id).in('status', from).select();
     if (error) return res.status(500).json({ error: error.message });
     const idea = rows && rows[0];
@@ -1083,6 +1087,8 @@ app.get('/robots.txt', (req, res) => {
       ? 'Only ideas that are under review or rejected can be approved.'
       : 'Only live or under-review ideas can be rejected. Ideas with a deal in progress or sold can\'t be taken down.' });
 
+    await supabase.from('idea_appeals').update({ status: action === 'approve' ? 'overturned' : 'upheld', admin_note: reason || null, resolved_at: new Date().toISOString() })
+      .eq('idea_id', idea.id).eq('status', 'open');
     if (action === 'approve') {
       await escrow.notify(idea.creator_id, { type: 'idea_approved', title: '✅ Your idea is live', message: `"${idea.title}" was approved and is now live on the marketplace.`, link: `/idea?id=${idea.id}` });
     } else {
@@ -1092,6 +1098,45 @@ app.get('/robots.txt', (req, res) => {
         'Edit your idea', `/submit?edit=${idea.id}`);
     }
     res.json(idea);
+  });
+
+  // Admin: open appeals (filed by creators through Ask IdeaHub)
+  app.get('/api/admin/appeals', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const { data, error } = await supabase.from('idea_appeals')
+      .select('id, idea_id, message, status, created_at, idea:idea_id(id, title, status, originality_score, moderation), user:user_id(first_name, last_name, email)')
+      .eq('status', 'open').order('created_at', { ascending: true });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  });
+
+  // Admin: decide an appeal — 'overturn' (idea goes live) or 'uphold' (decision stands)
+  app.put('/api/admin/appeals/:id', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    const decision = req.body?.decision;
+    const note = String(req.body?.note || '').trim().slice(0, 500);
+    if (!['overturn', 'uphold'].includes(decision)) return res.status(400).json({ error: "decision must be 'overturn' or 'uphold'" });
+    if (decision === 'uphold' && !note) return res.status(400).json({ error: 'Please explain why the decision stands. The creator will see it.' });
+    const now = new Date().toISOString();
+    const { data: rows, error } = await supabase.from('idea_appeals')
+      .update({ status: decision === 'overturn' ? 'overturned' : 'upheld', admin_note: note || null, resolved_at: now })
+      .eq('id', req.params.id).eq('status', 'open').select('id, idea_id, user_id');
+    if (error) return res.status(500).json({ error: error.message });
+    const appeal = rows && rows[0];
+    if (!appeal) return res.status(400).json({ error: 'This appeal is already closed.' });
+    const { data: idea } = await supabase.from('ideas').select('id, title, status, originality').eq('id', appeal.idea_id).single();
+    if (decision === 'overturn' && idea && ['under_review', 'rejected'].includes(idea.status)) {
+      await supabase.from('ideas').update({ status: 'live',
+        moderation: { by: 'admin', action: 'approve', note: note || 'Appeal accepted', hash: idea.originality?.hash || null, at: now } })
+        .eq('id', idea.id).in('status', ['under_review', 'rejected']);
+    }
+    const title = idea?.title || 'your idea';
+    await escrow.notify(appeal.user_id, decision === 'overturn'
+      ? { type: 'appeal_overturned', title: '✅ Appeal accepted', message: `Your appeal for "${title}" was accepted and the idea is now live.${note ? ' ' + note : ''}`, link: `/idea?id=${appeal.idea_id}` }
+      : { type: 'appeal_upheld', title: 'Appeal reviewed', message: `Your appeal for "${title}" was reviewed and the decision stands. ${note} You can still edit the idea to make it more distinctive.`, link: `/submit?edit=${appeal.idea_id}` });
+    res.json({ success: true });
   });
 
   // Admin: every idea with full details (patent review, moderation)

@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 const cron = require('node-cron');
 const makeEscrow = require('./escrow');
+const makeOriginality = require('./originality');
 const jwt = require('jsonwebtoken');
 
 const TZ = 'Asia/Colombo';
@@ -321,7 +322,7 @@ async function buildDigest(supabase) {
   const since = hoursAgoISO(24);
 
   const [newUsers, newIdeas, newRequests, newBusinesses, txs, chats,
-         pendingVerifUsers, pendingRoles, pendingPatents, totalUsers, liveIdeas, botRuns, openDisputes, pendingWithdrawals] = await Promise.all([
+         pendingVerifUsers, pendingRoles, pendingPatents, totalUsers, liveIdeas, botRuns, openDisputes, pendingWithdrawals, openAppeals] = await Promise.all([
     safe('new users', () => supabase.from('users')
       .select('first_name, last_name, role, signup_country, created_at')
       .gte('created_at', since).order('created_at', { ascending: false }), []),
@@ -355,6 +356,8 @@ async function buildDigest(supabase) {
       .order('disputed_at', { ascending: true }), []),
     safe('pending withdrawals', () => supabase.from('withdrawals')
       .select('id, amount, method, requested_at').eq('status', 'requested'), []),
+    countOf(supabase, 'open appeals', s => s.from('idea_appeals')
+      .select('*', { count: 'exact', head: true }).eq('status', 'open')),
   ]);
 
   const newEscrows = txs.filter(t => t.created_at >= since);
@@ -363,7 +366,7 @@ async function buildDigest(supabase) {
   const zeroResult = chats.filter(c => c.result_count === 0).slice(0, 8);
   const pendingVerif = pendingVerifUsers.length;
   const verifDetails = pendingVerifUsers.map(u => ({ name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email, missing: verificationMissing(u) }));
-  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0) + openDisputes.length + pendingWithdrawals.length;
+  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0) + (openAppeals || 0) + openDisputes.length + pendingWithdrawals.length;
   // latest run per bot
   const lastRuns = {};
   for (const r of botRuns) if (!lastRuns[r.bot]) lastRuns[r.bot] = r;
@@ -371,7 +374,7 @@ async function buildDigest(supabase) {
   return {
     newUsers, newIdeas, newRequests, newBusinesses, newEscrows, completed, feesEarned,
     chats, zeroResult, pendingVerif, pendingRoles, pendingPatents, pendingTotal,
-    totalUsers, liveIdeas, verifDetails, lastRuns, openDisputes, pendingWithdrawals
+    totalUsers, liveIdeas, verifDetails, lastRuns, openDisputes, pendingWithdrawals, openAppeals
   };
 }
 
@@ -396,11 +399,12 @@ function digestHtml(d) {
   if (d.openDisputes.length) actions.push(`${d.openDisputes.length} disputed deal${d.openDisputes.length > 1 ? 's' : ''} waiting for your decision`);
   if (d.pendingVerif) actions.push(`${d.pendingVerif} user verification${d.pendingVerif > 1 ? 's' : ''} pending (not yet passing the automatic checks)`);
   if (d.pendingRoles) actions.push(`${d.pendingRoles} role switch request${d.pendingRoles > 1 ? 's' : ''} waiting`);
+  if (d.openAppeals) actions.push(`${d.openAppeals} idea appeal${d.openAppeals > 1 ? 's' : ''} from creators — Admin → Ideas → Appeals`);
   const lowOrig = d.newIdeas.filter(i => i.originality_score != null && i.originality_score < 40);
   if (lowOrig.length) actions.push(`${lowOrig.length} new idea${lowOrig.length > 1 ? 's' : ''} scored low on originality (under 40) — see Admin → Ideas`);
-  if (d.pendingPatents) actions.push(`${d.pendingPatents} patent idea${d.pendingPatents > 1 ? 's' : ''} under review`);
+  if (d.pendingPatents) actions.push(`${d.pendingPatents} idea${d.pendingPatents > 1 ? 's' : ''} waiting for review (held by the originality bot, resubmitted, or patent checks) — Admin → Ideas → Under review`);
 
-  const botNames = { escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
+  const botNames = { originality: 'Originality checks', escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
   const botLines = Object.keys(botNames).filter(b => b !== 'digest').map(b => {
     const r = d.lastRuns[b];
     const state = !r ? 'no run in the last 24h' : r.status === 'ok' ? esc(r.details || 'ok') : `<span style="color:#ff6b6b;">FAILED: ${esc(r.details || '')}</span>`;
@@ -471,7 +475,9 @@ async function runDigest(supabase, sendEmail) {
 // ─────────────────────────────────────────────────────────────────────────────
 module.exports = function registerBots(app, supabase, sendEmail) {
   const escrow = makeEscrow(supabase, sendEmail);
+  const originality = makeOriginality(supabase, escrow);
   const BOTS = {
+    originality: () => originality.runPending(),
     escrow: () => runEscrow(supabase, escrow),
     ratings: () => runRatings(supabase),
     trending: () => runTrending(supabase),
@@ -501,6 +507,7 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   cron.schedule('45 6 * * *', () => run('escrow'), { timezone: TZ });    // 6:45 AM
   cron.schedule('0 7 * * *', () => run('digest'), { timezone: TZ });     // 7:00 AM
   cron.schedule('0 10 * * *', () => run('nudge'), { timezone: TZ });     // 10:00 AM
+  cron.schedule('20 * * * *', () => run('originality'), { timezone: TZ }); // every hour at :20
 
   // Admin-only manual trigger, for testing: POST /api/admin/bots/digest/run
   app.post('/api/admin/bots/:name/run', async (req, res) => {
@@ -516,5 +523,5 @@ module.exports = function registerBots(app, supabase, sendEmail) {
     res.json(await run(req.params.name));
   });
 
-  console.log('  🤖  Bots scheduled: trending 00:00, ratings 00:15, verification 06:30, escrow 06:45, digest 07:00, nudge 10:00 (Asia/Colombo)');
+  console.log('  🤖  Bots scheduled: trending 00:00, ratings 00:15, verification 06:30, escrow 06:45, digest 07:00, nudge 10:00, originality hourly at :20 (Asia/Colombo)');
 };

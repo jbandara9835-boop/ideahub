@@ -14,6 +14,12 @@
 //   ANTHROPIC_API_KEY        — already set for the chatbot
 //   ORIGINALITY_MODEL        — default claude-haiku-4-5-20251001
 //   ORIGINALITY_DAILY_LIMIT  — manual checks per user per day, default 10
+//
+// Auto-moderation (scores are ORIGINALITY: 100 = new, 0 = a copy):
+//   ORIGINALITY_HOLD_BELOW         — default 10: live idea is held "under review" for the admin
+//   ORIGINALITY_REJECT_BELOW       — default 0 (off): set e.g. 5 to auto-reject near-exact copies
+//   ORIGINALITY_SIMILAR_BELOW      — default 70: buyers see "Similar ideas exist" (≈30%+ similar)
+//   ORIGINALITY_VERY_SIMILAR_BELOW — default 50: buyers see "Very similar to existing ideas"
 // ─────────────────────────────────────────────────────────────────────────────
 const crypto = require('crypto');
 const Anthropic = require('@anthropic-ai/sdk');
@@ -21,6 +27,28 @@ const Anthropic = require('@anthropic-ai/sdk');
 const MODEL = process.env.ORIGINALITY_MODEL || 'claude-haiku-4-5-20251001';
 const DAILY_LIMIT = parseInt(process.env.ORIGINALITY_DAILY_LIMIT || '10', 10);
 const CACHE_DAYS = 7;
+const envInt = (k, d) => { const n = parseInt(process.env[k], 10); return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : d; };
+const HOLD_BELOW = () => envInt('ORIGINALITY_HOLD_BELOW', 10);
+const REJECT_BELOW = () => envInt('ORIGINALITY_REJECT_BELOW', 0);
+const SIMILAR_BELOW = () => envInt('ORIGINALITY_SIMILAR_BELOW', 70);
+const VERY_SIMILAR_BELOW = () => envInt('ORIGINALITY_VERY_SIMILAR_BELOW', 50);
+
+// The rating buyers see. Built only from the score and counts: never creator-only text or private listings.
+function rating(idea) {
+  const r = idea && idea.originality;
+  const score = idea && idea.originality_score;
+  if (score == null || !r) return null;
+  const band = score < VERY_SIMILAR_BELOW() ? 'very_similar' : score < SIMILAR_BELOW() ? 'similar' : 'original';
+  const label = { original: 'Original idea', similar: 'Similar ideas exist', very_similar: 'Very similar to existing ideas' }[band];
+  const similar = (r.similar || []).filter(s => s.public);
+  return {
+    score, band, label,
+    similar_listings: similar.length,
+    closest_similarity: similar.length ? Math.max(...similar.map(s => Number(s.similarity) || 0)) : 0,
+    known_products: (r.known_products || []).length,
+    checked_at: r.checked_at || idea.originality_checked_at || null
+  };
+}
 const MAX_CANDIDATES = 8;
 const CORPUS_LIMIT = 3000;
 
@@ -108,7 +136,8 @@ Rules:
 - Be honest but kind; the summary is shown to the creator.
 Always answer by calling report_originality.`;
 
-module.exports = function makeOriginality(supabase) {
+// escrow (optional) is used to notify creators when the bot holds, rejects or releases an idea
+module.exports = function makeOriginality(supabase, escrow) {
   const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 
   async function usedToday(userId) {
@@ -200,12 +229,84 @@ Description: ${clip(input.desc, 3000) || '(none)'}
     if (error) console.error('Originality save failed:', error.message);
   }
 
+  // ── AUTO-MODERATION ───────────────────────────────────────────────────────
+  // Applies the score rules to one idea. Returns what it did: ok | held | rejected | released | skipped
+  async function moderate(ideaId, result) {
+    const { data: idea } = await supabase.from('ideas').select('id, title, status, creator_id, moderation').eq('id', ideaId).single();
+    if (!idea || !result || result.score == null) return 'skipped';
+    const m = idea.moderation || {};
+    const score = Number(result.score);
+    const now = new Date().toISOString();
+    // The admin already approved this exact text: never second-guess it
+    if (m.by === 'admin' && m.action === 'approve' && m.hash === result.hash) return 'skipped';
+
+    const closest = (result.similar || []).find(s => s.public);
+    const why = closest ? `it is very close to an existing listing ("${closest.title}")` : 'it is very close to ideas that already exist';
+
+    if (idea.status === 'live') {
+      const reject = REJECT_BELOW() > 0 && score < REJECT_BELOW();
+      if (!reject && score >= HOLD_BELOW()) return 'ok';
+      const action = reject ? 'reject' : 'hold';
+      const note = reject
+        ? `Automatically rejected: originality ${score}/100 — ${why}.`
+        : `Held for review: originality ${score}/100 — ${why}.`;
+      const { data: rows } = await supabase.from('ideas')
+        .update({ status: reject ? 'rejected' : 'under_review', moderation: { by: 'bot', action, note, score, hash: result.hash, at: now } })
+        .eq('id', idea.id).eq('status', 'live').select('id');
+      if (!rows || !rows.length) return 'skipped';
+      if (escrow) await escrow.notify(idea.creator_id, reject
+        ? { type: 'idea_rejected', title: '❌ Your idea was not published', message: `"${idea.title}" was not published because ${why}. Edit it to make it more distinctive and it will be checked again, or ask Ask IdeaHub if you think this is a mistake.`, link: `/submit?edit=${idea.id}` }
+        : { type: 'idea_held', title: '⏳ Your idea is being reviewed', message: `"${idea.title}" is waiting for a quick review because ${why}. You can edit it to make it more distinctive, or ask Ask IdeaHub about it.`, link: `/submit?edit=${idea.id}` });
+      return reject ? 'rejected' : 'held';
+    }
+
+    // An idea the bot held or rejected comes back on its own once a new check passes
+    if (idea.status === 'under_review' && m.by === 'bot' && score >= HOLD_BELOW()) {
+      const { data: rows } = await supabase.from('ideas')
+        .update({ status: 'live', moderation: { by: 'bot', action: 'release', note: `Released: originality ${score}/100 after changes.`, score, hash: result.hash, at: now } })
+        .eq('id', idea.id).eq('status', 'under_review').select('id');
+      if (!rows || !rows.length) return 'skipped';
+      if (escrow) await escrow.notify(idea.creator_id, { type: 'idea_approved', title: '✅ Your idea is live', message: `"${idea.title}" passed the originality check and is now live.`, link: `/idea?id=${idea.id}` });
+      return 'released';
+    }
+    return 'skipped';
+  }
+
+  // Check (cached when unchanged) + moderate. Used by the background check and the hourly bot.
+  async function checkAndModerate(idea, userId) {
+    const input = { title: idea.title, summary: idea.summary, desc: idea.description, industry: idea.industry, ideaType: idea.idea_type };
+    const out = await check(input, { userId: userId || idea.creator_id, ideaId: idea.id });
+    if (out.error) return { error: out.error };
+    return { result: out.result, action: await moderate(idea.id, out.result) };
+  }
+
   // Background check after an idea is created or edited. Never throws.
   function checkInBackground(idea, userId) {
     if (!anthropic || !idea) return;
     const input = { title: idea.title, summary: idea.summary, desc: idea.description, industry: idea.industry, ideaType: idea.idea_type };
     if (idea.originality && idea.originality.hash === hashOf(input)) return; // unchanged since last check
-    setImmediate(() => check(input, { userId, ideaId: idea.id }).catch(e => console.error('Originality background error:', e.message)));
+    setImmediate(() => checkAndModerate(idea, userId).catch(e => console.error('Originality background error:', e.message)));
+  }
+
+  // Hourly bot: checks ideas that were never checked (AI was down, or listed before this feature)
+  async function runPending(limit) {
+    if (!anthropic) return 'skipped: ANTHROPIC_API_KEY not set';
+    const n = Math.max(1, Math.min(100, parseInt(limit || process.env.ORIGINALITY_BOT_BATCH || '20', 10) || 20));
+    const { data, error } = await supabase.from('ideas')
+      .select('id, title, summary, description, industry, idea_type, creator_id, status, originality')
+      .is('originality_checked_at', null).in('status', ['live', 'under_review'])
+      .order('created_at', { ascending: false }).limit(n);
+    if (error) throw new Error(error.message);
+    const tally = { checked: 0, held: 0, rejected: 0, released: 0, failed: 0 };
+    for (const idea of data || []) {
+      try {
+        const out = await checkAndModerate(idea);
+        if (out.error) { tally.failed++; continue; }
+        tally.checked++;
+        if (tally[out.action] !== undefined) tally[out.action]++;
+      } catch (e) { tally.failed++; console.error('Originality bot idea', idea.id, e.message); }
+    }
+    return `checked ${tally.checked} of ${(data || []).length} unchecked ideas · held ${tally.held} · rejected ${tally.rejected} · released ${tally.released}${tally.failed ? ' · failed ' + tally.failed : ''}`;
   }
 
   // What the creator is allowed to see: private listings are counted, never named.
@@ -215,5 +316,5 @@ Description: ${clip(input.desc, 3000) || '(none)'}
     return { ...result, similar: pub, private_similar: (result.similar || []).length - pub.length };
   }
 
-  return { check, checkInBackground, forCreator, hashOf, DAILY_LIMIT };
+  return { check, checkInBackground, checkAndModerate, moderate, runPending, forCreator, rating, hashOf, DAILY_LIMIT };
 };

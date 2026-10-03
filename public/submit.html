@@ -429,6 +429,7 @@
     <a class="back-btn" href="/dashboard">← Back</a>
     <div class="page-title">Submit an Idea</div>
   </div>
+  <div id="modBanner" style="display:none;margin-bottom:1.25rem;border:1px solid rgba(245,200,66,0.35);background:rgba(245,200,66,0.06);border-radius:14px;padding:1rem 1.25rem;font-size:13.5px;line-height:1.6;"></div>
 
   <div class="form-grid">
     <!-- LEFT: FORM -->
@@ -853,6 +854,17 @@
 
       updatePreview();
       if (idea.originality) { origHash = origKey(origFields()); renderOriginality(idea.originality); }
+      if (['under_review', 'rejected'].includes(idea.status)) {
+        const m = idea.moderation || {};
+        const b = document.getElementById('modBanner');
+        const head = idea.status === 'rejected' ? '❌ This idea is not live' : '⏳ This idea is waiting for review';
+        const by = m.by === 'bot' ? 'Our automatic originality check' : m.by === 'admin' ? 'IdeaHub' : '';
+        b.innerHTML = `<strong>${head}</strong><br>${m.note ? `${by ? by + ': ' : ''}${origEsc(m.note)}<br>` : ''}` +
+          (m.by === 'bot' ? 'Add what makes your idea different and save. It is checked again automatically and goes live by itself if it passes.'
+            : 'Make your changes and save. An admin reviews it again.') +
+          ' Think the decision is wrong? Ask <strong>Ask IdeaHub</strong> (bottom right) to file an appeal.';
+        b.style.display = 'block';
+      }
     })
     .catch(e => console.error('Edit load failed:', e));
 }

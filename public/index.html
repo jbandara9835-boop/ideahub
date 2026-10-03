@@ -1095,33 +1095,35 @@ footer a:hover { color: var(--text); }
         return bannerGradients[Math.abs(hash) % bannerGradients.length];
       }
 
+      const escX = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
       grid.innerHTML = ideas.map(idea => {
         const initials = idea.creator_first_name
-          ? (idea.creator_first_name[0] + (idea.creator_last_name?.[0] || '')).toUpperCase()
+          ? escX((idea.creator_first_name[0] + (idea.creator_last_name?.[0] || '')).toUpperCase())
           : '?';
         const avatarHtml = idea.creator_avatar
-          ? `<img src="${idea.creator_avatar}" />`
+          ? `<img src="${escX(idea.creator_avatar)}" />`
           : initials;
         const industry = idea.industry || idea.category || 'Other';
         const hasImage = idea.images && idea.images.length > 0;
         const bannerHtml = hasImage
-          ? `<div class="idea-card-banner" style="background-image:url('${idea.images[0]}');"></div>`
+          ? `<div class="idea-card-banner" style="background-image:url('${escX(encodeURI(idea.images[0]))}');"></div>`
           : `<div class="idea-card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="idea-card-banner-icon">${bannerIcons[industry] || '✦'}</span></div>`;
         return `
-          <a class="idea-card" href="/idea?id=${idea.id}">
+          <a class="idea-card" href="/idea?id=${encodeURIComponent(idea.id)}">
             ${bannerHtml}
             <div class="idea-card-body">
               <div class="idea-card-top">
-                <span class="idea-category">${industry}</span>
+                <span class="idea-category">${escX(industry)}</span>
                 <span class="idea-price">$${Number(idea.price || 0).toLocaleString()}</span>
               </div>
-              <div class="idea-title">${idea.title || 'Untitled Idea'}</div>
-              <div class="idea-summary">${idea.summary || idea.description || ''}</div>
+              <div class="idea-title">${escX(idea.title || 'Untitled Idea')}</div>
+              <div class="idea-summary">${escX(idea.summary || '')}</div>
+              ${idea.originality_rating ? `<div style="margin-top:8px;font-size:11.5px;font-weight:600;color:${idea.originality_rating.band === 'original' ? '#6ee7b7' : idea.originality_rating.band === 'similar' ? '#f5c842' : '#ff8a8a'};">${idea.originality_rating.band === 'original' ? '✦ Original' : idea.originality_rating.band === 'similar' ? '≈ Similar ideas exist' : '≈ Very similar'} · ${Number(idea.originality_rating.score)}/100</div>` : ''}
               <div class="idea-card-foot">
                 <div class="idea-creator">
                   <div class="idea-creator-av">${avatarHtml}</div>
                   <div>
-                    <div>${idea.creator_first_name ? `${idea.creator_first_name} ${idea.creator_last_name || ''}` : 'Anonymous'}</div>
+                    <div>${idea.creator_first_name ? escX(`${idea.creator_first_name} ${idea.creator_last_name || ''}`) : 'Anonymous'}</div>
                     <div style="color:var(--accent);font-size:11px;margin-top:2px;">${idea.creator_stars > 0 ? '★'.repeat(Math.round(idea.creator_stars)) + '☆'.repeat(5-Math.round(idea.creator_stars)) : '<span style="color:var(--muted);">No ratings yet</span>'}</div>
                   </div>
                 </div>

@@ -296,6 +296,7 @@
 
   <!-- IDEAS TAB -->
   <div class="tab-content" id="tab-ideas">
+    <div id="appealsBox"></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <input class="search-input" id="ideaSearch" placeholder="🔍 Search ideas..." oninput="filterIdeas()" style="flex:1;min-width:220px;" />
       <select id="ideaStatus" onchange="filterIdeas()" style="margin-bottom:1rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0.7rem 0.9rem;font-size:13px;font-family:inherit;">
@@ -729,7 +730,12 @@
     const note = s === 'escrow' ? 'A purchase is in progress, so this idea can\'t be taken down. Use the Disputes tab if there is a problem.'
       : s === 'sold' ? 'This idea has been sold.' : s === 'rejected' ? 'Rejected. The creator was told why and can edit and resubmit; it then comes back here as “under review”.'
       : s === 'under_review' ? 'Waiting for your review.' + (i.has_patent ? ' Patent documents are in the Patent Reviews tab.' : '') : '';
+    const m = i.moderation;
+    const modLine = m && m.action ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--text);">${m.by === 'bot' ? '🤖 Originality bot' : '👤 Admin'} · ${escHtml({ hold: 'held for review', reject: 'rejected', release: 'released', approve: 'approved' }[m.action] || m.action)}${m.at ? ' · ' + new Date(m.at).toLocaleString() : ''}${m.note ? `<br><span style="color:var(--muted);">${escHtml(m.note)}</span>` : ''}</span>` : '';
+    const appeal = (allAppeals || []).find(a => a.idea_id === i.id);
+    const appealLine = appeal ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--accent);">📨 Open appeal: “${escHtml(appeal.message)}” — decide it in the Appeals box above.</span>` : '';
     return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border);">
+      ${modLine}${appealLine}
       ${acts.join('')}
       <a href="/idea?id=${encodeURIComponent(i.id)}" target="_blank" onclick="event.stopPropagation()" style="font-size:13px;color:var(--accent);margin-left:4px;">View listing ↗</a>
       ${note ? `<span style="font-size:12.5px;color:var(--muted);flex-basis:100%;">${note}</span>` : ''}
@@ -754,6 +760,56 @@
       if (!res.ok) throw new Error(d.error || 'Failed');
       if (idea) idea.status = d.status;
       openOrigId = id; filterIdeas();
+    } catch (e) { alert(e.message); btn.disabled = false; }
+  }
+
+  let allAppeals = [];
+  // Ideas tab badge = things waiting for you: ideas under review + open appeals
+  function updateIdeaTabCount() {
+    const el = document.getElementById('tabIdeaCount');
+    if (el) el.textContent = allIdeas.filter(i => i.status === 'under_review').length + (allAppeals || []).length;
+  }
+  function renderAppeals() {
+    const box = document.getElementById('appealsBox');
+    if (!box) return;
+    if (!allAppeals.length) { box.innerHTML = ''; return; }
+    box.innerHTML = `<div style="border:1px solid rgba(245,200,66,0.35);background:rgba(245,200,66,0.05);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+      <div style="font-weight:700;margin-bottom:0.75rem;">📨 Appeals waiting (${allAppeals.length})</div>
+      ${allAppeals.map(a => {
+        const who = a.user ? `${a.user.first_name || ''} ${a.user.last_name || ''}`.trim() || a.user.email : 'Creator';
+        const idea = a.idea || {};
+        return `<div style="padding:0.85rem 0;border-top:1px solid var(--border);font-size:13px;">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div><a href="/idea?id=${encodeURIComponent(a.idea_id)}" target="_blank" style="color:var(--text);font-weight:600;">${escHtml(idea.title || 'Idea #' + a.idea_id)}</a>
+              <span style="color:var(--muted);"> · ${escHtml(who)} · ${escHtml((idea.status || '').replace('_', ' '))}${idea.originality_score != null ? ' · originality ' + Number(idea.originality_score) : ''} · ${new Date(a.created_at).toLocaleDateString()}</span></div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="decideAppeal(${Number(a.id)}, 'overturn', this)" style="background:none;border:1px solid #6ee7b7;color:#6ee7b7;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">✅ Accept · make live</button>
+              <button onclick="decideAppeal(${Number(a.id)}, 'uphold', this)" style="background:none;border:1px solid #ff6b6b;color:#ff6b6b;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">Keep decision</button>
+            </div>
+          </div>
+          ${idea.moderation?.note ? `<div style="color:var(--muted);margin-top:6px;">Decision: ${escHtml(idea.moderation.note)}</div>` : ''}
+          <div style="margin-top:6px;line-height:1.5;">“${escHtml(a.message)}”</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  async function decideAppeal(id, decision, btn) {
+    let note = '';
+    if (decision === 'uphold') {
+      note = prompt('Why does the decision stand? The creator will see this.');
+      if (note === null) return;
+      if (!note.trim()) { alert('Please give a short reason.'); return; }
+    } else {
+      note = prompt('Optional note to the creator (leave empty to skip):', '') || '';
+      if (!confirm('Accept the appeal and make this idea live?')) return;
+    }
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/appeals/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ decision, note }) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Failed');
+      loadAll();
     } catch (e) { alert(e.message); btn.disabled = false; }
   }
 
@@ -886,6 +942,8 @@
         fetch(`${API_URL}/api/admin/disputes`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } })
       ]);
+      fetch(`${API_URL}/api/admin/appeals`, { headers:{ Authorization:`Bearer ${token}` } })
+        .then(r => r.ok ? r.json() : []).then(a => { allAppeals = Array.isArray(a) ? a : []; renderAppeals(); updateIdeaTabCount(); if (allIdeas.length) filterIdeas(); }).catch(() => {});
       allWithdrawals = withdrawalsRes.ok ? await withdrawalsRes.json() : [];
       allDisputes = disputesRes.ok ? await disputesRes.json() : [];
 
@@ -907,7 +965,7 @@
       document.getElementById('tabRoleCount').textContent = pendingRoles;
       document.getElementById('tabUserCount').textContent = allUsers.length;
       document.getElementById('tabHireCount').textContent = allHires.length;
-      document.getElementById('tabIdeaCount').textContent = allIdeas.length;
+      updateIdeaTabCount();
 
       renderCerts();
       renderRoleRequests();
@@ -917,7 +975,7 @@
       document.getElementById('tabDisputeCount').textContent = allDisputes.length;
       renderUsers(allUsers);
       renderHires(allHires);
-      renderIdeas(allIdeas);
+      filterIdeas();
       renderPatents(allIdeas);
       const patentPending = allIdeas.filter(i => i.status === 'under_review' && i.has_patent).length;
       document.getElementById('tabPatentCount').textContent = patentPending;

@@ -118,6 +118,16 @@
   .contact-btn:hover { border-color:var(--accent); color:var(--accent); }
 
   .buy-notes { font-size:12px; color:var(--muted); line-height:1.6; }
+  .orig-panel { margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--border); }
+  .orig-panel-head { display:flex; align-items:center; gap:14px; }
+  .orig-ring { --p:0; --c:var(--accent); width:62px; height:62px; flex-shrink:0; border-radius:50%; display:flex; align-items:center; justify-content:center; background:conic-gradient(var(--c) calc(var(--p) * 1%), rgba(255,255,255,0.07) 0); }
+  .orig-ring span { width:50px; height:50px; border-radius:50%; background:var(--surface); display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Cabinet Grotesk',sans-serif; font-weight:800; font-size:18px; line-height:1; }
+  .orig-ring small { font-family:'DM Sans',sans-serif; font-size:8.5px; font-weight:500; color:var(--muted); margin-top:2px; }
+  .orig-kicker { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); }
+  .orig-label { font-weight:700; font-size:15px; margin-top:2px; }
+  .orig-facts { margin-top:0.85rem; font-size:12.5px; color:#b9b4aa; line-height:1.55; }
+  .orig-facts div { display:flex; gap:8px; margin-bottom:4px; }
+  .orig-note { font-size:11px; color:var(--muted); margin-top:0.6rem; line-height:1.5; }
   .buy-notes p { margin-bottom:4px; display:flex; align-items:center; gap:6px; }
 
   /* MESSAGE MODAL */
@@ -384,6 +394,27 @@
     }
   }
 
+  function escI(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  function originalityPanel(r, isOwner) {
+    if (!r) return `<div class="orig-panel"><div class="orig-kicker">🛡 AI originality check</div><div class="orig-facts">This idea hasn't been rated yet. Ratings usually appear within an hour of listing.</div></div>`;
+    const col = r.band === 'original' ? '#6ee7b7' : r.band === 'similar' ? '#f5c842' : '#ff8a8a';
+    const facts = [];
+    facts.push(r.similar_listings
+      ? `<div><span>≈</span><span>${r.similar_listings} similar listing${r.similar_listings > 1 ? 's' : ''} on IdeaHub${r.closest_similarity ? ` (closest ${Number(r.closest_similarity)}% alike)` : ''}</span></div>`
+      : `<div><span>✓</span><span>No close match among IdeaHub listings</span></div>`);
+    facts.push(r.known_products
+      ? `<div><span>≈</span><span>${r.known_products} existing product${r.known_products > 1 ? 's' : ''} cover similar ground</span></div>`
+      : `<div><span>✓</span><span>No well-known product does the same thing</span></div>`);
+    return `<div class="orig-panel">
+      <div class="orig-panel-head">
+        <div class="orig-ring" style="--p:${Number(r.score)};--c:${col}"><span>${Number(r.score)}<small>/ 100</small></span></div>
+        <div><div class="orig-kicker">🛡 AI originality check</div><div class="orig-label" style="color:${col}">${escI(r.label)}</div></div>
+      </div>
+      <div class="orig-facts">${facts.join('')}</div>
+      <div class="orig-note">Compared with every IdeaHub listing and products our AI knows of${r.checked_at ? ', ' + new Date(r.checked_at).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' }) : ''}. An estimate to help you decide, not a legal patent search.${isOwner ? ' <a href="/submit?edit=' + encodeURIComponent(currentIdea.id) + '" style="color:var(--accent);">See your full report →</a>' : ''}</div>
+    </div>`;
+  }
+
   async function loadIdea() {
     try {
       const res = await fetch(`${API_URL}/api/ideas/${ideaId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {});
@@ -426,22 +457,22 @@
           <!-- LEFT -->
           <div>
             <div class="idea-header">
-              <span class="idea-icon-lg">${idea.icon || '💡'}</span>
-              <div class="idea-title">${idea.title}</div>
+              <span class="idea-icon-lg">${escI(idea.icon || '💡')}</span>
+              <div class="idea-title">${escI(idea.title)}</div>
               <div class="idea-tags">
-                <span class="badge badge-industry">${idea.industry || 'General'}</span>
+                <span class="badge badge-industry">${escI(idea.industry || 'General')}</span>
                 <span class="badge ${lvl.cls}">${lvl.label}</span>
-                ${idea.idea_type ? `<span class="badge badge-type">${idea.idea_type}</span>` : ''}
+                ${idea.idea_type ? `<span class="badge badge-type">${escI(idea.idea_type)}</span>` : ''}
                 ${idea.has_patent ? '<span class="badge badge-patent">📋 Patented</span>' : ''}
               </div>
-              ${idea.summary ? `<div class="idea-summary">${idea.summary}</div>` : ''}
+              ${idea.summary ? `<div class="idea-summary">${escI(idea.summary)}</div>` : ''}
             ${idea.images && idea.images.length > 0 ? `
             <div style="margin-top:1.25rem;">
               <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.5px;">📸 Product Images</div>
               <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
                 ${idea.images.map(url => `
-                  <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1;cursor:pointer;" onclick="window.open('${url}','_blank')">
-                    <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+                  <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1;cursor:pointer;" onclick="window.open(this.dataset.u,'_blank')" data-u="${escI(url)}">
+                    <img src="${escI(url)}" style="width:100%;height:100%;object-fit:cover;" />
                   </div>
                 `).join('')}
               </div>
@@ -451,7 +482,7 @@
             ${idea.description ? `
             <div class="section-card">
               <div class="section-title">📄 Full Description</div>
-              <div class="idea-description">${idea.description}</div>
+              <div class="idea-description" style="white-space:pre-wrap;">${escI(idea.description)}</div>
             </div>` : idea.description_locked ? `
             <div class="section-card">
               <div class="section-title">🔒 Full Description</div>
@@ -463,11 +494,11 @@
               <div class="meta-grid">
                 <div class="meta-item">
                   <div class="meta-label">Industry</div>
-                  <div class="meta-value">${idea.industry || '—'}</div>
+                  <div class="meta-value">${escI(idea.industry || '—')}</div>
                 </div>
                 <div class="meta-item">
                   <div class="meta-label">Type</div>
-                  <div class="meta-value">${idea.idea_type || '—'}</div>
+                  <div class="meta-value">${escI(idea.idea_type || '—')}</div>
                 </div>
                 <div class="meta-item">
                   <div class="meta-label">Stage</div>
@@ -483,19 +514,19 @@
                 </div>
                 <div class="meta-item">
                   <div class="meta-label">Status</div>
-                  <div class="meta-value" style="text-transform:capitalize">${idea.status || 'live'}</div>
+                  <div class="meta-value" style="text-transform:capitalize">${escI((idea.status || 'live').replace('_', ' '))}</div>
                 </div>
               </div>
             </div>
 
             <div class="section-card">
               <div class="section-title">👤 About the Creator</div>
-              <div class="creator-card" onclick="window.location.href='/public-profile?id=${idea.creator_id}'" style="cursor:pointer;">
-                <div class="creator-avatar">${idea.creator?.avatar_url ? `<img src="${idea.creator.avatar_url}" />` : creatorInitials}</div>
+              <div class="creator-card" onclick="window.location.href='/public-profile?id=${encodeURIComponent(idea.creator_id)}'" style="cursor:pointer;">
+                <div class="creator-avatar">${idea.creator?.avatar_url ? `<img src="${escI(idea.creator.avatar_url)}" />` : escI(creatorInitials)}</div>
                 <div class="creator-info">
-                  <div class="creator-name">${idea.creator_name || 'Anonymous'}</div>
+                  <div class="creator-name">${escI(idea.creator_name || 'Anonymous')}</div>
                   <div class="creator-role">${(idea.creator?.role||'idea_creator').replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
-                  ${idea.creator?.tagline ? `<div class="creator-tagline">"${idea.creator.tagline}"</div>` : ''}
+                  ${idea.creator?.tagline ? `<div class="creator-tagline">"${escI(idea.creator.tagline)}"</div>` : ''}
                   <div class="creator-stars">${idea.creator?.profile_stars > 0 ? '★'.repeat(Math.round(idea.creator.profile_stars)) + '☆'.repeat(5-Math.round(idea.creator.profile_stars)) : '<span style="color:var(--muted);">No ratings yet</span>'}</div>
                 </div>
                 ${!isOwner ? `<button class="msg-creator-btn" onclick="event.stopPropagation();openModal()">💬 Message</button>` : '<span style="font-size:12px;color:var(--accent)">Your idea</span>'}
@@ -540,6 +571,7 @@
                 <p>💬 Direct creator contact</p>
                 <p>↩️ Dispute resolution available</p>
               </div>
+              ${originalityPanel(idea.originality_rating, isOwner)}
             </div>
           </div>
         </div>

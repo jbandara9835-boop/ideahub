@@ -131,6 +131,10 @@
     .card-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .card-tags { padding:0 20px 12px; display:flex; flex-wrap:wrap; gap:6px; }
     .card-tag { background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-size:0.75rem; padding:3px 10px; border-radius:20px; }
+    .orig-tag { font-size:0.75rem; font-weight:600; padding:3px 10px; border-radius:20px; border:1px solid; display:inline-flex; align-items:center; gap:4px; }
+    .orig-tag.original { color:#6ee7b7; border-color:rgba(110,231,183,0.35); background:rgba(110,231,183,0.08); }
+    .orig-tag.similar { color:#f5c842; border-color:rgba(245,200,66,0.35); background:rgba(245,200,66,0.08); }
+    .orig-tag.very_similar { color:#ff8a8a; border-color:rgba(255,107,107,0.35); background:rgba(255,107,107,0.08); }
     .card-creator { padding:12px 20px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; }
     .creator-avatar { width:30px; height:30px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:#000; overflow:hidden; flex-shrink:0; }
     .creator-avatar img { width:100%; height:100%; object-fit:cover; }
@@ -286,6 +290,7 @@
       <option value="price_asc">Price: Low to High</option>
       <option value="price_desc">Price: High to Low</option>
       <option value="popular">Most Viewed</option>
+      <option value="original">Most Original</option>
     </select>
   </div>
 </div>
@@ -656,6 +661,7 @@
     if (sort === 'price_asc') filteredIdeas.sort((a,b) => (a.price||0)-(b.price||0));
     else if (sort === 'price_desc') filteredIdeas.sort((a,b) => (b.price||0)-(a.price||0));
     else if (sort === 'popular') filteredIdeas.sort((a,b) => (b.views||0)-(a.views||0));
+    else if (sort === 'original') filteredIdeas.sort((a,b) => (b.originality_rating?.score ?? -1)-(a.originality_rating?.score ?? -1));
     else if (sort === 'trending') filteredIdeas.sort((a,b) => (Number(b.trending_score)||0)-(Number(a.trending_score)||0) || new Date(b.created_at)-new Date(a.created_at));
     else filteredIdeas.sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
 
@@ -697,7 +703,7 @@
     return '★'.repeat(n)+'☆'.repeat(5-n);
   }
   function stageClass(s) {
-    return 'badge-'+(s||'concept').toLowerCase().replace(/ /g,'_');
+    return 'badge-'+String(s||'concept').toLowerCase().replace(/ /g,'_').replace(/[^a-z0-9_-]/g,'');
   }
 
   const bannerGradients = [
@@ -713,40 +719,50 @@
     return bannerGradients[Math.abs(hash) % bannerGradients.length];
   }
 
+  function escH(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  function origTag(r) {
+    if (!r) return '';
+    const icon = r.band === 'original' ? '✦' : '≈';
+    const tip = r.band === 'original' ? 'AI originality check: no close match found'
+      : `AI originality check: ${r.similar_listings ? r.similar_listings + ' similar listing' + (r.similar_listings > 1 ? 's' : '') + ' on IdeaHub' : 'similar products exist'}`;
+    return `<span class="orig-tag ${escH(r.band)}" title="${escH(tip)}">${icon} ${escH(r.band === 'original' ? 'Original' : r.band === 'similar' ? 'Similar ideas exist' : 'Very similar')} · ${Number(r.score)}</span>`;
+  }
+
   function cardHTML(idea) {
     const stage = levelLabel[idea.level] || idea.idea_type || 'Concept';
     const industry = idea.industry || idea.category || '';
     const avatarUrl = idea.creator_avatar || idea.avatar_url;
-    const avatarHTML = avatarUrl ? `<img src="${avatarUrl}" alt="">` : (idea.creator_name||'U')[0].toUpperCase();
+    const avatarHTML = avatarUrl ? `<img src="${escH(avatarUrl)}" alt="">` : escH((idea.creator_name||'U')[0].toUpperCase());
     const hasImage = idea.images && idea.images.length > 0;
     const bannerHTML = hasImage
-      ? `<div class="card-banner" style="background-image:url('${idea.images[0]}');"></div>`
+      ? `<div class="card-banner" style="background-image:url('${escH(encodeURI(idea.images[0]))}');"></div>`
       : `<div class="card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="card-banner-icon">${emojiMap[industry]||'💡'}</span></div>`;
     return `
-      <a class="idea-card" href="/idea?id=${idea.id}">
+      <a class="idea-card" href="/idea?id=${encodeURIComponent(idea.id)}">
         ${bannerHTML}
         <div class="card-top">
-          <span class="card-badge ${stageClass(stage)}">${stage}</span>
+          <span class="card-badge ${stageClass(stage)}">${escH(stage)}</span>
         </div>
         <div class="card-body">
-          <div class="card-title">${idea.title||'Untitled Idea'}</div>
-          <div class="card-desc">${idea.summary||idea.description||''}</div>
+          <div class="card-title">${escH(idea.title||'Untitled Idea')}</div>
+          <div class="card-desc">${escH(idea.summary||'')}</div>
         </div>
         <div class="card-tags">
-          ${industry ? `<span class="card-tag">${industry}</span>` : ''}
+          ${origTag(idea.originality_rating)}
+          ${industry ? `<span class="card-tag">${escH(industry)}</span>` : ''}
           ${idea.patent_verified ? `<span class="card-tag">✅ Verified Patent</span>` : ''}
         </div>
         <div class="card-creator">
           <div class="creator-avatar">${avatarHTML}</div>
           <div class="creator-info">
-            <div class="creator-name">${idea.creator_name||'Creator'}</div>
-            <div class="creator-tagline">${idea.creator?.tagline ? `"${idea.creator.tagline}"` : '&nbsp;'}</div>
+            <div class="creator-name">${escH(idea.creator_name||'Creator')}</div>
+            <div class="creator-tagline">${idea.creator?.tagline ? `"${escH(idea.creator.tagline)}"` : '&nbsp;'}</div>
           </div>
           <div class="creator-stars">${starsHTML(idea.creator?.profile_stars)}</div>
         </div>
         <div class="card-footer">
           <div class="card-price">${formatPrice(idea.price)}</div>
-          <div class="card-meta">👁 ${idea.views||0}</div>
+          <div class="card-meta">👁 ${Number(idea.views)||0}</div>
           <span class="btn-view">View →</span>
         </div>
       </a>`;
