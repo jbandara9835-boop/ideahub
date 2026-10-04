@@ -106,12 +106,15 @@ h1, h2, h3 { font-family: var(--ih-display); }
 .sn .sn-notif-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ih-accent); flex-shrink: 0; align-self: center; }
 .sn .sn-notif-empty { text-align: center; padding: 2.5rem 1rem; color: var(--ih-muted); font-size: 13px; }
 
+@media (max-width: 1480px) {
+  .sn .sn-links { gap: 1.4rem; }
+}
 @media (max-width: 1240px) {
   .sn { padding: 0 1.5rem; }
   .sn .sn-links { gap: 1.25rem; }
   .sn .sn-links a { font-size: 13.5px; }
 }
-@media (max-width: 1080px) {
+@media (max-width: 1160px) {
   .sn .sn-links { display: none; }
   .sn .sn-burger { display: flex; }
 }

@@ -40,6 +40,9 @@
   }));
   app.use(passport.initialize());
   app.use(passport.session());
+  // The dynamic sitemap (built further down) must answer before the static public/sitemap.xml
+  let sitemapHandler = null;
+  app.get('/sitemap.xml', (req, res, next) => sitemapHandler ? sitemapHandler(req, res, next) : next());
   app.use(express.static('public', { etag: false, maxAge: 0 }));
 
   passport.serializeUser((user, done) => done(null, user));
@@ -93,10 +96,7 @@
     res.sendFile(__dirname + '/public/google-auth-success.html');
   });
 
-app.get('/sitemap.xml', (req, res) => {
-  res.setHeader('Content-Type', 'application/xml');
-  res.sendFile(__dirname + '/public/sitemap.xml');
-});
+// /sitemap.xml is built further down (static pages + every public idea and life hack)
 
 app.get('/robots.txt', (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
@@ -249,6 +249,33 @@ app.get('/robots.txt', (req, res) => {
     res.sendFile(__dirname + '/public/attorney-dashboard.html');
   });
   app.get('/wall', (req, res) => res.sendFile(__dirname + '/public/wall.html'));
+  app.get('/life-hacks', (req, res) => res.sendFile(__dirname + '/public/life-hacks.html'));
+
+  // Sitemap: the static pages in public/sitemap.xml + each public idea and life hack (cached 1 hour)
+  let sitemapCache = { at: 0, xml: '' };
+  sitemapHandler = async (req, res) => {
+    res.setHeader('Content-Type', 'application/xml');
+    if (Date.now() - sitemapCache.at < 3600000 && sitemapCache.xml) return res.send(sitemapCache.xml);
+    try {
+      const base = require('fs').readFileSync(__dirname + '/public/sitemap.xml', 'utf8');
+      const [{ data: ideas }, { data: hacks }] = await Promise.all([
+        supabase.from('ideas').select('id, created_at').eq('status', 'live').or('visibility.is.null,visibility.eq.1').order('created_at', { ascending: false }).limit(5000),
+        supabase.from('wall_posts').select('id, created_at').eq('category', 'Life Hack').order('created_at', { ascending: false }).limit(5000)
+      ]);
+      const day = d => (d ? new Date(d) : new Date()).toISOString().slice(0, 10);
+      const urls = [
+        `  <url>\n    <loc>https://ideahub.it.com/life-hacks</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>`,
+        ...(ideas || []).map(i => `  <url>\n    <loc>https://ideahub.it.com/idea?id=${Number(i.id)}</loc>\n    <lastmod>${day(i.created_at)}</lastmod>\n    <priority>0.6</priority>\n  </url>`),
+        ...(hacks || []).map(h => `  <url>\n    <loc>https://ideahub.it.com/life-hacks?id=${Number(h.id)}</loc>\n    <lastmod>${day(h.created_at)}</lastmod>\n    <priority>0.5</priority>\n  </url>`)
+      ];
+      const xml = base.includes('/life-hacks</loc>') ? base.replace('</urlset>', urls.slice(1).join('\n') + '\n</urlset>') : base.replace('</urlset>', urls.join('\n') + '\n</urlset>');
+      sitemapCache = { at: Date.now(), xml };
+      res.send(xml);
+    } catch (err) {
+      console.error('Sitemap build failed:', err.message);
+      res.sendFile(__dirname + '/public/sitemap.xml');
+    }
+  };
   app.get('/settings', (req, res) => res.sendFile(__dirname + '/public/settings.html'));
   app.get('/attorney-dashboard', (req, res) => res.sendFile(__dirname + '/public/attorney-dashboard.html'));
   app.get('/admin', (req, res) => {
@@ -2478,6 +2505,7 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
   });
 
   // ── IDEAWALL ──────────────────────────────────────────────────────────────────
+  const LIFE_HACK_TOPICS = ['Home', 'Food & Kitchen', 'Money', 'Health', 'Tech', 'Work & Study', 'Travel', 'Other'];
 
   app.get('/api/wall', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
@@ -2487,9 +2515,18 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
 
     let query = supabase.from('wall_posts')
       .select('*, users(id, first_name, last_name, role, avatar_url)')
-      .range(offset, offset + limit - 1);
+      .range(offset, Math.min(offset + Math.min(limit, 50), offset + 50) - 1);
 
     if (category) query = query.eq('category', category);
+    // Life Hacks page filters: one post, one topic, one author, or a text search
+    const onlyId = parseInt(req.query.id, 10);
+    if (Number.isFinite(onlyId)) query = query.eq('id', onlyId);
+    if (req.query.topic) query = query.eq('hack_topic', String(req.query.topic).slice(0, 40));
+    const byUser = parseInt(req.query.user_id, 10);
+    if (Number.isFinite(byUser)) query = query.eq('user_id', byUser);
+    const search = String(req.query.search || '').replace(/[%,()*\\"'`]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (search) query = query.or(search.split(' ').filter(w => w.length >= 3).slice(0, 4)
+      .flatMap(w => [`title.ilike.%${w}%`, `description.ilike.%${w}%`]).join(',') || `title.ilike.%${search}%`);
     if (sort === 'trending') query = query.order('likes_count', { ascending: false });
     else query = query.order('created_at', { ascending: false });
 
@@ -2528,8 +2565,18 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
   app.post('/api/wall', authMiddleware, async (req, res) => {
     const { title, description, category, media_url, media_type, source_idea_id, is_from_idea } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
+    // Life hacks are public, searchable how-tos: hold them to a few basic rules
+    let hackTopic = null;
+    if (category === 'Life Hack') {
+      const tt = String(title).trim(), dd = String(description || '').trim();
+      if (tt.length < 10) return res.status(400).json({ error: 'Give your life hack a clear title (at least 10 characters).' });
+      if (dd.length < 40) return res.status(400).json({ error: 'Explain the hack in the description (at least 40 characters) so people can try it.' });
+      const contact = quality.hasContact(tt) || quality.hasContact(dd);
+      if (contact) return res.status(400).json({ error: `Please remove ${contact} from your life hack. Life hacks are shared freely on IdeaHub; people can message you through your profile.` });
+      hackTopic = LIFE_HACK_TOPICS.includes(req.body.hack_topic) ? req.body.hack_topic : 'Other';
+    }
     const { data, error } = await supabase.from('wall_posts').insert([{
-      user_id: req.user.id, title, description: description || null,
+      user_id: req.user.id, title, description: description || null, hack_topic: hackTopic,
       category: category || null, media_url: media_url || null,
       media_type: media_type || 'image', source_idea_id: source_idea_id || null,
       is_from_idea: is_from_idea || false, likes_count: 0, comments_count: 0

@@ -21,6 +21,7 @@
     ['/find-support', 'Support Services'],
     ['/how-it-works', 'How It Works'],
     ['/wall', 'IdeaWall'],
+    ['/life-hacks', 'Life Hacks'],
     ['/about', 'About']
   ];
   var DASH = {

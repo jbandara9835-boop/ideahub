@@ -315,6 +315,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
     <button class="filter-tab" onclick="setFilter('trending', this)">🔥 Trending</button>
     <div class="filter-sep"></div>
     <button class="filter-tab" onclick="setCategory('', this)">All</button>
+    <button class="filter-tab" onclick="setCategory('Life Hack', this)">🛠️ Life Hacks</button>
     <button class="filter-tab" onclick="setCategory('Innovation', this)">Innovation</button>
     <button class="filter-tab" onclick="setCategory('Social', this)">Social</button>
     <button class="filter-tab" onclick="setCategory('Technology', this)">Technology</button>
@@ -341,6 +342,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
       <div class="widget">
         <div class="widget-title">📂 Browse by Category</div>
         <div id="categoryWidget">
+          <div class="category-pill" onclick="setCategory('Life Hack', null)"><span>🛠️ Life Hacks</span></div>
           <div class="category-pill" onclick="setCategory('Innovation', null)"><span>💡 Innovation</span></div>
           <div class="category-pill" onclick="setCategory('Social', null)"><span>🤝 Social</span></div>
           <div class="category-pill" onclick="setCategory('Technology', null)"><span>🤖 Technology</span></div>
@@ -379,6 +381,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
       <label>Category</label>
       <select id="postCategory">
         <option value="">Select category</option>
+        <option value="Life Hack">🛠️ Life Hack (a free tip anyone can use)</option>
         <option value="Innovation">💡 Innovation</option>
         <option value="Social">🤝 Social</option>
         <option value="Technology">🤖 Technology</option>
@@ -389,6 +392,11 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
         <option value="Education">📚 Education</option>
         <option value="Other">✦ Other</option>
       </select>
+    </div>
+    <div class="modal-field" id="hackTopicField" style="display:none;">
+      <label>Life hack topic</label>
+      <select id="postTopic"></select>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;">Life hacks also appear on the public <a href="/life-hacks" target="_blank" style="color:var(--accent);">Life Hacks</a> page. Explain the steps clearly, and don't include phone numbers, emails or links.</div>
     </div>
     <div class="modal-field">
       <label>Photo or Video (optional)</label>
@@ -455,6 +463,8 @@ function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem
 
 let currentFilter = 'latest';
 let currentCategory = '';
+function escW(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+const HACK_TOPICS = ['Home', 'Food & Kitchen', 'Money', 'Health', 'Tech', 'Work & Study', 'Travel', 'Other'];
 let page = 0;
 const PAGE_SIZE = 10;
 let allPosts = [];
@@ -518,25 +528,25 @@ function renderPost(post) {
   const liked = likedPosts.has(post.id);
   const saved = savedPosts.has(post.id);
   const initials = getInitials(post.first_name, post.last_name);
-  const avatarHtml = post.avatar_url ? `<img src="${post.avatar_url}" />` : initials;
+  const avatarHtml = post.avatar_url ? `<img src="${escW(post.avatar_url)}" />` : escW(initials);
   const mediaHtml = post.media_url ? (
     post.media_type === 'video'
-      ? `<div class="post-media"><video src="${post.media_url}" controls playsinline></video></div>`
-      : `<div class="post-media"><img src="${post.media_url}" alt="" loading="lazy" onclick="openImageViewer('${post.media_url}')" style="cursor:zoom-in;" /></div>`
+      ? `<div class="post-media"><video src="${escW(post.media_url)}" controls playsinline></video></div>`
+      : `<div class="post-media"><img src="${escW(post.media_url)}" alt="" loading="lazy" onclick="openImageViewer(this.src)" style="cursor:zoom-in;" /></div>`
   ) : '';
   const fromIdeaBadge = post.is_from_idea && post.source_idea_id
     ? `<a class="from-idea-badge" href="/idea?id=${post.source_idea_id}">💡 Listed on Marketplace — View Idea →</a>`
     : '';
-  const catEmojis = {Innovation:'💡',Social:'🤝',Technology:'🤖',Environment:'🌿',Business:'💼',Art:'🎨',Health:'❤️',Education:'📚'};
-  const catBadge = post.category ? `<div class="post-category">${catEmojis[post.category]||'✦'} ${post.category}</div>` : '';
+  const catEmojis = {'Life Hack':'🛠️',Innovation:'💡',Social:'🤝',Technology:'🤖',Environment:'🌿',Business:'💼',Art:'🎨',Health:'❤️',Education:'📚'};
+  const catBadge = post.category ? `<div class="post-category">${catEmojis[post.category]||'✦'} ${escW(post.category)}${post.hack_topic ? ' · ' + escW(post.hack_topic) : ''}</div>` : '';
 
   return `
     <div class="post-card" id="post-${post.id}">
       <div class="post-header">
-        <a class="post-author" href="/public-profile?id=${post.user_id}">
+        <a class="post-author" href="/public-profile?id=${encodeURIComponent(post.user_id)}">
           <div class="post-avatar">${avatarHtml}</div>
           <div>
-            <div class="post-author-name">${post.first_name||''} ${post.last_name||''}</div>
+            <div class="post-author-name">${escW(post.first_name||'')} ${escW(post.last_name||'')}</div>
             <div class="post-author-role">${roleMap[post.role]||'Member'}</div>
           </div>
         </a>
@@ -548,8 +558,8 @@ function renderPost(post) {
       ${fromIdeaBadge}
       ${catBadge}
       <div class="post-content">
-        <div class="post-title">${post.title}</div>
-        ${post.description ? `<div class="post-desc" id="desc-${post.id}">${post.description}</div>${post.description.length > 150 ? `<span class="read-more" onclick="toggleDesc(${post.id})">Read more</span>` : ''}` : ''}
+        <div class="post-title">${escW(post.title)}</div>
+        ${post.description ? `<div class="post-desc" id="desc-${post.id}" style="white-space:pre-wrap;">${escW(post.description)}</div>${post.description.length > 150 ? `<span class="read-more" onclick="toggleDesc(${post.id})">Read more</span>` : ''}` : ''}
       </div>
       ${mediaHtml}
       <div class="post-actions">
@@ -651,7 +661,7 @@ async function loadTrending() {
       <div class="trending-post" onclick="document.getElementById('post-${p.id}')?.scrollIntoView({behavior:'smooth'})">
         <div class="trending-rank">${i+1}</div>
         <div>
-          <div class="trending-title">${p.title}</div>
+          <div class="trending-title">${escW(p.title)}</div>
           <div class="trending-likes">❤️ ${p.likes_count||0} likes</div>
         </div>
       </div>`).join('');
@@ -739,10 +749,10 @@ async function loadComments(postId) {
     if (!comments.length) { list.innerHTML = '<div style="font-size:13px;color:var(--muted);">No comments yet. Be the first!</div>'; return; }
     list.innerHTML = comments.map(c => `
       <div class="comment">
-        <div class="comment-avatar">${c.avatar_url ? `<img src="${c.avatar_url}" />` : getInitials(c.first_name, c.last_name)}</div>
+        <div class="comment-avatar">${c.avatar_url ? `<img src="${escW(c.avatar_url)}" />` : escW(getInitials(c.first_name, c.last_name))}</div>
         <div class="comment-body">
-          <div class="comment-name">${c.first_name||''} ${c.last_name||''}</div>
-          <div class="comment-text">${c.text}</div>
+          <div class="comment-name">${escW(c.first_name||'')} ${escW(c.last_name||'')}</div>
+          <div class="comment-text">${escW(c.text)}</div>
           <div class="comment-time">${formatTime(c.created_at)}</div>
         </div>
       </div>`).join('');
@@ -845,10 +855,13 @@ async function submitPost() {
   const title = document.getElementById('postTitle').value.trim();
   const desc = document.getElementById('postDesc').value.trim();
   const category = document.getElementById('postCategory').value;
+  const hack_topic = category === 'Life Hack' ? document.getElementById('postTopic').value : null;
   const ideaId = document.getElementById('postModal').dataset.ideaId || null;
   const errEl = document.getElementById('modalError');
   errEl.style.display = 'none';
   if (!title) { errEl.textContent = 'Please enter a title.'; errEl.style.display = 'block'; return; }
+  if (category === 'Life Hack' && title.length < 10) { errEl.textContent = 'Give your life hack a clear title (at least 10 characters).'; errEl.style.display = 'block'; return; }
+  if (category === 'Life Hack' && desc.length < 40) { errEl.textContent = 'Explain the hack in the description (at least 40 characters) so people can try it.'; errEl.style.display = 'block'; return; }
   const btn = document.getElementById('modalSubmitBtn');
   const sp = document.getElementById('modalSpinner');
   const bt = document.getElementById('modalBtnText');
@@ -857,7 +870,7 @@ async function submitPost() {
     const res = await fetch(`${API_URL}/api/wall`, {
       method:'POST',
       headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
-      body: JSON.stringify({ title, description:desc, category, media_url:pendingMediaUrl, media_type:pendingMediaType, source_idea_id:ideaId||null, is_from_idea:!!ideaId })
+      body: JSON.stringify({ title, description:desc, category, hack_topic, media_url:pendingMediaUrl, media_type:pendingMediaType, source_idea_id:ideaId||null, is_from_idea:!!ideaId })
     });
     if (!res.ok) { const d=await res.json(); throw new Error(d.error||'Failed'); }
     closePostModal();
@@ -877,10 +890,37 @@ loadPosts(true);
 function openImageViewer(url) {
   const ov = document.createElement('div');
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-  ov.innerHTML = `<img src="${url}" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;" />`;
+  ov.innerHTML = `<img src="${escW(url)}" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;" />`;
   ov.onclick = () => ov.remove();
   document.body.appendChild(ov);
 }
+
+// Life hack topic picker in the post form
+(function () {
+  const sel = document.getElementById('postTopic');
+  if (sel) sel.innerHTML = HACK_TOPICS.map(t => `<option value="${escW(t)}">${escW(t)}</option>`).join('');
+  const cat = document.getElementById('postCategory');
+  const sync = () => {
+    const isHack = cat.value === 'Life Hack';
+    document.getElementById('hackTopicField').style.display = isHack ? 'block' : 'none';
+    document.getElementById('postTitle').placeholder = isHack ? 'e.g. Keep cut onions fresh for a week with one paper towel' : 'Give your idea a catchy title...';
+    document.getElementById('postDesc').placeholder = isHack ? 'Explain the steps so anyone can try it...' : 'Describe your idea, innovation or thought...';
+  };
+  if (cat) cat.addEventListener('change', sync);
+  // Links from the Life Hacks page: /wall?compose=hack and /wall?category=Life%20Hack
+  const qp = new URLSearchParams(location.search);
+  if (qp.get('category')) {
+    currentCategory = qp.get('category');
+    document.querySelectorAll('.filter-bar .filter-tab').forEach(b => b.classList.toggle('active', b.getAttribute('onclick') === `setCategory('${currentCategory}', this)`));
+  }
+  if (qp.get('compose') === 'hack') {
+    setTimeout(() => {
+      openPostModal();
+      if (cat) { cat.value = 'Life Hack'; sync(); }
+      const topic = qp.get('topic'); if (topic && HACK_TOPICS.includes(topic)) sel.value = topic;
+    }, 0);
+  }
+})();
 
 loadPosts(true);
 </script>

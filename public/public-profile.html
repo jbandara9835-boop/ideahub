@@ -110,9 +110,11 @@
 
   Promise.all([
     fetch(`${API_URL}/api/users/${userId}/public`).then(r => { if (!r.ok) throw new Error('not found'); return r.json(); }),
-    fetch(`${API_URL}/api/users/${userId}/reviews`).then(r => r.ok ? r.json() : null).catch(() => null)
+    fetch(`${API_URL}/api/users/${userId}/reviews`).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${API_URL}/api/wall?category=Life%20Hack&user_id=${encodeURIComponent(userId)}&limit=6`).then(r => r.ok ? r.json() : null).catch(() => null)
   ])
-    .then(([user, rv]) => {
+    .then(([user, rv, hk]) => {
+      const hacks = hk ? (Array.isArray(hk) ? hk : (hk.posts || [])) : [];
       rv = rv || { profile_stars: 0, rating_count: 0, deals_completed: 0, reviews: [] };
       const initials = ((user.first_name?.[0] || '') + (user.last_name?.[0] || '')).toUpperCase() || '?';
       const joinYear = new Date(user.created_at).getFullYear();
@@ -127,18 +129,18 @@
       document.getElementById('profileContent').innerHTML = `
         <div class="profile-hero">
           <div class="big-avatar">
-            ${user.avatar_url ? `<img src="${user.avatar_url}" alt="avatar" />` : initials}
+            ${user.avatar_url ? `<img src="${escHtml(user.avatar_url)}" alt="avatar" />` : escHtml(initials)}
           </div>
           <div class="hero-info">
-            <div class="hero-name">${user.first_name || ''} ${user.last_name || ''}</div>
-            <div class="hero-role">${roleLabel}</div>
-            ${user.tagline ? `<div class="hero-tagline">"${user.tagline}"</div>` : ''}
+            <div class="hero-name">${escHtml(user.first_name || '')} ${escHtml(user.last_name || '')}</div>
+            <div class="hero-role">${escHtml(roleLabel)}</div>
+            ${user.tagline ? `<div class="hero-tagline">"${escHtml(user.tagline)}"</div>` : ''}
             <div class="hero-rating">${rv.profile_stars > 0 ? starText(rv.profile_stars) : '<span style="margin-left:0">No ratings yet</span>'}<span>${rv.rating_count ? `${rv.rating_avg ? Number(rv.rating_avg).toFixed(1) + ' from ' : ''}${rv.rating_count} rating${rv.rating_count === 1 ? '' : 's'} · ` : ''}${rv.deals_completed || 0} deal${rv.deals_completed === 1 ? '' : 's'} completed</span></div>
-            <div class="hero-meta">📍 ${[user.city, user.state, user.country].filter(Boolean).join(', ') || 'Location not set'} &nbsp;·&nbsp; Member since ${joinYear}</div>
+            <div class="hero-meta">📍 ${escHtml([user.city, user.state, user.country].filter(Boolean).join(', ') || 'Location not set')} &nbsp;·&nbsp; Member since ${joinYear}</div>
             <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
               ${user.is_verified ? '<div class="verified-badge">✅ Verified User</div>' : '<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted)">⏳ Unverified</div>'}
-              ${user.expert_area ? `<div style="display:inline-flex;align-items:center;gap:4px;background:var(--accent-dim);border:1px solid rgba(245,200,66,0.2);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--accent)">🎯 ${user.expert_area}</div>` : ''}
-              ${user.qualification ? `<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted)">🎓 ${user.qualification}</div>` : ''}
+              ${user.expert_area ? `<div style="display:inline-flex;align-items:center;gap:4px;background:var(--accent-dim);border:1px solid rgba(245,200,66,0.2);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--accent)">🎯 ${escHtml(user.expert_area)}</div>` : ''}
+              ${user.qualification ? `<div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--muted)">🎓 ${escHtml(user.qualification)}</div>` : ''}
             </div>
           </div>
         </div>
@@ -156,16 +158,31 @@
           ${ideas.length === 0 ? '<div class="empty">No public ideas yet.</div>' : `
           <div class="idea-list">
             ${ideas.map(i => `
-              <a class="idea-item" href="/idea?id=${i.id}">
+              <a class="idea-item" href="/idea?id=${encodeURIComponent(i.id)}">
                 <div>
-                  <div class="idea-item-title">${i.title}</div>
+                  <div class="idea-item-title">${escHtml(i.title)}</div>
                   <div class="idea-item-meta">👁 ${i.views || 0} views</div>
                 </div>
-                <div class="idea-price">$${parseInt(i.price).toLocaleString()}</div>
+                <div class="idea-price">$${(parseInt(i.price) || 0).toLocaleString()}</div>
               </a>
             `).join('')}
           </div>`}
         </div>
+
+        ${hacks.length ? `
+        <div class="section">
+          <div class="section-title">🛠️ Life Hacks (${hacks.length}${hacks.length === 6 ? '+' : ''})</div>
+          <div class="idea-list">
+            ${hacks.map(h => `
+              <a class="idea-item" href="/life-hacks?id=${encodeURIComponent(h.id)}">
+                <div>
+                  <div class="idea-item-title">${escHtml(h.title)}</div>
+                  <div class="idea-item-meta">${escHtml(h.hack_topic || 'Life hack')} · 💡 ${Number(h.likes_count) || 0} · 💬 ${Number(h.comments_count) || 0}</div>
+                </div>
+                <div style="color:var(--accent);font-size:12px;font-weight:600;">Free</div>
+              </a>`).join('')}
+          </div>
+        </div>` : ''}
 
         <div class="section">
           <div class="section-title">⭐ Reviews (${rv.reviews.length})</div>
