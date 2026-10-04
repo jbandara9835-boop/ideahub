@@ -8,6 +8,24 @@
 const cron = require('node-cron');
 const makeEscrow = require('./escrow');
 const makeOriginality = require('./originality');
+const quality = require('./public/listing-quality');
+
+// ── Listing quality backfill: scores ideas that have no quality score yet (no AI, free) ──
+async function runQuality(supabase) {
+  const { data, error } = await supabase.from('ideas')
+    .select('id, title, summary, description, industry, price, images, has_patent, patent_number')
+    .is('quality_score', null).limit(500);
+  if (error) throw error;
+  let done = 0, weak = 0;
+  for (const i of data || []) {
+    const r = quality.checkListing({ title: i.title, summary: i.summary, desc: i.description, industry: i.industry, price: i.price,
+      images: i.images, hasPatent: i.has_patent, patentNumber: i.patent_number });
+    const issues = r.items.filter(x => x.level !== 'ok').map(({ id, level, message }) => ({ id, level, message }));
+    const { error: e } = await supabase.from('ideas').update({ quality_score: r.score, quality_issues: issues }).eq('id', i.id);
+    if (!e) { done++; if (r.score < 55) weak++; }
+  }
+  return `scored ${done} idea${done === 1 ? '' : 's'}${weak ? ` · ${weak} weak (under 55)` : ''}`;
+}
 const jwt = require('jsonwebtoken');
 
 const TZ = 'Asia/Colombo';
@@ -404,7 +422,7 @@ function digestHtml(d) {
   if (lowOrig.length) actions.push(`${lowOrig.length} new idea${lowOrig.length > 1 ? 's' : ''} scored low on originality (under 40) — see Admin → Ideas`);
   if (d.pendingPatents) actions.push(`${d.pendingPatents} idea${d.pendingPatents > 1 ? 's' : ''} waiting for review (held by the originality bot, resubmitted, or patent checks) — Admin → Ideas → Under review`);
 
-  const botNames = { originality: 'Originality checks', escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
+  const botNames = { quality: 'Listing quality', originality: 'Originality checks', escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
   const botLines = Object.keys(botNames).filter(b => b !== 'digest').map(b => {
     const r = d.lastRuns[b];
     const state = !r ? 'no run in the last 24h' : r.status === 'ok' ? esc(r.details || 'ok') : `<span style="color:#ff6b6b;">FAILED: ${esc(r.details || '')}</span>`;
@@ -478,6 +496,7 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   const originality = makeOriginality(supabase, escrow);
   const BOTS = {
     originality: () => originality.runPending(),
+    quality: () => runQuality(supabase),
     escrow: () => runEscrow(supabase, escrow),
     ratings: () => runRatings(supabase),
     trending: () => runTrending(supabase),
@@ -508,6 +527,7 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   cron.schedule('0 7 * * *', () => run('digest'), { timezone: TZ });     // 7:00 AM
   cron.schedule('0 10 * * *', () => run('nudge'), { timezone: TZ });     // 10:00 AM
   cron.schedule('20 * * * *', () => run('originality'), { timezone: TZ }); // every hour at :20
+  cron.schedule('30 0 * * *', () => run('quality'), { timezone: TZ });    // 12:30 AM
 
   // Admin-only manual trigger, for testing: POST /api/admin/bots/digest/run
   app.post('/api/admin/bots/:name/run', async (req, res) => {
@@ -523,5 +543,5 @@ module.exports = function registerBots(app, supabase, sendEmail) {
     res.json(await run(req.params.name));
   });
 
-  console.log('  🤖  Bots scheduled: trending 00:00, ratings 00:15, verification 06:30, escrow 06:45, digest 07:00, nudge 10:00, originality hourly at :20 (Asia/Colombo)');
+  console.log('  🤖  Bots scheduled: trending 00:00, ratings 00:15, verification 06:30, escrow 06:45, digest 07:00, nudge 10:00, originality hourly at :20, quality 00:30 (Asia/Colombo)');
 };

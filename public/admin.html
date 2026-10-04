@@ -734,8 +734,11 @@
     const modLine = m && m.action ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--text);">${m.by === 'bot' ? '🤖 Originality bot' : '👤 Admin'} · ${escHtml({ hold: 'held for review', reject: 'rejected', release: 'released', approve: 'approved' }[m.action] || m.action)}${m.at ? ' · ' + new Date(m.at).toLocaleString() : ''}${m.note ? `<br><span style="color:var(--muted);">${escHtml(m.note)}</span>` : ''}</span>` : '';
     const appeal = (allAppeals || []).find(a => a.idea_id === i.id);
     const appealLine = appeal ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--accent);">📨 Open appeal: “${escHtml(appeal.message)}” — decide it in the Appeals box above.</span>` : '';
+    const qs = i.quality_score;
+    const qIssues = (i.quality_issues || []).filter(x => x.level !== 'tip');
+    const qLine = qs != null ? `<span style="font-size:12.5px;flex-basis:100%;">📝 Listing quality <strong style="color:${qs >= 75 ? '#6ee7b7' : qs >= 55 ? '#f5c842' : '#ff6b6b'};">${Number(qs)}/100</strong>${qIssues.length ? `<span style="color:var(--muted);"> · ${qIssues.map(x => escHtml(x.message)).join(' · ')}</span>` : ''}</span>` : '';
     return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border);">
-      ${modLine}${appealLine}
+      ${modLine}${appealLine}${qLine}
       ${acts.join('')}
       <a href="/idea?id=${encodeURIComponent(i.id)}" target="_blank" onclick="event.stopPropagation()" style="font-size:13px;color:var(--accent);margin-left:4px;">View listing ↗</a>
       ${note ? `<span style="font-size:12.5px;color:var(--muted);flex-basis:100%;">${note}</span>` : ''}

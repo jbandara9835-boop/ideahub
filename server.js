@@ -142,6 +142,30 @@ app.get('/robots.txt', (req, res) => {
   const escrow = require('./escrow')(supabase, sendEmail);
   const payments = require('./payments')(supabase);
   const originality = require('./originality')(supabase, escrow);
+  const quality = require('./public/listing-quality');
+
+  // Typical prices per industry (middle half of live listings), cached for 10 minutes
+  const priceGuideCache = new Map();
+  async function priceGuide(industry) {
+    if (!industry) return null;
+    const hit = priceGuideCache.get(industry);
+    if (hit && Date.now() - hit.at < 600000) return hit.guide;
+    const { data } = await supabase.from('ideas').select('price').eq('status', 'live').eq('industry', industry).limit(1000);
+    const prices = (data || []).map(r => Number(r.price)).filter(n => n > 0).sort((a, b) => a - b);
+    const q = f => prices[Math.min(prices.length - 1, Math.floor(f * (prices.length - 1)))];
+    const guide = prices.length ? { count: prices.length, p25: q(0.25), median: q(0.5), p75: q(0.75) } : { count: 0 };
+    priceGuideCache.set(industry, { at: Date.now(), guide });
+    return guide;
+  }
+  // Runs the shared listing rules; returns { report, error } — error is set when something blocks saving
+  async function checkQuality(body) {
+    const report = quality.checkListing({
+      title: body.title, summary: body.summary, desc: body.desc, industry: body.industry, price: body.price,
+      images: body.images, hasPatent: body.hasPatent, patentNumber: body.patentNumber
+    }, { priceGuide: await priceGuide(body.industry) });
+    return { report, error: report.blocking.length ? report.blocking.map(i => i.message).join(' ') : null };
+  }
+  const qualityFields = r => ({ quality_score: r.score, quality_issues: r.items.filter(i => i.level !== 'ok').map(({ id, level, message }) => ({ id, level, message })) });
   // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
   app.get('/discover', (req, res) => {
     res.sendFile(__dirname + '/public/discover.html');
@@ -250,6 +274,12 @@ app.get('/robots.txt', (req, res) => {
       supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
     ]);
     res.json({ ideas: ideasRes.count || 0, users: usersRes.count || 0, deals: txRes.count || 0 });
+  });
+
+  // Typical price range for an industry (used by the submit page's quality checklist)
+  app.get('/api/ideas/price-guide', async (req, res) => {
+    const industry = String(req.query.industry || '').slice(0, 60);
+    res.json((await priceGuide(industry)) || { count: 0 });
   });
 
   app.get('/api/ideas/public', async (req, res) => {
@@ -512,7 +542,7 @@ app.get('/robots.txt', (req, res) => {
   // ── IDEA PRIVACY ─────────────────────────────────────────────────────────────
   // Full description + patent/ID documents are never sent to the public.
   // Owner and admin see everything; buyers (escrow/completed) also see the description.
-  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url', 'originality', 'originality_score', 'originality_checked_at', 'moderation'];
+  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url', 'originality', 'originality_score', 'originality_checked_at', 'moderation', 'quality_score', 'quality_issues'];
   async function viewerContext(req) {
     const t = req.headers.authorization?.split(' ')[1];
     if (!t) return { id: null, role: null, verified: false };
@@ -603,6 +633,8 @@ app.get('/robots.txt', (req, res) => {
   app.post('/api/ideas', authMiddleware, async (req, res) => {
     const { title, summary, desc, industry, ideaType, price, level, visibility, engLevel, hasPatent, patentNumber } = req.body;
     if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
+    const qc = await checkQuality(req.body);
+    if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
 
     const { data: user } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
 
@@ -631,6 +663,7 @@ app.get('/robots.txt', (req, res) => {
         patent_id_url: req.body.patentIdUrl || '',
         views: 0,
         inquiries: 0,
+        ...qualityFields(qc.report),
       }])
       .select()
       .single();
@@ -664,6 +697,8 @@ app.get('/robots.txt', (req, res) => {
     // A taken-down idea goes back to the admin for review once the creator edits it
     const { data: current } = await supabase.from('ideas').select('status').eq('id', req.params.id).eq('creator_id', req.user.id).single();
     const resubmit = current?.status === 'rejected';
+    const qc = await checkQuality(req.body);
+    if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
 
     const { data: idea, error } = await supabase
       .from('ideas')
@@ -678,6 +713,7 @@ app.get('/robots.txt', (req, res) => {
         has_patent: hasPatent || false,
         patent_number: patentNumber || '',
         ...(resubmit ? { status: 'under_review' } : {}),
+        ...qualityFields(qc.report),
       })
       .eq('id', req.params.id)
       .eq('creator_id', req.user.id)

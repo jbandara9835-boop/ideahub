@@ -338,6 +338,21 @@
   }
 
   .tips-title { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
+  .q-box { margin-top: 1.25rem; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; background: rgba(255,255,255,0.02); }
+  .q-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .q-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 14px; }
+  .q-score { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid currentColor; }
+  .q-bar { height: 6px; border-radius: 6px; background: rgba(255,255,255,0.07); margin: 10px 0 12px; overflow: hidden; }
+  .q-bar div { height: 100%; width: 0; border-radius: 6px; transition: width .3s, background .3s; }
+  .q-item { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.45; padding: 5px 0; color: #b9b4aa; }
+  .q-item .q-ic { flex-shrink: 0; width: 16px; text-align: center; }
+  .q-item.block { color: #ff8a8a; }
+  .q-item.warn { color: #f5c842; }
+  .q-item.ok { color: var(--muted); }
+  .q-item.clickable { cursor: pointer; }
+  .q-item.clickable:hover { text-decoration: underline; }
+  .q-oks { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .field-flag { border-color: rgba(255,107,107,0.7) !important; }
   .tips ul { padding-left: 1rem; }
   .tips li { font-size: 12px; color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
 
@@ -644,21 +659,17 @@
           <div class="preview-price" id="previewPrice">$0</div>
         </div>
 
-        <div class="tips">
-          <div class="tips-title">💡 Tips for a great listing</div>
-          <ul>
-            <li>Be specific — vague ideas get fewer inquiries</li>
-            <li>Explain the problem it solves clearly</li>
-            <li>Price fairly — research similar ideas</li>
-            <li>Add as much detail as possible</li>
-            <li>Patents increase buyer confidence</li>
-          </ul>
+        <div class="q-box" id="qBox">
+          <div class="q-head"><span class="q-title">📝 Listing quality</span><span class="q-score" id="qScore" style="color:var(--muted)">—</span></div>
+          <div class="q-bar"><div id="qBar"></div></div>
+          <div id="qList"><div class="q-item"><span class="q-ic">💡</span><span>Start typing and this checklist shows what buyers will notice.</span></div></div>
         </div>
       </div>
     </div>
   </div>
 </main>
 
+<script src="/listing-quality.js"></script>
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -854,6 +865,7 @@
 
       updatePreview();
       if (idea.originality) { origHash = origKey(origFields()); renderOriginality(idea.originality); }
+      scheduleQuality();
       if (['under_review', 'rejected'].includes(idea.status)) {
         const m = idea.moderation || {};
         const b = document.getElementById('modBanner');
@@ -1120,6 +1132,62 @@
     }));
   });
 
+  // ── LISTING QUALITY (same rules the server enforces) ───────────────────────
+  const priceGuides = {};
+  let qTimer = null;
+  const Q_FIELD = { title: 'title', summary: 'summary', desc: 'desc', industry: 'industry', price: 'price', images: 'imageUploadLabel', patent: 'patentNumber' };
+  function qListing() {
+    return {
+      title: document.getElementById('title').value, summary: document.getElementById('summary').value,
+      desc: document.getElementById('desc').value, industry: document.getElementById('industry').value,
+      price: document.getElementById('price').value, images: uploadedImages,
+      hasPatent: patentOn, patentNumber: document.getElementById('patentNumber')?.value || ''
+    };
+  }
+  async function loadPriceGuide(industry) {
+    if (!industry || priceGuides[industry]) return;
+    priceGuides[industry] = { count: 0 };
+    try { const r = await fetch(`${API_URL}/api/ideas/price-guide?industry=${encodeURIComponent(industry)}`); if (r.ok) priceGuides[industry] = await r.json(); } catch (e) {}
+    renderQuality();
+  }
+  function renderQuality() {
+    if (!window.ListingQuality) return null;
+    const l = qListing();
+    loadPriceGuide(l.industry);
+    const r = ListingQuality.checkListing(l, { priceGuide: priceGuides[l.industry] });
+    const color = r.blocking.length ? '#ff6b6b' : r.score >= 75 ? '#6ee7b7' : r.score >= 55 ? '#f5c842' : '#ff6b6b';
+    const s = document.getElementById('qScore'); s.textContent = `${r.score}/100 · ${r.grade}`; s.style.color = color;
+    const bar = document.getElementById('qBar'); bar.style.width = r.score + '%'; bar.style.background = color;
+    const order = { block: 0, warn: 1, tip: 2, ok: 3 };
+    const icon = { block: '⛔', warn: '⚠️', tip: '💡', ok: '✓' };
+    const open = r.items.filter(i => i.level !== 'ok').sort((a, b) => order[a.level] - order[b.level]);
+    const oks = r.items.filter(i => i.level === 'ok');
+    document.getElementById('qList').innerHTML =
+      open.map(i => `<div class="q-item ${i.level} clickable" data-field="${origEsc(i.field)}"><span class="q-ic">${icon[i.level]}</span><span>${origEsc(i.message)}</span></div>`).join('') +
+      (oks.length ? `<div class="q-oks">✓ ${oks.map(i => origEsc(i.message.replace(/\.$/, ''))).join(' · ')}</div>` : '');
+    ['title', 'summary', 'desc', 'industry', 'price'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('field-flag', r.blocking.some(b => Q_FIELD[b.field] === id) && el.value.trim() !== '');
+    });
+    return r;
+  }
+  function scheduleQuality() { clearTimeout(qTimer); qTimer = setTimeout(renderQuality, 250); }
+  document.getElementById('qList').addEventListener('click', e => {
+    const item = e.target.closest('.q-item[data-field]'); if (!item) return;
+    const el = document.getElementById(Q_FIELD[item.dataset.field]);
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (el.focus) el.focus({ preventScroll: true }); }
+  });
+  ['title', 'summary', 'desc', 'industry', 'price', 'patentNumber'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) ['input', 'change'].forEach(evt => el.addEventListener(evt, scheduleQuality));
+  });
+  // re-check when images or the patent toggle change
+  const _renderImagePreviews = renderImagePreviews;
+  renderImagePreviews = function () { _renderImagePreviews.apply(this, arguments); scheduleQuality(); };
+  const _toggleOption = toggleOption;
+  toggleOption = function () { _toggleOption.apply(this, arguments); scheduleQuality(); };
+  setTimeout(renderQuality, 0);
+
   async function handleSubmit() {
     const title = document.getElementById('title').value.trim();
     const summary = document.getElementById('summary').value.trim();
@@ -1143,6 +1211,14 @@
     if (!industry) { errorMsg.textContent = 'Please select an industry.'; errorMsg.classList.add('show'); return; }
     if (!allCountriesMode && selectedCountries.length === 0) { errorMsg.textContent = 'Please select at least one target country, or choose "Available in all countries".'; errorMsg.classList.add('show'); return; }
     if (!price || parseInt(price) < 1) { errorMsg.textContent = 'Please enter a valid price.'; errorMsg.classList.add('show'); return; }
+    const qr = renderQuality();
+    if (qr && qr.blocking.length) {
+      errorMsg.textContent = 'Please fix before submitting: ' + qr.blocking.map(b => b.message).join(' ');
+      errorMsg.classList.add('show');
+      const el = document.getElementById(Q_FIELD[qr.blocking[0].field]);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
     const btn = document.getElementById('submitBtn');
     const spinner = document.getElementById('spinner');
