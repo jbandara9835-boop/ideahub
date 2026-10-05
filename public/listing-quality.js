@@ -87,6 +87,11 @@
     if (!imgs) add('images_none', 'tip', 'images', 'Add a photo, sketch or mock-up. Listings with a picture stand out in Browse.');
     else add('images_ok', 'ok', 'images', imgs + ' image' + (imgs > 1 ? 's' : '') + ' added.');
     if (l.hasPatent && !str(l.patentNumber)) add('patent_number', 'warn', 'patent', 'You marked a patent but gave no patent number.');
+    if (l.engagements && typeof l.engagements === 'object') {
+      var n = Object.keys(l.engagements).length;
+      if (!n) add('engagement_none', 'tip', 'engagements', 'Offer at least a video call to explain the idea. Buyers trust creators who stay involved.');
+      else add('engagement_ok', 'ok', 'engagements', n + ' way' + (n > 1 ? 's' : '') + ' to work with the buyer offered.');
+    }
 
     // Don't praise a field that also has a blocking problem
     var blockedFields = {};

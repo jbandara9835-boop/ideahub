@@ -728,6 +728,15 @@
     return `<span class="orig-tag ${escH(r.band)}" title="${escH(tip)}">${icon} ${escH(r.band === 'original' ? 'Original' : r.band === 'similar' ? 'Similar ideas exist' : 'Very similar')} · ${Number(r.score)}</span>`;
   }
 
+  // Engagement levels the creator offers, as a compact icon tag
+  const ENG_ICONS = { video_call: '📹', meet_in_person: '🤝', prototype: '🧪', supplier: '🏭', sales_support: '📈', partnership: '👥' };
+  const ENG_NAMES = { video_call: 'video call', meet_in_person: 'meeting', prototype: 'prototype', supplier: 'supplier', sales_support: 'sales support', partnership: 'partnership' };
+  function engTag(e) {
+    const keys = Object.keys(e || {}).filter(k => ENG_ICONS[k]);
+    if (!keys.length) return '';
+    return `<span class="card-tag" title="Creator offers: ${keys.map(k => ENG_NAMES[k]).join(', ')}">${keys.map(k => ENG_ICONS[k]).join(' ')} ${keys.length === 1 ? ENG_NAMES[keys[0]] : keys.length + ' ways to work together'}</span>`;
+  }
+
   function cardHTML(idea) {
     const stage = levelLabel[idea.level] || idea.idea_type || 'Concept';
     const industry = idea.industry || idea.category || '';
@@ -751,6 +760,7 @@
           ${origTag(idea.originality_rating)}
           ${industry ? `<span class="card-tag">${escH(industry)}</span>` : ''}
           ${idea.patent_verified ? `<span class="card-tag">✅ Verified Patent</span>` : ''}
+          ${engTag(idea.engagements)}
         </div>
         <div class="card-creator">
           <div class="creator-avatar">${avatarHTML}</div>

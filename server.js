@@ -143,6 +143,16 @@ app.get('/robots.txt', (req, res) => {
   const payments = require('./payments')(supabase);
   const originality = require('./originality')(supabase, escrow);
   const quality = require('./public/listing-quality');
+  const engagementLevels = require('./public/engagements');
+  // Cleans the creator's engagement levels; returns { value, error }
+  function readEngagements(body) {
+    const value = engagementLevels.sanitize(body.engagements);
+    for (const k of Object.keys(value)) {
+      const c = quality.hasContact(value[k].note);
+      if (c) return { error: `Please remove ${c} from your "${engagementLevels.BY_KEY[k].short}" note. Buyers contact you through IdeaHub messages.` };
+    }
+    return { value };
+  }
 
   // Typical prices per industry (middle half of live listings), cached for 10 minutes
   const priceGuideCache = new Map();
@@ -161,7 +171,8 @@ app.get('/robots.txt', (req, res) => {
   async function checkQuality(body) {
     const report = quality.checkListing({
       title: body.title, summary: body.summary, desc: body.desc, industry: body.industry, price: body.price,
-      images: body.images, hasPatent: body.hasPatent, patentNumber: body.patentNumber
+      images: body.images, hasPatent: body.hasPatent, patentNumber: body.patentNumber,
+      engagements: engagementLevels.sanitize(body.engagements)
     }, { priceGuide: await priceGuide(body.industry) });
     return { report, error: report.blocking.length ? report.blocking.map(i => i.message).join(' ') : null };
   }
@@ -662,6 +673,8 @@ app.get('/robots.txt', (req, res) => {
     if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
     const qc = await checkQuality(req.body);
     if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
+    const eng = readEngagements(req.body);
+    if (eng.error) return res.status(400).json({ error: eng.error });
 
     const { data: user } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
 
@@ -675,7 +688,8 @@ app.get('/robots.txt', (req, res) => {
         price: parseFloat(price),
         level: parseInt(level) || 1,
         visibility: parseInt(visibility) || 1,
-        eng_level: engLevel || 0,
+        eng_level: Object.keys(eng.value).length,
+        engagements: eng.value,
         has_patent: hasPatent || false,
         patent_number: patentNumber || '',
         icon: '💡',
@@ -726,6 +740,8 @@ app.get('/robots.txt', (req, res) => {
     const resubmit = current?.status === 'rejected';
     const qc = await checkQuality(req.body);
     if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
+    const eng = readEngagements(req.body);
+    if (eng.error) return res.status(400).json({ error: eng.error });
 
     const { data: idea, error } = await supabase
       .from('ideas')
@@ -740,6 +756,7 @@ app.get('/robots.txt', (req, res) => {
         has_patent: hasPatent || false,
         patent_number: patentNumber || '',
         ...(resubmit ? { status: 'under_review' } : {}),
+        engagements: eng.value, eng_level: Object.keys(eng.value).length,
         ...qualityFields(qc.report),
       })
       .eq('id', req.params.id)
@@ -861,18 +878,22 @@ app.get('/robots.txt', (req, res) => {
     if (idea.creator_id === req.user.id) return res.status(400).json({ error: 'You cannot buy your own idea.' });
     if (idea.status !== 'live') return res.status(400).json({ error: 'This idea is not available for purchase.' });
     if (!payments.purchasesOpen()) return res.status(403).json({ error: 'Online payments are launching soon. Message the creator to discuss this idea in the meantime.', code: 'payments_closed' });
+    // Engagement levels the buyer added (fixed-price ones); free ones are always included
+    const extras = engagementLevels.addOns(idea.engagements, Array.isArray(req.body.engagements) ? req.body.engagements.slice(0, 10) : []);
+    if (extras.errors.length) return res.status(400).json({ error: extras.errors.join(' ') });
 
     // Reserve the idea first so two buyers can't purchase it at the same moment
     const { data: claimed } = await supabase.from('ideas').update({ status: 'escrow' }).eq('id', idea.id).eq('status', 'live').select('id');
     if (!claimed || !claimed.length) return res.status(400).json({ error: 'This idea was just purchased by someone else.' });
 
-    const fee = Math.round(idea.price * 0.08);
+    const amount = Math.round((Number(idea.price) + extras.total) * 100) / 100;
+    const fee = Math.round(amount * 0.08);
     const { data: tx, error } = await supabase
       .from('transactions')
       .insert([{
         idea_id: idea.id, idea_title: idea.title,
         buyer_id: req.user.id, seller_id: idea.creator_id,
-        amount: idea.price, fee, total: idea.price + fee,
+        amount, fee, total: amount + fee, engagements: extras.items,
         payment_method: paymentMethod || 'card', status: 'escrow',
       }])
       .select().single();
@@ -896,7 +917,8 @@ app.get('/robots.txt', (req, res) => {
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
           <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
           <h2 style="margin-bottom:8px;">Your idea has a buyer! 🎉</h2>
-          <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">${buyer?.first_name || 'A buyer'} has locked <strong style="color:#f5c842;">$${idea.price.toLocaleString()}</strong> in escrow for your idea <strong>"${idea.title}"</strong>.</p>
+          <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">${buyer?.first_name || 'A buyer'} has locked <strong style="color:#f5c842;">$${amount.toLocaleString()}</strong> in escrow for your idea <strong>"${escrow.esc(idea.title)}"</strong>.</p>
+          ${extras.items.length ? `<p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">Included with the purchase: <strong style="color:#f0ede8;">${extras.items.map(i => escrow.esc(i.label) + (i.price ? ' ($' + i.price.toLocaleString() + ')' : ' (included)')).join(', ')}</strong>. Agree the details with the buyer in IdeaHub messages.</p>` : ''}
           <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Deliver the idea materials to the buyer. Once they confirm delivery, funds will be released to your wallet.</p>
           <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Transaction →</a>
           <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>

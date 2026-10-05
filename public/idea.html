@@ -108,6 +108,23 @@
   .fee-row { display:flex; justify-content:space-between; font-size:13px; padding:4px 0; }
   .fee-row.total { border-top:1px solid var(--border); margin-top:6px; padding-top:10px; font-weight:600; font-size:14px; }
   .fee-row.total .fee-val { color:var(--accent); }
+  .eng-list { display:flex; flex-direction:column; gap:10px; }
+  .eng-item { display:flex; gap:12px; align-items:flex-start; padding:0.85rem 1rem; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,0.02); }
+  .eng-ic { font-size:20px; line-height:1.2; flex-shrink:0; }
+  .eng-body { flex:1; min-width:0; }
+  .eng-title { font-size:14px; font-weight:600; }
+  .eng-sub { font-size:12.5px; color:var(--muted); margin-top:2px; line-height:1.5; }
+  .eng-warn { font-size:12px; color:#f5c842; margin-top:4px; line-height:1.5; }
+  .eng-price { flex-shrink:0; font-size:12.5px; font-weight:700; color:var(--accent); text-align:right; }
+  .eng-price.free { color:var(--success); }
+  .eng-price.quote { color:var(--muted); font-weight:500; }
+  .eng-ask { display:inline-block; margin-top:6px; font-size:12px; color:var(--accent); cursor:pointer; background:none; border:0; padding:0; font-family:inherit; }
+  .addons { margin-bottom:1rem; }
+  .addons-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:6px; }
+  .addon { display:flex; align-items:center; gap:8px; font-size:13px; padding:6px 0; cursor:pointer; }
+  .addon input { accent-color:#f5c842; width:16px; height:16px; }
+  .addon .a-price { margin-left:auto; color:var(--muted); }
+  .addon.inc { cursor:default; color:var(--muted); }
 
   .buy-btn { width:100%; background:var(--accent); color:#0d0d0f; border:none; border-radius:10px; padding:0.9rem; font-size:15px; font-weight:700; font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; transition:opacity 0.2s, transform 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
   .buy-btn:hover { opacity:0.9; transform:translateY(-1px); }
@@ -236,6 +253,7 @@
   </div>
 </div>
 
+<script src="/engagements.js"></script>
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -377,13 +395,15 @@
       return;
     }
     if (payCfg.provider === 'test' && !confirm('TEST MODE: no real payment will be taken for this purchase. Continue?')) return;
-    if (!confirm(`Purchase "${currentIdea.title}" for ${formatPrice(currentIdea.price)}?\n\nPayment will be held in escrow until you confirm delivery.`)) return;
+    const c = checkoutAmount();
+    const extrasNote = chosenAddOns.size ? `\nIncludes: ${[...chosenAddOns].map(k => Engagements.BY_KEY[k].short).join(', ')}` : '';
+    if (!confirm(`Purchase "${currentIdea.title}" for $${c.total.toLocaleString()} (including the 8% platform fee)?${extrasNote}\n\nPayment will be held in escrow until you confirm delivery.`)) return;
 
     try {
       const res = await fetch(`${API_URL}/api/transactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ideaId: currentIdea.id, paymentMethod: 'card' })
+        body: JSON.stringify({ ideaId: currentIdea.id, paymentMethod: 'card', engagements: [...chosenAddOns] })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Purchase failed');
@@ -392,6 +412,60 @@
     } catch (err) {
       alert(err.message || 'Purchase failed. Please try again.');
     }
+  }
+
+
+  // ── ENGAGEMENT LEVELS ──────────────────────────────────────────────────────
+  let chosenAddOns = new Set();
+  function engagementSection(idea, isOwner) {
+    const off = window.Engagements ? Engagements.offered(idea.engagements) : [];
+    if (!off.length) return '';
+    return `<div class="section-card">
+      <div class="section-title">🤝 Work with the creator</div>
+      <div class="eng-list">
+        ${off.map(o => `<div class="eng-item">
+          <span class="eng-ic">${o.icon}</span>
+          <div class="eng-body"><div class="eng-title">${escI(o.label)}</div>
+            <div class="eng-sub">${escI(o.note || o.help)}</div>
+            ${o.warning ? `<div class="eng-warn">⚠️ ${escI(o.warning)}</div>` : ''}
+            ${o.pricing === 'quote' && !isOwner ? `<button class="eng-ask" onclick="askAbout('${o.key}')">Ask the creator for a price →</button>` : ''}
+          </div>
+          <span class="eng-price ${o.pricing}">${escI(Engagements.priceLabel(o))}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  function addOnsBox(idea) {
+    const off = window.Engagements ? Engagements.offered(idea.engagements) : [];
+    const free = off.filter(o => o.pricing === 'free'), fixed = off.filter(o => o.pricing === 'fixed');
+    if (!free.length && !fixed.length) return '';
+    return `<div class="addons">
+      <div class="addons-title">Included &amp; optional extras</div>
+      ${free.map(o => `<div class="addon inc">✓ ${o.icon} ${escI(o.short)}<span class="a-price">Included</span></div>`).join('')}
+      ${fixed.map(o => `<label class="addon"><input type="checkbox" value="${o.key}" onchange="toggleAddOn(this)" ${chosenAddOns.has(o.key) ? 'checked' : ''}> ${o.icon} ${escI(o.short)}<span class="a-price">+$${Number(o.price).toLocaleString()}</span></label>`).join('')}
+    </div>`;
+  }
+  function toggleAddOn(cb) {
+    if (cb.checked) chosenAddOns.add(cb.value); else chosenAddOns.delete(cb.value);
+    updateTotals();
+  }
+  function checkoutAmount() {
+    const extra = window.Engagements ? Engagements.addOns(currentIdea.engagements, [...chosenAddOns]).total : 0;
+    const amount = Number(currentIdea.price || 0) + extra;
+    const fee = Math.round(amount * 0.08);
+    return { extra, amount, fee, total: amount + fee };
+  }
+  function updateTotals() {
+    const c = checkoutAmount();
+    const ex = document.getElementById('feeExtras');
+    if (ex) { ex.style.display = c.extra ? 'flex' : 'none'; ex.lastElementChild.textContent = '$' + c.extra.toLocaleString(); }
+    document.getElementById('feeFee').textContent = '$' + c.fee.toLocaleString();
+    document.getElementById('feeTotal').textContent = '$' + c.total.toLocaleString();
+  }
+  function askAbout(key) {
+    openModal();
+    const l = Engagements.BY_KEY[key];
+    document.getElementById('msgText').value = `Hi, I'm interested in "${currentIdea.title}". Could you tell me your price and terms for: ${l ? l.label.toLowerCase() : key}?`;
   }
 
   function escI(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
@@ -489,6 +563,8 @@
               <div style="font-size:14px;color:var(--muted);line-height:1.7;">The full description is shared with the buyer once payment is held in escrow, so the creator's idea stays protected. Have questions first? <a href="#" onclick="event.preventDefault();openModal()" style="color:var(--accent);">Message the creator</a>.</div>
             </div>` : ''}
 
+            ${engagementSection(idea, isOwner)}
+
             <div class="section-card">
               <div class="section-title">📊 Idea Details</div>
               <div class="meta-grid">
@@ -542,9 +618,11 @@
 
               <div class="fee-breakdown">
                 <div class="fee-row"><span>Idea price</span><span>${formatPrice(idea.price)}</span></div>
-                <div class="fee-row"><span>Platform fee (8%)</span><span>$${fee.toLocaleString()}</span></div>
-                <div class="fee-row total"><span>Total</span><span class="fee-val">$${total.toLocaleString()}</span></div>
+                <div class="fee-row" id="feeExtras" style="display:none"><span>Extras</span><span>$0</span></div>
+                <div class="fee-row"><span>Platform fee (8%)</span><span id="feeFee">$${fee.toLocaleString()}</span></div>
+                <div class="fee-row total"><span>Total</span><span class="fee-val" id="feeTotal">$${total.toLocaleString()}</span></div>
               </div>
+              ${idea.status === 'live' && !isOwner ? addOnsBox(idea) : ''}
 
               ${idea.status === 'live' && !isOwner ? `
                 <button class="buy-btn" onclick="handleBuy()">

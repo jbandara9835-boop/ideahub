@@ -340,6 +340,7 @@
 </div>
 
 <script>
+  function txEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
   // ── SHARED SIDEBAR NAV ──
@@ -470,8 +471,9 @@
           <div class="tx-idea">
             <div class="tx-icon-circle ${isSale ? 'sale' : 'purchase'}">${isSale ? '💰' : '🛒'}</div>
             <div>
-              <div class="tx-title">${tx.idea_title || 'Unnamed idea'}</div>
+              <div class="tx-title">${txEsc(tx.idea_title || 'Unnamed idea')}</div>
               <div class="tx-date">${formatDate(tx.created_at)}</div>
+              ${Array.isArray(tx.engagements) && tx.engagements.length ? `<div class="tx-date" style="color:var(--accent);margin-top:2px;">+ ${tx.engagements.map(e => txEsc(e.label) + (e.price ? ' ($' + Number(e.price).toLocaleString() + ')' : '')).join(' · ')}</div>` : ''}
             </div>
           </div>
           <div>${isSale ? '<span style="color:var(--success);font-size:12px;font-weight:500;">Sale</span>' : '<span style="color:var(--accent);font-size:12px;font-weight:500;">Purchase</span>'}</div>
