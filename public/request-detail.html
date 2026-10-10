@@ -132,6 +132,21 @@
     .btn-secondary:hover { border-color:var(--gold); }
 
     /* ALERT BOXES */
+    .m-idea { display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--border); text-decoration:none; color:var(--text); }
+    .m-idea:first-of-type { border-top:0; padding-top:0; }
+    .m-idea:hover .m-title { color:var(--gold); }
+    .m-title { font-weight:600; font-size:0.9rem; }
+    .m-sub { font-size:0.78rem; color:var(--muted); margin-top:3px; line-height:1.5; }
+    .m-right { text-align:right; flex-shrink:0; }
+    .m-price { font-weight:700; color:var(--gold); font-size:0.9rem; }
+    .m-fit { font-size:0.72rem; color:var(--green); margin-top:3px; }
+    .m-creator { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-top:1px solid var(--border); }
+    .m-creator:first-of-type { border-top:0; padding-top:0; }
+    .m-av { width:36px; height:36px; border-radius:50%; background:rgba(245,200,66,0.12); border:1px solid var(--gold); color:var(--gold); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; overflow:hidden; flex-shrink:0; }
+    .m-av img { width:100%; height:100%; object-fit:cover; }
+    .m-reasons { font-size:0.76rem; color:var(--muted); line-height:1.55; margin-top:3px; }
+    .m-invite { margin-left:auto; flex-shrink:0; border-color:var(--gold) !important; color:var(--gold); }
+    .m-invite[disabled] { opacity:.6; cursor:default; border-color:var(--border) !important; color:var(--muted); }
     .info-box { border-radius:8px; padding:12px 14px; font-size:0.82rem; line-height:1.5; margin-bottom:12px; }
     .info-blue { background:rgba(96,165,250,0.1); border:1px solid rgba(96,165,250,0.3); color:var(--blue); }
     .info-green { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); color:var(--green); }
@@ -192,6 +207,53 @@
     const avatarUrl = user.avatar_url || user.avatarUrl;
     if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
     else avatarEl.textContent = (user.name || user.first_name || user.email || 'U')[0].toUpperCase();
+  }
+
+  function escR(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+  // ── MATCHING ──
+  async function loadMatches(isOwner) {
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/matches`, token ? { headers: { Authorization: `Bearer ${token}` } } : {});
+      if (!res.ok) return;
+      const m = await res.json();
+      const ideasEl = document.getElementById('matchIdeas');
+      if (ideasEl && m.ideas && m.ideas.length) {
+        ideasEl.innerHTML = `<div class="card">
+          <div class="card-title">💡 Ideas already for sale that fit</div>
+          ${m.ideas.map(i => `<a class="m-idea" href="/idea?id=${encodeURIComponent(i.id)}">
+            <div><div class="m-title">${escR(i.title)}</div><div class="m-sub">${escR(i.summary || '')}</div></div>
+            <div class="m-right"><div class="m-price">$${Number(i.price || 0).toLocaleString()}</div><div class="m-fit">${Number(i.match)}% fit${i.originality_score != null ? ' · originality ' + Number(i.originality_score) : ''}</div></div>
+          </a>`).join('')}
+          ${isOwner ? '<div class="m-sub" style="margin-top:10px;">Buying an existing idea can be faster than waiting for proposals.</div>' : ''}
+        </div>`;
+      }
+      const crEl = document.getElementById('matchCreators');
+      if (crEl && m.creators) {
+        crEl.innerHTML = `<div class="card">
+          <div class="card-title">🎯 Creators who could help <span style="font-size:0.72rem;text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;">${m.creators.filter(c => c.alerted).length} alerted automatically</span></div>
+          ${m.creators.length ? m.creators.map(c => `<div class="m-creator">
+            <div class="m-av">${c.avatar_url ? `<img src="${escR(c.avatar_url)}" alt="">` : escR((c.name || '?')[0].toUpperCase())}</div>
+            <div style="min-width:0;"><a href="/public-profile?id=${encodeURIComponent(c.id)}" style="color:var(--text);font-weight:600;font-size:0.88rem;text-decoration:none;">${escR(c.name)}</a>${c.stars ? ` <span style="color:var(--gold);font-size:0.72rem;">${'★'.repeat(Math.round(c.stars))}</span>` : ''}
+              <div class="m-reasons">${c.reasons.map(escR).join(' · ')}</div></div>
+            <button class="btn-sm m-invite" ${c.invited ? 'disabled' : ''} onclick="inviteCreator(${Number(c.id)}, this)">${c.invited ? '✓ Invited' : '✉️ Invite to pitch'}</button>
+          </div>`).join('') : '<div class="m-sub">No close matches yet. Creators are still alerted, and new ideas that fit will be sent to you.</div>'}
+        </div>`;
+      }
+      const meEl = document.getElementById('matchMe');
+      if (meEl && m.me) {
+        meEl.innerHTML = `<div class="info-box info-gold">✨ <strong>${m.me.invited ? 'The investor invited you to pitch.' : "You're a strong match for this request."}</strong>${m.me.reasons && m.me.reasons.length ? '<br>' + m.me.reasons.map(escR).join(' · ') : ''}</div>`;
+      }
+    } catch (e) {}
+  }
+  async function inviteCreator(id, btn) {
+    btn.disabled = true; btn.textContent = 'Inviting…';
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/invite`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ creatorId: id }) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Invite failed');
+      btn.textContent = '✓ Invited';
+    } catch (e) { alert(e.message); btn.disabled = false; btn.textContent = '✉️ Invite to pitch'; }
   }
 
   function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
@@ -266,7 +328,7 @@
       if (!msgs.length) { el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:0.82rem;">No messages yet. Start the pitch!</div>'; return; }
       el.innerHTML = msgs.map(m => {
         const isMe = m.from_id === user?.id;
-        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${m.text}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
+        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble" style="white-space:pre-wrap;">${escR(m.text)}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
       }).join('');
       el.scrollTop = el.scrollHeight;
     } catch(e) {}
@@ -333,19 +395,22 @@
             <!-- REQUEST CARD -->
             <div class="card">
               <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">
-                <div class="req-title">${r.title}</div>
+                <div class="req-title">${escR(r.title)}</div>
                 <span class="status-badge s-${r.status||'open'}">${statusMap[r.status]||'Open'}</span>
               </div>
               <div class="meta-pills">
-                ${r.industry?`<span class="meta-pill">🏭 ${r.industry}</span>`:''}
-                <span class="meta-pill">👤 ${r.investor_name||'Anonymous'}</span>
+                ${r.industry?`<span class="meta-pill">🏭 ${escR(r.industry)}</span>`:''}
+                <span class="meta-pill">👤 ${escR(r.investor_name||'Anonymous')}</span>
                 <span class="meta-pill">🕐 ${timeAgo(r.created_at)}</span>
                 ${r.deadline?`<span class="meta-pill">📅 Deadline: ${formatDate(r.deadline)}</span>`:''}
                 <span class="meta-pill">📝 ${r.proposal_count||0} proposals</span>
               </div>
-              <div class="req-problem">${r.problem}</div>
-              ${r.requirements?`<div class="req-requirements"><strong style="color:var(--gold);font-size:0.75rem;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">📋 Requirements</strong>${r.requirements}</div>`:''}
+              <div class="req-problem" style="white-space:pre-wrap;">${escR(r.problem)}</div>
+              ${r.requirements?`<div class="req-requirements"><strong style="color:var(--gold);font-size:0.75rem;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">📋 Requirements</strong><span style="white-space:pre-wrap;">${escR(r.requirements)}</span></div>`:''}
             </div>
+
+            <div id="matchIdeas"></div>
+            ${isOwner ? '<div id="matchCreators"></div>' : ''}
 
             <!-- ESCROW -->
             ${['in_escrow','delivered','completed'].includes(r.status)?`
@@ -369,13 +434,13 @@
                 return `<div class="proposal-item ${p.status==='shortlisted'?'shortlisted':''} ${p.status==='selected'?'selected':''}">
                   <div class="prop-header">
                     <div class="prop-creator">
-                      <div class="prop-av">${init}</div>
-                      <div><div class="prop-name">${name}</div><div class="prop-sub">${timeAgo(p.created_at)} · ${p.status}</div></div>
+                      <div class="prop-av">${escR(init)}</div>
+                      <div><div class="prop-name">${escR(name)}</div><div class="prop-sub">${timeAgo(p.created_at)} · ${escR(p.status)}</div></div>
                     </div>
                   </div>
-                  <div class="prop-title">${p.title}</div>
-                  <div class="prop-summary">${p.summary}</div>
-                  ${p.approach?`<div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.6;">${p.approach}</div>`:''}
+                  <div class="prop-title">${escR(p.title)}</div>
+                  <div class="prop-summary">${escR(p.summary)}</div>
+                  ${p.approach?`<div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.6;">${escR(p.approach)}</div>`:''}
                   <div class="prop-footer">
                     ${p.proposed_price?`<span class="prop-price">$${p.proposed_price.toLocaleString()}</span>`:''}
                     ${p.delivery_days?`<span class="prop-days">⏱ ${p.delivery_days}d delivery</span>`:''}
@@ -385,7 +450,7 @@
                       ${['shortlisted','invited_to_pitch'].includes(p.status)?`<button class="btn-sm btn-select" onclick="updateProposalStatus(${p.id},'selected')">🏆 Select</button>`:''}
                       ${p.status==='selected'&&r.status==='agreed'?`<button class="btn-sm btn-select" onclick="lockEscrow(${p.id},${p.creator_id},${p.proposed_price||r.budget_max||0})">🔒 Lock Escrow</button>`:''}
                       ${!['rejected','selected'].includes(p.status)?`<button class="btn-sm btn-reject" onclick="updateProposalStatus(${p.id},'rejected')">✕ Reject</button>`:''}
-                      <button class="btn-sm btn-chat" onclick="openChat(${p.creator_id},'${name}')">💬 Chat</button>
+                      <button class="btn-sm btn-chat" onclick="openChat(${Number(p.creator_id)}, this.dataset.n)" data-n="${escR(name)}">💬 Chat</button>
                     </div>
                   </div>
                 </div>`;
@@ -395,7 +460,7 @@
             ${isOwner&&proposals.length===0?`
             <div class="card" style="text-align:center;padding:3rem;">
               <div style="font-size:2.5rem;margin-bottom:12px;">📭</div>
-              <div style="color:var(--muted);font-size:0.875rem;">No proposals yet — creators will be notified shortly.</div>
+              <div style="color:var(--muted);font-size:0.875rem;">No proposals yet. The best-matched creators have been alerted, and you can invite more below.</div>
             </div>`:''}
 
             <!-- CHAT -->
@@ -413,6 +478,7 @@
 
           <!-- RIGHT -->
           <div>
+            <div id="matchMe"></div>
             <!-- BUDGET -->
             <div class="card">
               <div class="card-title">💰 Budget</div>
@@ -426,8 +492,8 @@
               ${myProposal?`
                 <div class="card-title">Your Proposal</div>
                 <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:12px;">
-                  <div style="font-weight:600;font-size:0.875rem;margin-bottom:4px;">${myProposal.title}</div>
-                  <div style="font-size:0.82rem;color:var(--muted);">${myProposal.summary}</div>
+                  <div style="font-weight:600;font-size:0.875rem;margin-bottom:4px;">${escR(myProposal.title)}</div>
+                  <div style="font-size:0.82rem;color:var(--muted);">${escR(myProposal.summary)}</div>
                   <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
                     <span class="status-badge s-${myProposal.status}" style="font-size:0.7rem;">${myProposal.status}</span>
                     ${myProposal.proposed_price?`<span style="font-weight:700;color:var(--gold);">$${myProposal.proposed_price.toLocaleString()}</span>`:''}
@@ -462,6 +528,7 @@
           </div>
         </div>`;
 
+      loadMatches(isOwner);
       if (isCreator && myProposal?.status==='invited_to_pitch') openChat(r.investor_id,'Investor');
 
     } catch(err) {

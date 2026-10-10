@@ -8,6 +8,7 @@
 const cron = require('node-cron');
 const makeEscrow = require('./escrow');
 const makeOriginality = require('./originality');
+const makeMatching = require('./matching');
 const quality = require('./public/listing-quality');
 
 // ── Listing quality backfill: scores ideas that have no quality score yet (no AI, free) ──
@@ -422,7 +423,7 @@ function digestHtml(d) {
   if (lowOrig.length) actions.push(`${lowOrig.length} new idea${lowOrig.length > 1 ? 's' : ''} scored low on originality (under 40) — see Admin → Ideas`);
   if (d.pendingPatents) actions.push(`${d.pendingPatents} idea${d.pendingPatents > 1 ? 's' : ''} waiting for review (held by the originality bot, resubmitted, or patent checks) — Admin → Ideas → Under review`);
 
-  const botNames = { quality: 'Listing quality', originality: 'Originality checks', escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
+  const botNames = { requests: 'Request clean-up', quality: 'Listing quality', originality: 'Originality checks', escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
   const botLines = Object.keys(botNames).filter(b => b !== 'digest').map(b => {
     const r = d.lastRuns[b];
     const state = !r ? 'no run in the last 24h' : r.status === 'ok' ? esc(r.details || 'ok') : `<span style="color:#ff6b6b;">FAILED: ${esc(r.details || '')}</span>`;
@@ -494,7 +495,9 @@ async function runDigest(supabase, sendEmail) {
 module.exports = function registerBots(app, supabase, sendEmail) {
   const escrow = makeEscrow(supabase, sendEmail);
   const originality = makeOriginality(supabase, escrow);
+  const matching = makeMatching(supabase, escrow);
   const BOTS = {
+    requests: () => matching.cleanup(),
     originality: () => originality.runPending(),
     quality: () => runQuality(supabase),
     escrow: () => runEscrow(supabase, escrow),
@@ -528,6 +531,7 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   cron.schedule('0 10 * * *', () => run('nudge'), { timezone: TZ });     // 10:00 AM
   cron.schedule('20 * * * *', () => run('originality'), { timezone: TZ }); // every hour at :20
   cron.schedule('30 0 * * *', () => run('quality'), { timezone: TZ });    // 12:30 AM
+  cron.schedule('50 6 * * *', () => run('requests'), { timezone: TZ });   // 6:50 AM
 
   // Admin-only manual trigger, for testing: POST /api/admin/bots/digest/run
   app.post('/api/admin/bots/:name/run', async (req, res) => {
@@ -543,5 +547,5 @@ module.exports = function registerBots(app, supabase, sendEmail) {
     res.json(await run(req.params.name));
   });
 
-  console.log('  🤖  Bots scheduled: trending 00:00, ratings 00:15, verification 06:30, escrow 06:45, digest 07:00, nudge 10:00, originality hourly at :20, quality 00:30 (Asia/Colombo)');
+  console.log('  🤖  Bots scheduled: trending 00:00, ratings 00:15, verification 06:30, escrow 06:45, digest 07:00, nudge 10:00, originality hourly at :20, quality 00:30, requests 06:50 (Asia/Colombo)');
 };

@@ -258,6 +258,7 @@
       <button class="status-tab" data-status="open">Open</button>
       <button class="status-tab" data-status="proposals_received">Proposals In</button>
       <button class="status-tab" data-status="shortlisting">Shortlisting</button>
+      <button class="status-tab" data-status="matched" id="matchedTab" style="display:none;">🎯 Matched to you</button>
     </div>
     <select class="sort-select" id="sortSelect" onchange="applyFilters()">
       <option value="newest">Newest first</option>
@@ -348,7 +349,23 @@
     updateActiveBar(); applyFilters();
   };
 
+  // Requests the signed-in creator was matched or invited to
+  let matchedIds = new Map();
+  async function loadMyMatches() {
+    const tk = localStorage.getItem('ih_token');
+    if (!tk) return;
+    try {
+      const r = await fetch(`${API_URL}/api/my-request-matches`, { headers: { Authorization: `Bearer ${tk}` } });
+      if (!r.ok) return;
+      const rows = await r.json();
+      matchedIds = new Map(rows.map(x => [x.request_id, !!x.invited_at]));
+      if (matchedIds.size) { document.getElementById('matchedTab').style.display = ''; applyFilters(); }
+    } catch (e) {}
+  }
+  function escQ(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
   async function loadRequests() {
+    loadMyMatches();
     try {
       const res = await fetch(`${API_URL}/api/requests`);
       allRequests = await res.json();
@@ -370,7 +387,7 @@
     const bMax = parseInt(document.getElementById('budgetMax').value)||Infinity;
 
     filteredRequests = allRequests.filter(r => {
-      const matchStatus = activeStatus==='all' || r.status===activeStatus;
+      const matchStatus = activeStatus==='all' || (activeStatus==='matched' ? matchedIds.has(r.id) : r.status===activeStatus);
       const matchCat = activeCategory==='all' || r.industry===activeCategory;
       const matchQ = !q || (r.title||'').toLowerCase().includes(q) || (r.problem||'').toLowerCase().includes(q);
       const rMin=r.budget_min||0, rMax=r.budget_max||rMin;
@@ -471,28 +488,29 @@
 
   function cardHTML(r) {
     return `
-      <a class="req-card" href="/request-detail?id=${r.id}">
+      <a class="req-card" href="/request/${encodeURIComponent(r.id)}">
         <div class="req-top">
-          <div class="req-title">${r.title||'Untitled Request'}</div>
+          <div class="req-title">${escQ(r.title||'Untitled Request')}</div>
           <div class="req-badges">
+            ${matchedIds.has(r.id)?`<span class="featured-badge" style="background:rgba(110,231,183,0.12);color:#6ee7b7;border-color:rgba(110,231,183,0.35);">${matchedIds.get(r.id)?'✉️ Invited':'🎯 Matched to you'}</span>`:''}
             ${r.featured?`<span class="featured-badge">⭐ Featured</span>`:''}
             <span class="status-badge s-${r.status||'open'}">${statusMap[r.status]||'Open'}</span>
           </div>
         </div>
-        <div class="req-desc">${r.problem||r.description||''}</div>
+        <div class="req-desc">${escQ(r.problem||r.description||'')}</div>
         <div class="req-tags">
-          ${r.industry?`<span class="req-tag">${r.industry}</span>`:''}
-          ${(r.skills||[]).slice(0,3).map(s=>`<span class="req-tag">${s}</span>`).join('')}
+          ${r.industry?`<span class="req-tag">${escQ(r.industry)}</span>`:''}
+          ${(r.skills||[]).slice(0,3).map(s=>`<span class="req-tag">${escQ(s)}</span>`).join('')}
         </div>
         <div class="req-meta">
           ${deadlineHTML(r.deadline)}
           <span>🕐 ${timeAgo(r.created_at)}</span>
-          ${r.location?`<span>📍 ${r.location}</span>`:''}
+          ${r.location?`<span>📍 ${escQ(r.location)}</span>`:''}
         </div>
         <div class="req-footer">
           <div class="req-investor">
-            <div class="inv-avatar">${(r.investor_name||'I')[0].toUpperCase()}</div>
-            <div class="inv-name">by ${r.investor_name||'Anonymous'}</div>
+            <div class="inv-avatar">${escQ((r.investor_name||'I')[0].toUpperCase())}</div>
+            <div class="inv-name">by ${escQ(r.investor_name||'Anonymous')}</div>
           </div>
           <div class="req-right">
             <div class="budget">${formatBudget(r.budget_min, r.budget_max)}</div>

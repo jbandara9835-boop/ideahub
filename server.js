@@ -154,6 +154,7 @@ app.get('/robots.txt', (req, res) => {
   const escrow = require('./escrow')(supabase, sendEmail);
   const payments = require('./payments')(supabase);
   const originality = require('./originality')(supabase, escrow);
+  const matching = require('./matching')(supabase, escrow);
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -723,6 +724,13 @@ app.get('/robots.txt', (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
     originality.checkInBackground(idea, req.user.id);
+    // A few minutes later (after the originality bot), tell investors whose open request this idea fits
+    setTimeout(async () => {
+      try {
+        const { data: fresh } = await supabase.from('ideas').select('id, title, summary, industry, status, visibility, creator_id').eq('id', idea.id).single();
+        if (fresh) await matching.alertForNewIdea(fresh);
+      } catch (e) { console.error('Request alert failed:', e.message); }
+    }, 3 * 60 * 1000);
 
     // Share to IdeaWall if requested
     if (req.body.shareToWall && idea) {
@@ -1469,13 +1477,6 @@ app.get('/robots.txt', (req, res) => {
     const { data, error } = await query.order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
 
-    // increment view count
-    if (data && data.length > 0) {
-      data.forEach(async (r) => {
-        await supabase.from('idea_requests').update({ view_count: (r.view_count || 0) + 1 }).eq('id', r.id);
-      });
-    }
-
     res.json(data || []);
   });
 
@@ -1488,7 +1489,66 @@ app.get('/robots.txt', (req, res) => {
       .single();
 
     if (!data || error) return res.status(404).json({ error: 'Request not found' });
+    supabase.from('idea_requests').update({ view_count: (data.view_count || 0) + 1 }).eq('id', data.id).then(() => {});
     res.json(data);
+  });
+
+  // Matching for one request: fitting ideas (everyone), suggested creators (the investor/admin), "you're a match" (matched creator)
+  const matchCache = new Map();
+  app.get('/api/requests/:id/matches', async (req, res) => {
+    const { data: r } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
+    if (!r) return res.status(404).json({ error: 'Request not found' });
+    const viewer = await viewerContext(req);
+    let m = matchCache.get(r.id);
+    if (!m || Date.now() - m.at > 10 * 60 * 1000) {
+      try { m = { at: Date.now(), ...(await matching.suggest(r)) }; matchCache.set(r.id, m); }
+      catch (e) { return res.status(500).json({ error: 'Matching is unavailable right now.' }); }
+    }
+    const out = { ideas: m.ideas };
+    const isOwner = viewer.id && viewer.id === r.investor_id;
+    if (isOwner || viewer.role === 'admin') {
+      const { data: rows } = await supabase.from('request_matches').select('creator_id, invited_at, notified_at').eq('request_id', r.id);
+      const st = Object.fromEntries((rows || []).map(x => [x.creator_id, x]));
+      out.creators = m.creators.map(c => ({ ...c, invited: !!st[c.id]?.invited_at, alerted: !!st[c.id]?.notified_at }));
+    }
+    if (viewer.id && !isOwner) {
+      const mine = m.creators.find(c => c.id === viewer.id);
+      if (mine) out.me = { reasons: mine.reasons };
+      else {
+        const { data: row } = await supabase.from('request_matches').select('reasons, invited_at').eq('request_id', r.id).eq('creator_id', viewer.id).maybeSingle();
+        if (row) out.me = { reasons: row.reasons || [], invited: !!row.invited_at };
+      }
+    }
+    res.json(out);
+  });
+
+  // Investor invites a suggested creator to send a proposal
+  app.post('/api/requests/:id/invite', authMiddleware, async (req, res) => {
+    const creatorId = parseInt(req.body?.creatorId, 10);
+    const { data: r } = await supabase.from('idea_requests').select('id, title, investor_id, investor_name, status').eq('id', req.params.id).single();
+    if (!r) return res.status(404).json({ error: 'Request not found' });
+    if (r.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor who posted this request can invite creators.' });
+    if (!matching.OPEN.includes(r.status)) return res.status(400).json({ error: 'This request is no longer open.' });
+    const { data: c } = await supabase.from('users').select('id, role').eq('id', creatorId).single();
+    if (!c || !['idea_creator', 'patent_seller'].includes(c.role)) return res.status(400).json({ error: 'That user is not an idea creator.' });
+    const { count } = await supabase.from('request_matches').select('id', { count: 'exact', head: true }).eq('request_id', r.id).not('invited_at', 'is', null);
+    if ((count || 0) >= 25) return res.status(429).json({ error: 'You can invite up to 25 creators per request.' });
+    const { data: existing } = await supabase.from('request_matches').select('id, invited_at').eq('request_id', r.id).eq('creator_id', creatorId).maybeSingle();
+    if (existing?.invited_at) return res.json({ success: true, already: true });
+    const now = new Date().toISOString();
+    if (existing) await supabase.from('request_matches').update({ invited_at: now }).eq('id', existing.id);
+    else await supabase.from('request_matches').insert([{ request_id: r.id, creator_id: creatorId, invited_at: now, reasons: ['Invited by the investor'] }]);
+    await escrow.notify(creatorId, { type: 'request_invite', title: '✉️ You were invited to pitch',
+      message: `${r.investor_name || 'An investor'} invited you to send a proposal for "${r.title}".`, link: `/request/${r.id}` });
+    res.json({ success: true });
+  });
+
+  // Requests the signed-in creator was matched or invited to (for the "Matched to you" filter)
+  app.get('/api/my-request-matches', authMiddleware, async (req, res) => {
+    const { data, error } = await supabase.from('request_matches').select('request_id, invited_at').eq('creator_id', req.user.id)
+      .order('created_at', { ascending: false }).limit(300);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
   });
 
   // POST new idea request (investor only)
@@ -1517,23 +1577,10 @@ app.get('/robots.txt', (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    // Notify all idea_creators about new request
-    const { data: creators } = await supabase
-      .from('users')
-      .select('id')
-      .in('role', ['idea_creator', 'patent_seller']);
-
-    if (creators && creators.length > 0) {
-      const notifications = creators.map(c => ({
-        user_id: c.id,
-        type: 'new_request',
-        title: '💰 New Investor Request',
-        message: `An investor needs ideas for: "${title}"`,
-        link: `/request/${request.id}`,
-        data: { request_id: request.id }
-      }));
-      await supabase.from('notifications').insert(notifications);
-    }
+    // Alert only the creators who fit this request (see matching.js), not every creator on the site
+    setImmediate(() => matching.notifyNewRequest(request)
+      .then(n => console.log(`Request ${request.id}: alerted ${n} matched creators`))
+      .catch(e => console.error('Request matching failed:', e.message)));
 
     res.status(201).json(request);
   });
