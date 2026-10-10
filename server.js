@@ -101,7 +101,10 @@
     }
 
     // New user — go to role selection
-    res.redirect(`/google-role-select?profile=${encodeURIComponent(JSON.stringify({ email: user.email, first_name: user.first_name, last_name: user.last_name, avatar_url: user.avatar_url, google_id: user.google_id }))}`);
+    const gp = { email: user.email, first_name: user.first_name, last_name: user.last_name, avatar_url: user.avatar_url, google_id: user.google_id };
+    // Signed ticket proves this profile came from Google, so /api/auth/google-complete can trust it
+    gp.ticket = require('jsonwebtoken').sign({ ...gp, purpose: 'google_signup' }, process.env.JWT_SECRET, { expiresIn: '30m' });
+    res.redirect(`/google-role-select?profile=${encodeURIComponent(JSON.stringify(gp))}`);
   });
 
   app.get('/auth/google/success', (req, res) => {
@@ -377,6 +380,8 @@ app.get('/robots.txt', (req, res) => {
   // ── AUTH ─────────────────────────────────────────────────────────────────────
 
   // SIGNUP
+  // Roles anyone can pick when creating an account (never admin)
+  const SIGNUP_ROLES = ['idea_creator', 'investor', 'virtual_manager', 'patent_attorney', 'chartered_accountant', 'patent_seller', 'corporate_services', 'business_owner'];
   async function verifyTurnstile(token, ip) { if (!process.env.TURNSTILE_SECRET_KEY) return true; if (!token) return false; try { const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ secret: process.env.TURNSTILE_SECRET_KEY, response: token, remoteip: ip || '' }) }); const d = await r.json(); return d.success === true; } catch (e) { console.error('Turnstile error:', e.message); return false; } }
   app.post('/api/auth/signup', async (req, res) => { if (!(await verifyTurnstile(req.body.turnstileToken, req.headers['cf-connecting-ip']))) return res.status(400).json({ error: 'Security check failed. Please refresh the page and try again.' });
     const { firstName, lastName, email, password, role } = req.body;
@@ -401,7 +406,7 @@ app.get('/robots.txt', (req, res) => {
         last_name: lastName || '',
         email,
         password: hashed,
-        role: role || 'idea_creator', signup_country: req.headers['cf-ipcountry'] || null,
+        role: SIGNUP_ROLES.includes(role) ? role : 'idea_creator', signup_country: req.headers['cf-ipcountry'] || null,
         earnings: 0,
         verified: false,
       }])
@@ -2472,8 +2477,13 @@ app.get('/robots.txt', (req, res) => {
   });
   // Complete Google signup with selected role
   app.post('/api/auth/google-complete', async (req, res) => {
-    const { email, first_name, last_name, avatar_url, google_id, role } = req.body;
-    if (!email || !role) return res.status(400).json({ error: 'Email and role required' });
+    // Only trust the profile inside the signed ticket from /auth/google/callback
+    let gp;
+    try { gp = require('jsonwebtoken').verify(String(req.body.ticket || ''), process.env.JWT_SECRET); } catch (e) { gp = null; }
+    if (!gp || gp.purpose !== 'google_signup' || !gp.email) return res.status(401).json({ error: 'Your Google sign-in expired. Please sign in with Google again.' });
+    const { email, first_name, last_name, avatar_url, google_id } = gp;
+    const role = SIGNUP_ROLES.includes(req.body.role) ? req.body.role : null;
+    if (!role) return res.status(400).json({ error: 'Please choose a role.' });
 
     // Check again if user exists (race condition protection)
     let { data: existing } = await supabase.from('users').select('*').eq('email', email).single();
@@ -2758,7 +2768,7 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
 
   app.post('/api/auth/role-switch-request', authMiddleware, async (req, res) => {
     const { requested_role, licence_number, bar_association, jurisdiction, experience_years, licence_file_url, gov_id_url, statement, patent_numbers, patent_jurisdiction, patent_year, patent_cert_url, patent_description } = req.body;
-    const APPROVAL_ROLES = ['patent_attorney', 'patent_seller'];
+    const APPROVAL_ROLES = ['patent_attorney', 'chartered_accountant', 'patent_seller'];
     if (!APPROVAL_ROLES.includes(requested_role)) return res.status(400).json({ error: 'This role does not require approval.' });
     const { data: existing } = await supabase.from('role_switch_requests').select('id').eq('user_id', req.user.id).eq('requested_role', requested_role).eq('status', 'pending').single();
     if (existing) return res.status(400).json({ error: 'You already have a pending request for this role.' });
@@ -2944,7 +2954,7 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
     if (existing) {
       const { data, error } = await supabase
         .from('support_profiles')
-        .update({ tagline, hourly_rate, availability, experience_years, languages, home_country, service_type, allowed_countries, restricted_countries, updated_at: new Date().toISOString() })
+        .update({ role: user.role, tagline, hourly_rate, availability, experience_years, languages, home_country, service_type, allowed_countries, restricted_countries, updated_at: new Date().toISOString() })
         .eq('user_id', req.user.id)
         .select().single();
       if (error) return res.status(500).json({ error: error.message });

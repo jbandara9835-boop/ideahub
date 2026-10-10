@@ -175,6 +175,7 @@ const NEXT_STEPS = {
   investor:           { title: 'Find your first opportunity', text: 'Browse ideas by industry and budget, or post an Idea Request describing exactly what you want and let creators pitch to you.', cta: 'Browse ideas', path: '/browse' },
   business_owner:     { title: 'List your business', text: 'Investors and partners on IdeaHub are looking for franchise, licensing and partnership opportunities. A listing takes about ten minutes.', cta: 'List your business', path: '/list-business' },
   virtual_manager:    { title: 'Set up your service profile', text: 'Creators and investors search for professionals by role, country and rate. A complete profile is how they find you.', cta: 'Set up profile', path: '/support-profile' },
+  chartered_accountant: { title: 'Set up your service profile', text: 'Creators and investors need help with tax, company setup and valuations. A complete profile with your qualifications and rate is how they find you.', cta: 'Set up profile', path: '/support-profile' },
   patent_attorney:    { title: 'Set up your service profile', text: 'Idea creators need patent help. A complete profile with your jurisdictions and rate is how they find you.', cta: 'Set up profile', path: '/support-profile' },
   corporate_services: { title: 'Set up your service profile', text: 'New businesses on IdeaHub need corporate services. A complete profile is how they find you.', cta: 'Set up profile', path: '/support-profile' },
 };
@@ -193,6 +194,7 @@ async function isActive(supabase, u) {
     case 'business_owner':     return hasRows(supabase, 'business_listings', 'owner_id', u.id);
     case 'virtual_manager':
     case 'patent_attorney':
+    case 'chartered_accountant':
     case 'corporate_services': return hasRows(supabase, 'support_profiles', 'user_id', u.id);
     default:                   return true; // admins and unknown roles: never nudge
   }

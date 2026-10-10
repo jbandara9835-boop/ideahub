@@ -18,7 +18,7 @@
   if (token && user) {
     localStorage.setItem('ih_token', token);
     localStorage.setItem('ih_user', JSON.stringify(user));
-    const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/attorney-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard', admin:'/admin' };
+    const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/attorney-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard', admin:'/admin' };
     window.location.href = dashMap[user.role] || '/dashboard';
   } else {
     window.location.href = '/login?error=google';

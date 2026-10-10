@@ -615,7 +615,7 @@
   if (token && user) {
     document.getElementById('guestNav').style.display = 'none';
     document.getElementById('userNav').classList.add('visible');
-    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
+    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
     document.getElementById('dashboardLink').href = roleLinks[user.role] || '/dashboard';
     const avatarEl = document.getElementById('navAvatar');
     const avatarUrl = user.avatar_url || user.avatarUrl;

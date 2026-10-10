@@ -69,6 +69,7 @@
   .role-banner.virtual_manager { background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.25); }
   .role-banner.patent_attorney { background:rgba(96,165,250,0.08); border-color:rgba(96,165,250,0.25); }
   .role-banner.corporate_services { background:rgba(244,114,182,0.08); border-color:rgba(244,114,182,0.25); }
+  .role-banner.chartered_accountant { background:rgba(45,212,191,0.08); border-color:rgba(45,212,191,0.25); }
   .role-banner-icon { font-size:32px; }
   .role-banner-title { font-family:'Cabinet Grotesk',sans-serif; font-size:16px; font-weight:700; }
   .role-banner-sub { font-size:13px; color:var(--muted); margin-top:2px; }
@@ -355,10 +356,10 @@
 
   if (!token || !user) window.location.href = '/login';
 
-  const SUPPORT_ROLES = ['virtual_manager','patent_attorney','corporate_services'];
-  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
-  const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Provide business solutions and partnerships' };
+  const SUPPORT_ROLES = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
+  const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Provide business solutions and partnerships', chartered_accountant:'Audit, tax, company setup and financial advice for creators and investors' };
 
   if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/dashboard';
 
@@ -367,7 +368,7 @@
     const nav = document.getElementById('sidebarNav');
     if (!nav) return;
     const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
-      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard'
       : user && user.role === 'business_owner' ? '/business-dashboard'
       : user && user.role === 'admin' ? '/admin' : '/dashboard';
     nav.innerHTML = `
@@ -381,6 +382,7 @@
       <div class="nav-section-label">Support</div>
       <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
       <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant">Find an Accountant</a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>

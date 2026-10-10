@@ -61,6 +61,7 @@
   .role-badge.virtual_manager { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); }
   .role-badge.patent_attorney { background:rgba(96,165,250,0.15); color:var(--blue); border:1px solid rgba(96,165,250,0.3); }
   .role-badge.corporate_services { background:rgba(244,114,182,0.15); color:var(--pink); border:1px solid rgba(244,114,182,0.3); }
+  .role-badge.chartered_accountant { background:rgba(45,212,191,0.15); color:#2dd4bf; border:1px solid rgba(45,212,191,0.3); }
 
   .verified-banner { background:rgba(110,231,183,0.1); border:1px solid rgba(110,231,183,0.25); border-radius:10px; padding:0.75rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--success); }
   .pending-banner { background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.25); border-radius:10px; padding:0.75rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--accent); }
@@ -420,7 +421,7 @@
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
       <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
@@ -428,6 +429,7 @@
       <div class="nav-section-label">Support</div>
       <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
       <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
@@ -438,9 +440,9 @@
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
   renderSidebar();
 
-  const SUPPORT_ROLES = ['virtual_manager', 'patent_attorney', 'corporate_services'];
-  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
+  const SUPPORT_ROLES = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
 
   if (!token || !user) window.location.href = '/login';
   if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/profile';

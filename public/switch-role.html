@@ -137,6 +137,13 @@
       <span class="role-name">Patent Attorney</span>
       <span class="role-desc">Legal services</span>
     </div>
+    <div class="role-card needs-approval" data-role="chartered_accountant" onclick="selectRole(this)">
+      <div class="approval-tag">Needs Approval</div>
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🧮</span>
+      <span class="role-name">Chartered Accountant</span>
+      <span class="role-desc">Finance & tax services</span>
+    </div>
     <div class="role-card needs-approval" data-role="patent_seller" onclick="selectRole(this)">
       <div class="approval-tag">Needs Approval</div>
       <div class="role-check">✓</div>
@@ -184,14 +191,14 @@
 
   <!-- EXTRA FIELDS FOR PATENT ATTORNEY -->
   <div class="extra-fields card" id="attorneyFields">
-    <div class="card-title">⚖️ Patent Attorney Details <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
+    <div class="card-title"><span id="proTitle">⚖️ Patent Attorney Details</span> <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
     <div class="field">
-      <label>Bar Licence Number</label>
+      <label id="proLicenceLbl">Bar Licence Number</label>
       <input type="text" id="licenceNumber" placeholder="e.g. BAR-2024-00123" />
     </div>
     <div class="row2">
       <div class="field">
-        <label>Bar Association</label>
+        <label id="proBodyLbl">Bar Association</label>
         <input type="text" id="barAssociation" placeholder="e.g. Sri Lanka Bar Association" />
       </div>
       <div class="field">
@@ -209,7 +216,7 @@
       <input type="number" id="attorneyYears" placeholder="e.g. 5" min="0" />
     </div>
     <div class="field">
-      <label>Licence Certificate URL</label>
+      <label id="proCertLbl">Licence Certificate URL</label>
       <input type="url" id="licenceUrl" placeholder="https://..." />
       <div class="field-note">Upload your licence certificate to Supabase storage and paste the public URL here.</div>
     </div>
@@ -279,20 +286,20 @@
 
   if (!token || !user) window.location.href = '/login';
 
-  const APPROVAL_ROLES = ['patent_attorney', 'patent_seller'];
+  const APPROVAL_ROLES = ['patent_attorney', 'chartered_accountant', 'patent_seller'];
   const roleLabels = {
     idea_creator: 'Idea Creator', investor: 'Investor', virtual_manager: 'Virtual Manager',
-    patent_attorney: 'Patent Attorney', patent_seller: 'Patent Seller',
+    patent_attorney: 'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller: 'Patent Seller',
     business_owner: 'Business Owner', corporate_services: 'Corporate Services'
   };
   const roleEmojis = {
     idea_creator:'💡', investor:'💼', virtual_manager:'🤝',
-    patent_attorney:'⚖️', patent_seller:'📋', business_owner:'🏭', corporate_services:'🏢'
+    patent_attorney:'⚖️', chartered_accountant:'🧮', patent_seller:'📋', business_owner:'🏭', corporate_services:'🏢'
   };
   const dashMap = {
     idea_creator:'/dashboard', patent_seller:'/dashboard',
     investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard',
-    virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard',
+    virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard',
     business_owner:'/business-dashboard', admin:'/admin'
   };
 
@@ -328,7 +335,18 @@
     document.getElementById('approvalNotice').classList.toggle('show', needsApproval);
 
     // Show/hide extra fields
-    document.getElementById('attorneyFields').classList.toggle('show', selectedRole === 'patent_attorney');
+    const isPro = selectedRole === 'patent_attorney' || selectedRole === 'chartered_accountant';
+    document.getElementById('attorneyFields').classList.toggle('show', isPro);
+    if (isPro) {
+      const ca = selectedRole === 'chartered_accountant';
+      document.getElementById('proTitle').textContent = ca ? '🧮 Chartered Accountant Details' : '⚖️ Patent Attorney Details';
+      document.getElementById('proLicenceLbl').textContent = ca ? 'Membership Number' : 'Bar Licence Number';
+      document.getElementById('licenceNumber').placeholder = ca ? 'e.g. CA 12345' : 'e.g. BAR-2024-00123';
+      document.getElementById('proBodyLbl').textContent = ca ? 'Professional Body' : 'Bar Association';
+      document.getElementById('barAssociation').placeholder = ca ? 'e.g. CA Sri Lanka, ACCA, ICAEW, CPA' : 'e.g. Sri Lanka Bar Association';
+      document.getElementById('proCertLbl').textContent = ca ? 'Membership Certificate URL' : 'Licence Certificate URL';
+      document.getElementById('attorneyStatement').placeholder = ca ? 'Briefly describe your practice: audit, tax, company setup, valuations, financial models…' : 'Briefly describe your patent law practice and expertise...';
+    }
     document.getElementById('sellerFields').classList.toggle('show', selectedRole === 'patent_seller');
 
     // Update button
@@ -391,7 +409,7 @@
       } else {
         // ── APPROVAL REQUIRED ──
         let extraData = {};
-        if (selectedRole === 'patent_attorney') {
+        if (selectedRole === 'patent_attorney' || selectedRole === 'chartered_accountant') {
           extraData = {
             licence_number: document.getElementById('licenceNumber').value.trim(),
             bar_association: document.getElementById('barAssociation').value.trim(),
@@ -402,7 +420,7 @@
             statement: document.getElementById('attorneyStatement').value.trim(),
           };
           if (!extraData.licence_number || !extraData.bar_association) {
-            throw new Error('Please fill in your licence number and bar association.');
+            throw new Error(selectedRole === 'chartered_accountant' ? 'Please fill in your membership number and professional body.' : 'Please fill in your licence number and bar association.');
           }
         } else if (selectedRole === 'patent_seller') {
           extraData = {

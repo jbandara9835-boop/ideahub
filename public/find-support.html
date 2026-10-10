@@ -119,6 +119,7 @@
   .support-card.virtual_manager::before { background:var(--purple); }
   .support-card.patent_attorney::before { background:var(--blue); }
   .support-card.corporate_services::before { background:var(--pink); }
+  .support-card.chartered_accountant::before { background:#2dd4bf; }
   .support-card:hover { transform:translateY(-3px); border-color:#3a3a3a; box-shadow:0 8px 24px rgba(0,0,0,0.3); }
 
   .card-top { display:flex; align-items:flex-start; gap:12px; margin-bottom:14px; }
@@ -126,6 +127,7 @@
   .card-avatar img { width:100%; height:100%; object-fit:cover; }
   .card-avatar.virtual_manager { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); }
   .card-avatar.patent_attorney { background:rgba(96,165,250,0.15); color:var(--blue); border:1px solid rgba(96,165,250,0.3); }
+  .card-avatar.chartered_accountant { background:rgba(45,212,191,0.15); color:#2dd4bf; border:1px solid rgba(45,212,191,0.3); }
   .card-avatar.corporate_services { background:rgba(244,114,182,0.15); color:var(--pink); border:1px solid rgba(244,114,182,0.3); }
   .card-name { font-size:1rem; font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:2px; }
   .verified-tick { color:var(--green); font-size:0.85rem; }
@@ -243,6 +245,7 @@
           <button class="chip active" data-role="all">🌟 All</button>
           <button class="chip vm" data-role="virtual_manager">🤝 Virtual Manager</button>
           <button class="chip pa" data-role="patent_attorney">⚖️ Patent Attorney</button>
+          <button class="chip ca" data-role="chartered_accountant">🧮 Chartered Accountant</button>
           <button class="chip cs" data-role="corporate_services">🏢 Corporate Services</button>
         </div>
       </div>
@@ -289,6 +292,7 @@
     <div class="hero-stat"><strong id="statAll">—</strong> professionals</div>
     <div class="hero-stat"><strong id="statVM">—</strong> virtual managers</div>
     <div class="hero-stat"><strong id="statPA">—</strong> attorneys</div>
+    <div class="hero-stat"><strong id="statCA">—</strong> accountants</div>
     <div class="hero-stat"><strong id="statCS">—</strong> corporate</div>
   </div>
 </section>
@@ -372,14 +376,14 @@
   const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('ih_user') || 'null');
 
-  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', corporate_services:'Corporate Services' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
 
   function initNav() {
     if (!token || !user) return;
     document.getElementById('guestNav').style.display = 'none';
     document.getElementById('userNav').classList.add('visible');
-    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
+    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
     document.getElementById('dashboardLink').href = roleLinks[user.role] || '/dashboard';
     const avatarEl = document.getElementById('navAvatar');
     const avatarUrl = user.avatar_url || user.avatarUrl;
@@ -390,7 +394,7 @@
   // Check URL param for pre-filter
   const urlParams = new URLSearchParams(window.location.search);
   const preType = urlParams.get('type');
-  if (preType && ['virtual_manager','patent_attorney','corporate_services'].includes(preType)) {
+  if (preType && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(preType)) {
     activeRole = preType;
   }
 
@@ -458,6 +462,7 @@
       document.getElementById('statAll').textContent = allProfiles.length;
       document.getElementById('statVM').textContent = allProfiles.filter(p=>p.role==='virtual_manager').length;
       document.getElementById('statPA').textContent = allProfiles.filter(p=>p.role==='patent_attorney').length;
+      document.getElementById('statCA').textContent = allProfiles.filter(p=>p.role==='chartered_accountant').length;
       document.getElementById('statCS').textContent = allProfiles.filter(p=>p.role==='corporate_services').length;
       // Pre-filter active role chips
       if (activeRole !== 'all') {

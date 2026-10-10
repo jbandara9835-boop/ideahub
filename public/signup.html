@@ -94,6 +94,8 @@
   .role-card[data-role="virtual_manager"].selected .role-check { background:#a78bfa; }
   .role-card[data-role="patent_attorney"].selected  { border-color:#60a5fa; background:rgba(96,165,250,0.1); }
   .role-card[data-role="patent_attorney"].selected .role-check { background:#60a5fa; }
+  .role-card[data-role="chartered_accountant"].selected { border-color:#2dd4bf; background:rgba(45,212,191,0.1); }
+  .role-card[data-role="chartered_accountant"].selected .role-check { background:#2dd4bf; }
   .role-card[data-role="patent_seller"].selected    { border-color:#fb923c; background:rgba(251,146,60,0.1); }
   .role-card[data-role="patent_seller"].selected .role-check { background:#fb923c; }
   .role-card[data-role="corporate_services"].selected { border-color:#f472b6; background:rgba(244,114,182,0.1); }
@@ -211,6 +213,13 @@
       <span class="role-emoji">⚖️</span>
       <span class="role-name">Patent Attorney</span>
       <span class="role-desc">Legal services</span>
+    </label>
+    <label class="role-card" data-role="chartered_accountant" onclick="selectRole(this)">
+      <input type="radio" name="role" value="chartered_accountant" />
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🧮</span>
+      <span class="role-name">Chartered Accountant</span>
+      <span class="role-desc">Finance & tax services</span>
     </label>
     <label class="role-card" data-role="patent_seller" onclick="selectRole(this)">
       <input type="radio" name="role" value="patent_seller" />
@@ -334,7 +343,7 @@
         patent_seller: '/dashboard',
         investor: '/buyer-dashboard',
         corporate_services: '/buyer-dashboard',
-        virtual_manager: '/support-dashboard',
+        virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard',
         patent_attorney: '/support-dashboard',
         business_owner: '/business-dashboard',
         admin: '/admin'

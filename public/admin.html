@@ -121,6 +121,7 @@
   .role-pill.patent_attorney { background:rgba(96,165,250,0.15); color:var(--blue); }
   .role-pill.patent_seller { background:rgba(251,146,60,0.15); color:#fb923c; }
   .role-pill.corporate_services { background:rgba(244,114,182,0.15); color:var(--pink); }
+  .role-pill.chartered_accountant { background:rgba(45,212,191,0.15); color:#2dd4bf; }
   .role-pill.admin { background:rgba(255,107,107,0.15); color:var(--error); }
 
   /* HIRE TABLE */
@@ -341,8 +342,8 @@
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
 
-  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', admin:'Admin' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', corporate_services:'🏢' };
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', admin:'Admin' };
+  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
 
   let allCerts = []; let allUsers = []; let allHires = []; let allIdeas = []; let allRoleRequests = []; let allDisputes = []; let allWithdrawals = [];
   function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
@@ -385,7 +386,7 @@
             <div class="cert-user">
               <div class="cert-avatar">${uInitials}</div>
               <div class="cert-user-info">
-                <div class="cert-user-name">${uName}</div>
+                <div class="cert-user-name">${escHtml(uName)}</div>
                 <div class="cert-user-role">${roleEmoji[uRole]||'👤'} ${roleMap[uRole]||uRole}</div>
               </div>
             </div>
@@ -409,7 +410,7 @@
             <div class="cert-actions">
               <button class="btn-approve" onclick="approveCert(${c.id})">✅ Approve</button>
               <button class="btn-reject-cert" onclick="openReject(${c.id})">❌ Reject</button>
-              <span style="font-size:12px;color:var(--muted);">User: ${uName} · ${c.user?.email||''}</span>
+              <span style="font-size:12px;color:var(--muted);">User: ${escHtml(uName)} · ${escHtml(c.user?.email||'')}</span>
             </div>
           ` : ''}
         </div>
@@ -459,33 +460,34 @@
       const roleLabel = (r.requested_role||'').replace(/_/g,' ');
 
       let detailsHtml = '';
-      if (r.requested_role === 'patent_attorney') {
+      if (r.requested_role === 'patent_attorney' || r.requested_role === 'chartered_accountant') {
+        const ca = r.requested_role === 'chartered_accountant';
         detailsHtml = `
           <div class="cert-details">
-            <div class="cert-detail"><div class="cert-detail-label">Licence Number</div><div class="cert-detail-val">${r.licence_number||'—'}</div></div>
-            <div class="cert-detail"><div class="cert-detail-label">Bar Association</div><div class="cert-detail-val">${r.bar_association||'—'}</div></div>
-            <div class="cert-detail"><div class="cert-detail-label">Jurisdiction</div><div class="cert-detail-val">${r.jurisdiction||'—'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">${ca ? 'Membership Number' : 'Licence Number'}</div><div class="cert-detail-val">${escHtml(r.licence_number||'—')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">${ca ? 'Professional Body' : 'Bar Association'}</div><div class="cert-detail-val">${escHtml(r.bar_association||'—')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Jurisdiction</div><div class="cert-detail-val">${escHtml(r.jurisdiction||'—')}</div></div>
           </div>
           <div style="margin-bottom:1rem;">
-            ${r.licence_file_url ? `<a href="${r.licence_file_url}" target="_blank" class="cert-file-btn">📄 View Licence</a>` : ''}
-            ${r.gov_id_url ? `<a href="${r.gov_id_url}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
+            ${r.licence_file_url ? `<a href="${escHtml(r.licence_file_url)}" target="_blank" class="cert-file-btn">📄 View ${ca ? 'Certificate' : 'Licence'}</a>` : ''}
+            ${r.gov_id_url ? `<a href="${escHtml(r.gov_id_url)}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
             ${!r.licence_file_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">⚠️ No documents uploaded</div>' : ''}
           </div>
-          ${r.statement ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${r.statement}</div>` : ''}
+          ${r.statement ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${escHtml(r.statement)}</div>` : ''}
         `;
       } else if (r.requested_role === 'patent_seller') {
         detailsHtml = `
           <div class="cert-details">
-            <div class="cert-detail"><div class="cert-detail-label">Patent Numbers</div><div class="cert-detail-val">${r.patent_numbers||'—'}</div></div>
-            <div class="cert-detail"><div class="cert-detail-label">Jurisdiction</div><div class="cert-detail-val">${r.patent_jurisdiction||'—'}</div></div>
-            <div class="cert-detail"><div class="cert-detail-label">Year</div><div class="cert-detail-val">${r.patent_year||'—'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Patent Numbers</div><div class="cert-detail-val">${escHtml(r.patent_numbers||'—')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Jurisdiction</div><div class="cert-detail-val">${escHtml(r.patent_jurisdiction||'—')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Year</div><div class="cert-detail-val">${escHtml(r.patent_year||'—')}</div></div>
           </div>
           <div style="margin-bottom:1rem;">
-            ${r.patent_cert_url ? `<a href="${r.patent_cert_url}" target="_blank" class="cert-file-btn">📄 View Patent Cert</a>` : ''}
-            ${r.gov_id_url ? `<a href="${r.gov_id_url}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
+            ${r.patent_cert_url ? `<a href="${escHtml(r.patent_cert_url)}" target="_blank" class="cert-file-btn">📄 View Patent Cert</a>` : ''}
+            ${r.gov_id_url ? `<a href="${escHtml(r.gov_id_url)}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
             ${!r.patent_cert_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">⚠️ No documents uploaded</div>' : ''}
           </div>
-          ${r.patent_description ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${r.patent_description}</div>` : ''}
+          ${r.patent_description ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${escHtml(r.patent_description)}</div>` : ''}
         `;
       }
 
@@ -495,7 +497,7 @@
             <div class="cert-user">
               <div class="cert-avatar">${uInitials}</div>
               <div class="cert-user-info">
-                <div class="cert-user-name">${uName}</div>
+                <div class="cert-user-name">${escHtml(uName)}</div>
                 <div class="cert-user-role">Currently: ${roleMap[r.user?.role]||r.user?.role||'—'} → Requesting: <strong>${roleLabel}</strong></div>
               </div>
             </div>

@@ -309,7 +309,7 @@
     const nav = document.getElementById('sidebarNav');
     if (!nav) return;
     const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
-      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard'
       : user && user.role === 'business_owner' ? '/business-dashboard'
       : user && user.role === 'admin' ? '/admin' : '/dashboard';
     nav.innerHTML = `
@@ -323,6 +323,7 @@
       <div class="nav-section-label">Support</div>
       <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
       <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant">Find an Accountant</a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
@@ -355,7 +356,7 @@
       }
     const sbName = document.getElementById('sidebarName');
     if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
-    const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+    const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
     document.getElementById('sidebarRole').textContent = roleMap[user.role] || user.role;
     const starElM = document.getElementById('sidebarStars');
     if (starElM) { const sm = user.profile_stars||0; starElM.innerHTML = [1,2,3,4,5].map(i=>`<span style="color:${i<=sm?'#f5c842':'#3a3a3a'}">★</span>`).join(''); }

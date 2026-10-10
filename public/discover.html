@@ -430,7 +430,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
       <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
@@ -438,6 +438,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
       <div class="nav-section-label">Support</div>
       <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
       <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
@@ -453,7 +454,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
   if (user && token) {
     const initials = (user.first_name?.[0] || '') + (user.Last_name?.[0] || '');
     const creatorRoles = ['idea_creator', 'patent_seller'];
-    const supportRoles = ['virtual_manager', 'patent_attorney', 'corporate_services'];
+    const supportRoles = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
     let dashUrl = '/buyer-dashboard';
     if (creatorRoles.includes(user.role)) dashUrl = '/dashboard';
     if (supportRoles.includes(user.role)) dashUrl = '/support-dashboard';

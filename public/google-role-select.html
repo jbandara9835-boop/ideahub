@@ -66,6 +66,7 @@
   .role-card[data-role="investor"].selected { border-color:#6ee7b7; background:rgba(110,231,183,0.1); }
   .role-card[data-role="virtual_manager"].selected { border-color:#a78bfa; background:rgba(167,139,250,0.1); }
   .role-card[data-role="patent_attorney"].selected { border-color:#60a5fa; background:rgba(96,165,250,0.1); }
+  .role-card[data-role="chartered_accountant"].selected { border-color:#2dd4bf; background:rgba(45,212,191,0.1); }
   .role-card[data-role="patent_seller"].selected { border-color:#fb923c; background:rgba(251,146,60,0.1); }
   .role-card[data-role="corporate_services"].selected { border-color:#f472b6; background:rgba(244,114,182,0.1); }
   .role-card[data-role="business_owner"].selected { border-color:#fb923c; background:rgba(251,146,60,0.1); }
@@ -125,6 +126,12 @@
       <span class="role-name">Patent Attorney</span>
       <span class="role-desc">Legal services</span>
     </div>
+    <div class="role-card" data-role="chartered_accountant" onclick="selectRole(this)">
+      <div class="role-check">✓</div>
+      <span class="role-emoji">🧮</span>
+      <span class="role-name">Chartered Accountant</span>
+      <span class="role-desc">Finance & tax services</span>
+    </div>
     <div class="role-card" data-role="patent_seller" onclick="selectRole(this)">
       <div class="role-check">✓</div>
       <span class="role-emoji">📋</span>
@@ -163,13 +170,14 @@
   }
 
   if (!profile) window.location.href = '/login';
+  const e = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
   const greetingEl = document.getElementById('userGreeting');
   if (profile.avatar_url) {
-    greetingEl.innerHTML = `<img class="user-avatar" src="${profile.avatar_url}" /><div><div class="user-name">${profile.first_name} ${profile.last_name || ''}</div><div class="user-email">${profile.email}</div></div>`;
+    greetingEl.innerHTML = `<img class="user-avatar" src="${e(profile.avatar_url)}" /><div><div class="user-name">${e(profile.first_name)} ${e(profile.last_name || '')}</div><div class="user-email">${e(profile.email)}</div></div>`;
   } else {
-    const initials = (profile.first_name?.[0] || '') + (profile.last_name?.[0] || '');
-    greetingEl.innerHTML = `<div class="user-avatar-placeholder">${initials}</div><div><div class="user-name">${profile.first_name} ${profile.last_name || ''}</div><div class="user-email">${profile.email}</div></div>`;
+    const initials = e((profile.first_name?.[0] || '') + (profile.last_name?.[0] || ''));
+    greetingEl.innerHTML = `<div class="user-avatar-placeholder">${initials}</div><div><div class="user-name">${e(profile.first_name)} ${e(profile.last_name || '')}</div><div class="user-email">${e(profile.email)}</div></div>`;
   }
 
   let selectedRole = 'idea_creator';
@@ -200,7 +208,7 @@
       const dashMap = {
         idea_creator: '/dashboard', patent_seller: '/dashboard',
         investor: '/buyer-dashboard', corporate_services: '/buyer-dashboard',
-        virtual_manager: '/support-dashboard', patent_attorney: '/attorney-dashboard',
+        virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/attorney-dashboard',
         business_owner: '/business-dashboard', admin: '/admin'
       };
       window.location.href = dashMap[selectedRole] || '/dashboard';

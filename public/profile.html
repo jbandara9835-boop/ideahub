@@ -435,7 +435,7 @@
     const newIdeaBtn = document.getElementById('newIdeaBtn');
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
-      : user && ['virtual_manager','patent_attorney'].includes(user.role) ? '/support-dashboard'
+      : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard'
       : user && user.role === 'business_owner' ? '/business-dashboard'
       : user && user.role === 'admin' ? '/admin' : '/dashboard';
     nav.innerHTML = `
@@ -449,6 +449,7 @@
       <div class="nav-section-label">Support</div>
       <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
       <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant">Find an Accountant</a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
@@ -460,8 +461,8 @@
   renderSidebar();
   if (!token || !user) window.location.href = '/login';
 
-  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
-  const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', patent_attorney:'/attorney-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
+  const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+  const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/attorney-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
   const navLinks = { idea_creator:[['⚡','Dashboard','/dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['➕','Submit','/submit'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], investor:[['⚡','Dashboard','/buyer-dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['🏭','Businesses','/businesses'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], business_owner:[['⚡','Dashboard','/business-dashboard'],['🏭','Businesses','/businesses'],['➕','List Business','/list-business'],['👤','Profile','/profile'],['💬','Messages','/messages']] };
   const defaultNav = [['⚡','Dashboard','/dashboard'],['🤝','Find Support','/find-support'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']];
 

@@ -22,7 +22,7 @@ What IdeaHub is:
 - Idea Creators list business ideas and patents for sale.
 - Investors / idea buyers browse and buy ideas, and post Idea Requests describing ideas they want.
 - Business Owners list businesses for franchise, licensing or partnership.
-- Support Pros (patent attorneys, virtual managers, corporate services) offer paid services.
+- Support Pros (patent attorneys, chartered accountants, virtual managers, corporate services) offer paid services. Chartered accountants help with tax, company setup, valuations and accounts.
 - Purchases are escrow-protected: the buyer's payment is held and released to the seller only after the buyer confirms delivery. IdeaHub charges an 8% platform fee on deals.
 - All prices are in US dollars.
 
@@ -94,11 +94,11 @@ const TOOLS = [
   },
   {
     name: 'search_support_pros',
-    description: 'Search available professionals who offer services on IdeaHub: patent attorneys, virtual managers and corporate services providers. Use for questions like "I need a patent attorney" or "who can help register a company in Sri Lanka". Returns name, role, tagline, hourly rate (USD), experience, languages, home country, verification status and rating.',
+    description: 'Search available professionals who offer services on IdeaHub: patent attorneys, chartered accountants, virtual managers and corporate services providers. Use for questions like "I need a patent attorney", "find me an accountant" or "who can help register a company in Sri Lanka". Returns name, role, tagline, hourly rate (USD), experience, languages, home country, verification status and rating.',
     input_schema: {
       type: 'object',
       properties: {
-        role: { type: 'string', enum: ['patent_attorney', 'virtual_manager', 'corporate_services'], description: 'Type of professional.' },
+        role: { type: 'string', enum: ['patent_attorney', 'chartered_accountant', 'virtual_manager', 'corporate_services'], description: 'Type of professional.' },
         country: { type: 'string', description: 'Home country of the professional.' },
         max_hourly_rate: { type: 'number', description: 'Maximum hourly rate in USD.' },
         verified_only: { type: 'boolean', description: 'true to return only verified professionals.' },
@@ -262,7 +262,7 @@ const toolHandlers = {
 
   async search_support_pros(input, supabase) {
     let q = supabase.from('chatbot_support').select('*');
-    const roles = ['patent_attorney', 'virtual_manager', 'corporate_services'];
+    const roles = ['patent_attorney', 'chartered_accountant', 'virtual_manager', 'corporate_services'];
     const country = clean(input.country), maxRate = num(input.max_hourly_rate);
     if (roles.includes(input.role)) q = q.eq('role', input.role);
     if (country) q = q.ilike('home_country', `%${country}%`);

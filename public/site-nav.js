@@ -27,13 +27,13 @@
   var DASH = {
     idea_creator: '/dashboard', patent_seller: '/dashboard',
     investor: '/buyer-dashboard', corporate_services: '/buyer-dashboard',
-    virtual_manager: '/support-dashboard', patent_attorney: '/attorney-dashboard',
+    virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/attorney-dashboard',
     business_owner: '/business-dashboard', admin: '/admin'
   };
   var ROLE = {
     idea_creator: 'Idea Creator', patent_seller: 'Patent Seller', investor: 'Investor',
     corporate_services: 'Corporate', virtual_manager: 'Virtual Manager',
-    patent_attorney: 'Patent Attorney', business_owner: 'Business Owner', admin: 'Administrator'
+    patent_attorney: 'Patent Attorney', chartered_accountant:'Chartered Accountant', business_owner: 'Business Owner', admin: 'Administrator'
   };
   var LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>';
 

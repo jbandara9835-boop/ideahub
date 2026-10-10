@@ -650,7 +650,7 @@ const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 if (!token || !user) window.location.href = '/login';
 if (user && user.role !== 'patent_attorney') window.location.href = '/dashboard';
 
-const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
+const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
 
 function renderSidebar() {
   const path = window.location.pathname;
@@ -672,6 +672,7 @@ function renderSidebar() {
     <div class="nav-section-label">Support</div>
     <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
     <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
+    <a class="nav-item" href="/find-support?type=chartered_accountant">Find an Accountant</a>
     <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
     <div class="nav-section-label">Activity</div>
     <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
