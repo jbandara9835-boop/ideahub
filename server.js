@@ -1540,6 +1540,18 @@ app.get('/robots.txt', (req, res) => {
     else await supabase.from('request_matches').insert([{ request_id: r.id, creator_id: creatorId, invited_at: now, reasons: ['Invited by the investor'] }]);
     await escrow.notify(creatorId, { type: 'request_invite', title: '✉️ You were invited to pitch',
       message: `${r.investor_name || 'An investor'} invited you to send a proposal for "${r.title}".`, link: `/request/${r.id}` });
+    // Invites are rare and time-sensitive, so the creator also gets an email
+    const { data: full } = await supabase.from('idea_requests').select('problem, budget_min, budget_max, deadline').eq('id', r.id).single();
+    const budget = full?.budget_min && full?.budget_max ? `${escrow.money(full.budget_min)} – ${escrow.money(full.budget_max)}`
+      : full?.budget_max ? `up to ${escrow.money(full.budget_max)}` : null;
+    const snippet = String(full?.problem || '').slice(0, 280) + (String(full?.problem || '').length > 280 ? '…' : '');
+    await escrow.emailUser(creatorId, `You're invited to pitch: "${r.title}"`, 'An investor wants your proposal',
+      `<strong style="color:#f0ede8;">${escrow.esc(r.investor_name || 'An investor')}</strong> saw your work on IdeaHub and invited you to send a proposal for:<br><br>` +
+      `<strong style="color:#f5c842;">"${escrow.esc(r.title)}"</strong><br>` +
+      (snippet ? `<span style="display:block;margin-top:8px;">${escrow.esc(snippet)}</span>` : '') +
+      (budget || full?.deadline ? `<span style="display:block;margin-top:12px;">${budget ? 'Budget: <strong style="color:#f0ede8;">' + escrow.esc(budget) + '</strong>' : ''}${budget && full?.deadline ? ' · ' : ''}${full?.deadline ? 'Deadline: <strong style="color:#f0ede8;">' + escrow.esc(new Date(full.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) + '</strong>' : ''}</span>` : '') +
+      `<span style="display:block;margin-top:12px;">Invited creators are more likely to be chosen, so reply soon.</span>`,
+      'View request & send proposal', `/request/${r.id}`);
     res.json({ success: true });
   });
 
