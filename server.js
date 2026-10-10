@@ -14,6 +14,16 @@
   const session = require('express-session');
 
   // ── EMAIL HELPER ─────────────────────────────────────────────────────────────
+  // Plain-text twin of every HTML email: Gmail trusts mail that has both, and it reads better on watches/older apps
+  function htmlToText(html) {
+    return String(html || '')
+      .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, '')
+      .replace(/<a\s[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (m, href, label) => `\n${label.replace(/<[^>]+>/g, '').trim()}: ${href}\n`)
+      .replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|h[1-6]|tr|li)>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+      .replace(/[ \t]+/g, ' ').replace(/\n\s*\n\s*\n+/g, '\n\n').split('\n').map(l => l.trim()).join('\n').trim();
+  }
   async function sendEmail(to, subject, html) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
@@ -21,7 +31,9 @@
         from: process.env.RESEND_FROM,
         to,
         subject,
-        html
+        html,
+        text: htmlToText(html),
+        ...(process.env.RESEND_REPLY_TO ? { reply_to: process.env.RESEND_REPLY_TO } : {})
       });
       if (error) { console.error('Resend rejected email to', to, '-', error.message || JSON.stringify(error)); return; } console.log('Email sent to:', to, 'id:', data?.id);
     } catch(err) {
