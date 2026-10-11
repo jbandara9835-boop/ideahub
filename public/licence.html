@@ -157,7 +157,9 @@
       </div>
       <aside class="side">
         <div class="panel">${person(d.licensor, 'Patent owner (licensor)')}${person(d.licensee, 'Licensee')}
-          ${talk && d.status !== 'requested' ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=licence&id=${d.id}" target="_blank" rel="noopener">📹 Start a video call</a>` : ''}
+          ${talk && d.status !== 'requested' ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=licence&id=${d.id}" target="_blank" rel="noopener">📹 Start a video call</a>
+          <button class="btn btn-gold btn-sm" style="width:100%;margin-top:8px" data-act="room">🤝 Deal room: bring in your advisers</button>
+          <div class="muted" style="font-size:11.5px;text-align:center;margin-top:6px">Both sides can add their attorney and accountant, with a private channel for each side.</div>` : ''}
         </div>
         <div class="panel"><div class="panel-title">IdeaHub fee</div>
           <div class="help">${d.fee_amount > 0 ? `A fixed ${money(d.fee_amount)} to register the signed licence${d.fee_payer === 'split' ? ', split equally' : d.fee_payer === 'licensor' ? ', paid by the owner' : ', paid by the licensee'}.` : 'No IdeaHub fee.'} The licence fee or royalties are agreed between you and paid as your agreement says.</div></div>
@@ -198,6 +200,11 @@
     busy = true;
     try {
       const act = b.dataset.act;
+      if (act === 'room') {
+        const r = await fetch('/api/rooms', { method: 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'licence', licence_id: id }) });
+        const rm = await r.json(); if (!r.ok) throw new Error(rm.error || 'Could not open the deal room.');
+        location.href = '/deal-room?id=' + rm.id; return;
+      }
       if (act === 'accept') { await api('/respond', { accept: true }); toast('Accepted. Agree the terms with them.'); }
       else if (act === 'decline') { const reason = prompt('Tell them briefly why:'); if (!reason) { busy = false; return; } await api('/respond', { accept: false, reason }); }
       else if (act === 'cancel') { if (!confirm('Withdraw from this licence deal?')) { busy = false; return; } await api('/cancel', { reason: '' }); }

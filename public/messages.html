@@ -283,19 +283,21 @@
       <button class="call-modal-submit" onclick="submitCallRequest()">Schedule</button>
     </div>
     <div style="text-align:center;margin:0.75rem 0;font-size:11px;color:var(--muted);">— or —</div>
-    <button class="call-modal-submit" style="width:100%;background:var(--success);" onclick="startCallNow()">📞 Call Now</button>
+    <button class="call-modal-submit" style="width:100%;background:var(--success);" onclick="startCallNow()">📹 Video call now</button>
+    <div style="text-align:center;margin-top:0.6rem;font-size:11px;color:var(--muted);">Private IdeaHub video call. Works in the browser, no app needed.</div>
   </div>
 </div>
 
 <!-- MEET LINK MODAL -->
 <div class="modal-overlay" id="meetLinkModal">
   <div class="call-modal">
-    <h3>📹 Add Google Meet Link</h3>
-    <label>Meeting Link</label>
-    <input type="text" id="meetLinkInput" placeholder="https://meet.google.com/xxx-xxxx-xxx" />
+    <h3>📹 Accept call</h3>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem;">The call happens on IdeaHub video: private, in the browser, no app needed. Both of you get a Join button.</p>
+    <label>Prefer your own meeting link? (optional)</label>
+    <input type="text" id="meetLinkInput" placeholder="https://meet.google.com/… (leave empty for IdeaHub video)" />
     <div class="call-modal-actions">
       <button class="call-modal-cancel" onclick="closeMeetLinkModal()">Cancel</button>
-      <button class="call-modal-submit" onclick="submitMeetLink()">Accept & Send Link</button>
+      <button class="call-modal-submit" onclick="submitMeetLink()">Accept</button>
     </div>
   </div>
 </div>
@@ -325,6 +327,7 @@
       <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
       <a class="nav-item" href="/find-support?type=chartered_accountant">Find an Accountant</a>
     <a class="nav-item" href="/patents">Patent Applications</a>
+    <a class="nav-item" href="/deal-room">Deal Rooms</a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
@@ -350,7 +353,7 @@
       const avatarEl = document.getElementById('sidebarAvatar');
       if (avatarEl) {
         if (avatarUrl) {
-          avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+          avatarEl.innerHTML = `<img src="${escapeHtml(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
         } else {
           avatarEl.textContent = (user.first_name?.[0] || '?');
         }
@@ -489,7 +492,7 @@
           <div class="conv-item ${isActive ? 'active' : ''}" onclick="openGroup(${group.id})">
             <div class="conv-avatar">👥</div>
             <div class="conv-info">
-              <div class="conv-name">${name} ${badge}</div>
+              <div class="conv-name">${escapeHtml(name)} ${badge}</div>
               <div class="conv-preview">${group.status === 'pending' ? 'Awaiting approval...' : 'Group conversation'}</div>
             </div>
           </div>`;
@@ -503,10 +506,10 @@
     } else {
       html += conversations.map(conv => `
         <div class="conv-item ${activeConv?.id === conv.id ? 'active' : ''}" onclick="openConv(${conv.id})">
-          <div class="conv-avatar">${getInitials(conv.name)}</div>
+          <div class="conv-avatar">${escapeHtml(getInitials(conv.name))}</div>
           <div class="conv-info">
-            <div class="conv-name">${conv.name}</div>
-            <div class="conv-preview">${conv.lastMsg?.text || ''}</div>
+            <div class="conv-name">${escapeHtml(conv.name)}</div>
+            <div class="conv-preview">${escapeHtml(conv.lastMsg?.text || '')}</div>
           </div>
           <div class="conv-time">${formatTime(conv.lastMsg?.created_at)}</div>
         </div>
@@ -572,7 +575,7 @@
         <div class="chat-messages" style="justify-content:center;">
           <div class="group-consent-card">
             <div class="group-consent-title">👥 Group Chat Invitation</div>
-            <div class="group-consent-text">You've been invited to a group chat with ${namesList}. Do you want to join?</div>
+            <div class="group-consent-text">You've been invited to a group chat with ${escapeHtml(namesList)}. Do you want to join?</div>
             <div class="group-consent-actions">
               <button class="call-btn-accept" onclick="respondToGroup(${activeGroup.id},'approved')">Approve</button>
               <button class="call-btn-decline" onclick="respondToGroup(${activeGroup.id},'declined')">Decline</button>
@@ -584,14 +587,14 @@
 
     if (activeGroup.status === 'declined') {
       document.getElementById('chatArea').innerHTML = `
-        <div class="chat-header"><div class="chat-header-avatar">👥</div><div><div class="chat-header-name">${name}</div><div class="chat-header-sub">Group declined</div></div></div>
+        <div class="chat-header"><div class="chat-header-avatar">👥</div><div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">Group declined</div></div></div>
         <div class="chat-messages"><div class="empty-conv"><div class="empty-icon">❌</div><div class="empty-text">This group chat was declined.</div></div></div>`;
       return;
     }
 
     if (activeGroup.status === 'pending') {
       document.getElementById('chatArea').innerHTML = `
-        <div class="chat-header"><div class="chat-header-avatar">👥</div><div><div class="chat-header-name">${name}</div><div class="chat-header-sub">Awaiting approval from others</div></div></div>
+        <div class="chat-header"><div class="chat-header-avatar">👥</div><div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">Awaiting approval from others</div></div></div>
         <div class="chat-messages"><div class="empty-conv"><div class="empty-icon">⏳</div><div class="empty-text">Waiting for everyone to approve...</div></div></div>`;
       return;
     }
@@ -604,7 +607,7 @@
       document.getElementById('chatArea').innerHTML = `
         <div class="chat-header">
           <div class="chat-header-avatar">👥</div>
-          <div><div class="chat-header-name">${name}</div><div class="chat-header-sub">${activeGroup.members.length} members</div></div>
+          <div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">${activeGroup.members.length} members</div></div>
           <button class="call-btn" onclick="openGroupCallModal()" title="Request a call">📞</button>
         </div>
         <div class="chat-messages" id="chatMessages">
@@ -615,8 +618,8 @@
               if (msg.type === 'call_request') return renderCallCard(msg, isMe, true);
               return `
                 <div class="msg-bubble ${isMe ? 'me' : 'them'}">
-                  ${!isMe ? `<div style="font-size:11px;color:var(--muted);padding:0 4px;">${senderName}</div>` : ''}
-                  <div class="bubble">${msg.text}</div>
+                  ${!isMe ? `<div style="font-size:11px;color:var(--muted);padding:0 4px;">${escapeHtml(senderName)}</div>` : ''}
+                  <div class="bubble">${escapeHtml(msg.text)}</div>
                   <div class="bubble-time">${formatTime(msg.created_at)}</div>
                 </div>`;
             }).join('')
@@ -669,9 +672,9 @@
 
     document.getElementById('chatArea').innerHTML = `
       <div class="chat-header">
-        <div class="chat-header-avatar">${getInitials(activeConv.name)}</div>
+        <div class="chat-header-avatar">${escapeHtml(getInitials(activeConv.name))}</div>
         <div>
-          <div class="chat-header-name">${activeConv.name}</div>
+          <div class="chat-header-name">${escapeHtml(activeConv.name)}</div>
           <div class="chat-header-sub">${msgs.length} message${msgs.length !== 1 ? 's' : ''}</div>
         </div>
         <button class="add-person-btn" onclick="openAddPersonModal()" title="Add someone to chat">👥➕</button>
@@ -684,8 +687,8 @@
             if (msg.type === 'call_request') return renderCallCard(msg, isMe);
             return `
               <div class="msg-bubble ${isMe ? 'me' : 'them'}">
-                ${msg.idea_id ? `<div class="idea-ref">💡 Re: Idea #${msg.idea_id}</div>` : ''}
-                <div class="bubble">${msg.text}</div>
+                ${msg.idea_id ? `<div class="idea-ref">💡 Re: Idea #${escapeHtml(msg.idea_id)}</div>` : ''}
+                <div class="bubble">${escapeHtml(msg.text)}</div>
                 <div class="bubble-time">${formatTime(msg.created_at)}</div>
               </div>
             `;
@@ -705,6 +708,8 @@
     document.getElementById('msgInput')?.focus();
   }
 
+  function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+
   function formatCallDate(d) {
     if (!d) return '';
     const date = new Date(d);
@@ -723,7 +728,9 @@
           <button class="call-btn-decline" onclick="respondCall('${msg.id}','declined', ${isGroup?'true':'false'})">Decline</button>
         </div>`;
     } else if (msg.call_status === 'accepted' && msg.meet_link) {
-      actionsHtml = `<a class="call-join-btn" href="${msg.meet_link}" target="_blank">📹 Join Call</a>`;
+      const link = String(msg.meet_link);
+      const safe = /^\/call\?type=(message|group|patent)&id=\d+$/.test(link) || /^https:\/\/[^\s"'<>]+$/i.test(link);
+      if (safe) actionsHtml = `<a class="call-join-btn" href="${escapeHtml(link)}" target="_blank" rel="noopener">📹 Join ${link.startsWith('/call') ? 'video call' : 'call'}</a>`;
     }
 
     return `
@@ -731,7 +738,7 @@
         <div class="call-card">
           <div class="call-card-header">📞 Call Request</div>
           <div class="call-card-time">${formatCallDate(msg.call_date)}</div>
-          ${msg.text ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.5rem;">${msg.text}</div>` : ''}
+          ${msg.text ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.5rem;">${escapeHtml(msg.text)}</div>` : ''}
           <span class="call-card-status ${statusClass[msg.call_status]||'call-status-pending'}">${statusLabel[msg.call_status]||'⏳ Pending'}</span>
           ${actionsHtml}
         </div>
@@ -766,9 +773,9 @@
         if (!filtered.length) { el.style.display = 'none'; return; }
         el.style.display = 'block';
         el.innerHTML = filtered.map(u => `
-          <div class="search-result-item" onclick='selectAddPerson(${u.id}, "${u.first_name} ${u.last_name}", "${(u.role||"").replace(/_/g," ")}")'>
-            <span>${u.first_name} ${u.last_name}</span>
-            <span class="search-result-role">${(u.role||'').replace(/_/g,' ')}</span>
+          <div class="search-result-item" data-uid="${Number(u.id)}" data-name="${escapeHtml(`${u.first_name||''} ${u.last_name||''}`.trim())}" data-role="${escapeHtml((u.role||'').replace(/_/g,' '))}" onclick="selectAddPerson(Number(this.dataset.uid), this.dataset.name, this.dataset.role)">
+            <span>${escapeHtml(`${u.first_name||''} ${u.last_name||''}`.trim())}</span>
+            <span class="search-result-role">${escapeHtml((u.role||'').replace(/_/g,' '))}</span>
           </div>`).join('');
       } catch {}
     }, 300);
@@ -781,7 +788,7 @@
     document.getElementById('addPersonResults').style.display = 'none';
     const sel = document.getElementById('addPersonSelected');
     sel.style.display = 'block';
-    sel.innerHTML = `Selected: <strong>${name}</strong> <span style="color:var(--muted)">(${role})</span>`;
+    sel.innerHTML = `Selected: <strong>${escapeHtml(name)}</strong> <span style="color:var(--muted)">(${escapeHtml(role)})</span>`;
   }
 
   async function submitAddPerson() {
@@ -847,25 +854,27 @@
   }
 
   async function startCallNow() {
+    const isGroup = document.getElementById('callModal').dataset.group === '1';
+    delete document.getElementById('callModal').dataset.group;
     closeCallModal();
-    if (!activeConv) return;
-    const roomId = `IdeaHub-${[myId, activeConv.id].sort().join('-')}-${Date.now().toString(36)}`;
-    const link = `https://meet.jit.si/${roomId}`;
+    if (isGroup ? !activeGroup : !activeConv) return;
+    const win = window.open('', '_blank'); // open now so the browser doesn't block it
     try {
-      const res = await fetch(`${API_URL}/api/messages/call-request`, {
+      const res = await fetch(isGroup ? `${API_URL}/api/groups/${activeGroup.id}/call-request` : `${API_URL}/api/messages/call-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ toId: activeConv.id, callDate: new Date().toISOString(), note: '📞 Calling now!', meetLink: link })
+        body: JSON.stringify(isGroup ? { callDate: new Date().toISOString(), note: '📹 Video call now', video: true }
+                                     : { toId: activeConv.id, callDate: new Date().toISOString(), note: '📹 Video call now', video: true })
       });
-      if (res.ok) {
-        const saved = await res.json();
-        activeConv.messages.push(saved);
-        activeConv.lastMsg = saved;
-        renderConvList();
-        renderChatArea();
-        window.open(link, '_blank');
-      }
-    } catch(e) { alert('Failed to start call.'); }
+      if (!res.ok) throw new Error();
+      const saved = await res.json();
+      if (win) win.location = saved.meet_link; else location.href = saved.meet_link;
+      if (isGroup) { await renderGroupArea(); return; }
+      activeConv.messages.push(saved);
+      activeConv.lastMsg = saved;
+      renderConvList();
+      renderChatArea();
+    } catch(e) { if (win) win.close(); alert('Failed to start call.'); }
   }
 
   let pendingCallMsgId = null;
@@ -880,8 +889,8 @@
 
   async function submitMeetLink() {
     const link = document.getElementById('meetLinkInput').value.trim();
-    if (!link) { alert('Please paste a Google Meet link.'); return; }
-    await respondCall(pendingCallMsgId, 'accepted', pendingCallIsGroup, link);
+    if (link && !/^https:\/\/\S+$/i.test(link)) { alert('Paste a full meeting link starting with https://, or leave it empty to use IdeaHub video.'); return; }
+    await respondCall(pendingCallMsgId, 'accepted', pendingCallIsGroup, link || undefined);
     closeMeetLinkModal();
   }
 

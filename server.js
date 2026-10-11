@@ -166,6 +166,8 @@ app.get('/robots.txt', (req, res) => {
   // Patent licences (outright patent sales happen between the parties, off IdeaHub)
   const licences = require('./licences');
   licences.mount(app, { supabase, authMiddleware, escrow });
+  // Deal rooms: each side brings its own advisers (shared + private side channels, adviser jobs in escrow)
+  require('./rooms').mount(app, { supabase, authMiddleware, escrow, sendEmail });
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -290,6 +292,7 @@ app.get('/robots.txt', (req, res) => {
   app.get('/patent-application', (req, res) => res.sendFile(__dirname + '/public/patent-application.html'));
   app.get('/call', (req, res) => res.sendFile(__dirname + '/public/call.html'));
   app.get('/licence', (req, res) => res.sendFile(__dirname + '/public/licence.html'));
+  app.get('/deal-room', (req, res) => res.sendFile(__dirname + '/public/deal-room.html'));
 
   // Sitemap: the static pages in public/sitemap.xml + each public idea and life hack (cached 1 hour)
   let sitemapCache = { at: 0, xml: '' };

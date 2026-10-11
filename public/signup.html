@@ -349,7 +349,8 @@
         admin: '/admin'
       };
       setTimeout(() => {
-        window.location.href = dashMap[role] || '/dashboard';
+        const next = new URLSearchParams(location.search).get('next') || '';
+        window.location.href = /^\/(?![\/\\])/.test(next) ? next : (dashMap[role] || '/dashboard');
       }, 1000);
 
     } catch (err) {

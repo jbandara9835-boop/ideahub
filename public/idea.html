@@ -315,6 +315,7 @@
       <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
       <a class="nav-item" href="/find-support?type=chartered_accountant">Find an Accountant</a>
     <a class="nav-item" href="/patents">Patent Applications</a>
+    <a class="nav-item" href="/deal-room">Deal Rooms</a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
@@ -535,7 +536,8 @@
       ${isOwner ? `<button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your patent</button><a href="/patents#licences" style="display:block;text-align:center;margin:-0.25rem 0 1rem;color:var(--accent);font-size:13px;text-decoration:none;">See licence requests →</a>`
         : idea.status !== 'live' ? `<button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Not available</button>` : `
         ${o.licence ? `<button class="buy-btn" onclick="openLic()">📜 Request a licence</button>` : ''}
-        ${o.sale ? `<button class="contact-btn" onclick="enquirePatent()">💬 Enquire about buying the patent</button>` : `<button class="contact-btn" onclick="openModal()">💬 Message the owner</button>`}`}
+        ${o.sale ? `<button class="contact-btn" onclick="enquirePatent()">💬 Enquire about buying the patent</button>` : `<button class="contact-btn" onclick="openModal()">💬 Message the owner</button>`}
+        <button class="contact-btn" onclick="openRoom()">🤝 Open a deal room with your advisers</button>`}
       ${!isOwner ? `<div class="pt-guide"><b>How buying a patent works</b>
         <ol><li>Message the owner and agree a price.</li>
         <li>Hire a <a href="/find-support?type=patent_attorney">patent attorney</a> to check ownership, status, fees and existing licences, and to prepare the assignment.</li>
@@ -553,6 +555,14 @@
       const el = document.getElementById('activeLic'); if (!el) return;
       el.innerHTML = `<div style="font-size:13px;margin-top:.9rem"><div class="meta-label" style="margin-bottom:6px">Licences registered on IdeaHub</div>${list.map(l => `<div style="color:var(--text);margin-bottom:3px">• ${escI(l.type_label)} · ${escI(l.territory || '')}${l.field_of_use ? ' · ' + escI(l.field_of_use) : ''}${l.end_date ? ' · until ' + fd(l.end_date) : ''}</div>`).join('')}</div>`;
     } catch (e) {}
+  }
+  async function openRoom() {
+    if (!token) { window.location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    try {
+      const r = await fetch(`${API_URL}/api/rooms`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ kind: 'listing', idea_id: currentIdea.id }) });
+      const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Could not open the deal room.');
+      location.href = '/deal-room?id=' + d.id;
+    } catch (e) { alert(e.message); }
   }
   function enquirePatent() {
     openModal();
@@ -752,6 +762,9 @@
                 </button>
                 <button class="contact-btn" onclick="openModal()">
                   💬 Contact Creator First
+                </button>
+                <button class="contact-btn" onclick="openRoom()" style="margin-top:-0.25rem">
+                  🤝 Open a deal room with your advisers
                 </button>
               ` : isOwner ? `
                 <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your own idea</button>

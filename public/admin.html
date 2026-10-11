@@ -552,6 +552,7 @@
     if (!allDisputes.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⚖️</div><div class="empty-text">No open disputes</div></div>`; return; }
     el.innerHTML = allDisputes.map(t => {
       if (t.kind === 'patent') return patentDisputeCard(t);
+      if (t.kind === 'room_job') return roomJobCard(t);
       const buyer = `${t.buyer?.first_name||''} ${t.buyer?.last_name||''}`.trim() || 'Buyer';
       const seller = `${t.seller?.first_name||''} ${t.seller?.last_name||''}`.trim() || 'Seller';
       const days = t.disputed_at ? Math.floor((Date.now() - new Date(t.disputed_at)) / 86400000) : 0;
@@ -655,6 +656,40 @@
       const d = await res.json().catch(() => ({}));
       if (res.ok) loadRegs(); else alert(d.error || 'Failed');
     } catch (e) { alert('Something went wrong.'); }
+  }
+
+  function roomJobCard(j) {
+    const nm = u => `${u?.first_name||''} ${u?.last_name||''}`.trim() || '—';
+    return `
+        <div class="cert-card pending">
+          <div class="cert-top">
+            <div class="cert-user-info">
+              <div class="cert-user-name">🤝 ${escHtml(j.title)} · <span style="color:var(--accent);">$${Number(j.amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-role">Adviser job #${escHtml(j.id)} in deal room #${escHtml(j.room_id)} · disputed ${formatDate(j.disputed_at)}</div>
+            </div>
+            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Client (paid)</div><div class="cert-detail-val">${escHtml(nm(j.client))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(j.client?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Adviser</div><div class="cert-detail-val">${escHtml(nm(j.adviser))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(j.adviser?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Delivered</div><div class="cert-detail-val">${j.delivered_at ? formatDate(j.delivered_at) : 'Not marked delivered'}</div></div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Scope</div>${escHtml(j.scope||'')}<div class="cert-detail-label" style="margin-top:8px">Client's reason</div>${escHtml(j.dispute_reason||'—')}</div>
+          <div class="cert-actions">
+            <a class="cert-file-btn" href="/deal-room?id=${encodeURIComponent(j.room_id)}" target="_blank">📄 Open deal room</a>
+            <button class="btn-approve" onclick="resolveRoomJob('${escHtml(j.id)}','release')">💰 Release to adviser</button>
+            <button class="btn-reject-cert" onclick="resolveRoomJob('${escHtml(j.id)}','refund')">↩️ Refund client ($${Number(j.total||0).toLocaleString()})</button>
+          </div>
+        </div>`;
+  }
+  async function resolveRoomJob(id, outcome) {
+    const note = prompt(`You are about to ${outcome === 'release' ? 'release the fee to the adviser' : 'refund the client'}.\n\nOptional note:`);
+    if (note === null) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/room-jobs/${id}/resolve`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body: JSON.stringify({ outcome, note }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadAll(); else alert(d.error || 'Failed');
+    } catch(e) { alert('Something went wrong.'); }
   }
 
   async function resolvePatentDispute(id, outcome) {
@@ -1039,7 +1074,7 @@
 
   async function loadAll() {
     try {
-      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes, patentDisputesRes] = await Promise.all([
+      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes, patentDisputesRes, roomJobsRes] = await Promise.all([
         fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/users`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/ideas`, { headers:{ Authorization:`Bearer ${token}` } }),
@@ -1047,7 +1082,8 @@
         fetch(`${API_URL}/api/admin/role-requests`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/disputes`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } }),
-        fetch(`${API_URL}/api/admin/patent-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
+        fetch(`${API_URL}/api/admin/patent-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null),
+        fetch(`${API_URL}/api/admin/room-job-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
       ]);
       loadRegs();
       fetch(`${API_URL}/api/admin/appeals`, { headers:{ Authorization:`Bearer ${token}` } })
@@ -1056,6 +1092,8 @@
       allDisputes = disputesRes.ok ? await disputesRes.json() : [];
       const patentDisputes = patentDisputesRes && patentDisputesRes.ok ? await patentDisputesRes.json() : [];
       allDisputes = allDisputes.concat((Array.isArray(patentDisputes) ? patentDisputes : []).map(p => ({ ...p, kind: 'patent' })));
+      const roomJobs = roomJobsRes && roomJobsRes.ok ? await roomJobsRes.json() : [];
+      allDisputes = allDisputes.concat((Array.isArray(roomJobs) ? roomJobs : []).map(j => ({ ...j, kind: 'room_job' })));
 
       allIdeas = ideasRes.ok ? await ideasRes.json() : [];
       allHires = hiresRes.ok ? await hiresRes.json() : [];
