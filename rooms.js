@@ -130,6 +130,13 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
       if (!idea || !['live', 'escrow', 'sold'].includes(idea.status)) return res.status(404).json({ error: 'Listing not found.' });
       if (idea.creator_id === req.user.id) return res.status(400).json({ error: 'Buyers open a deal room with you from your listing.' });
       a = idea.creator_id; b = req.user.id; title = idea.title; ref = idea.id;
+    } else if (kind === 'business') {
+      // A Business Expansion application: the listing owner (a) and the other party (b)
+      const { data: x } = await supabase.from('expansion_applications').select('id, listing_id, investor_id, status').eq('id', parseInt(req.body.application_id, 10)).single();
+      const { data: bl } = x ? await supabase.from('business_listings').select('id, owner_id, business_name').eq('id', x.listing_id).single() : { data: null };
+      if (!x || !bl || ![x.investor_id, bl.owner_id].includes(req.user.id)) return fail(res);
+      if (['withdrawn', 'rejected'].includes(x.status)) return res.status(400).json({ error: 'This application is closed.' });
+      a = bl.owner_id; b = x.investor_id; title = bl.business_name; ref = x.id;
     } else return res.status(400).json({ error: 'Unknown deal type.' });
 
     let q = supabase.from('deal_rooms').select('*').eq('kind', kind).eq('ref_id', ref);
@@ -184,11 +191,12 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
     const files = (r.room.files || []).map((f, i) => ({ index: i, name: f.name, size: f.size, at: f.at, channel: f.channel, uploaded_by: f.uploaded_by ? fullName(U[f.uploaded_by]) : '' })).filter(f => chans.includes(f.channel));
     let deal = null;
     if (r.room.kind === 'licence') deal = { link: `/licence?id=${r.room.ref_id}`, label: 'Open the licence deal' };
+    else if (r.room.kind === 'business') deal = { link: `/expansion?id=${r.room.ref_id}`, label: 'Open the expansion deal' };
     else deal = { link: `/idea?id=${r.room.ref_id}`, label: 'Open the listing' };
     res.json({
       room: { id: r.room.id, title: r.room.title, kind: r.room.kind, status: r.room.status, created_at: r.room.created_at },
       me: r.mine ? { side: r.mine.side, role: r.mine.role, member_id: r.mine.id } : { admin: true },
-      side_names: { a: r.room.kind === 'licence' ? 'Owner (licensor)' : 'Owner / seller', b: r.room.kind === 'licence' ? 'Licensee' : 'Buyer' },
+      side_names: { a: r.room.kind === 'licence' ? 'Owner (licensor)' : r.room.kind === 'business' ? 'Business owner' : 'Owner / seller', b: r.room.kind === 'licence' ? 'Licensee' : r.room.kind === 'business' ? 'Other party' : 'Buyer' },
       people, files, deal, fee_rate: FEE_RATE, payments_open: c.payments.purchasesOpen(), roles: ROLES,
       jobs: (jobs || []).map(j => ({ ...j, adviser_name: fullName(U[j.adviser_id]), client_name: fullName(U[j.client_id]) })),
       messages: (msgs || []).map(m => ({ id: m.id, channel: m.channel, from_id: m.from_id, from: m.from_id ? fullName(U[m.from_id]) : null, text: m.text, system: !!m.system, created_at: m.created_at }))
@@ -255,7 +263,7 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
     const label = txt(req.body?.label, 60) || null;
     const userId = parseInt(req.body?.user_id, 10) || null;
     const email = txt(req.body?.email, 160).toLowerCase();
-    const sideName = r.mine.side === 'a' ? 'the owner' : (r.room.kind === 'licence' ? 'the licensee' : 'the buyer');
+    const sideName = r.mine.side === 'a' ? 'the owner' : (r.room.kind === 'licence' ? 'the licensee' : r.room.kind === 'business' ? 'the other party' : 'the buyer');
     let row;
     if (userId) {
       if (active.some(m => m.user_id === userId)) return res.status(400).json({ error: 'That person is already in this room.' });
@@ -298,7 +306,7 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
     if (!rows || !rows.length) return res.status(409).json({ error: 'This invitation was already used.' });
     const { data: u } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
     const { data: room } = await supabase.from('deal_rooms').select('title, kind').eq('id', id).single();
-    const whose = inv.side === 'a' ? "the owner's" : room?.kind === 'licence' ? "the licensee's" : "the buyer's";
+    const whose = inv.side === 'a' ? "the owner's" : room?.kind === 'licence' ? "the licensee's" : room?.kind === 'business' ? "the other party's" : "the buyer's";
     await c.log(id, 'shared', `${fullName(u)} joined as ${whose} ${(inv.label || ROLES[inv.role] || 'adviser').toLowerCase()}.`);
     if (inv.invited_by) await escrow.notify(inv.invited_by, { type: 'deal_room', title: '✅ Your adviser joined', message: `${fullName(u)} joined the deal room for "${room?.title || ''}".`, link: `/deal-room?id=${id}` });
     res.json({ ok: true });

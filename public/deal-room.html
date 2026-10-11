@@ -114,7 +114,7 @@
   async function renderList() {
     const rooms = await api('', null, 'GET').catch(() => []);
     $('root').innerHTML = `<div class="top"><div class="kicker">Deal rooms</div><h1>Your deal rooms</h1><p class="muted" style="font-size:14px;line-height:1.6;max-width:640px">A deal room brings both sides of a deal together with their own attorneys, accountants and other advisers. Each side also has a private channel.</p></div>
-      <div class="list">${rooms.length ? rooms.map(r => `<a class="app-row" href="/deal-room?id=${Number(r.id)}"><div><h3>${esc(r.title)}</h3><div class="app-meta" style="font-size:12.5px;color:var(--muted);margin-top:4px">${r.kind === 'licence' ? 'Licence deal' : 'Listing deal'} · ${r.my_role === 'party' ? 'You are a party' : 'You are an adviser'}</div></div>
+      <div class="list">${rooms.length ? rooms.map(r => `<a class="app-row" href="/deal-room?id=${Number(r.id)}"><div><h3>${esc(r.title)}</h3><div class="app-meta" style="font-size:12.5px;color:var(--muted);margin-top:4px">${r.kind === 'licence' ? 'Licence deal' : r.kind === 'business' ? 'Business expansion deal' : 'Listing deal'} · ${r.my_role === 'party' ? 'You are a party' : 'You are an adviser'}</div></div>
         <span class="pill ${r.my_status === 'invited' ? 'st-requested' : 'st-in_progress'}">${r.my_status === 'invited' ? 'Invitation' : 'Open'}</span></a>`).join('')
         : '<div class="empty"><div class="icon">🤝</div>No deal rooms yet. Open one from a listing or a licence deal.</div>'}</div>`;
   }

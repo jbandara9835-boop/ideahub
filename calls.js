@@ -19,7 +19,7 @@ const HOUR = 3600 * 1000;
 const EARLY_MIN = 15; // a scheduled call opens 15 minutes before its time
 
 const callPath = (type, id) => `/call?type=${type}&id=${id}`;
-const isSafeLink = l => typeof l === 'string' && (/^https:\/\/[^\s"'<>]+$/i.test(l) || /^\/call\?type=(message|group|patent|licence|room|hire)&id=\d+$/.test(l));
+const isSafeLink = l => typeof l === 'string' && (/^https:\/\/[^\s"'<>]+$/i.test(l) || /^\/call\?type=(message|group|patent|licence|room|hire|expansion)&id=\d+$/.test(l));
 
 function mount(app, { supabase, authMiddleware, escrow }) {
   const key = () => process.env.DAILY_API_KEY || '';
@@ -70,6 +70,13 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       if (!h || ![h.client_id, h.support_id].includes(userId)) return { error: 'Call not found.', status: 404 };
       if (['rejected', 'cancelled'].includes(h.status)) return { error: 'This hire is closed.', status: 400 };
       return { participants: [h.client_id, h.support_id], title: `Call about "${h.title}"`, opensAt: 0, expiresAt: now + 3 * HOUR, max: 4, back: `/hire?id=${h.id}` };
+    }
+    if (type === 'expansion') {
+      const { data: x } = await supabase.from('expansion_applications').select('id, investor_id, listing_id, status').eq('id', id).single();
+      const { data: b } = x ? await supabase.from('business_listings').select('owner_id, business_name').eq('id', x.listing_id).single() : { data: null };
+      if (!x || !b || ![x.investor_id, b.owner_id].includes(userId)) return { error: 'Call not found.', status: 404 };
+      if (['withdrawn', 'rejected'].includes(x.status)) return { error: 'This application is closed.', status: 400 };
+      return { participants: [x.investor_id, b.owner_id], title: `Call about "${b.business_name}"`, opensAt: 0, expiresAt: now + 3 * HOUR, max: 6, back: `/expansion?id=${x.id}` };
     }
     if (type === 'room') {
       const { data: room } = await supabase.from('deal_rooms').select('id, title, status').eq('id', id).single();
@@ -124,7 +131,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       const t = await daily('/meeting-tokens', { properties: { room_name: call.room_name, user_name: name(me), user_id: String(req.user.id), exp: tokenExp } });
 
       // Patent calls have no call request, so ring the other person (at most every 10 minutes)
-      if (['patent', 'licence', 'room', 'hire'].includes(type) && (!existing || !existing.last_rung_at || Date.now() - new Date(existing.last_rung_at).getTime() > 10 * 60000 || existing.room_name !== call.room_name)) {
+      if (['patent', 'licence', 'room', 'hire', 'expansion'].includes(type) && (!existing || !existing.last_rung_at || Date.now() - new Date(existing.last_rung_at).getTime() > 10 * 60000 || existing.room_name !== call.room_name)) {
         for (const uid of ctx.participants.filter(x => x && x !== req.user.id)) {
           await escrow.notify(uid, { type: 'call_now', title: '📹 Video call started', message: `${name(me)} started a video call: ${ctx.title.replace(/^Call about /, '')}. Join now.`, link: callPath(type, id) });
         }

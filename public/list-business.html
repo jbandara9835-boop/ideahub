@@ -60,6 +60,17 @@
 
   /* EXPANSION TYPE SELECTOR */
   .exp-types-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  input[type=checkbox] { appearance:auto; -webkit-appearance:checkbox; accent-color:#f5c842; width:18px !important; height:18px; padding:0; flex-shrink:0; cursor:pointer; }
+  .choice-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-bottom:1.1rem; }
+  .choice { border:1px solid var(--border); border-radius:12px; padding:0.8rem 0.9rem; cursor:pointer; background:none; color:var(--text); text-align:left; font-family:inherit; transition:all .15s; }
+  .choice:hover { border-color:var(--border-hover); }
+  .choice.on { border-color:var(--accent); background:var(--accent-dim); }
+  .choice b { display:block; font-size:14px; margin-bottom:3px; }
+  .choice small { display:block; font-size:12px; color:var(--muted); line-height:1.45; }
+  .type-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:1.1rem; }
+  .type-chip { border:1px solid var(--border); border-radius:20px; padding:7px 13px; font-size:13px; cursor:pointer; background:none; color:var(--text); font-family:inherit; }
+  .type-chip.on { border-color:var(--accent); background:var(--accent-dim); color:var(--accent); }
+  .conf-box { border:1px solid rgba(167,139,250,0.35); background:rgba(167,139,250,0.06); border-radius:12px; padding:0.9rem 1rem; margin-top:.4rem; }
   .exp-type-option { border:1px solid var(--border); border-radius:10px; padding:0.75rem; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:10px; }
   .exp-type-option:hover { border-color:var(--border-hover); }
   .exp-type-option.selected { border-color:var(--accent); background:var(--accent-dim); }
@@ -135,16 +146,28 @@
 <main class="main">
   <div class="topbar">
     <a class="back-btn" href="/businesses">← Back</a>
-    <div class="page-title">List Your Business</div>
+    <div class="page-title" id="pageTitle">List Your Business</div>
   </div>
+  <div id="reviewBanner" style="display:none;margin-bottom:1.25rem;border-radius:12px;padding:0.9rem 1.15rem;font-size:13.5px;line-height:1.6;"></div>
 
   <div class="form-grid">
     <div>
+      <!-- ROUTE -->
+      <div class="form-card" id="routeCard">
+        <div class="form-section-title">🧭 What do you want to do?</div>
+        <div class="choice-grid" id="dirGrid" style="grid-template-columns:1fr 1fr"></div>
+        <label class="lbl">How do you want to grow? *</label>
+        <div class="choice-grid" id="routeGrid"></div>
+        <div id="typeWrap" style="display:none"><label class="lbl">Deal type * (select all that apply)</label><div class="type-chips" id="typeGrid"></div></div>
+        <div id="detailWrap"></div>
+        <div id="confWrap"></div>
+      </div>
+
       <!-- BASIC INFO -->
       <div class="form-card">
         <div class="form-section-title">🏢 Business Information</div>
         <div class="field">
-          <label class="lbl">Business Name *</label>
+          <label class="lbl">Business Name * <span id="nameNote" style="text-transform:none;letter-spacing:0;color:var(--accent);display:none">· private on confidential listings</span></label>
           <input type="text" id="business_name" placeholder="e.g. FreshBite Restaurant Chain" oninput="updatePreview()" />
         </div>
         <div class="field">
@@ -168,7 +191,7 @@
           </div>
           <div class="field">
             <label class="lbl">Founded Year</label>
-            <input type="number" id="founded_year" placeholder="2015" min="1900" max="2025" />
+            <input type="number" id="founded_year" placeholder="2015" min="1800" max="2100" />
           </div>
         </div>
         <div class="row">
@@ -189,6 +212,26 @@
         <div class="field">
           <label class="lbl">Website</label>
           <input type="text" id="website" placeholder="https://yourbusiness.com" />
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-section-title">🧾 Company Registration</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem;">IdeaHub checks every business before it goes live, so investors know it's real. Your registration number and certificate are kept private: investors only see the ✅ Verified badge.</p>
+        <div class="row">
+          <div class="field">
+            <label class="lbl" for="reg_number">Company Registration Number *</label>
+            <input type="text" id="reg_number" placeholder="e.g. PV 12345" maxlength="60" />
+          </div>
+          <div class="field">
+            <label class="lbl" for="reg_country">Registered In</label>
+            <input type="text" id="reg_country" placeholder="Same as country if left blank" maxlength="60" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl" for="reg_doc">Registration Certificate (PDF or image, max 10 MB) <span id="docReq">*</span></label>
+          <input type="file" id="reg_doc" accept=".pdf,.png,.jpg,.jpeg,.webp" style="font-size:13px;color:var(--muted)" />
+          <div id="docHave" style="font-size:12px;color:var(--success);margin-top:6px;display:none">✓ Certificate on file. Upload a new one only if it changed.</div>
         </div>
       </div>
 
@@ -222,44 +265,14 @@
 
       <!-- EXPANSION DETAILS -->
       <div class="form-card">
-        <div class="form-section-title">🚀 Expansion Opportunity</div>
-        <div class="field">
-          <label class="lbl">Expansion Types * (select all that apply)</label>
-          <div class="exp-types-grid">
-            <label class="exp-type-option" data-type="franchise" onclick="toggleType(this)">
-              <input type="checkbox" value="franchise" />
-              <span class="exp-type-emoji">📦</span>
-              <div><div class="exp-type-name">Franchise</div><div class="exp-type-desc">Full model replication</div></div>
-            </label>
-            <label class="exp-type-option" data-type="license" onclick="toggleType(this)">
-              <input type="checkbox" value="license" />
-              <span class="exp-type-emoji">📜</span>
-              <div><div class="exp-type-name">License</div><div class="exp-type-desc">Use brand/IP only</div></div>
-            </label>
-            <label class="exp-type-option" data-type="joint_venture" onclick="toggleType(this)">
-              <input type="checkbox" value="joint_venture" />
-              <span class="exp-type-emoji">🤝</span>
-              <div><div class="exp-type-name">Joint Venture</div><div class="exp-type-desc">Equity partnership</div></div>
-            </label>
-            <label class="exp-type-option" data-type="distribution" onclick="toggleType(this)">
-              <input type="checkbox" value="distribution" />
-              <span class="exp-type-emoji">🌍</span>
-              <div><div class="exp-type-name">Distribution</div><div class="exp-type-desc">Sell in new territory</div></div>
-            </label>
-            <label class="exp-type-option" data-type="white_label" onclick="toggleType(this)">
-              <input type="checkbox" value="white_label" />
-              <span class="exp-type-emoji">💻</span>
-              <div><div class="exp-type-name">White Label</div><div class="exp-type-desc">Resell under own brand</div></div>
-            </label>
-          </div>
-        </div>
+        <div class="form-section-title">💰 Terms &amp; Partner</div>
         <div class="row">
           <div class="field">
-            <label class="lbl">Min Investment (USD)</label>
+            <label class="lbl" id="invMinLbl">Min Investment (USD)</label>
             <input type="number" id="investment_min" placeholder="10000" min="0" oninput="updatePreview()" />
           </div>
           <div class="field">
-            <label class="lbl">Max Investment (USD)</label>
+            <label class="lbl" id="invMaxLbl">Max Investment (USD)</label>
             <input type="number" id="investment_max" placeholder="100000" min="0" oninput="updatePreview()" />
           </div>
         </div>
@@ -268,16 +281,16 @@
           <input type="text" id="territories" placeholder="e.g. South Asia, Southeast Asia, Middle East (comma separated)" />
         </div>
         <div class="field">
-          <label class="lbl">Partner Requirements</label>
+          <label class="lbl" id="reqLbl">Partner Requirements</label>
           <textarea id="requirements" placeholder="What do you look for in an expansion partner? Experience, capital, local connections..." style="min-height:80px;"></textarea>
         </div>
 
         <div class="msg error" id="errorMsg"></div>
-        <div class="msg success" id="successMsg">🎉 Business listed successfully! Redirecting...</div>
+        <div class="msg success" id="successMsg">✅ Submitted. IdeaHub will check it and notify you, usually within 2 business days. Redirecting…</div>
 
         <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
           <div class="spinner" id="spinner"></div>
-          <span id="btnText">List My Business →</span>
+          <span id="btnText">Submit for Review →</span>
         </button>
       </div>
     </div>
@@ -307,6 +320,7 @@
   </div>
 </main>
 
+<script src="/expansion-routes.js"></script>
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -331,6 +345,7 @@
     <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
     <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
     <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
+    <a class="nav-item" href="/expansion"><span class="nav-icon">🏢</span><span>Expansion Deals</span></a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
@@ -352,30 +367,53 @@
 
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
 
-  let selectedTypes = [];
-
-  const typeConfig = {
-    franchise: { label:'Franchise', emoji:'📦' },
-    license: { label:'License', emoji:'📜' },
-    joint_venture: { label:'Joint Venture', emoji:'🤝' },
-    distribution: { label:'Distribution', emoji:'🌍' },
-    white_label: { label:'White Label', emoji:'💻' }
-  };
-
-  function toggleType(el) {
-    const type = el.dataset.type;
-    const cb = el.querySelector('input');
-    if (selectedTypes.includes(type)) {
-      selectedTypes = selectedTypes.filter(t => t !== type);
-      el.classList.remove('selected');
-      cb.checked = false;
-    } else {
-      selectedTypes.push(type);
-      el.classList.add('selected');
-      cb.checked = true;
-    }
+  let selectedTypes = [], direction = 'offer', route = null, confidential = false, detailVals = {};
+  const escA = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  function collectDetails() {
+    document.querySelectorAll('[data-detail]').forEach(el => { const v = el.value.trim(); if (v === '') delete detailVals[el.dataset.detail]; else detailVals[el.dataset.detail] = v; });
+    return detailVals;
+  }
+  function keepTeaser() { const a = document.getElementById('teaser_title'), b = document.getElementById('teaser'); return { t: a ? a.value : (window._tt || ''), z: b ? b.value : (window._tz || '') }; }
+  function renderRoute() {
+    collectDetails(); const tz = keepTeaser(); window._tt = tz.t; window._tz = tz.z;
+    document.getElementById('dirGrid').innerHTML = [
+      ['offer', '📣 Offer an opportunity', 'We are offering a franchise, distribution rights, a stake, supply or a partnership.'],
+      ['seek', '🔎 Find a partner', 'We are looking for a supplier, distributor, franchise, business to acquire or partner.']
+    ].map(([k, t, h]) => `<button type="button" class="choice ${direction === k ? 'on' : ''}" data-dir="${k}"><b>${t}</b><small>${h}</small></button>`).join('');
+    document.getElementById('routeGrid').innerHTML = Routes.GROUPS.map(g => `<button type="button" class="choice ${route === g.key ? 'on' : ''}" data-route="${g.key}"><b>${g.icon} ${escA(g.label)}</b><small>${escA(g.help)}</small></button>`).join('');
+    const types = route ? Routes.BY_GROUP[route] : [];
+    document.getElementById('typeWrap').style.display = route ? '' : 'none';
+    document.getElementById('typeGrid').innerHTML = types.map(t => `<button type="button" class="type-chip ${selectedTypes.includes(t.key) ? 'on' : ''}" data-type="${t.key}" title="${escA(t.label)}">${escA(direction === 'seek' ? t.seek : t.offer)}</button>`).join('');
+    const fields = route ? (Routes.FIELDS[route] || {})[direction] || [] : [];
+    document.getElementById('detailWrap').innerHTML = fields.length ? `<label class="lbl" style="margin-top:.2rem">Details</label>` + fields.map(f => {
+      const id = 'd_' + f.key, v = detailVals[f.key] != null ? detailVals[f.key] : '';
+      const input = f.type === 'select' ? `<select id="${id}" data-detail="${f.key}"><option value="">Choose…</option>${f.options.map(o => `<option ${String(v) === o ? 'selected' : ''}>${escA(o)}</option>`).join('')}</select>`
+        : f.type === 'text' ? `<textarea id="${id}" data-detail="${f.key}" maxlength="${f.max || 600}" style="min-height:70px" placeholder="${escA(f.placeholder || '')}">${escA(v)}</textarea>`
+        : `<input id="${id}" data-detail="${f.key}" type="${['money','pct','int'].includes(f.type) ? 'number' : 'text'}" ${f.type === 'pct' ? 'min="0.01" max="100" step="0.01"' : f.type === 'money' ? 'min="0"' : ''} maxlength="${f.max || 120}" value="${escA(v)}" placeholder="${escA(f.placeholder || '')}" />`;
+      return `<div class="field"><label class="lbl" for="${id}" style="text-transform:none;letter-spacing:0;font-size:12.5px">${escA(f.label)}${f.teaser ? '' : ' <span style="color:var(--muted)">(private on confidential listings)</span>'}</label>${input}</div>`;
+    }).join('') : '';
+    const must = Routes.mustBeConfidential(direction, selectedTypes);
+    if (must) confidential = true;
+    document.getElementById('confWrap').innerHTML = route ? `<div class="conf-box">
+      <label style="display:flex;gap:10px;align-items:flex-start;font-size:13.5px;cursor:${must ? 'default' : 'pointer'}"><input type="checkbox" id="confChk" ${confidential ? 'checked' : ''} ${must ? 'disabled' : ''} style="width:auto;margin-top:3px" />
+      <span><b>🔒 Confidential listing</b><br><span style="color:var(--muted);font-size:12.5px">${must ? 'Selling a business, a stake or merging is always confidential.' : 'Hide your business name and details.'} The public sees only an anonymous summary. People who want the full details sign a confidentiality agreement, and you decide who gets access.</span></span></label>
+      ${confidential ? `<div class="field" style="margin-top:.9rem"><label class="lbl" for="teaser_title">Anonymous headline *</label><input type="text" id="teaser_title" maxlength="120" placeholder="e.g. Profitable 12-outlet restaurant chain, Western Province" value="${escA(window._tt || '')}" /></div>
+      <div class="field"><label class="lbl" for="teaser">Anonymous summary *</label><textarea id="teaser" maxlength="1500" style="min-height:80px" placeholder="What a serious party needs to know to ask for details. Don't include your business name, address or anything that identifies you.">${escA(window._tz || '')}</textarea></div>` : ''}
+    </div>` : '';
+    document.getElementById('nameNote').style.display = confidential ? '' : 'none';
+    document.getElementById('invMinLbl').textContent = direction === 'seek' ? 'Your budget from (USD)' : 'Min investment needed (USD)';
+    document.getElementById('invMaxLbl').textContent = direction === 'seek' ? 'Your budget up to (USD)' : 'Max investment needed (USD)';
+    document.getElementById('reqLbl').textContent = direction === 'seek' ? 'What you are looking for in a partner' : 'Partner requirements';
     updatePreview();
   }
+  document.addEventListener('click', e => {
+    const d = e.target.closest('[data-dir]'), r = e.target.closest('[data-route]'), t = e.target.closest('.type-chip[data-type]');
+    if (d) { direction = d.dataset.dir; confidential = Routes.mustBeConfidential(direction, selectedTypes) || confidential; renderRoute(); }
+    else if (r) { if (route !== r.dataset.route) { route = r.dataset.route; selectedTypes = []; detailVals = {}; } renderRoute(); }
+    else if (t) { const k = t.dataset.type; selectedTypes = selectedTypes.includes(k) ? selectedTypes.filter(x => x !== k) : [...selectedTypes, k]; renderRoute(); }
+  });
+  document.addEventListener('input', e => { if (e.target.id === 'teaser_title') updatePreview(); });
+  document.addEventListener('change', e => { if (e.target.id === 'confChk') { confidential = e.target.checked; renderRoute(); } });
 
   function updatePreview() {
     const name = document.getElementById('business_name').value;
@@ -389,7 +427,8 @@
     document.getElementById('previewTagline').textContent = tagline || 'Tagline here...';
 
     const typesEl = document.getElementById('previewTypes');
-    typesEl.innerHTML = selectedTypes.map(t => `<span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--accent);">${typeConfig[t]?.emoji} ${typeConfig[t]?.label}</span>`).join('');
+    typesEl.innerHTML = selectedTypes.map(t => `<span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--accent);">${escA(Routes.typeLabel(t, direction))}</span>`).join('');
+    const tt = document.getElementById('teaser_title'); if (confidential && tt) { nameEl.textContent = (tt.value || 'Your anonymous headline') + ' 🔒'; }
 
     if (min && max) document.getElementById('previewInvestment').textContent = `$${parseInt(min).toLocaleString()} — $${parseInt(max).toLocaleString()}`;
     else if (min) document.getElementById('previewInvestment').textContent = `From $${parseInt(min).toLocaleString()}`;
@@ -397,55 +436,87 @@
     else document.getElementById('previewInvestment').textContent = 'Negotiable';
   }
 
-  async function handleSubmit() {
-    const business_name = document.getElementById('business_name').value.trim();
-    const tagline = document.getElementById('tagline').value.trim();
-    const description = document.getElementById('description').value.trim();
-    const industry = document.getElementById('industry').value;
-    const founded_year = parseInt(document.getElementById('founded_year').value)||null;
-    const country = document.getElementById('country').value;
-    const city = document.getElementById('city').value.trim();
-    const website = document.getElementById('website').value.trim();
-    const annual_revenue = document.getElementById('annual_revenue').value;
-    const employees = document.getElementById('employees').value;
-    const locations = parseInt(document.getElementById('locations').value)||1;
-    const investment_min = parseFloat(document.getElementById('investment_min').value)||null;
-    const investment_max = parseFloat(document.getElementById('investment_max').value)||null;
-    const territories = document.getElementById('territories').value.split(',').map(t=>t.trim()).filter(Boolean);
-    const requirements = document.getElementById('requirements').value.trim();
-
-    const errorEl = document.getElementById('errorMsg');
-    const successEl = document.getElementById('successMsg');
-    errorEl.classList.remove('show'); successEl.classList.remove('show');
-
-    if (!business_name) { errorEl.textContent = 'Please enter your business name.'; errorEl.classList.add('show'); return; }
-    if (!description) { errorEl.textContent = 'Please describe your business.'; errorEl.classList.add('show'); return; }
-    if (!industry) { errorEl.textContent = 'Please select an industry.'; errorEl.classList.add('show'); return; }
-    if (!country) { errorEl.textContent = 'Please select your country.'; errorEl.classList.add('show'); return; }
-    if (selectedTypes.length === 0) { errorEl.textContent = 'Please select at least one expansion type.'; errorEl.classList.add('show'); return; }
-
-    const btn = document.getElementById('submitBtn');
-    const spinner = document.getElementById('spinner');
-    const btnText = document.getElementById('btnText');
-    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Listing...';
-
+  const editId = parseInt(new URLSearchParams(location.search).get('edit'), 10) || null;
+  let editing = null;
+  function escL(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  async function loadForEdit() {
+    if (!editId) return;
+    document.getElementById('pageTitle').textContent = 'Edit Your Business';
+    document.getElementById('btnText').textContent = 'Save Changes →';
     try {
-      const res = await fetch(`${API_URL}/api/businesses`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
-        body: JSON.stringify({ business_name, tagline, description, industry, founded_year, country, city, website, expansion_types: selectedTypes, annual_revenue, employees, locations, investment_min, investment_max, territories, requirements })
-      });
+      const r = await fetch(`${API_URL}/api/businesses/${editId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const b = await r.json();
+      if (!r.ok || b.viewer !== 'owner') throw new Error(b.error || 'You can only edit your own listing.');
+      editing = b;
+      ['business_name','tagline','description','founded_year','city','website','locations','investment_min','investment_max','requirements','reg_number','reg_country'].forEach(k => { const el = document.getElementById(k); if (el && b[k] != null) el.value = b[k]; });
+      ['industry','country','annual_revenue','employees'].forEach(k => { const el = document.getElementById(k); if (el && b[k]) { if (![...el.options].some(o => o.value === b[k] || o.text === b[k])) el.add(new Option(b[k], b[k])); el.value = b[k]; } });
+      document.getElementById('territories').value = (b.territories || []).join(', ');
+      direction = b.direction || 'offer'; route = b.route || Routes.groupOf(b.expansion_types); selectedTypes = (b.expansion_types || []).filter(t => Routes.BY_KEY[t] && Routes.BY_KEY[t].group === route);
+      detailVals = { ...(b.details || {}) }; confidential = !!b.confidential; window._tt = b.teaser_title || ''; window._tz = b.teaser || ''; renderRoute();
+      if (b.has_document) { document.getElementById('docHave').style.display = 'block'; document.getElementById('docReq').style.display = 'none'; }
+      const banner = document.getElementById('reviewBanner');
+      const tone = { rejected: ['rgba(255,107,107,0.08)', 'rgba(255,107,107,0.35)'], pending_review: ['rgba(96,165,250,0.08)', 'rgba(96,165,250,0.35)'] }[b.status];
+      if (tone) {
+        banner.style.display = 'block'; banner.style.background = tone[0]; banner.style.border = '1px solid ' + tone[1];
+        banner.innerHTML = b.status === 'rejected' ? `<b>IdeaHub couldn't approve this listing yet.</b><br>${escL(b.review_note || '')}<br>Fix it below and save. It will be checked again.`
+          : `<b>Under review.</b> ${b.has_document ? 'IdeaHub is checking your registration.' : 'Upload your registration certificate so IdeaHub can check it.'}`;
+      } else if (['active','paused'].includes(b.status)) {
+        banner.style.display = 'block'; banner.style.background = 'rgba(245,200,66,0.06)'; banner.style.border = '1px solid rgba(245,200,66,0.3)';
+        banner.innerHTML = 'Changing the business name or registration number sends the listing back for a quick check before it shows again.';
+      }
+      updatePreview();
+    } catch (e) { alert(e.message); location.href = '/business-dashboard'; }
+  }
+
+  async function handleSubmit() {
+    const v = id => document.getElementById(id).value.trim();
+    const body = {
+      business_name: v('business_name'), tagline: v('tagline'), description: v('description'), industry: document.getElementById('industry').value,
+      founded_year: parseInt(v('founded_year')) || null, country: document.getElementById('country').value, city: v('city'), website: v('website'),
+      expansion_types: selectedTypes, annual_revenue: document.getElementById('annual_revenue').value, employees: document.getElementById('employees').value,
+      locations: parseInt(v('locations')) || 1, investment_min: parseFloat(v('investment_min')) || null, investment_max: parseFloat(v('investment_max')) || null,
+      territories: v('territories').split(',').map(t => t.trim()).filter(Boolean), requirements: v('requirements'), reg_number: v('reg_number'), reg_country: v('reg_country'),
+      direction, route, details: collectDetails(), confidential, teaser_title: document.getElementById('teaser_title')?.value.trim() || '', teaser: document.getElementById('teaser')?.value.trim() || ''
+    };
+    const file = document.getElementById('reg_doc').files[0];
+    const errorEl = document.getElementById('errorMsg'), successEl = document.getElementById('successMsg');
+    errorEl.classList.remove('show'); successEl.classList.remove('show');
+    const fail = m => { errorEl.textContent = m; errorEl.classList.add('show'); errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    if (!route) return fail('Choose how you want to grow.');
+    if (!selectedTypes.length) return fail('Choose at least one deal type.');
+    if (confidential && body.teaser_title.length < 8) return fail('Add an anonymous headline for your confidential listing.');
+    if (confidential && body.teaser.length < 50) return fail('Add an anonymous summary (at least 50 characters).');
+    if (!body.business_name) return fail('Please enter your business name.');
+    if (body.description.length < 50) return fail('Please describe your business in at least 50 characters.');
+    if (!body.industry) return fail('Please select an industry.');
+    if (!body.country) return fail('Please select your country.');
+    if (body.reg_number.length < 3) return fail('Please enter your company registration number.');
+    if (!file && !(editing && editing.has_document)) return fail('Please attach your company registration certificate.');
+    if (file && file.size > 10 * 1024 * 1024) return fail('The certificate must be under 10 MB.');
+
+    const btn = document.getElementById('submitBtn'), spinner = document.getElementById('spinner'), btnText = document.getElementById('btnText');
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Saving…';
+    try {
+      const res = await fetch(editId ? `${API_URL}/api/businesses/${editId}` : `${API_URL}/api/businesses`, {
+        method: editId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error||'Failed');
-      successEl.classList.add('show');
-      btnText.textContent = 'Listed!';
-      setTimeout(() => window.location.href = '/business-dashboard', 1500);
-    } catch(err) {
-      errorEl.textContent = err.message||'Something went wrong.';
-      errorEl.classList.add('show');
-      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'List My Business →';
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      if (file) {
+        const fd = new FormData(); fd.append('file', file);
+        const up = await fetch(`${API_URL}/api/businesses/${data.id}/document`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+        const ud = await up.json().catch(() => ({}));
+        if (!up.ok) throw new Error((ud.error || 'The certificate upload failed.') + ' Your details were saved: open the listing from your dashboard to upload it again.');
+      }
+      if (editId && !data.back_to_review && ['active', 'paused'].includes(data.status)) successEl.textContent = '✅ Saved. Redirecting…';
+      successEl.classList.add('show'); btnText.textContent = 'Done';
+      setTimeout(() => window.location.href = '/business-dashboard', 1600);
+    } catch (err) {
+      fail(err.message || 'Something went wrong.');
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = editId ? 'Save Changes →' : 'Submit for Review →';
     }
   }
+  renderRoute();
+  loadForEdit();
 </script>
 <script src="/chat-widget.js" defer></script></body>
 </html>

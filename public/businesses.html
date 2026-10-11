@@ -24,7 +24,7 @@
       :root {
         --bg: #080809; --surface: #141414; --surface2: #1c1c1c;
         --border: #2a2a2a; --gold: #f5c842; --gold-dim: #c49a10;
-        --text: #f0f0f0; --muted: #888; --radius: 12px;
+        --text: #f0f0f0; --muted: #888; --radius: 12px; --accent: #f5c842; --accent-dim: rgba(245,200,66,0.12);
       }
       body { background: var(--bg); color: var(--text); font-family:'DM Sans',system-ui,sans-serif; min-height: 100vh; }
 
@@ -96,7 +96,18 @@
       .btn-apply { background:var(--gold); color:#000; border:none; border-radius:8px; padding:7px 18px; font-size:0.82rem; font-weight:600; cursor:pointer; }
       .btn-apply:hover { background:var(--gold-dim); }
 
-      .hero-stats { display:flex; justify-content:center; gap:32px; margin-top:14px; }
+      .route-bar { max-width:1240px; margin:1.1rem auto 0; padding:0 2rem; }
+    .dir-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+    .dt { background:none; border:1px solid var(--border); color:var(--muted); border-radius:20px; padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .dt.on { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+    .route-row { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+    .rt { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.7rem .8rem; text-align:left; cursor:pointer; color:var(--text); font-family:inherit; }
+    .rt b { display:block; font-size:13px; } .rt small { display:block; font-size:11.5px; color:var(--muted); margin-top:2px; line-height:1.4; }
+    .rt.on { border-color:var(--accent); background:var(--accent-dim); }
+    .conf-badge { color:#c4b5fd; border-color:rgba(167,139,250,0.35) !important; background:rgba(167,139,250,0.08) !important; }
+    .dir-label { font-size:11.5px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+    @media (max-width:900px) { .route-row { grid-template-columns:repeat(2,minmax(0,1fr)); } .route-bar { padding:0 1rem; } }
+    .hero-stats { display:flex; justify-content:center; gap:32px; margin-top:14px; }
       .hero-stat { color:var(--muted); font-size:0.875rem; }
       .hero-stat strong { color:var(--text); }
 
@@ -124,7 +135,7 @@
       .biz-location { font-size:0.75rem; color:var(--muted); }
       .biz-desc { font-size:0.82rem; color:var(--muted); line-height:1.6; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
       .type-pills { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
-      .type-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:500; }
+      .type-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:500; background:var(--accent-dim); color:var(--accent); border:1px solid rgba(245,200,66,0.25); }
       .pill-franchise { background:rgba(245,197,24,0.15); color:var(--gold); }
       .pill-license { background:rgba(96,165,250,0.15); color:#60a5fa; }
       .pill-joint_venture { background:rgba(110,231,183,0.15); color:#6ee7b7; }
@@ -174,7 +185,7 @@
 
   <section class="hero">
     <h1>Business <span>Expansion</span></h1>
-    <p>Buy, franchise, license or partner with established businesses worldwide</p>
+    <p>Franchise, merge, invest, supply or distribute: find verified businesses to grow with</p>
 
     <div class="search-row">
       <input type="text" id="searchInput" placeholder="Search by business name or category…" />
@@ -213,32 +224,29 @@
           <div class="filter-group-label">Business Category</div>
           <div class="chips-wrap" id="catChips">
             <button class="chip active" data-cat="all">All</button>
-            <button class="chip" data-cat="Restaurant">Restaurant</button>
-            <button class="chip" data-cat="Hotel">Hotel & Hospitality</button>
-            <button class="chip" data-cat="Supermarket">Supermarket & Retail</button>
-            <button class="chip" data-cat="Automotive">Automotive</button>
-            <button class="chip" data-cat="Pharmacy">Pharmacy & Health</button>
-            <button class="chip" data-cat="Gym">Gym & Fitness</button>
-            <button class="chip" data-cat="Salon">Salon & Beauty</button>
-            <button class="chip" data-cat="Education">Education & Training</button>
-            <button class="chip" data-cat="Construction">Construction & Real Estate</button>
-            <button class="chip" data-cat="Logistics">Logistics & Delivery</button>
-            <button class="chip" data-cat="Finance">Finance & Insurance</button>
-            <button class="chip" data-cat="Tech">Tech & Software</button>
-            <button class="chip" data-cat="Entertainment">Entertainment</button>
-            <button class="chip" data-cat="Agriculture">Agriculture & Food</button>
+            <button class="chip" data-cat="Food & Beverage">🍔 Food &amp; Beverage</button>
+            <button class="chip" data-cat="Retail">🛒 Retail</button>
+            <button class="chip" data-cat="Technology">💻 Technology</button>
+            <button class="chip" data-cat="Health & Wellness">💊 Health &amp; Wellness</button>
+            <button class="chip" data-cat="Education">📚 Education</button>
+            <button class="chip" data-cat="Finance">🏦 Finance</button>
+            <button class="chip" data-cat="Real Estate">🏗️ Real Estate</button>
+            <button class="chip" data-cat="Entertainment">🎭 Entertainment</button>
+            <button class="chip" data-cat="Logistics">🚚 Logistics</button>
+            <button class="chip" data-cat="Manufacturing">🏭 Manufacturing</button>
+            <button class="chip" data-cat="Other">🏢 Other</button>
           </div>
         </div>
         <!-- Expansion Type -->
         <div>
-          <div class="filter-group-label">Expansion Type</div>
+          <div class="filter-group-label">Expansion Route</div>
           <div class="chips-wrap" id="typeChips">
-            <button class="chip active" data-type="all">All Types</button>
-            <button class="chip" data-type="franchise">Franchise</button>
-            <button class="chip" data-type="license">License</button>
-            <button class="chip" data-type="joint_venture">Joint Venture</button>
-            <button class="chip" data-type="distribution">Distribution</button>
-            <button class="chip" data-type="white_label">White Label</button>
+            <button class="chip active" data-type="all">All routes</button>
+            <button class="chip" data-type="markets">🌍 New markets</button>
+            <button class="chip" data-type="horizontal">🤝 Horizontal</button>
+            <button class="chip" data-type="backward">🏭 Towards supply</button>
+            <button class="chip" data-type="forward">🚚 Towards customers</button>
+            <button class="chip" data-type="brand">🏷️ Brand extension</button>
           </div>
         </div>
         <div class="adv-panel-footer">
@@ -256,6 +264,10 @@
   </section>
 
   <!-- Active filters summary bar -->
+  <div class="route-bar">
+    <div class="dir-tabs" id="dirTabs"><button class="dt on" data-d="all">All</button><button class="dt" data-d="offer">📣 Opportunities offered</button><button class="dt" data-d="seek">🔎 Businesses looking for partners</button></div>
+    <div class="route-row" id="routeRow"></div>
+  </div>
   <div class="active-bar" id="activeBar"></div>
 
   <main class="main">
@@ -269,10 +281,11 @@
     © 2026 <a href="https://picela.co" target="_blank">Picela</a>. All rights reserved. IdeaHub is a product by <a href="https://picela.co" target="_blank">Picela</a>.
   </footer>
 
+  <script src="/expansion-routes.js"></script>
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
-    let allBusinesses = [], activeCategory = 'all', activeType = 'all';
+    let allBusinesses = [], activeCategory = 'all', activeType = 'all', activeDir = 'all';
     let advOpen = false;
 
     const typeConfig = {
@@ -283,10 +296,7 @@
       white_label:   { label:'White Label',   emoji:'💻', cls:'pill-white_label' },
     };
     const catEmoji = {
-      Restaurant:'🍔', Hotel:'🏨', Supermarket:'🛒', Automotive:'🚗',
-      Pharmacy:'💊', Gym:'🏋️', Salon:'💈', Education:'📚',
-      Construction:'🏗️', Logistics:'🚚', Finance:'🏦', Tech:'💻',
-      Entertainment:'🎭', Agriculture:'🌾'
+'Food & Beverage':'🍔', 'Retail':'🛒', 'Technology':'💻', 'Health & Wellness':'💊', 'Education':'📚', 'Finance':'🏦', 'Real Estate':'🏗️', 'Entertainment':'🎭', 'Logistics':'🚚', 'Manufacturing':'🏭', 'Other':'🏢'
     };
 
     function toggleAdvanced() {
@@ -297,7 +307,7 @@
 
     function clearAdvanced() {
       activeCategory = 'all';
-      activeType = 'all';
+      activeType = 'all'; if (typeof drawRouteRow === 'function') drawRouteRow();
       document.querySelectorAll('#catChips .chip').forEach(b => b.classList.remove('active'));
       document.querySelector('#catChips .chip[data-cat="all"]').classList.add('active');
       document.querySelectorAll('#typeChips .chip').forEach(b => b.classList.remove('active'));
@@ -310,7 +320,7 @@
       const tags = [];
       const country = document.getElementById('countryFilter').value;
       if (activeCategory !== 'all') tags.push({ label: catEmoji[activeCategory] + ' ' + activeCategory, clear: () => { activeCategory='all'; document.querySelectorAll('#catChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#catChips .chip[data-cat="all"]').classList.add('active'); } });
-      if (activeType !== 'all') tags.push({ label: typeConfig[activeType]?.emoji + ' ' + typeConfig[activeType]?.label, clear: () => { activeType='all'; document.querySelectorAll('#typeChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#typeChips .chip[data-type="all"]').classList.add('active'); } });
+      if (activeType !== 'all') tags.push({ label: (Routes.GROUP[activeType]?.icon || '') + ' ' + (Routes.GROUP[activeType]?.short || activeType), clear: () => { activeType='all'; document.querySelectorAll('#typeChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#typeChips .chip[data-type="all"]').classList.add('active'); } });
       if (country) tags.push({ label: '📍 ' + country, clear: () => { document.getElementById('countryFilter').value = ''; } });
 
       const bar = document.getElementById('activeBar');
@@ -370,7 +380,7 @@
         if (!Array.isArray(allBusinesses)) allBusinesses = allBusinesses.businesses || [];
         document.getElementById('statTotal').textContent = allBusinesses.length;
         document.getElementById('statCountries').textContent = new Set(allBusinesses.map(b => b.country).filter(Boolean)).size || '—';
-        document.getElementById('statCategories').textContent = new Set(allBusinesses.map(b => b.category).filter(Boolean)).size || '—';
+        document.getElementById('statCategories').textContent = new Set(allBusinesses.map(b => b.industry).filter(Boolean)).size || '—';
         applyFilters();
       } catch(e) {
         document.getElementById('bizGrid').innerHTML = '<div class="empty"><h3>Failed to load</h3><p>Please refresh the page</p></div>';
@@ -384,16 +394,18 @@
 
       const filtered = allBusinesses.filter(b => {
         const types = b.expansion_types || [];
-        const matchType = activeType === 'all' || types.includes(activeType);
-        const matchCat = activeCategory === 'all' || b.category === activeCategory;
+        const matchType = activeType === 'all' || b.route === activeType;
+        const matchDir = activeDir === 'all' || (b.direction || 'offer') === activeDir;
+        const matchCat = activeCategory === 'all' || b.industry === activeCategory;
         const matchCountry = !country || b.country === country;
         const matchQ = !q ||
           (b.business_name||'').toLowerCase().includes(q) ||
+          (b.title||'').toLowerCase().includes(q) || (b.teaser||'').toLowerCase().includes(q) ||
           (b.tagline||'').toLowerCase().includes(q) ||
           (b.description||'').toLowerCase().includes(q) ||
           (b.category||'').toLowerCase().includes(q) ||
           (b.industry||'').toLowerCase().includes(q);
-        return matchType && matchCat && matchCountry && matchQ;
+        return matchType && matchDir && matchCat && matchCountry && matchQ;
       });
 
       document.getElementById('resultsCount').innerHTML = filtered.length
@@ -414,36 +426,52 @@
     }
 
     function cardHTML(b) {
-      const logoContent = catEmoji[b.category] || escB((b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
+      const title = b.title || b.business_name || 'Business';
+      const g = Routes.GROUP[b.route] || {};
+      const logoContent = b.masked ? '🔒' : (catEmoji[b.industry] || escB(String(title).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)));
       const types = (b.expansion_types||[]).slice(0,3);
+      const d = b.details || {};
+      const facts = [d.revenue_range ? `💰 Revenue ${d.revenue_range}` : '', d.profit_range ? `📈 Profit ${d.profit_range}` : '', d.stake_pct ? `🧩 ${d.stake_pct}% stake` : '',
+        d.royalty_pct ? `🔁 ${d.royalty_pct}% royalty` : '', d.exclusivity || '', d.capacity ? `🏭 ${d.capacity}` : '', d.min_order ? `📦 MOQ ${d.min_order}` : ''].filter(Boolean).slice(0, 3);
+      const blurb = b.masked ? b.teaser : (b.description || b.tagline || d.products || d.products_wanted || d.criteria || d.inputs_needed || '');
       return `
         <a class="biz-card" href="/business/${encodeURIComponent(b.id)}">
           <div class="card-top">
+            <div class="dir-label">${b.direction === 'seek' ? '🔎 Looking for a partner' : '📣 Opportunity'} · ${escB(g.short || '')}</div>
             <div class="card-header">
               <div class="biz-logo">${logoContent}</div>
               <div style="flex:1;min-width:0">
-                <div class="biz-name">${escB(b.business_name||'Business')}</div>
+                <div class="biz-name">${escB(title)}</div>
                 <div class="biz-location">${b.city ? escB(b.city)+', ' : ''}${escB(b.country||'')}</div>
               </div>
             </div>
-            <div class="biz-desc">${escB(b.description||b.tagline||'')}</div>
+            <div class="biz-desc">${escB(blurb)}</div>
             <div class="type-pills">
-              ${b.category ? `<span class="cat-badge">${catEmoji[b.category]||'🏢'} ${escB(b.category)}</span>` : ''}
-              ${types.map(t => `<span class="type-pill ${typeConfig[t]?.cls||''}">${typeConfig[t]?.emoji||'•'} ${escB(typeConfig[t]?.label||t)}</span>`).join('')}
+              ${b.masked ? `<span class="cat-badge conf-badge" title="Full details after you sign a confidentiality agreement">🔒 Confidential</span>` : ''}
+              ${b.is_verified ? `<span class="cat-badge" style="color:#6ee7b7;border-color:rgba(110,231,183,0.35);background:rgba(110,231,183,0.08)" title="Company registration checked by IdeaHub">✅ Verified</span>` : ''}
+              ${b.industry ? `<span class="cat-badge">${catEmoji[b.industry]||'🏢'} ${escB(b.industry)}</span>` : ''}
+              ${types.map(t => `<span class="type-pill">${escB(Routes.typeLabel(t, b.direction))}</span>`).join('')}
             </div>
-            <div class="biz-meta-row">
-              ${b.employees ? `<span>👥 ${escB(b.employees)} employees</span>` : ''}
-              ${b.annual_revenue ? `<span>💰 ${escB(b.annual_revenue)}</span>` : ''}
-              ${b.founded_year ? `<span>📅 Est. ${escB(b.founded_year)}</span>` : ''}
-            </div>
+            <div class="biz-meta-row">${facts.map(f => `<span>${escB(f)}</span>`).join('')}</div>
           </div>
           <div class="card-footer">
-            <div class="investment">${escB(formatInvestment(b.investment_min, b.investment_max))}</div>
-            <div class="apps-count">📋 ${Number(b.application_count)||0} applications</div>
+            <div class="investment">${(b.investment_min || b.investment_max) ? (b.direction === 'seek' ? 'Budget ' : '') + escB(formatInvestment(b.investment_min, b.investment_max)) : (b.direction === 'seek' ? 'Budget open' : 'Terms negotiable')}</div>
+            <div class="apps-count">📋 ${Number(b.application_count)||0} response${Number(b.application_count) === 1 ? '' : 's'}</div>
             <span class="btn-view">View →</span>
           </div>
         </a>`;
     }
+
+    function drawRouteRow() {
+      document.getElementById('routeRow').innerHTML = Routes.GROUPS.map(g => `<button class="rt ${activeType === g.key ? 'on' : ''}" data-rt="${g.key}"><b>${g.icon} ${escB(g.short)}</b><small>${escB(g.help.split(':')[0])}</small></button>`).join('');
+    }
+    function syncTypeChips() { document.querySelectorAll('#typeChips .chip').forEach(b => b.classList.toggle('active', b.dataset.type === activeType)); }
+    document.getElementById('routeRow').addEventListener('click', e => { const b = e.target.closest('[data-rt]'); if (!b) return; activeType = activeType === b.dataset.rt ? 'all' : b.dataset.rt; drawRouteRow(); syncTypeChips(); applyFilters(); });
+    document.getElementById('dirTabs').addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (!b) return; activeDir = b.dataset.d; document.querySelectorAll('#dirTabs .dt').forEach(x => x.classList.toggle('on', x === b)); applyFilters(); });
+    const qp = new URLSearchParams(location.search);
+    if (Routes.GROUP[qp.get('route')]) activeType = qp.get('route');
+    if (['offer', 'seek'].includes(qp.get('direction'))) { activeDir = qp.get('direction'); document.querySelectorAll('#dirTabs .dt').forEach(x => x.classList.toggle('on', x.dataset.d === activeDir)); }
+    drawRouteRow(); syncTypeChips();
 
     // Chip listeners
     document.getElementById('catChips').addEventListener('click', e => {
@@ -452,6 +480,7 @@
       document.querySelectorAll('#catChips .chip').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeCategory = btn.dataset.cat;
+      applyFilters();
     });
 
     document.getElementById('typeChips').addEventListener('click', e => {
@@ -460,6 +489,8 @@
       document.querySelectorAll('#typeChips .chip').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeType = btn.dataset.type;
+      drawRouteRow();
+      applyFilters();
     });
 
     document.getElementById('countryFilter').addEventListener('change', applyFilters);

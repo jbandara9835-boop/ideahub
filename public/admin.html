@@ -235,6 +235,7 @@
     <button class="tab" onclick="switchTab('roles', this)">🔄 Role Requests <span class="tab-count red" id="tabRoleCount">0</span></button>
     <button class="tab" onclick="switchTab('disputes', this)">⚖️ Disputes <span class="tab-count red" id="tabDisputeCount">0</span></button>
     <button class="tab" onclick="switchTab('practitioners', this)">🪪 Professionals <span class="tab-count red" id="tabPracCount">0</span></button>
+    <button class="tab" onclick="switchTab('businesses', this)">🏢 Businesses <span class="tab-count red" id="tabBizCount">0</span></button>
     <button class="tab" onclick="switchTab('withdrawals', this)">💸 Withdrawals <span class="tab-count red" id="tabWithdrawCount">0</span></button>
     <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
     <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
@@ -265,6 +266,12 @@
     <div style="font-size:15px;font-weight:700;margin:2rem 0 .5rem">Accountants, company secretaries and virtual managers</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Open the document and check it against the issuing body's public register (CA Sri Lanka member search, ACCA register, Registrar of Companies, etc.). For a government ID, check the photo, name and that the last 4 characters match. Verifying gives the ✅ badge and lists them in Find Support.</div>
     <div id="credList"><div class="loading"><div class="spin"></div> Loading…</div></div>
+  </div>
+
+  <!-- BUSINESSES TAB -->
+  <div class="tab-content" id="tab-businesses">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Business Expansion listings go live only after you check them. Open the certificate and compare the company name and registration number with the official register (in Sri Lanka, the Registrar of Companies e-ROC search). Approve to make it live with the ✅ Verified badge, or send it back with a reason.</div>
+    <div id="bizList"><div class="loading"><div class="spin"></div> Loading…</div></div>
   </div>
 
   <!-- DISPUTES TAB -->
@@ -708,6 +715,67 @@
       const res = await fetch(`${API_URL}/api/admin/pro-credentials/${id}`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body: JSON.stringify({ status, note }) });
       const d = await res.json().catch(() => ({}));
       if (res.ok) loadCreds(); else alert(d.error || 'Failed');
+    } catch (e) { alert('Something went wrong.'); }
+  }
+
+  let allBiz = [];
+  async function loadBiz() {
+    try { const r = await fetch(`${API_URL}/api/admin/businesses`, { headers:{ Authorization:`Bearer ${token}` } }); allBiz = r.ok ? await r.json() : []; } catch (e) { allBiz = []; }
+    renderBiz();
+  }
+  function renderBiz() {
+    const el = document.getElementById('bizList');
+    const queue = allBiz.filter(b => b.status === 'pending_review');
+    document.getElementById('tabBizCount').textContent = queue.filter(b => b.has_document).length;
+    const legacy = allBiz.filter(b => ['active', 'paused'].includes(b.status) && !b.is_verified);
+    const card = b => {
+      const owner = `${b.owner?.first_name||''} ${b.owner?.last_name||''}`.trim() || b.owner_name || 'Unknown';
+      const q = encodeURIComponent(`${b.business_name} ${b.reg_number || ''} company registration ${b.reg_country || b.country || ''}`);
+      return `
+        <div class="cert-card ${b.status === 'pending_review' ? 'pending' : ''}">
+          <div class="cert-top">
+            <div class="cert-user-info">
+              <div class="cert-user-name">${escHtml(b.business_name)} · <span style="color:var(--accent);">${escHtml(b.industry || '')}</span></div>
+              <div class="cert-user-role">Owner: ${escHtml(owner)} · ${escHtml(b.owner?.email || '')} · ${escHtml(b.city ? b.city + ', ' : '')}${escHtml(b.country || '')} · updated ${formatDate(b.updated_at || b.created_at)}</div>
+            </div>
+            <span class="cert-status-badge ${b.is_verified ? 'approved' : b.status === 'rejected' ? 'rejected' : 'pending'}">${escHtml(b.status_label)}${b.is_verified ? ' · ✅' : ''}</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Registration number</div><div class="cert-detail-val">${escHtml(b.reg_number || '—')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Registered in</div><div class="cert-detail-val">${escHtml(b.reg_country || b.country || '—')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Certificate</div><div class="cert-detail-val">${b.has_document ? escHtml(b.reg_doc_name || 'Uploaded') : 'Not uploaded yet'}</div></div>
+          </div>
+          <div style="font-size:12.5px;margin-bottom:.6rem"><b>${b.direction === 'seek' ? 'Looking for' : 'Offering'}:</b> ${escHtml((b.expansion_types || []).join(', ').replace(/_/g, ' '))} · route: ${escHtml(b.route || '—')}${b.confidential ? ' · <span style="color:#c4b5fd">🔒 Confidential</span>' : ''}</div>
+          ${b.confidential ? `<div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.3);border-radius:8px;padding:0.75rem;font-size:13px;line-height:1.6;margin-bottom:.6rem"><div class="cert-detail-label">Public summary (check it doesn't reveal the business)</div><b>${escHtml(b.teaser_title || '')}</b><br>${escHtml(b.teaser || '')}</div>` : ''}
+          <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;max-height:120px;overflow:auto;white-space:pre-wrap">${escHtml(b.description || '')}</div>
+          ${b.review_note ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:.8rem">Last note: ${escHtml(b.review_note)}</div>` : ''}
+          <div class="cert-actions">
+            ${b.has_document ? `<button class="cert-file-btn" onclick="openBizDoc(${Number(b.id)})">📄 Open certificate</button>` : ''}
+            <a class="cert-file-btn" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔎 Search the web</a>
+            ${/^https?:\/\//i.test(b.website || '') ? `<a class="cert-file-btn" href="${escHtml(b.website)}" target="_blank" rel="noopener nofollow">🌐 Website</a>` : ''}
+            ${!b.is_verified && b.has_document ? `<button class="btn-approve" onclick="reviewBiz(${Number(b.id)},'approve')">✅ Approve</button>` : ''}
+            ${b.status !== 'rejected' && b.status !== 'closed' ? `<button class="btn-reject-cert" onclick="reviewBiz(${Number(b.id)},'reject')">❌ ${b.is_verified ? 'Take down' : 'Send back'}</button>` : ''}
+          </div>
+        </div>`;
+    };
+    el.innerHTML = (queue.length ? queue.map(card).join('') : `<div class="empty"><div class="empty-icon">🏢</div><div class="empty-text">No listings waiting for review</div></div>`)
+      + (legacy.length ? `<div style="font-size:15px;font-weight:700;margin:2rem 0 .5rem">Live but not verified (listed before checks started)</div>` + legacy.map(card).join('') : '');
+  }
+  async function openBizDoc(id) {
+    const w = window.open('', '_blank');
+    try {
+      const r = await fetch(`${API_URL}/api/businesses/${id}/document`, { headers:{ Authorization:`Bearer ${token}` } });
+      const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Could not open');
+      if (w) w.location = d.url; else location.href = d.url;
+    } catch (e) { if (w) w.close(); alert(e.message); }
+  }
+  async function reviewBiz(id, action) {
+    const note = action === 'reject' ? prompt('Reason (shown to the owner), e.g. "The certificate name doesn\'t match the business name":') : '';
+    if (note === null) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/businesses/${id}/review`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body: JSON.stringify({ action, note }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadBiz(); else alert(d.error || 'Failed');
     } catch (e) { alert('Something went wrong.'); }
   }
 
@@ -1219,6 +1287,7 @@
       ]);
       loadRegs();
       loadCreds();
+      loadBiz();
       fetch(`${API_URL}/api/admin/appeals`, { headers:{ Authorization:`Bearer ${token}` } })
         .then(r => r.ok ? r.json() : []).then(a => { allAppeals = Array.isArray(a) ? a : []; renderAppeals(); updateIdeaTabCount(); if (allIdeas.length) filterIdeas(); }).catch(() => {});
       allWithdrawals = withdrawalsRes.ok ? await withdrawalsRes.json() : [];

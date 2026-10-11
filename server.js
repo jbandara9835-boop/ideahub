@@ -174,6 +174,7 @@ app.get('/robots.txt', (req, res) => {
   pros.mount(app, { supabase, authMiddleware, escrow });
   require('./hire').mount(app, { supabase, authMiddleware, escrow });
   require('./reqpay').mount(app, { supabase, authMiddleware, escrow });
+  require('./biz').mount(app, { supabase, authMiddleware, escrow }); // Business Expansion (overrides the older routes below)
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -282,6 +283,8 @@ app.get('/robots.txt', (req, res) => {
   app.get('/list-business', (req, res) => res.sendFile(__dirname + '/public/list-business.html'));
   app.get('/business/:id', (req, res) => res.sendFile(__dirname + '/public/business-detail.html'));
   app.get('/business-dashboard', (req, res) => res.sendFile(__dirname + '/public/business-dashboard.html'));
+  app.get('/expansion', (req, res) => res.sendFile(__dirname + '/public/expansion.html'));
+  app.get('/business-detail', (req, res) => res.redirect(301, req.query.id ? '/business/' + encodeURIComponent(req.query.id) : '/businesses'));
   app.get('/find-support', (req, res) => {
     res.sendFile(__dirname + '/public/find-support.html');
   });

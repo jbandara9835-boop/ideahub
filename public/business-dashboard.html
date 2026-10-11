@@ -258,24 +258,7 @@
 </main>
 
 <!-- MEETUP MODAL -->
-<div id="meetupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:440px;">
-    <h3 style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:0.5rem;">📅 Schedule Meetup</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Set a meetup time with this investor</p>
-    <div style="margin-bottom:1rem;"><label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Meetup Type</label>
-      <select id="meetupType" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;appearance:none;">
-        <option value="virtual">🖥 Virtual (Video Call)</option><option value="physical">🏢 In-Person Meeting</option>
-      </select></div>
-    <div style="margin-bottom:1rem;"><label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Date & Time</label>
-      <input type="datetime-local" id="meetupDate" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" /></div>
-    <div style="margin-bottom:1rem;"><label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;">Location / Meeting Link</label>
-      <input type="text" id="meetupLocation" placeholder="e.g. Zoom link or office address" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;" /></div>
-    <div style="display:flex;gap:10px;">
-      <button onclick="closeMeetup()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:0.75rem 1.25rem;font-size:14px;color:var(--muted);cursor:pointer;">Cancel</button>
-      <button onclick="confirmMeetup()" style="flex:1;background:var(--accent);color:#0d0d0f;border:none;border-radius:8px;padding:0.75rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;cursor:pointer;">Schedule Meetup</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- BOTTOM TAB BAR (mobile only) -->
 <nav class="bottom-tabbar" id="bottomTabbar">
@@ -288,6 +271,7 @@
   </div>
 </nav>
 
+<script src="/expansion-routes.js"></script>
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
   const token = localStorage.getItem('ih_token');
@@ -317,6 +301,7 @@
     <a class="nav-item" href="/patents">Patent Applications</a>
     <a class="nav-item" href="/deal-room">Deal Rooms</a>
     <a class="nav-item" href="/hire">My Hires</a>
+    <a class="nav-item" href="/expansion">Expansion Deals</a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
@@ -355,34 +340,19 @@
     return Math.floor(diff/86400000)+'d ago';
   }
 
-  let pendingMeetupAppId = null;
-  function openMeetup(appId) { pendingMeetupAppId=appId; document.getElementById('meetupOverlay').style.display='flex'; }
-  function closeMeetup() { document.getElementById('meetupOverlay').style.display='none'; pendingMeetupAppId=null; }
-
-  async function confirmMeetup() {
-    const meetup_type = document.getElementById('meetupType').value;
-    const meetup_date = document.getElementById('meetupDate').value;
-    const meetup_location = document.getElementById('meetupLocation').value.trim();
-    if (!meetup_date) { alert('Please select a date and time.'); return; }
+  const LST = { pending_review: ['Under review', 'rgba(96,165,250,0.15)', '#60a5fa'], active: ['Live', 'rgba(110,231,183,0.15)', '#6ee7b7'], paused: ['Paused', 'rgba(255,255,255,0.08)', '#9a9080'], rejected: ['Needs changes', 'rgba(255,107,107,0.15)', '#ff6b6b'], closed: ['Closed', 'rgba(255,255,255,0.06)', '#6e6b65'] };
+  async function bizAct(id, action) {
     try {
-      const res = await fetch(`${API_URL}/api/expansion-applications/${pendingMeetupAppId}/status`, {
-        method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({status:'meetup_scheduled',meetup_type,meetup_date,meetup_location})
-      });
-      if (res.ok) { closeMeetup(); loadDashboard(); }
-    } catch { alert('Failed.'); }
-  }
-
-  async function updateAppStatus(appId, status) {
-    const confirmMap = { shortlisted:'Shortlist this investor?', negotiating:'Start negotiation?', agreed:'Mark as agreed?', rejected:'Reject this application?' };
-    if (!confirm(confirmMap[status]||'Update?')) return;
-    try {
-      const res = await fetch(`${API_URL}/api/expansion-applications/${appId}/status`, {
-        method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({status})
-      });
-      if (res.ok) loadDashboard();
-    } catch { alert('Failed.'); }
+      if (action === 'close') {
+        if (!confirm('Close this listing? Investors will no longer see it. This can\'t be undone.')) return;
+        const r = await fetch(`${API_URL}/api/businesses/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Failed');
+      } else {
+        const r = await fetch(`${API_URL}/api/businesses/${id}/status`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ status: action }) });
+        const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Failed');
+      }
+      loadDashboard();
+    } catch (e) { alert(e.message); }
   }
 
   async function loadDashboard() {
@@ -398,50 +368,55 @@
         }
       }
 
-      document.getElementById('statListings').textContent = businesses.length;
-      document.getElementById('statApps').textContent = allApps.length;
-      document.getElementById('statShortlisted').textContent = allApps.filter(a=>a.status==='shortlisted').length;
-      document.getElementById('statAgreed').textContent = allApps.filter(a=>a.status==='agreed').length;
+      const liveApps = allApps.filter(a => a.status !== 'withdrawn');
+      document.getElementById('statListings').textContent = businesses.filter(b => b.status !== 'closed').length;
+      document.getElementById('statApps').textContent = liveApps.length;
+      document.getElementById('statShortlisted').textContent = liveApps.filter(a => ['shortlisted', 'meetup_scheduled', 'negotiating'].includes(a.status)).length;
+      document.getElementById('statAgreed').textContent = liveApps.filter(a => a.status === 'agreed').length;
 
       const listingsEl = document.getElementById('listingsList');
       listingsEl.innerHTML = !businesses.length
         ? `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem">🏢</div><div style="font-size:13px">No listings yet</div><a href="/list-business" style="color:var(--accent);font-size:13px;margin-top:0.5rem;display:inline-block">List your first business →</a></div>`
         : businesses.map(b => {
           const initials = escB(String(b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
-          const nApps = allApps.filter(a => a.biz_id === b.id).length;
+          const nApps = allApps.filter(a => a.biz_id === b.id && a.status !== 'withdrawn').length;
+          const st = LST[b.status] || [b.status, 'rgba(255,255,255,0.06)', '#9a9080'];
+          const warn = b.status === 'rejected' ? `<div style="font-size:12px;color:#ff6b6b;margin-top:4px">${escB(b.review_note || 'IdeaHub needs changes.')} <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Fix it →</a></div>`
+            : b.status === 'pending_review' && !b.has_document ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Upload your registration certificate so IdeaHub can check it. <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Upload →</a></div>`
+            : b.status === 'pending_review' ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">IdeaHub is checking your registration. You'll be notified.</div>`
+            : b.status === 'active' && !b.is_verified ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Not verified yet. <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Add your registration →</a></div>` : '';
           return `<div class="listing-row">
             <div class="listing-logo">${initials}</div>
-            <div class="listing-info"><div class="listing-name">${escB(b.business_name)}</div><div class="listing-meta">${escB(b.industry||'—')} · ${escB(b.country||'—')} · ${nApps} application${nApps===1?'':'s'} · ${Number(b.view_count)||0} views</div></div>
-            <div class="listing-actions"><a class="btn-view" href="/business/${encodeURIComponent(b.id)}">View</a><span class="btn-apps">${nApps} Apps</span></div>
+            <div class="listing-info"><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px">${b.direction === 'seek' ? '🔎 Looking for' : '📣 Offering'}: ${escB((b.expansion_types || []).map(t => (window.Routes && Routes.BY_KEY[t]) ? Routes.BY_KEY[t].label : t).join(', '))}${b.confidential ? ' · 🔒 Confidential' : ''}</div><div class="listing-name">${escB(b.business_name)} <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${st[1]};color:${st[2]};margin-left:6px">${escB(st[0])}</span>${b.is_verified ? ' <span title="Registration checked by IdeaHub" style="font-size:12px">✅</span>' : ''}</div>
+              <div class="listing-meta">${escB(b.industry||'—')} · ${escB(b.country||'—')} · ${nApps} application${nApps===1?'':'s'} · ${Number(b.view_count)||0} views</div>${warn}${b.nda_pending ? `<div style="font-size:12px;margin-top:4px"><a href="/business/${Number(b.id)}#access" style="color:#c4b5fd">🔒 ${Number(b.nda_pending)} access request${b.nda_pending === 1 ? '' : 's'} waiting →</a></div>` : ''}${b.status === 'active' ? `<div style="font-size:12px;margin-top:4px"><a href="/business/${Number(b.id)}#matches" style="color:var(--accent)">🎯 See businesses that fit →</a></div>` : ''}</div>
+            <div class="listing-actions" style="flex-wrap:wrap">
+              ${b.status !== 'closed' ? `<a class="btn-view" href="/list-business?edit=${Number(b.id)}">Edit</a>` : ''}
+              ${b.status === 'active' ? `<a class="btn-view" href="/business/${Number(b.id)}">View</a><button class="btn-view" onclick="bizAct(${Number(b.id)},'paused')">Pause</button>` : ''}
+              ${b.status === 'paused' && b.is_verified ? `<button class="btn-view" onclick="bizAct(${Number(b.id)},'active')">Resume</button>` : ''}
+              ${b.status !== 'closed' ? `<button class="btn-view" style="color:#ff6b6b" onclick="bizAct(${Number(b.id)},'close')">Close</button>` : ''}
+            </div>
           </div>`;
         }).join('');
 
+      const APPL = { pending:'New', reviewed:'Reviewed', shortlisted:'Shortlisted', meetup_scheduled:'Meetup scheduled', negotiating:'Negotiating', agreed:'Agreed', rejected:'Not selected', withdrawn:'Withdrawn', accepted:'Accepted' };
       const appsEl = document.getElementById('applicationsList');
-      appsEl.innerHTML = !allApps.length
+      const shown = [...allApps].sort((a, b) => (a.status === 'withdrawn') - (b.status === 'withdrawn') || new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+      appsEl.innerHTML = !shown.length
         ? `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem">📭</div><div style="font-size:13px">No applications yet</div></div>`
-        : allApps.map(app => {
+        : shown.map(app => {
           const name = `${app.investor?.first_name||''} ${app.investor?.last_name||''}`.trim()||app.investor_name||'Investor';
           const initials = escB(name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2));
-          return `<div class="app-row">
+          return `<a class="app-row" href="/expansion?id=${Number(app.id)}" style="display:block;text-decoration:none;color:inherit">
             <div class="app-header">
               <div class="app-investor">
                 <div class="investor-av">${initials}</div>
-                <div><div class="investor-name">${escB(name)}</div><div class="investor-sub">${escB(String(app.expansion_type||'').replace('_',' '))} · ${escB(app.biz_name)} · ${timeAgo(app.created_at)}</div></div>
+                <div><div class="investor-name">${escB(name)}</div><div class="investor-sub">${escB(String(app.expansion_type||'').replace('_',' '))} · ${escB(app.biz_name)} · ${timeAgo(app.updated_at || app.created_at)}</div></div>
               </div>
-              <span class="badge badge-${escB(app.status)}">${escB(String(app.status||'').replace('_',' '))}</span>
+              <span class="badge badge-${escB(app.status)}">${escB(APPL[app.status] || app.status)}</span>
             </div>
-            <div class="app-message" style="white-space:pre-wrap">${escB(app.message||'—')}</div>
-            ${app.investment_capacity ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem">💰 ${escB(app.investment_capacity)} · 📍 ${escB(app.territory||'—')}</div>` : ''}
-            ${app.background ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;white-space:pre-wrap">${escB(app.background)}</div>` : ''}
-            <div class="app-actions">
-              ${app.status==='pending' ? `<button class="btn-shortlist" onclick="updateAppStatus(${Number(app.id)},'shortlisted')">⭐ Shortlist</button>` : ''}
-              ${['pending','shortlisted'].includes(app.status) ? `<button class="btn-meetup" onclick="openMeetup(${Number(app.id)})">📅 Schedule Meetup</button>` : ''}
-              ${app.status==='meetup_scheduled' ? `<button class="btn-meetup" onclick="updateAppStatus(${Number(app.id)},'negotiating')">🤝 Start Negotiating</button>` : ''}
-              ${app.status==='negotiating' ? `<button class="btn-agree" onclick="updateAppStatus(${Number(app.id)},'agreed')">🎉 Mark as Agreed</button>` : ''}
-              ${!['rejected','agreed'].includes(app.status) ? `<button class="btn-reject" onclick="updateAppStatus(${Number(app.id)},'rejected')">✕ Reject</button>` : ''}
-              <a class="btn-chat" href="/messages?user=${Number(app.investor_id)}">💬 Message</a>
-            </div>
-          </div>`;
+            <div class="app-message" style="white-space:pre-wrap">${escB(String(app.message||'—').slice(0, 220))}${String(app.message||'').length > 220 ? '…' : ''}</div>
+            <div style="font-size:12.5px;color:var(--accent);font-weight:600">Open application →</div>
+          </a>`;
         }).join('');
      } catch(err) {
       console.error(err);

@@ -46,6 +46,7 @@
 
   .detail-grid { display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start; }
 
+  input[type=checkbox] { appearance:auto; -webkit-appearance:checkbox; accent-color:#f5c842; width:18px !important; height:18px; padding:0; flex-shrink:0; cursor:pointer; }
   .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
   .card-title { font-family:'Cabinet Grotesk',sans-serif; font-size:15px; font-weight:700; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
 
@@ -54,7 +55,7 @@
   .biz-name-lg { font-family:'Cabinet Grotesk',sans-serif; font-size:26px; font-weight:800; letter-spacing:-0.5px; margin-bottom:4px; }
   .biz-tagline-lg { font-size:14px; color:var(--muted); margin-bottom:0.75rem; }
 
-  .type-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; margin-right:6px; margin-bottom:6px; }
+  .type-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; margin-right:6px; margin-bottom:6px; background:var(--accent-dim); color:var(--accent); border:1px solid rgba(245,200,66,0.25); }
   .type-franchise { background:rgba(245,200,66,0.15); color:var(--accent); }
   .type-license { background:rgba(96,165,250,0.15); color:var(--blue); }
   .type-joint_venture { background:rgba(110,231,183,0.15); color:var(--success); }
@@ -161,6 +162,7 @@
   </div>
 </main>
 
+<script src="/expansion-routes.js"></script>
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -185,6 +187,7 @@
     <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
     <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
     <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
+    <a class="nav-item" href="/expansion"><span class="nav-icon">🏢</span><span>Expansion Deals</span></a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
@@ -236,7 +239,8 @@
     const territory = document.getElementById('appTerritory')?.value.trim();
     const background = document.getElementById('appBackground')?.value.trim();
 
-    if (!expansion_type || !message) { alert('Please select expansion type and write a message.'); return; }
+    if (!expansion_type) { alert('Please choose how you want to work with this business.'); return; }
+    if (!message || message.length < 30) { alert('Please introduce yourself and your plan (at least 30 characters).'); return; }
 
     const btn = document.getElementById('applyBtn');
     btn.disabled = true; btn.textContent = 'Submitting...';
@@ -248,9 +252,8 @@
         body:JSON.stringify({expansion_type,message,investment_capacity,territory,background})
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error||'Failed');
-      alert('Application submitted! The business owner has been notified. 🎉');
-      loadPage();
+      if (!res.ok) { if (data.id) { location.href = '/expansion?id=' + Number(data.id); return; } throw new Error(data.error||'Failed'); }
+      location.href = '/expansion?id=' + Number(data.id) + '&sent=1';
     } catch(err) {
       alert(err.message||'Something went wrong.');
       btn.disabled = false; btn.textContent = 'Submit Application →';
@@ -292,166 +295,151 @@
 
   async function loadPage() {
     try {
-      const bizRes = await fetch(`${API_URL}/api/businesses/${bizId}`);
+      const bizRes = await fetch(`${API_URL}/api/businesses/${bizId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {});
       if (!bizRes.ok) throw new Error('Not found');
       currentBiz = await bizRes.json();
-
-      const isOwner = user && currentBiz.owner_id === user.id;
-      const canApply = !isOwner;
-
-      if (canApply && token) {
-        const appRes = await fetch(`${API_URL}/api/businesses/${bizId}/my-application`, {headers:{Authorization:`Bearer ${token}`}});
-        if (appRes.ok) myApplication = await appRes.json();
-      }
-
       const b = currentBiz;
-      const initials = escB(String(b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
-      const types = (b.expansion_types||[]);
+      const isOwner = b.viewer === 'owner', isAdmin = b.viewer === 'admin';
+      const canApply = !isOwner && !isAdmin;
+      myApplication = b.my_application && b.my_application.status !== 'withdrawn' ? b.my_application : null;
+      const dir = b.direction || 'offer', g = Routes.GROUP[b.route] || {};
+      const title = b.title || b.business_name || 'Business';
+      const types = (b.expansion_types || []);
+      const d = b.details || {};
+      const initials = b.masked ? '🔒' : escB(String(title).split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
+      document.title = `${title} — IdeaHub`;
+      const detailRows = Object.keys(d).map(k => { const f = Routes.fieldLabel(b.route, dir, k); return f ? `<div class="meta-item"><div class="meta-label">${escB(f.label)}</div><div class="meta-value" style="white-space:pre-wrap">${escB(Routes.formatDetail(f, d[k]))}</div></div>` : ''; }).join('');
+      const money = n => '$' + (Number(n) || 0).toLocaleString();
+      const inv = b.investment_min && b.investment_max ? `${money(b.investment_min)} — ${money(b.investment_max)}` : b.investment_min ? `From ${money(b.investment_min)}` : b.investment_max ? `Up to ${money(b.investment_max)}` : (dir === 'seek' ? 'Open' : 'Negotiable');
 
-      document.title = `${b.business_name} — IdeaHub`;
+      // Right column: what this visitor can do
+      let action = '';
+      if (isOwner) action = `
+        <div class="card" style="text-align:center;">
+          <div style="font-size:32px;margin-bottom:1rem;">🏢</div>
+          <div style="font-size:14px;margin-bottom:.4rem;">This is your listing</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:1rem;">Status: <b style="color:var(--text)">${escB(b.status_label || b.status)}</b>${b.status === 'rejected' && b.review_note ? '<br>' + escB(b.review_note) : ''}</div>
+          <a href="/business-dashboard" style="display:block;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.75rem;font-weight:700;text-decoration:none;text-align:center;margin-bottom:8px">Manage responses →</a>
+          <a href="/list-business?edit=${Number(b.id)}" style="display:block;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0.7rem;font-weight:600;text-decoration:none;text-align:center;">Edit listing</a>
+        </div>`;
+      else if (isAdmin) action = '';
+      else if (myApplication) action = `
+        <div class="card"><div class="card-title">Your response</div>
+          <div style="background:var(--surface2);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13.5px;">Status: <span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);">${escB(myApplication.status_label || myApplication.status)}</span></div>
+          <a href="/expansion?id=${Number(myApplication.id)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.8rem;font-weight:700;text-decoration:none;">Open the conversation →</a></div>`;
+      else if (b.masked) {
+        const st = b.my_nda?.status;
+        action = `<div class="card"><div class="card-title">🔒 Get the full details</div>${
+          !token ? `<p style="font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:1rem">This is a confidential listing. Sign in to sign the confidentiality agreement and ask the owner for access.</p><a href="/login?next=${encodeURIComponent(location.pathname)}" class="btn-primary" style="text-decoration:none">Sign in to continue</a>`
+          : st === 'requested' ? `<p style="font-size:13.5px;line-height:1.6">✍️ You signed the confidentiality agreement. The owner decides whether to share the full details, and you'll be notified.</p>`
+          : st === 'declined' ? `<p style="font-size:13.5px;color:var(--muted);line-height:1.6">The owner didn't approve access to this listing.</p>`
+          : `<p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:.8rem">The owner shares the business name and full details only with people who sign this agreement and whom they approve.</p>
+            <div style="background:var(--surface2);border-radius:10px;padding:.85rem;font-size:12.5px;line-height:1.6;max-height:180px;overflow:auto;margin-bottom:1rem">${escB(b.nda_text || '')}</div>
+            <div class="field"><label class="lbl" for="ndaIntro">About you (optional)</label><textarea id="ndaIntro" maxlength="1000" style="min-height:70px" placeholder="Who you are and why you're interested"></textarea></div>
+            <div class="field"><label class="lbl" for="ndaName">Type your full name to sign *</label><input type="text" id="ndaName" maxlength="120" /></div>
+            <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin-bottom:1rem;cursor:pointer"><input type="checkbox" id="ndaAgree" style="width:auto;margin-top:3px" /> I agree to the confidentiality agreement above.</label>
+            <button class="btn-primary" id="ndaBtn" onclick="signNda()">Sign and request access</button>`}</div>`;
+      } else action = `
+        <div class="card"><div class="card-title">${dir === 'seek' ? 'Can you help?' : 'Interested?'}</div>
+          <div class="field"><label class="lbl" for="appType">Which deal *</label><select id="appType"><option value="">Choose…</option>${types.map(t => `<option value="${escB(t)}">${escB(Routes.BY_KEY[t]?.label || t)}</option>`).join('')}</select></div>
+          <div class="field"><label class="lbl" for="appMessage">Your message *</label><textarea id="appMessage" placeholder="${dir === 'seek' ? 'Introduce your business and what you can offer them…' : 'Introduce yourself and your plan…'}"></textarea></div>
+          <div class="field"><label class="lbl" for="appInvestment">${dir === 'seek' ? 'Your terms (optional)' : 'Investment capacity'}</label><input type="text" id="appInvestment" placeholder="${dir === 'seek' ? 'e.g. 20% trade margin, 2-week delivery' : 'e.g. $50,000 - $100,000'}" /></div>
+          <div class="field"><label class="lbl" for="appTerritory">Territory</label><input type="text" id="appTerritory" placeholder="e.g. Southern Sri Lanka" /></div>
+          <div class="field"><label class="lbl" for="appBackground">Your background</label><textarea id="appBackground" placeholder="Your business, experience, capacity…" style="min-height:70px;"></textarea></div>
+          ${!token ? `<a href="/login?next=${encodeURIComponent(location.pathname)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.85rem;font-weight:700;text-decoration:none;">Login to respond</a>` : `<button class="btn-primary" id="applyBtn" onclick="submitApplication()">Send →</button>`}
+          <p style="font-size:11px;color:var(--muted);margin-top:0.75rem;text-align:center;">No payment required: IdeaHub connects you.</p></div>`;
 
       document.getElementById('pageContent').innerHTML = `
         <div class="detail-grid">
-          <!-- LEFT -->
           <div>
             <div class="card">
+              <div style="font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">${dir === 'seek' ? '🔎 Looking for a partner' : '📣 Opportunity'} · ${g.icon || ''} ${escB(g.label || '')}</div>
               <div class="biz-header">
                 <div class="biz-logo-lg">${initials}</div>
                 <div>
-                  <div class="biz-name-lg">${escB(b.business_name)}</div>
-                  <div class="biz-tagline-lg">${escB(b.tagline||'')}</div>
-                  <div>${types.map(t=>`<span class="type-pill ${typeConfig[t]?.cls||''}">${typeConfig[t]?.emoji||'•'} ${escB(typeConfig[t]?.label||t)}</span>`).join('')}</div>
+                  <div class="biz-name-lg">${escB(title)}</div>
+                  <div style="font-size:12.5px;margin:2px 0 6px;color:${b.is_verified ? 'var(--success)' : 'var(--muted)'}">${b.is_verified ? '✅ Verified business · registration checked by IdeaHub' : 'Registration not verified yet'}${b.confidential ? ' · <span style="color:#c4b5fd">🔒 Confidential</span>' : ''}</div>
+                  ${b.tagline ? `<div class="biz-tagline-lg">${escB(b.tagline)}</div>` : ''}
+                  <div>${types.map(t => `<span class="type-pill">${escB(Routes.typeLabel(t, dir))}</span>`).join('')}</div>
                 </div>
               </div>
-
               <div class="meta-grid">
-                <div class="meta-item"><div class="meta-label">Industry</div><div class="meta-value">${escB(b.industry||'—')}</div></div>
-                <div class="meta-item"><div class="meta-label">Location</div><div class="meta-value">${b.city?escB(b.city)+', ':''}${escB(b.country||'—')}</div></div>
-                <div class="meta-item"><div class="meta-label">Founded</div><div class="meta-value">${escB(b.founded_year||'—')}</div></div>
-                <div class="meta-item"><div class="meta-label">Revenue</div><div class="meta-value">${escB(b.annual_revenue||'—')}</div></div>
-                <div class="meta-item"><div class="meta-label">Employees</div><div class="meta-value">${escB(b.employees||'—')}</div></div>
-                <div class="meta-item"><div class="meta-label">Locations</div><div class="meta-value">${escB(b.locations||1)}</div></div>
+                <div class="meta-item"><div class="meta-label">Industry</div><div class="meta-value">${escB(b.industry || '—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Location</div><div class="meta-value">${b.city ? escB(b.city) + ', ' : ''}${escB(b.country || '—')}</div></div>
+                ${b.masked ? '' : `<div class="meta-item"><div class="meta-label">Founded</div><div class="meta-value">${escB(b.founded_year || '—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Revenue</div><div class="meta-value">${escB(b.annual_revenue || '—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Employees</div><div class="meta-value">${escB(b.employees || '—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Locations</div><div class="meta-value">${escB(b.locations || 1)}</div></div>`}
               </div>
-
-              <div class="biz-description" style="white-space:pre-wrap">${escB(b.description)}</div>
+              ${b.masked ? `<div class="biz-description" style="white-space:pre-wrap">${escB(b.teaser || '')}</div><div style="font-size:12.5px;color:#c4b5fd;margin-top:.8rem">The business name and full details are shared after you sign the confidentiality agreement and the owner approves.</div>`
+                : `<div class="biz-description" style="white-space:pre-wrap">${escB(b.description || '')}</div>${b.confidential && !isOwner && !isAdmin ? '<div style="font-size:12.5px;color:#c4b5fd;margin-top:.8rem">🔒 Shared with you under the confidentiality agreement you signed. Don\'t pass it on.</div>' : ''}`}
             </div>
-
-            ${b.requirements ? `
-            <div class="card">
-              <div class="card-title">📋 Partner Requirements</div>
-              <div class="requirements-box" style="white-space:pre-wrap">${escB(b.requirements)}</div>
-            </div>` : ''}
-
-            ${b.territories?.length ? `
-            <div class="card">
-              <div class="card-title">🌍 Target Territories</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                ${b.territories.map(t=>`<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;">${escB(t)}</span>`).join('')}
-              </div>
-            </div>` : ''}
-
-            <!-- CHAT SECTION -->
-            ${myApplication && token ? `
-            <div class="card" id="chatCard">
-              <div class="card-title">💬 Talk to the owner</div>
-              <a href="/messages?user=${Number(b.owner_id)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.75rem;font-weight:700;text-decoration:none;margin-bottom:1rem;">Message ${escB(b.owner_name || 'the owner')} →</a>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:.6rem">Earlier notes on this application:</div>
-              <div class="chat-area">
-                <div class="chat-msgs" id="chatMsgs"><div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">Loading messages...</div></div>
-                <div class="chat-input-row">
-                  <input class="chat-input" id="chatInputField" placeholder="Type your message..." onkeydown="handleChatKey(event)" />
-                  <button class="chat-send" onclick="sendChat()">➤</button>
-                </div>
-              </div>
-            </div>` : ''}
+            ${detailRows ? `<div class="card"><div class="card-title">📋 Details</div><div class="meta-grid">${detailRows}</div></div>` : ''}
+            ${b.requirements ? `<div class="card"><div class="card-title">${dir === 'seek' ? '🎯 What they are looking for' : '📋 Partner requirements'}</div><div class="requirements-box" style="white-space:pre-wrap">${escB(b.requirements)}</div></div>` : ''}
+            ${b.territories?.length ? `<div class="card"><div class="card-title">🌍 Territories</div><div style="display:flex;gap:8px;flex-wrap:wrap;">${b.territories.map(t => `<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;">${escB(t)}</span>`).join('')}</div></div>` : ''}
+            ${isOwner && b.confidential ? '<div class="card" id="access"><div class="card-title">🔒 Access requests</div><div id="ndaList" style="font-size:13px;color:var(--muted)">Loading…</div></div>' : ''}
+            ${(isOwner || isAdmin) && b.status === 'active' ? '<div class="card" id="matches"><div class="card-title">🎯 Businesses that fit</div><div id="matchList" style="font-size:13px;color:var(--muted)">Loading…</div></div>' : ''}
           </div>
-
-          <!-- RIGHT -->
           <div>
-            <!-- INVESTMENT CARD -->
             <div class="card">
-              <div class="card-title">💰 Investment Range</div>
-              <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;">
-                ${b.investment_min&&b.investment_max ? `${money(b.investment_min)} — ${money(b.investment_max)}` : b.investment_min ? `From ${money(b.investment_min)}` : b.investment_max ? `Up to ${money(b.investment_max)}` : 'Negotiable'}
-              </div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Required investment range</div>
-              <div style="font-size:13px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:0.75rem;">
-                📋 ${Number(b.application_count)||0} investor${Number(b.application_count)!==1?'s':''} applied · 👁 ${Number(b.view_count)||0} views
-              </div>
+              <div class="card-title">💰 ${dir === 'seek' ? 'Budget' : 'Investment range'}</div>
+              <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;">${inv}</div>
+              <div style="font-size:13px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:0.75rem;margin-top:.6rem">📋 ${Number(b.application_count) || 0} response${Number(b.application_count) === 1 ? '' : 's'} · 👁 ${Number(b.view_count) || 0} views</div>
             </div>
-
-            <!-- APPLY FORM -->
-            ${canApply ? `
-            <div class="card">
-              ${myApplication ? `
-                <div class="card-title">Your Application</div>
-                <div style="background:var(--surface2);border-radius:10px;padding:1rem;margin-bottom:1rem;">
-                  <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${escB(typeConfig[myApplication.expansion_type]?.label || String(myApplication.expansion_type||'').replace('_',' '))} interest</div>
-                  <div style="font-size:13px;color:var(--muted);margin-bottom:8px;white-space:pre-wrap">${escB(myApplication.message)}</div>
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);">${escB(({pending:'Sent',reviewed:'Reviewed',shortlisted:'Shortlisted',meetup_scheduled:'Meetup scheduled',negotiating:'Negotiating',agreed:'Agreed',rejected:'Not selected'})[myApplication.status] || myApplication.status)}</span>
-                  </div>
-                </div>
-                ${['shortlisted','meetup_scheduled','negotiating'].includes(myApplication.status) ? `
-                  <div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13px;color:var(--success);">
-                    ${myApplication.status==='meetup_scheduled' ? `📅 Meetup scheduled!<br><strong>${myApplication.meetup_type==='virtual'?'Virtual':'In-person'}</strong> · ${myApplication.meetup_date ? new Date(myApplication.meetup_date).toLocaleDateString() : 'Date TBD'}<br>${escB(myApplication.meetup_location||'')}` : myApplication.status==='negotiating' ? '🤝 Negotiation in progress. Use the chat below.' : '⭐ You\'ve been shortlisted! The owner will be in touch.'}
-                  </div>` : ''}
-                ${myApplication.status==='agreed' ? `
-                  <div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;font-size:13px;color:var(--success);">
-                    🎉 Agreement reached! Please proceed with your legal team to finalize the deal.
-                  </div>` : ''}
-              ` : `
-                <div class="card-title">Apply for Expansion</div>
-                <div class="field">
-                  <label class="lbl">Expansion Type *</label>
-                  <select id="appType">
-                    <option value="">Select type</option>
-                    ${types.map(t=>`<option value="${escB(t)}">${typeConfig[t]?.emoji||''} ${escB(typeConfig[t]?.label||t)}</option>`).join('')}
-                  </select>
-                </div>
-                <div class="field">
-                  <label class="lbl">Your Message *</label>
-                  <textarea id="appMessage" placeholder="Introduce yourself and explain your interest in this business..."></textarea>
-                </div>
-                <div class="field">
-                  <label class="lbl">Investment Capacity</label>
-                  <input type="text" id="appInvestment" placeholder="e.g. $50,000 - $100,000" />
-                </div>
-                <div class="field">
-                  <label class="lbl">Target Territory</label>
-                  <input type="text" id="appTerritory" placeholder="e.g. Southern Sri Lanka" />
-                </div>
-                <div class="field">
-                  <label class="lbl">Your Background</label>
-                  <textarea id="appBackground" placeholder="Your business experience, relevant skills..." style="min-height:70px;"></textarea>
-                </div>
-                ${!token ? `<a href="/login?next=${encodeURIComponent(location.pathname)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.85rem;font-weight:700;text-decoration:none;">Login to Apply</a>` : `
-                <button class="btn-primary" id="applyBtn" onclick="submitApplication()">Submit Application →</button>`}
-                <p style="font-size:11px;color:var(--muted);margin-top:0.75rem;text-align:center;">No payment required — this is a connection platform</p>
-              `}
-            </div>` : isOwner ? `
-            <div class="card" style="text-align:center;">
-              <div style="font-size:32px;margin-bottom:1rem;">🏢</div>
-              <div style="font-size:14px;margin-bottom:1rem;">This is your listing</div>
-              <a href="/business-dashboard" style="display:block;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.75rem;font-weight:700;text-decoration:none;text-align:center;">Manage Applications →</a>
-            </div>` : ''}
+            ${action}
           </div>
-        </div>
-      `;
-
-      // Load chat if application exists
-      if (myApplication?.id) {
-        activeAppId = myApplication.id;
-        setTimeout(() => loadChat(myApplication.id), 500);
-      }
-
-    } catch(err) {
+        </div>`;
+      if (isOwner && b.confidential) loadNdas();
+      if ((isOwner || isAdmin) && b.status === 'active') loadMatches();
+      if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth' }), 300);
+    } catch (err) {
       document.getElementById('pageContent').innerHTML = `<div style="text-align:center;padding:4rem;color:var(--muted);"><div style="font-size:48px;margin-bottom:1rem;">😕</div><div>Business not found.</div><a href="/businesses" style="color:var(--accent);margin-top:1rem;display:inline-block;">← Back to Businesses</a></div>`;
     }
   }
 
+  async function signNda() {
+    const name = document.getElementById('ndaName').value.trim();
+    if (!document.getElementById('ndaAgree').checked) { alert('Tick the box to accept the agreement.'); return; }
+    if (name.length < 3) { alert('Type your full name to sign.'); return; }
+    const btn = document.getElementById('ndaBtn'); btn.disabled = true;
+    try {
+      const r = await fetch(`${API_URL}/api/businesses/${bizId}/nda`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ signed_name: name, agree: true, intro: document.getElementById('ndaIntro').value }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || 'Could not sign.');
+      loadPage();
+    } catch (e) { alert(e.message); btn.disabled = false; }
+  }
+  async function loadNdas() {
+    const el = document.getElementById('ndaList'); if (!el) return;
+    try {
+      const list = await fetch(`${API_URL}/api/businesses/${bizId}/ndas`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+      if (!list.length) { el.textContent = 'Nobody has asked for access yet. People who sign the confidentiality agreement appear here.'; return; }
+      el.innerHTML = list.map(n => `<div style="border-bottom:1px solid var(--border);padding:.75rem 0">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div><b style="color:var(--text)">${escB(n.name)}</b>${n.verified ? ' ✅' : ''} <span>· ${escB((n.role || '').replace(/_/g, ' '))}${n.country ? ' · ' + escB(n.country) : ''}</span><div style="font-size:11.5px">Signed as "${escB(n.signed_name)}" on ${new Date(n.signed_at).toLocaleDateString()}</div></div>
+          ${n.status === 'requested' ? `<div style="display:flex;gap:6px"><button class="btn-view" onclick="decideNda(${Number(n.id)},'approve')" style="background:var(--accent);color:#0d0d0f;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer">Approve</button><button onclick="decideNda(${Number(n.id)},'decline')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer">Decline</button></div>`
+            : `<span style="font-size:12px;color:${n.status === 'approved' ? 'var(--success)' : 'var(--muted)'}">${n.status === 'approved' ? '✓ Has access' : 'Declined'}</span>`}
+        </div>${n.intro ? `<div style="font-size:12.5px;margin-top:6px;color:var(--text);white-space:pre-wrap">${escB(n.intro)}</div>` : ''}</div>`).join('');
+    } catch (e) { el.textContent = 'Could not load requests.'; }
+  }
+  async function decideNda(id, decision) {
+    if (decision === 'approve' && !confirm('Share your business name and full details with this person?')) return;
+    const r = await fetch(`${API_URL}/api/business-ndas/${id}/decide`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ decision }) });
+    const d = await r.json().catch(() => ({})); if (!r.ok) alert(d.error || 'Failed');
+    loadNdas();
+  }
+  async function loadMatches() {
+    const el = document.getElementById('matchList'); if (!el) return;
+    try {
+      const list = await fetch(`${API_URL}/api/businesses/${bizId}/matches`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+      if (!Array.isArray(list) || !list.length) { el.textContent = 'No fitting listings yet. You will be notified when one joins.'; return; }
+      el.innerHTML = list.map(m => `<a href="/business/${Number(m.id)}" style="display:flex;justify-content:space-between;gap:12px;padding:.7rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--text)">
+        <div><b>${escB(m.title || 'Business')}</b>${m.masked ? ' <span style="color:#c4b5fd">🔒</span>' : ''}<div style="font-size:12px;color:var(--muted)">${m.direction === 'seek' ? 'Looking for' : 'Offering'}: ${escB((m.expansion_types || []).map(t => Routes.BY_KEY[t]?.label || t).join(', '))} · ${escB(m.country || '')}</div></div>
+        <span style="font-size:12px;color:var(--accent);white-space:nowrap;font-weight:700">${Number(m.match)}% fit</span></a>`).join('');
+    } catch (e) { el.textContent = 'Could not load matches.'; }
+  }
+
   loadPage();
-  setInterval(() => { if (activeAppId) loadChat(activeAppId); }, 10000);
 </script>
 <script src="/chat-widget.js" defer></script></body>
 </html>
