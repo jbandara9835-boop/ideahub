@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Start a patent application — IdeaHub</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/patents.css" />
+<style>
+.wrap { max-width: 820px; }
+.head { margin: 1rem 0 1.5rem; }
+.head h1 { font-size: 30px; margin-top: 6px; }
+.head p { color: var(--muted); font-size: 14.5px; margin-top: 6px; line-height: 1.6; }
+.progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+.progress div { font-size: 12.5px; color: var(--muted); padding-top: 8px; border-top: 3px solid var(--surface2); font-weight: 600; }
+.progress div.done { border-top-color: rgba(245,200,66,0.45); color: var(--soft); }
+.progress div.on { border-top-color: var(--accent); color: var(--text); }
+.stage { display: none; }
+.stage.on { display: block; }
+.nav-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 1.25rem; }
+.opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.opt { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.8rem; font-size: 13.5px; cursor: pointer; text-align: left; color: var(--text); font-family: inherit; transition: border-color .15s; }
+.opt:hover { border-color: var(--border-hover); }
+.opt.on { border-color: var(--accent); background: var(--accent-dim); }
+.types { display: flex; flex-direction: column; gap: 8px; }
+.types .opt b { display: block; font-size: 14px; margin-bottom: 2px; }
+.types .opt span { color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.attys { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.atty { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0.95rem; cursor: pointer; text-align: left; color: var(--text); font-family: inherit; display: flex; flex-direction: column; gap: 8px; transition: border-color .15s; }
+.atty:hover { border-color: var(--border-hover); }
+.atty.on { border-color: var(--accent); background: var(--accent-dim); }
+.atty .tag { font-size: 13px; color: var(--soft); line-height: 1.45; }
+.atty .facts { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.files { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.file { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.7rem; font-size: 13px; }
+.file button { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 13px; }
+.drop { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px dashed var(--border-hover); border-radius: 10px; padding: 0.9rem; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+.drop:hover { border-color: var(--accent); color: var(--text); }
+.review dt { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 12px; }
+.review dd { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-top: 3px; color: var(--soft); }
+.review dd:empty::before { content: '—'; color: var(--muted); }
+@media (max-width: 640px) { .opts { grid-template-columns: 1fr 1fr; } .attys { grid-template-columns: 1fr; } .progress div { font-size: 11px; } }
+</style>
+</head>
+<body>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+
+<main class="wrap">
+  <div class="head">
+    <a href="/patents" class="muted" style="font-size:13px;text-decoration:none;">← Patent applications</a>
+    <h1>Start a patent application</h1>
+    <p>Describe your invention, choose where to file and pick a verified patent attorney. They'll send a fixed quote. You pay nothing until you accept it.</p>
+  </div>
+
+  <div class="progress" id="progress">
+    <div>1. Invention</div><div>2. Where to file</div><div>3. Attorney</div><div>4. Review</div>
+  </div>
+  <div id="err" class="error-box hidden"></div>
+
+  <!-- 1. Invention -->
+  <section class="stage panel" data-stage="0">
+    <div class="field" id="ideaField">
+      <label for="idea">Link one of your IdeaHub ideas <span class="muted">(optional)</span></label>
+      <select class="select" id="idea"><option value="">No, this is a new invention</option></select>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="title">Invention title</label><input class="input" id="title" maxlength="150" placeholder="e.g. Solar-powered cold box for small farmers" /></div>
+      <div class="field"><label for="fieldIn">Field</label><input class="input" id="fieldIn" maxlength="80" placeholder="e.g. Agriculture, Medical device, Software" /></div>
+    </div>
+    <div class="field"><label for="problem">What problem does it solve?</label><textarea class="textarea" id="problem" maxlength="3000" placeholder="Who has this problem, and why existing products don't solve it."></textarea><div class="counter" data-for="problem" data-min="20"></div></div>
+    <div class="field"><label for="solution">How does it work?</label><div class="hint">The more detail, the more accurate the quote: parts, materials, steps, how they connect. Plain language is fine.</div><textarea class="textarea" id="solution" style="min-height:160px" maxlength="8000"></textarea><div class="counter" data-for="solution" data-min="80"></div></div>
+    <div class="field"><label for="novelty">What is new about it?</label><div class="hint">Compared with similar products or patents you know of.</div><textarea class="textarea" id="novelty" maxlength="3000"></textarea><div class="counter" data-for="novelty" data-min="20"></div></div>
+    <div class="row2">
+      <div class="field"><label for="prior">Similar products or patents you know of <span class="muted">(optional)</span></label><textarea class="textarea" id="prior" maxlength="3000" style="min-height:80px"></textarea></div>
+      <div class="field"><label for="inventors">Inventor names <span class="muted">(optional)</span></label><textarea class="textarea" id="inventors" maxlength="500" style="min-height:80px" placeholder="Everyone who contributed to the invention"></textarea></div>
+    </div>
+    <div class="field">
+      <label>Drawings, sketches or documents <span class="muted">(optional)</span></label>
+      <label class="drop" for="fileIn">📎 Add files (PDF, Word, images · up to 10 MB each)</label>
+      <input type="file" id="fileIn" multiple accept=".pdf,.doc,.docx,.txt,image/*" class="hidden" />
+      <div class="files" id="files"></div>
+    </div>
+  </section>
+
+  <!-- 2. Where to file -->
+  <section class="stage panel" data-stage="1">
+    <div class="field"><label>Where do you want protection?</label><div class="hint">Not sure? Choose "Other / not sure" and the attorney will advise.</div><div class="opts" id="jur"></div></div>
+    <div class="field"><label>Type of application</label><div class="types" id="types"></div></div>
+  </section>
+
+  <!-- 3. Attorney -->
+  <section class="stage panel" data-stage="2">
+    <div class="panel-title">Choose a patent attorney</div>
+    <div class="attys" id="attys"><div class="loading">Loading attorneys…</div></div>
+  </section>
+
+  <!-- 4. Review -->
+  <section class="stage panel" data-stage="3">
+    <div class="panel-title">Review and send</div>
+    <dl class="review" id="review"></dl>
+    <div class="note gold" style="margin:1.25rem 0 1rem;">🔒 Only <b id="attyName">the attorney</b> and IdeaHub admins will be able to read this. Your files are stored privately. The attorney's email notification doesn't include your invention details.</div>
+    <label class="check"><input type="checkbox" id="ack" /> I understand who can see my invention, and I'm sending it to this attorney to get a quote.</label>
+  </section>
+
+  <div class="nav-btns">
+    <button class="btn btn-ghost" id="back">← Back</button>
+    <button class="btn btn-gold" id="next">Next →</button>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+  const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
+  if (!token) location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
+  const H = () => ({ Authorization: 'Bearer ' + token });
+  const params = new URLSearchParams(location.search);
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  const $ = id => document.getElementById(id);
+  const DRAFT = 'ih_patent_draft';
+  const TYPE_HELP = {
+    'Provisional application': 'Secures an early filing date quickly and cheaply. You have 12 months to file the full application.',
+    'Complete / non-provisional application': 'The full application with claims, examined by the patent office.',
+    'International (PCT) application': 'One filing that keeps your options open in 150+ countries.',
+    'Design registration': 'Protects how a product looks, not how it works.',
+    'Not sure, please advise': 'The attorney will recommend the right route in their quote.'
+  };
+  let stage = 0, files = [], attorneys = [], state = { jurisdiction: '', filing_type: '', attorney_id: parseInt(params.get('attorney'), 10) || null };
+  const TEXT = ['title', 'fieldIn', 'problem', 'solution', 'novelty', 'prior', 'inventors'];
+
+  function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 3000); }
+  function showErr(m) { const e = $('err'); e.textContent = m; e.classList.toggle('hidden', !m); if (m) e.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  function initials(n) { return esc(String(n || '?').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase()); }
+
+  // Draft autosave (this browser only)
+  function saveDraft() { try { const d = { state, idea: $('idea').value }; TEXT.forEach(k => d[k] = $(k).value); localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {} }
+  function loadDraft() { try { const d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); if (!d) return; TEXT.forEach(k => { if (d[k]) $(k).value = d[k]; }); state = { ...state, ...d.state, attorney_id: state.attorney_id || d.state?.attorney_id || null }; if (d.idea) $('idea').dataset.want = d.idea; } catch (e) {} }
+
+  function counters() {
+    document.querySelectorAll('.counter').forEach(c => {
+      const len = $(c.dataset.for).value.trim().length, min = +c.dataset.min;
+      c.textContent = len < min ? `${min - len} more characters needed` : `${len} characters`;
+      c.classList.toggle('low', len < min);
+    });
+  }
+
+  function renderFiles() {
+    $('files').innerHTML = files.map((f, i) => `<div class="file"><span>📄 ${esc(f.name)} <span class="muted">(${(f.size / 1048576).toFixed(1)} MB)</span></span><button data-rm="${i}" aria-label="Remove">✕</button></div>`).join('');
+  }
+  $('fileIn').addEventListener('change', e => {
+    for (const f of e.target.files) {
+      if (f.size > 10 * 1048576) { toast(`${f.name} is over 10 MB`); continue; }
+      if (files.length >= 10) { toast('Up to 10 files here; add more later'); break; }
+      files.push(f);
+    }
+    e.target.value = ''; renderFiles();
+  });
+  $('files').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (b) { files.splice(+b.dataset.rm, 1); renderFiles(); } });
+
+  function renderOpts(meta) {
+    $('jur').innerHTML = meta.jurisdictions.map(j => `<button type="button" class="opt ${state.jurisdiction === j ? 'on' : ''}" data-j="${esc(j)}">${esc(j)}</button>`).join('');
+    $('types').innerHTML = meta.filing_types.map(t => `<button type="button" class="opt ${state.filing_type === t ? 'on' : ''}" data-t="${esc(t)}"><b>${esc(t)}</b><span>${esc(TYPE_HELP[t] || '')}</span></button>`).join('');
+  }
+  $('jur').addEventListener('click', e => { const b = e.target.closest('[data-j]'); if (!b) return; state.jurisdiction = b.dataset.j; document.querySelectorAll('#jur .opt').forEach(o => o.classList.toggle('on', o === b)); saveDraft(); });
+  $('types').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (!b) return; state.filing_type = b.dataset.t; document.querySelectorAll('#types .opt').forEach(o => o.classList.toggle('on', o === b)); saveDraft(); });
+
+  function renderAttorneys(verifiedOnly) {
+    if (!attorneys.length) {
+      $('attys').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon">⚖️</div>No ${verifiedOnly ? 'verified ' : ''}patent attorneys are available yet.<br>Your answers are saved in this browser; come back soon.</div>`;
+      return;
+    }
+    $('attys').innerHTML = attorneys.map(a => `<button type="button" class="atty ${state.attorney_id === a.id ? 'on' : ''}" data-a="${a.id}">
+      <div class="person"><div class="av">${a.avatar_url ? `<img src="${esc(a.avatar_url)}" alt="">` : initials(a.name)}</div><div><b>${esc(a.name)}</b><small>${a.verified ? '<span class="verified">✓ Verified</span> · ' : ''}${esc(a.home_country || '')}</small></div></div>
+      ${a.tagline ? `<div class="tag">${esc(a.tagline)}</div>` : ''}
+      <div class="facts">${a.experience_years ? `<span>${Number(a.experience_years)} yrs experience</span>` : ''}${a.avg_rating ? `<span>★ ${Number(a.avg_rating).toFixed(1)}</span>` : ''}${a.completed_jobs ? `<span>${Number(a.completed_jobs)} jobs</span>` : ''}${a.hourly_rate ? `<span>$${Number(a.hourly_rate)}/hr</span>` : ''}</div>
+    </button>`).join('');
+  }
+  $('attys').addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; state.attorney_id = +b.dataset.a; document.querySelectorAll('.atty').forEach(o => o.classList.toggle('on', o === b)); saveDraft(); });
+
+  function check(s) {
+    const v = k => $(k).value.trim();
+    if (s === 0) {
+      if (v('title').length < 5) return 'Give the invention a title (at least 5 characters).';
+      if (v('problem').length < 20) return 'Describe the problem it solves (at least 20 characters).';
+      if (v('solution').length < 80) return 'Explain how it works in more detail (at least 80 characters).';
+      if (v('novelty').length < 20) return 'Say what is new about it (at least 20 characters).';
+    }
+    if (s === 1) { if (!state.jurisdiction) return 'Choose where you want to file.'; if (!state.filing_type) return 'Choose the type of application.'; }
+    if (s === 2 && !attorneys.some(a => a.id === state.attorney_id)) return 'Choose a patent attorney.';
+    return '';
+  }
+
+  function renderReview() {
+    const a = attorneys.find(x => x.id === state.attorney_id);
+    $('attyName').textContent = a ? a.name : 'the attorney';
+    const row = (k, val) => `<dt>${k}</dt><dd>${esc(val)}</dd>`;
+    $('review').innerHTML = row('Title', $('title').value.trim()) + row('Field', $('fieldIn').value.trim()) + row('Problem', $('problem').value.trim())
+      + row('How it works', $('solution').value.trim()) + row("What's new", $('novelty').value.trim()) + row('Known similar products / patents', $('prior').value.trim())
+      + row('Inventors', $('inventors').value.trim()) + row('Files', files.map(f => f.name).join(', ')) + row('File in', state.jurisdiction) + row('Application type', state.filing_type)
+      + row('Attorney', a ? a.name : '');
+  }
+
+  function go(s) {
+    stage = s;
+    document.querySelectorAll('.stage').forEach(el => el.classList.toggle('on', +el.dataset.stage === s));
+    document.querySelectorAll('#progress div').forEach((el, i) => { el.classList.toggle('on', i === s); el.classList.toggle('done', i < s); });
+    $('back').style.visibility = s === 0 ? 'hidden' : 'visible';
+    $('next').textContent = s === 3 ? 'Send to attorney' : 'Next →';
+    if (s === 3) renderReview();
+    showErr('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  $('back').onclick = () => go(Math.max(0, stage - 1));
+  $('next').onclick = async () => {
+    const e = check(stage); if (e) return showErr(e);
+    if (stage < 3) return go(stage + 1);
+    if (!$('ack').checked) return showErr('Please tick the box to confirm.');
+    const btn = $('next'); btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const r = await fetch('/api/patent-applications', { method: 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: JSON.stringify({
+        title: $('title').value, field: $('fieldIn').value, problem: $('problem').value, solution: $('solution').value, novelty: $('novelty').value,
+        prior_art: $('prior').value, inventors: $('inventors').value, idea_id: $('idea').value || null,
+        jurisdiction: state.jurisdiction, filing_type: state.filing_type, attorney_id: state.attorney_id, confidential_ack: true }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Could not send.');
+      let failed = 0;
+      for (let i = 0; i < files.length; i++) {
+        btn.textContent = `Uploading file ${i + 1} of ${files.length}…`;
+        const fd = new FormData(); fd.append('file', files[i]);
+        const u = await fetch(`/api/patent-applications/${d.id}/files`, { method: 'POST', headers: H(), body: fd }).catch(() => null);
+        if (!u || !u.ok) failed++;
+      }
+      try { localStorage.removeItem(DRAFT); } catch (e) {}
+      location.href = `/patent-application?id=${d.id}&sent=1${failed ? '&upfail=' + failed : ''}`;
+    } catch (err) { showErr(err.message); btn.disabled = false; btn.textContent = 'Send to attorney'; }
+  };
+
+  TEXT.forEach(k => $(k).addEventListener('input', () => { counters(); saveDraft(); }));
+  $('idea').addEventListener('change', () => {
+    const o = $('idea').selectedOptions[0];
+    if (o && o.value) {
+      if (!$('title').value.trim()) $('title').value = o.dataset.title || '';
+      if (!$('fieldIn').value.trim()) $('fieldIn').value = o.dataset.industry || '';
+      if (!$('problem').value.trim()) $('problem').value = o.dataset.summary || '';
+      counters();
+    }
+    saveDraft();
+  });
+
+  async function init() {
+    loadDraft();
+    // Re-sending a declined application to another attorney
+    const from = parseInt(params.get('from'), 10);
+    if (from) {
+      try {
+        const r = await fetch(`/api/patent-applications/${from}`, { headers: H() });
+        if (r.ok) { const a = await r.json(); if (a.viewer === 'creator') {
+          $('title').value = a.title || ''; $('fieldIn').value = a.field || ''; $('problem').value = a.problem || ''; $('solution').value = a.solution || '';
+          $('novelty').value = a.novelty || ''; $('prior').value = a.prior_art || ''; $('inventors').value = a.inventors || '';
+          state.jurisdiction = a.jurisdiction; state.filing_type = a.filing_type; if (state.attorney_id === a.attorney_id) state.attorney_id = null;
+          if (a.idea_id) $('idea').dataset.want = String(a.idea_id);
+          toast('Copied from your earlier request. Choose a different attorney.');
+        } }
+      } catch (e) {}
+    }
+    counters();
+    const [ideasR, metaR] = await Promise.all([
+      fetch('/api/my-ideas', { headers: H() }).catch(() => null),
+      fetch('/api/patents/attorneys', { headers: H() }).catch(() => null)
+    ]);
+    try {
+      const ideas = ideasR && ideasR.ok ? await ideasR.json() : [];
+      const list = Array.isArray(ideas) ? ideas : (ideas.ideas || []);
+      if (!list.length) $('ideaField').classList.add('hidden');
+      list.forEach(i => { const o = document.createElement('option'); o.value = i.id; o.textContent = i.title; o.dataset.title = i.title || ''; o.dataset.industry = i.industry || ''; o.dataset.summary = i.summary || ''; $('idea').appendChild(o); });
+      const want = $('idea').dataset.want || params.get('idea');
+      if (want && list.some(i => String(i.id) === String(want))) { $('idea').value = want; if (params.get('idea')) $('idea').dispatchEvent(new Event('change')); }
+    } catch (e) { $('ideaField').classList.add('hidden'); }
+    if (metaR && metaR.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    const meta = metaR && metaR.ok ? await metaR.json() : { attorneys: [], jurisdictions: [], filing_types: [] };
+    attorneys = meta.attorneys || [];
+    renderOpts(meta); renderAttorneys(meta.verified_only);
+    go(0);
+  }
+  init();
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

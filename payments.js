@@ -40,6 +40,13 @@ module.exports = function makePayments(supabase) {
     return { ok: true };
   }
 
+  // Paid services (e.g. patent applications): the payer's money goes into escrow. Returns { ok, error }.
+  async function chargeService({ userId, amount, meta }) {
+    if (provider() === 'paypal') return { ok: false, error: 'PayPal checkout is not connected yet.' };
+    await record({ kind: 'purchase', userId, amount, meta: { ...(meta || {}), test: true } });
+    return { ok: true };
+  }
+
   // Wallet: earned (lifetime, credited on release) minus withdrawals requested/paid
   async function wallet(userId) {
     const [{ data: u }, { data: w }] = await Promise.all([
@@ -52,5 +59,5 @@ module.exports = function makePayments(supabase) {
     return { earned, withdrawn: paid, pending, available: Math.max(0, Math.round((earned - paid - pending) * 100) / 100) };
   }
 
-  return { provider, purchasesOpen, record, chargePurchase, wallet };
+  return { provider, purchasesOpen, record, chargePurchase, chargeService, wallet };
 };

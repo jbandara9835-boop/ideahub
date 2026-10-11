@@ -158,6 +158,8 @@ app.get('/robots.txt', (req, res) => {
   const payments = require('./payments')(supabase);
   const originality = require('./originality')(supabase, escrow);
   const matching = require('./matching')(supabase, escrow);
+  // Patent applications through IdeaHub (routes live in patents.js)
+  require('./patents').mount(app, { supabase, authMiddleware, escrow });
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -277,6 +279,9 @@ app.get('/robots.txt', (req, res) => {
   });
   app.get('/wall', (req, res) => res.sendFile(__dirname + '/public/wall.html'));
   app.get('/life-hacks', (req, res) => res.sendFile(__dirname + '/public/life-hacks.html'));
+  app.get('/patents', (req, res) => res.sendFile(__dirname + '/public/patents.html'));
+  app.get('/patent-apply', (req, res) => res.sendFile(__dirname + '/public/patent-apply.html'));
+  app.get('/patent-application', (req, res) => res.sendFile(__dirname + '/public/patent-application.html'));
 
   // Sitemap: the static pages in public/sitemap.xml + each public idea and life hack (cached 1 hour)
   let sitemapCache = { at: 0, xml: '' };
@@ -292,6 +297,7 @@ app.get('/robots.txt', (req, res) => {
       const day = d => (d ? new Date(d) : new Date()).toISOString().slice(0, 10);
       const urls = [
         `  <url>\n    <loc>https://ideahub.it.com/life-hacks</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>`,
+        ...(base.includes('/patents</loc>') ? [] : [`  <url>\n    <loc>https://ideahub.it.com/patents</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`]),
         ...(ideas || []).map(i => `  <url>\n    <loc>https://ideahub.it.com/idea?id=${Number(i.id)}</loc>\n    <lastmod>${day(i.created_at)}</lastmod>\n    <priority>0.6</priority>\n  </url>`),
         ...(hacks || []).map(h => `  <url>\n    <loc>https://ideahub.it.com/life-hacks?id=${Number(h.id)}</loc>\n    <lastmod>${day(h.created_at)}</lastmod>\n    <priority>0.5</priority>\n  </url>`)
       ];
@@ -371,6 +377,7 @@ app.get('/robots.txt', (req, res) => {
     const token = header.split(' ')[1];
     try {
       req.user = jwt.verify(token, process.env.JWT_SECRET);
+      if (!req.user || !req.user.id || req.user.purpose) return res.status(401).json({ error: 'Invalid token' }); // e.g. a Google sign-up ticket is not a login
       next();
     } catch {
       res.status(401).json({ error: 'Invalid token' });

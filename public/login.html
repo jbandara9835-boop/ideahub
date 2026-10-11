@@ -407,7 +407,9 @@
           virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/attorney-dashboard',
           business_owner: '/business-dashboard', admin: '/admin'
         };
-        window.location.href = roleLinks[data.user.role] || '/dashboard';
+        // ?next=/some-page sends the user back where they started (same-site paths only)
+        const next = new URLSearchParams(location.search).get('next') || '';
+        window.location.href = /^\/(?![\/\\])/.test(next) ? next : (roleLinks[data.user.role] || '/dashboard');
       }, 1000);
 
     } catch (err) {

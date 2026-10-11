@@ -300,7 +300,12 @@ async function runEscrow(supabase, escrow) {
     }
   }
 
-  return `Auto-released ${released} purchase${released === 1 ? '' : 's'} and ${requestsReleased} request${requestsReleased === 1 ? '' : 's'}, ${buyerReminders} buyer reminder${buyerReminders === 1 ? '' : 's'}, ${sellerReminders} seller reminder${sellerReminders === 1 ? '' : 's'}, ${stale} undelivered for 14+ days`;
+  // 4. Patent applications: auto-release 7 days after filing, reminders
+  let patentLine = '';
+  try { patentLine = '; ' + await require('./patents').core(supabase, escrow).runBot(); }
+  catch (e) { patentLine = '; patents skipped (' + e.message + ')'; }
+
+  return `Auto-released ${released} purchase${released === 1 ? '' : 's'} and ${requestsReleased} request${requestsReleased === 1 ? '' : 's'}, ${buyerReminders} buyer reminder${buyerReminders === 1 ? '' : 's'}, ${sellerReminders} seller reminder${sellerReminders === 1 ? '' : 's'}, ${stale} undelivered for 14+ days${patentLine}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

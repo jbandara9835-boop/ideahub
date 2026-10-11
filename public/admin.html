@@ -544,6 +544,7 @@
     const el = document.getElementById('disputesList');
     if (!allDisputes.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⚖️</div><div class="empty-text">No open disputes</div></div>`; return; }
     el.innerHTML = allDisputes.map(t => {
+      if (t.kind === 'patent') return patentDisputeCard(t);
       const buyer = `${t.buyer?.first_name||''} ${t.buyer?.last_name||''}`.trim() || 'Buyer';
       const seller = `${t.seller?.first_name||''} ${t.seller?.last_name||''}`.trim() || 'Seller';
       const days = t.disputed_at ? Math.floor((Date.now() - new Date(t.disputed_at)) / 86400000) : 0;
@@ -568,6 +569,47 @@
           </div>
         </div>`;
     }).join('');
+  }
+
+  function patentDisputeCard(p) {
+    const creator = `${p.creator?.first_name||''} ${p.creator?.last_name||''}`.trim() || 'Creator';
+    const atty = `${p.attorney?.first_name||''} ${p.attorney?.last_name||''}`.trim() || 'Attorney';
+    const days = p.disputed_at ? Math.floor((Date.now() - new Date(p.disputed_at)) / 86400000) : 0;
+    return `
+        <div class="cert-card pending">
+          <div class="cert-top">
+            <div class="cert-user-info">
+              <div class="cert-user-name">📜 ${escHtml(p.title || 'Patent application')} · <span style="color:var(--accent);">$${Number(p.amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-role">Patent application #${escHtml(p.id)} · ${escHtml(p.jurisdiction||'')} · disputed ${formatDate(p.disputed_at)}${days ? ` (${days} day${days>1?'s':''} ago)` : ''}</div>
+            </div>
+            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Creator (paid)</div><div class="cert-detail-val">${escHtml(creator)}</div><div style="font-size:11px;color:var(--muted);">${escHtml(p.creator?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Attorney</div><div class="cert-detail-val">${escHtml(atty)}</div><div style="font-size:11px;color:var(--muted);">${escHtml(p.attorney?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Filed</div><div class="cert-detail-val">${p.application_number ? escHtml(p.application_number) + ' · ' + formatDate(p.filed_at) : 'Not filed'}</div></div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Creator's reason</div>${escHtml(p.dispute_reason || '—')}</div>
+          <div class="cert-actions">
+            <a class="cert-file-btn" href="/patent-application?id=${encodeURIComponent(p.id)}" target="_blank">📄 Open messages &amp; files</a>
+            <button class="btn-approve" onclick="resolvePatentDispute('${escHtml(p.id)}','release')">💰 Release to attorney</button>
+            <button class="btn-reject-cert" onclick="resolvePatentDispute('${escHtml(p.id)}','refund')">↩️ Refund creator ($${Number(p.total||0).toLocaleString()})</button>
+          </div>
+        </div>`;
+  }
+
+  async function resolvePatentDispute(id, outcome) {
+    const label = outcome === 'release' ? 'release the fee to the attorney' : 'refund the creator in full';
+    const note = prompt(`You are about to ${label}.\n\nOptional note for both parties:`);
+    if (note === null) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/patent-applications/${id}/resolve`, {
+        method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body: JSON.stringify({ outcome, note })
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadAll(); else alert(d.error || 'Failed');
+    } catch(e) { alert('Something went wrong.'); }
   }
 
   async function resolveDispute(id, outcome) {
@@ -938,19 +980,22 @@
 
   async function loadAll() {
     try {
-      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes] = await Promise.all([
+      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes, patentDisputesRes] = await Promise.all([
         fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/users`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/ideas`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/hire/incoming`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/role-requests`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/disputes`, { headers:{ Authorization:`Bearer ${token}` } }),
-        fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } })
+        fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } }),
+        fetch(`${API_URL}/api/admin/patent-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
       ]);
       fetch(`${API_URL}/api/admin/appeals`, { headers:{ Authorization:`Bearer ${token}` } })
         .then(r => r.ok ? r.json() : []).then(a => { allAppeals = Array.isArray(a) ? a : []; renderAppeals(); updateIdeaTabCount(); if (allIdeas.length) filterIdeas(); }).catch(() => {});
       allWithdrawals = withdrawalsRes.ok ? await withdrawalsRes.json() : [];
       allDisputes = disputesRes.ok ? await disputesRes.json() : [];
+      const patentDisputes = patentDisputesRes && patentDisputesRes.ok ? await patentDisputesRes.json() : [];
+      allDisputes = allDisputes.concat((Array.isArray(patentDisputes) ? patentDisputes : []).map(p => ({ ...p, kind: 'patent' })));
 
       allIdeas = ideasRes.ok ? await ideasRes.json() : [];
       allHires = hiresRes.ok ? await hiresRes.json() : [];

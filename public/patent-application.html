@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Patent application — IdeaHub</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/patents.css" />
+<style>
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.top { margin: 0.75rem 0 1.25rem; }
+.top h1 { font-size: 28px; line-height: 1.25; margin: 8px 0 10px; overflow-wrap: anywhere; }
+.meta { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+.track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 16px; }
+.track div { border-top: 3px solid var(--surface2); padding-top: 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.track div small { display: block; font-weight: 400; margin-top: 2px; }
+.track div.done { border-top-color: rgba(110,231,183,0.6); color: var(--soft); }
+.track div.now { border-top-color: var(--accent); color: var(--text); }
+.action h2 { font-size: 19px; margin-bottom: 6px; }
+.action p { color: var(--soft); font-size: 14px; line-height: 1.6; }
+.action .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1rem; }
+.sum { width: 100%; border-collapse: collapse; font-size: 14px; margin: 0.9rem 0; }
+.sum td { padding: 7px 0; border-bottom: 1px solid var(--border); }
+.sum td:last-child { text-align: right; font-weight: 600; }
+.sum tr.total td { border-bottom: 0; font-size: 16px; color: var(--accent); font-weight: 800; }
+.scope { background: var(--surface2); border-radius: 10px; padding: 0.8rem 0.9rem; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; color: var(--soft); }
+.details dt { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 14px; }
+.details dt:first-child { margin-top: 0; }
+.details dd { font-size: 14px; line-height: 1.7; white-space: pre-wrap; margin-top: 4px; overflow-wrap: anywhere; }
+.flist { display: flex; flex-direction: column; gap: 6px; }
+.frow { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.55rem 0.75rem; font-size: 13px; }
+.frow .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.frow .tagr { font-size: 11px; color: var(--purple); background: rgba(167,139,250,0.14); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+.thread { display: flex; flex-direction: column; gap: 10px; max-height: 460px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px; }
+.msg { max-width: 82%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0.6rem 0.8rem; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.me { align-self: flex-end; background: var(--accent-dim); border-color: rgba(245,200,66,0.3); }
+.msg small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+.sys { align-self: center; font-size: 12px; color: var(--muted); text-align: center; max-width: 90%; }
+.compose { display: flex; gap: 8px; }
+.compose .textarea { min-height: 46px; height: 46px; }
+.side .person + .person { margin-top: 12px; }
+.side .kv { display: flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+.side .kv:last-child { border-bottom: 0; }
+.side .kv span:first-child { color: var(--muted); }
+.ov { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1100; display: none; align-items: flex-start; justify-content: center; padding: 10vh 1rem; }
+.ov.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 520px; width: 100%; padding: 1.5rem; }
+.modal h3 { font-size: 20px; margin-bottom: 6px; }
+.modal p { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin-bottom: 12px; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .track { grid-template-columns: repeat(5, minmax(0,1fr)); } .track div { font-size: 10.5px; } .track div small { display: none; } .top h1 { font-size: 23px; } .msg { max-width: 92%; } }
+</style>
+</head>
+<body>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+
+<main class="wrap">
+  <div id="root"><div class="loading">Loading…</div></div>
+</main>
+
+<div class="ov" id="ov"><div class="modal">
+  <h3 id="mTitle"></h3><p id="mText"></p>
+  <textarea class="textarea" id="mInput"></textarea>
+  <div class="error-box hidden" id="mErr" style="margin-top:10px"></div>
+  <div class="btns" style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
+    <button class="btn btn-ghost btn-sm" id="mCancel">Cancel</button><button class="btn btn-gold btn-sm" id="mOk">Send</button>
+  </div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
+  const me = (() => { try { return JSON.parse(localStorage.getItem('ih_user') || 'null'); } catch (e) { return null; } })();
+  if (!token) location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
+  const H = () => ({ Authorization: 'Bearer ' + token });
+  const params = new URLSearchParams(location.search);
+  const id = parseInt(params.get('id'), 10);
+  const $ = x => document.getElementById(x);
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  const day = d => d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const fdate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const when = d => new Date(d).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 3200); }
+  function initials(n) { return esc(String(n || '?').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase()); }
+  function person(p, role) { if (!p) return ''; return `<div class="person"><div class="av">${p.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : initials(p.name)}</div><div><b>${esc(p.name)}</b><small>${role}${p.email ? ' · ' + esc(p.email) : ''}</small></div></div>`; }
+
+  let A = null, sending = false;
+
+  async function api(path, body, method) {
+    const r = await fetch(`/api/patent-applications/${id}${path}`, { method: method || 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Something went wrong.');
+    return d;
+  }
+
+  // Generic text modal (decline / dispute)
+  function ask({ title, text, placeholder, ok, min }) {
+    return new Promise(resolve => {
+      $('mTitle').textContent = title; $('mText').textContent = text; $('mInput').value = ''; $('mInput').placeholder = placeholder || ''; $('mOk').textContent = ok || 'Send';
+      $('mErr').classList.add('hidden'); $('ov').classList.add('open'); $('mInput').focus();
+      const close = v => { $('ov').classList.remove('open'); $('mOk').onclick = $('mCancel').onclick = null; resolve(v); };
+      $('mCancel').onclick = () => close(null);
+      $('mOk').onclick = () => { const v = $('mInput').value.trim(); if (v.length < (min || 1)) { $('mErr').textContent = `Please write at least ${min} characters.`; $('mErr').classList.remove('hidden'); return; } close(v); };
+    });
+  }
+
+  function track(a) {
+    const stepIdx = { requested: 0, quoted: 1, in_progress: 2, filed: 3, completed: 4, disputed: a.filed_at ? 3 : 2 }[a.status];
+    const steps = [['Request sent', a.created_at], ['Quote', a.quoted_at], ['Paid into escrow', a.paid_at], ['Filed', a.filed_at], ['Completed', a.completed_at]];
+    if (stepIdx === undefined) return '';
+    return `<div class="track">${steps.map(([l, d], i) => `<div class="${i < stepIdx || (i === stepIdx && a.status === 'completed') ? 'done' : i === stepIdx ? 'now' : ''}">${l}<small>${i <= stepIdx && d ? day(d) : ''}</small></div>`).join('')}</div>`;
+  }
+
+  function quoteTable(a) {
+    const amt = Number(a.amount || a.quote_amount), fee = a.fee != null ? Number(a.fee) : Math.round(amt * a.fee_rate * 100) / 100;
+    return `<table class="sum"><tr><td>Attorney's fee</td><td>${money(amt)}</td></tr><tr><td>IdeaHub fee (${Math.round(a.fee_rate * 100)}%, includes escrow protection)</td><td>${money(fee)}</td></tr><tr class="total"><td>Total</td><td>${money(a.total || amt + fee)}</td></tr></table>`;
+  }
+
+  function actionPanel(a) {
+    const v = a.viewer, atty = a.attorney?.name || 'The attorney', s = a.status;
+    const due = a.paid_at && a.quote_days ? day(new Date(new Date(a.paid_at).getTime() + a.quote_days * 86400000)) : '';
+    if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>You can read everything here. Disputes are settled from the Disputes tab in the admin panel.</p></div>`;
+    if (s === 'requested' && v === 'creator') return `<div class="panel action"><h2>Waiting for a quote</h2><p>${esc(atty)} is reviewing your invention and will send a fixed price. You'll get a notification. You can message them below.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="cancel">Cancel request</button></div></div>`;
+    if ((s === 'requested' || s === 'quoted') && v === 'attorney') return `<div class="panel action">
+      <h2>${s === 'quoted' ? 'Your quote' : 'Send a fixed quote'}</h2>
+      <p>${s === 'quoted' ? `You quoted ${money(a.quote_amount)}, filing within ${a.quote_days} days. You can revise it until the creator pays.` : 'Read the invention below, then quote one price for the whole job. The creator pays it into escrow, and you are paid when the filing is confirmed.'}</p>
+      <div class="row2" style="margin-top:1rem"><div class="field"><label for="qAmt">Your fee (USD)</label><input class="input" id="qAmt" type="number" min="1" step="1" value="${a.quote_amount ? esc(a.quote_amount) : ''}" placeholder="e.g. 450" /></div>
+      <div class="field"><label for="qDays">Days until filing</label><input class="input" id="qDays" type="number" min="1" max="365" value="${a.quote_days ? esc(a.quote_days) : ''}" placeholder="e.g. 21" /></div></div>
+      <div class="field"><label for="qScope">What's included</label><textarea class="textarea" id="qScope" placeholder="e.g. Novelty search, drafting the specification and claims, 3 drawings, official filing fee at NIPO.">${esc(a.quote_scope || '')}</textarea></div>
+      <p class="muted" style="font-size:12.5px">IdeaHub adds an 8% fee on top, paid by the creator. You receive your full fee.</p>
+      <div class="btns"><button class="btn btn-gold" data-act="quote">${s === 'quoted' ? 'Update quote' : 'Send quote'}</button><button class="btn btn-danger" data-act="decline">Decline</button></div></div>`;
+    if (s === 'quoted' && v === 'creator') return `<div class="panel action">
+      <h2>Your quote from ${esc(atty)}</h2><p>Filing within <b>${Number(a.quote_days)} days</b> of payment.</p>
+      ${a.quote_scope ? `<div class="scope" style="margin-top:.8rem">${esc(a.quote_scope)}</div>` : ''}
+      ${quoteTable(a)}
+      <p style="font-size:13px">Your payment is held by IdeaHub. ${esc(atty)} is paid only after uploading the filing receipt and you confirm (or ${7} days pass without a dispute).</p>
+      ${a.payments_open ? '' : '<div class="note" style="margin-top:.8rem">Online payments are launching soon. Message the attorney below in the meantime.</div>'}
+      <div class="btns"><button class="btn btn-gold" data-act="pay" ${a.payments_open ? '' : 'disabled'}>Accept and pay ${money(Number(a.quote_amount) + Math.round(Number(a.quote_amount) * a.fee_rate * 100) / 100)}</button><button class="btn btn-danger" data-act="cancel">Decline quote</button></div></div>`;
+    if (s === 'in_progress' && v === 'attorney') return `<div class="panel action">
+      <h2>Prepare and file</h2><p>${money(a.amount)} is held in escrow. Please file by <b>${esc(due)}</b>. When it's filed, upload the official filing receipt and enter the details.</p>
+      <div class="row2" style="margin-top:1rem"><div class="field"><label for="fNo">Application number</label><input class="input" id="fNo" maxlength="60" placeholder="From the patent office" /></div>
+      <div class="field"><label for="fDate">Filing date</label><input class="input" id="fDate" type="date" max="${new Date().toISOString().slice(0, 10)}" /></div></div>
+      <div class="field"><label for="fOffice">Patent office</label><input class="input" id="fOffice" maxlength="80" value="${esc(a.jurisdiction || '')}" /></div>
+      <div class="field"><label>Official filing receipt</label>${a.attachments.some(f => f.kind === 'receipt') ? '<div class="verified">✓ Receipt uploaded</div>' : `<label class="btn btn-ghost btn-sm" for="receiptIn">📎 Upload receipt (PDF or image)</label><input type="file" id="receiptIn" class="hidden" accept=".pdf,image/*" />`}</div>
+      <div class="btns"><button class="btn btn-gold" data-act="filed">Mark as filed</button></div></div>`;
+    if (s === 'in_progress' && v === 'creator') return `<div class="panel action"><h2>Your attorney is working on it</h2><p>${money(a.total)} is held safely in escrow. ${esc(atty)} expects to file by <b>${esc(due)}</b>. Share anything else they need below.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="dispute">Report a problem</button></div></div>`;
+    if (s === 'filed' && v === 'creator') return `<div class="panel action"><h2>Your application was filed</h2>
+      <p>Filed with <b>${esc(a.filing_office)}</b> on <b>${esc(fdate(a.filing_date))}</b>. Application number <b style="color:var(--accent)">${esc(a.application_number)}</b>.</p>
+      <p style="margin-top:.6rem">Open the filing receipt in Files and check the details. If everything is right, confirm to release the fee. If nothing happens, it is released automatically on <b>${day(a.confirm_by)}</b>.</p>
+      <div class="btns"><button class="btn btn-gold" data-act="confirm">Confirm filing and release fee</button><button class="btn btn-danger" data-act="dispute">Open a dispute</button></div></div>`;
+    if (s === 'filed' && v === 'attorney') return `<div class="panel action"><h2>Waiting for the creator to confirm</h2><p>Application ${esc(a.application_number)} was filed on ${esc(fdate(a.filing_date))}. Your fee of ${money(a.amount)} is released when the creator confirms, or automatically on <b>${day(a.confirm_by)}</b>.</p></div>`;
+    if (s === 'disputed') return `<div class="panel action"><h2>Under review by IdeaHub</h2><p>A dispute was opened on ${day(a.disputed_at)}: <i>${esc(a.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while IdeaHub reviews the messages and files here. Both of you will be notified of the decision.</p></div>`;
+    if (s === 'completed') return `<div class="panel action"><h2>✅ Completed</h2><p>${a.application_number ? `Application number <b style="color:var(--accent)">${esc(a.application_number)}</b>, filed ${esc(fdate(a.filing_date))} with ${esc(a.filing_office)}.` : ''} ${v === 'creator' ? 'Keep the filing receipt safe. If you filed a provisional application, the full application is due within 12 months.' : 'The fee was added to your wallet.'}</p></div>`;
+    if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>IdeaHub refunded ${money(a.total)} to the creator.${a.resolution_note ? ' Note: ' + esc(a.resolution_note) : ''}</p></div>`;
+    if (s === 'declined') return `<div class="panel action"><h2>Declined</h2><p>${esc(atty)} declined: <i>${esc(a.decline_reason)}</i></p>${v === 'creator' ? `<div class="btns"><a class="btn btn-gold" href="/patent-apply?from=${a.id}">Send to another attorney</a></div>` : ''}</div>`;
+    if (s === 'cancelled') return `<div class="panel action"><h2>Cancelled</h2><p>This request was cancelled before payment.</p>${v === 'creator' ? `<div class="btns"><a class="btn btn-ghost" href="/patent-apply?from=${a.id}">Start again from this request</a></div>` : ''}</div>`;
+    return '';
+  }
+
+  function render(a) {
+    const v = a.viewer;
+    const open = ['requested', 'quoted', 'in_progress', 'filed', 'disputed', 'completed'].includes(a.status) && v !== 'admin';
+    const files = a.attachments.length ? a.attachments.map(f => `<div class="frow"><span class="nm">📄 ${esc(f.name)}${f.kind === 'receipt' ? '<span class="tagr">Filing receipt</span>' : ''}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files yet.</div>';
+    const msgs = a.messages.map(m => m.system ? `<div class="sys">${esc(m.text)} · ${when(m.created_at)}</div>`
+      : `<div class="msg ${m.from_id === me?.id ? 'me' : ''}">${esc(m.text)}<small>${m.from_id === a.creator?.id ? esc(a.creator.name) : esc(a.attorney?.name || '')} · ${when(m.created_at)}</small></div>`).join('');
+    $('root').innerHTML = `
+      <div class="top">
+        <a href="/patents" class="muted" style="font-size:13px;text-decoration:none">← Patent applications</a>
+        <h1>${esc(a.title)}</h1>
+        <div class="meta"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span><span>${esc(a.jurisdiction)}</span><span>${esc(a.filing_type)}</span><span>Started ${day(a.created_at)}</span>${a.idea ? `<a href="/idea?id=${Number(a.idea.id)}">💡 ${esc(a.idea.title)}</a>` : ''}</div>
+      </div>
+      ${track(a)}
+      <div class="grid">
+        <div>
+          ${actionPanel(a)}
+          <div class="panel"><div class="panel-title">Invention <span style="text-transform:none;letter-spacing:0;font-weight:500">🔒 Confidential</span></div>
+            <dl class="details">
+              ${a.field ? `<dt>Field</dt><dd>${esc(a.field)}</dd>` : ''}
+              <dt>Problem</dt><dd>${esc(a.problem)}</dd>
+              <dt>How it works</dt><dd>${esc(a.solution)}</dd>
+              <dt>What's new</dt><dd>${esc(a.novelty)}</dd>
+              ${a.prior_art ? `<dt>Known similar products / patents</dt><dd>${esc(a.prior_art)}</dd>` : ''}
+              ${a.inventors ? `<dt>Inventors</dt><dd>${esc(a.inventors)}</dd>` : ''}
+            </dl></div>
+          <div class="panel"><div class="panel-title">Files ${open ? `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">📎 Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.txt,image/*" />` : ''}</div><div class="flist">${files}</div></div>
+          <div class="panel"><div class="panel-title">Messages</div>
+            <div class="thread" id="thread">${msgs || '<div class="sys">No messages yet.</div>'}</div>
+            ${open ? `<div class="compose"><textarea class="textarea" id="msgIn" placeholder="Write a message…" maxlength="4000"></textarea><button class="btn btn-gold" id="sendBtn">Send</button></div>` : ''}
+          </div>
+        </div>
+        <aside class="side">
+          <div class="panel">${person(a.creator, 'Creator')}${person(a.attorney, 'Patent attorney')}</div>
+          <div class="panel"><div class="panel-title">Payment</div>
+            <div class="kv"><span>Quote</span><span>${a.quote_amount ? money(a.quote_amount) : '—'}</span></div>
+            <div class="kv"><span>Paid into escrow</span><span>${a.total ? money(a.total) : '—'}</span></div>
+            <div class="kv"><span>Status</span><span>${a.status === 'completed' ? 'Released to attorney' : a.status === 'refunded' ? 'Refunded' : a.paid_at ? 'Held in escrow' : 'Not paid'}</span></div>
+          </div>
+          <div class="note" style="font-size:12.5px">Keep all communication and files here. If there's a dispute, IdeaHub decides based on what's on this page.</div>
+        </aside>
+      </div>`;
+    const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
+  }
+
+  async function load() {
+    try {
+      const r = await fetch(`/api/patent-applications/${id}`, { headers: H() });
+      if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+      const d = await r.json();
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/patents">Back to patent applications</a></div>`; return; }
+      // Keep anything typed in forms across refreshes
+      const keep = {}; ['fNo', 'fDate', 'fOffice', 'qAmt', 'qDays', 'qScope', 'msgIn'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
+      A = d; document.title = `${d.title} — Patent application — IdeaHub`; render(d);
+      Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
+    } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
+  }
+
+  async function upload(file, kind) {
+    if (file.size > 10 * 1048576) return toast('Files must be 10 MB or smaller.');
+    const fd = new FormData(); if (kind) fd.append('kind', kind); fd.append('file', file);
+    toast('Uploading…');
+    const r = await fetch(`/api/patent-applications/${id}/files`, { method: 'POST', headers: H(), body: fd });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) return toast(d.error || 'Upload failed.');
+    toast('File added.'); await load();
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.id === 'fileIn' && e.target.files[0]) upload(e.target.files[0]);
+    if (e.target.id === 'receiptIn' && e.target.files[0]) upload(e.target.files[0], 'receipt');
+  });
+
+  document.addEventListener('click', async e => {
+    const f = e.target.closest('[data-file]');
+    if (f) {
+      const w = window.open('', '_blank');
+      try { const d = await api(`/files/${f.dataset.file}`, null, 'GET'); if (w) w.location = d.url; else location.href = d.url; }
+      catch (err) { if (w) w.close(); toast(err.message); }
+      return;
+    }
+    if (e.target.id === 'sendBtn') {
+      const box = $('msgIn'), text = box.value.trim(); if (!text || sending) return;
+      sending = true; e.target.disabled = true;
+      try { await api('/messages', { text }); box.value = ''; await load(); } catch (err) { toast(err.message); }
+      sending = false; const b = $('sendBtn'); if (b) b.disabled = false;
+      return;
+    }
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const act = b.dataset.act;
+    try {
+      if (act === 'quote') {
+        await api('/quote', { amount: $('qAmt').value, days: $('qDays').value, scope: $('qScope').value });
+        toast(A.status === 'quoted' ? 'Quote updated.' : 'Quote sent.');
+      } else if (act === 'decline') {
+        const reason = await ask({ title: 'Decline this request', text: 'Tell the creator briefly why, e.g. outside your jurisdiction or area of practice.', ok: 'Decline', min: 5 });
+        if (reason === null) return; await api('/decline', { reason });
+      } else if (act === 'cancel') {
+        if (!confirm(A.status === 'quoted' ? 'Decline this quote? The request will be closed.' : 'Cancel this request?')) return;
+        await api('/cancel');
+      } else if (act === 'pay') {
+        b.disabled = true; b.textContent = 'Processing…';
+        await api('/pay', { expected_amount: A.quote_amount }); toast('Paid. The attorney has been notified.');
+      } else if (act === 'filed') {
+        if (!confirm('Mark this application as filed? The creator will be asked to confirm.')) return;
+        await api('/filed', { application_number: $('fNo').value, filing_date: $('fDate').value, office: $('fOffice').value }); toast('Marked as filed.');
+      } else if (act === 'confirm') {
+        if (!confirm(`Confirm the filing and release ${money(A.amount)} to the attorney? This can't be undone.`)) return;
+        await api('/confirm'); toast('Confirmed. Thank you!');
+      } else if (act === 'dispute') {
+        const reason = await ask({ title: 'Open a dispute', text: 'The fee stays in escrow while IdeaHub reviews this page. Explain what went wrong.', ok: 'Open dispute', min: 15 });
+        if (reason === null) return; await api('/dispute', { reason });
+      }
+      await load();
+    } catch (err) { toast(err.message); await load(); }
+  });
+
+  if (!id) $('root').innerHTML = '<div class="empty">Application not found.</div>';
+  else {
+    load();
+    if (params.get('sent')) history.replaceState(null, '', location.pathname + '?id=' + id);
+    if (params.get('sent')) setTimeout(() => toast(params.get('upfail') ? `Sent. ${params.get('upfail')} file(s) failed to upload; add them again below.` : 'Sent to the attorney. You\'ll be notified when they quote.'), 400);
+    // Light refresh so new messages appear while the page is open
+    setInterval(() => { if (!document.hidden && !$('ov').classList.contains('open') && !(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName))) load(); }, 30000);
+  }
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

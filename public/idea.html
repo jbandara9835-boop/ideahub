@@ -280,6 +280,7 @@
       <a class="nav-item" href="/find-support?type=patent_attorney">Find an Attorney</a>
       <a class="nav-item" href="/find-support?type=virtual_manager">Virtual Manager</a>
       <a class="nav-item" href="/find-support?type=chartered_accountant">Find an Accountant</a>
+    <a class="nav-item" href="/patents">Patent Applications</a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support">Support Services</a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages">Messages</a>
@@ -634,6 +635,7 @@
                 </button>
               ` : isOwner ? `
                 <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your own idea</button>
+                <a href="/patent-apply?idea=${encodeURIComponent(idea.id)}" style="display:block;text-align:center;margin:-0.25rem 0 1rem;color:var(--accent);font-size:13px;text-decoration:none;">📜 Patent this idea with a verified attorney →</a>
               ` : `
                 <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Not available</button>
               `}

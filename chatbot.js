@@ -23,6 +23,7 @@ What IdeaHub is:
 - Investors / idea buyers browse and buy ideas, and post Idea Requests describing ideas they want.
 - Business Owners list businesses for franchise, licensing or partnership.
 - Support Pros (patent attorneys, chartered accountants, virtual managers, corporate services) offer paid services. Chartered accountants help with tax, company setup, valuations and accounts.
+- Patent applications (/patents): a creator describes the invention in a guided form (/patent-apply), picks a verified patent attorney, gets a fixed quote, and pays it plus an 8% IdeaHub fee into escrow. The attorney files, enters the application number and uploads the official filing receipt; the fee is released when the creator confirms, or automatically 7 days later. The creator can open a dispute after paying. Invention details are seen only by the creator, the chosen attorney and IdeaHub admins. IdeaHub itself does not give legal advice or file patents.
 - Purchases are escrow-protected: the buyer's payment is held and released to the seller only after the buyer confirms delivery. IdeaHub charges an 8% platform fee on deals.
 - All prices are in US dollars.
 
