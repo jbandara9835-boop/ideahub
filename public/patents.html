@@ -104,6 +104,11 @@
     <div class="list" id="dlList"></div>
   </div>
 
+  <div id="licSection" class="hidden">
+    <div class="section-h" id="licences"><h2>Licences</h2></div>
+    <div class="list" id="licList"></div>
+  </div>
+
   <div id="mineSection" class="hidden">
     <div class="tabs" id="tabs">
       <button class="tab on" data-tab="mine">My applications <span class="n" id="nMine">0</span></button>
@@ -228,7 +233,26 @@
     await fetch('/api/patents/registrations/' + b.dataset.delreg, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } }); loadRegs();
   });
 
+  async function loadLicences() {
+    if (!token) return;
+    try {
+      const r = await fetch('/api/licences', { headers: { Authorization: 'Bearer ' + token } });
+      if (!r.ok) return;
+      const d = await r.json();
+      const rows = [...d.granted.map(x => ({ ...x, side: 'You license to' })), ...d.taken.map(x => ({ ...x, side: 'Licensed from' }))]
+        .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+      if (!rows.length) return;
+      document.getElementById('licSection').classList.remove('hidden');
+      const cls = { requested: 'st-requested', negotiating: 'st-in_progress', signed: 'st-quoted', active: 'st-completed', ended: 'st-cancelled', declined: 'st-declined', cancelled: 'st-cancelled' };
+      document.getElementById('licList').innerHTML = rows.map(x => `<a class="app-row" href="/licence?id=${Number(x.id)}"><div><h3>${esc(x.idea_title)}</h3>
+        <div class="app-meta"><span>${esc(x.type_label)}</span><span>${esc(x.side)} ${esc(x.other_name)}</span><span>${esc(x.territory || '')}</span>${x.end_date ? `<span>until ${new Date(x.end_date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>` : ''}</div></div>
+        <div class="app-right"><span class="pill ${cls[x.status] || ''}">${esc(x.status_label)}</span></div></a>`).join('');
+      if (location.hash === '#licences') setTimeout(() => document.getElementById('licences').scrollIntoView({ behavior: 'smooth' }), 200);
+    } catch (e) {}
+  }
+
   load();
+  loadLicences();
 </script>
 <script src="/chat-widget.js" defer></script>
 </body>

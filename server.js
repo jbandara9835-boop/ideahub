@@ -163,6 +163,9 @@ app.get('/robots.txt', (req, res) => {
   // Built-in video calls (Daily). Needs DAILY_API_KEY.
   const calls = require('./calls');
   calls.mount(app, { supabase, authMiddleware, escrow });
+  // Patent licences (outright patent sales happen between the parties, off IdeaHub)
+  const licences = require('./licences');
+  licences.mount(app, { supabase, authMiddleware, escrow });
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -286,6 +289,7 @@ app.get('/robots.txt', (req, res) => {
   app.get('/patent-apply', (req, res) => res.sendFile(__dirname + '/public/patent-apply.html'));
   app.get('/patent-application', (req, res) => res.sendFile(__dirname + '/public/patent-application.html'));
   app.get('/call', (req, res) => res.sendFile(__dirname + '/public/call.html'));
+  app.get('/licence', (req, res) => res.sendFile(__dirname + '/public/licence.html'));
 
   // Sitemap: the static pages in public/sitemap.xml + each public idea and life hack (cached 1 hour)
   let sitemapCache = { at: 0, xml: '' };
@@ -721,6 +725,7 @@ app.get('/robots.txt', (req, res) => {
         engagements: eng.value,
         has_patent: hasPatent || false,
         patent_number: patentNumber || '',
+        ...(hasPatent ? licences.cleanPatentListing(req.body) : { patent_details: null, patent_offer: null }),
         icon: '💡',
         images: req.body.images || [],
       countries: req.body.countries || [],
@@ -791,6 +796,8 @@ app.get('/robots.txt', (req, res) => {
         visibility: parseInt(visibility) || 1,
         has_patent: hasPatent || false,
         patent_number: patentNumber || '',
+        ...(req.body.patentJurisdiction !== undefined ? { patent_jurisdiction: String(req.body.patentJurisdiction || '').slice(0, 40) } : {}),
+        ...(hasPatent ? licences.cleanPatentListing(req.body) : { patent_details: null, patent_offer: null }),
         ...(resubmit ? { status: 'under_review' } : {}),
         engagements: eng.value, eng_level: Object.keys(eng.value).length,
         ...qualityFields(qc.report),
@@ -913,6 +920,8 @@ app.get('/robots.txt', (req, res) => {
     if (!idea) return res.status(404).json({ error: 'Idea not found' });
     if (idea.creator_id === req.user.id) return res.status(400).json({ error: 'You cannot buy your own idea.' });
     if (idea.status !== 'live') return res.status(400).json({ error: 'This idea is not available for purchase.' });
+    // Patents are sold directly between the parties (with their own attorney); IdeaHub only connects them
+    if (idea.has_patent) return res.status(400).json({ error: 'Patents are not sold through IdeaHub checkout. Message the owner, and use a registered patent attorney for the checks and the transfer.', code: 'patent_direct' });
     if (!payments.purchasesOpen()) return res.status(403).json({ error: 'Online payments are launching soon. Message the creator to discuss this idea in the meantime.', code: 'payments_closed' });
     // Engagement levels the buyer added (fixed-price ones); free ones are always included
     const extras = engagementLevels.addOns(idea.engagements, Array.isArray(req.body.engagements) ? req.body.engagements.slice(0, 10) : []);

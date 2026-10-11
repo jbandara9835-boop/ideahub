@@ -409,6 +409,11 @@
   .orig-pct { margin-left: auto; flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--muted); }
   .orig-chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .orig-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
+.pt-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+  .pt-check { display:flex; gap:8px; align-items:flex-start; font-size:13.5px; margin:.5rem 0; cursor:pointer; flex-wrap:wrap; }
+  .pt-check input { margin-top:3px; accent-color:var(--accent); }
+  .pt-check span { flex-basis:100%; padding-left:1.4rem; color:var(--muted); font-size:12px; line-height:1.5; }
+  @media (max-width:600px) { .pt-grid { grid-template-columns:1fr; } }
   .orig-patent { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 600; }
   .orig-patent:hover { text-decoration: underline; }
   .orig-tips { margin: 0; padding-left: 1.1rem; font-size: 13px; color: #b9b4aa; line-height: 1.6; }
@@ -627,6 +632,29 @@
             <label for="patentNumber">Patent Number</label>
             <input type="text" id="patentNumber" placeholder="e.g. US10,123,456" />
           </div>
+          <div class="pt-grid">
+            <div class="field"><label>Status</label><select id="ptStatus"><option value="pending">Pending (applied, not yet granted)</option><option value="granted">Granted</option></select></div>
+            <div class="field"><label>Filing date</label><input type="date" id="ptFiled" /></div>
+            <div class="field"><label>Grant date</label><input type="date" id="ptGranted" /></div>
+            <div class="field"><label>Expiry date</label><input type="date" id="ptExpiry" /></div>
+            <div class="field"><label>Renewal / maintenance fees paid until</label><input type="date" id="ptFees" /></div>
+            <div class="field"><label>Same invention filed elsewhere <span style="color:var(--muted)">(optional)</span></label><input type="text" id="ptFamily" maxlength="300" placeholder="e.g. US 11,234,567; PCT/LK2024/000123" /></div>
+          </div>
+          <div class="field"><label>Co-owners <span style="color:var(--muted)">(leave empty if you are the only owner)</span></label><input type="text" id="ptCoOwners" maxlength="300" placeholder="Names of anyone who also owns this patent" /></div>
+          <div class="field"><label>Existing licences or rights given to others <span style="color:var(--muted)">(optional)</span></label><textarea id="ptLicences" maxlength="600" rows="2" placeholder="e.g. Non-exclusive licence to ABC Ltd for India until 2028"></textarea></div>
+          <div class="field">
+            <label>What are you offering?</label>
+            <label class="pt-check"><input type="checkbox" id="ptSale" checked /> Open to selling the patent <span>Buyers can enquire. The sale and transfer happen directly between you, with your own attorney. IdeaHub only connects you.</span></label>
+            <label class="pt-check"><input type="checkbox" id="ptLicence" /> Open to licensing it through IdeaHub <span>Licensees request a licence here, you agree terms with a practitioner, and the licence is registered on IdeaHub.</span></label>
+            <div id="ptLicBox" style="display:none;margin:.4rem 0 0 1.6rem">
+              <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px">
+                <label><input type="checkbox" class="ptType" value="exclusive" /> Exclusive</label>
+                <label><input type="checkbox" class="ptType" value="sole" /> Sole</label>
+                <label><input type="checkbox" class="ptType" value="non_exclusive" checked /> Non-exclusive</label>
+              </div>
+              <textarea id="ptLicNotes" maxlength="600" rows="2" style="margin-top:8px" placeholder="Optional: territories, fields of use or terms you have in mind"></textarea>
+            </div>
+          </div>
           <button type="button" onclick="verifyPatent()" id="verifyPatentBtn" style="background:none;border:1px solid var(--accent);border-radius:8px;padding:0.6rem 1rem;font-size:13px;color:var(--accent);cursor:pointer;width:100%;margin-bottom:0.75rem;transition:all 0.2s;">🔍 Verify Patent Number</button>
           <div id="patentVerifyResult" style="display:none;border-radius:8px;padding:0.75rem 1rem;font-size:13px;margin-bottom:0.75rem;"></div>
 
@@ -757,6 +785,15 @@
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
   let patentOn = false;
+  function patentDetailsValue() {
+    const v = id => document.getElementById(id)?.value || '';
+    return { status: v('ptStatus'), filing_date: v('ptFiled'), grant_date: v('ptGranted'), expiry_date: v('ptExpiry'), fees_paid_until: v('ptFees'), family: v('ptFamily'), co_owners: v('ptCoOwners'), existing_licences: v('ptLicences') };
+  }
+  function patentOfferValue() {
+    return { sale: !!document.getElementById('ptSale')?.checked, licence: !!document.getElementById('ptLicence')?.checked,
+      licence_types: [...document.querySelectorAll('.ptType:checked')].map(c => c.value), licence_notes: document.getElementById('ptLicNotes')?.value || '' };
+  }
+  document.addEventListener('change', e => { if (e.target.id === 'ptLicence') document.getElementById('ptLicBox').style.display = e.target.checked ? 'block' : 'none'; });
   let uploadedImages = [];
 
   // ── SHARED SIDEBAR NAV ──
@@ -891,6 +928,16 @@
         patentOn = false;
         toggleOption('patent');
         document.getElementById('patentNumber').value = idea.patent_number || '';
+        if (idea.patent_jurisdiction) document.getElementById('patentJurisdiction').value = idea.patent_jurisdiction;
+        const pd = idea.patent_details || {}, po = idea.patent_offer || {};
+        document.getElementById('ptStatus').value = pd.status || 'pending';
+        [['ptFiled','filing_date'],['ptGranted','grant_date'],['ptExpiry','expiry_date'],['ptFees','fees_paid_until'],['ptFamily','family'],['ptCoOwners','co_owners'],['ptLicences','existing_licences']].forEach(([el,k]) => { document.getElementById(el).value = pd[k] || ''; });
+        if (idea.patent_offer) {
+          document.getElementById('ptSale').checked = !!po.sale; document.getElementById('ptLicence').checked = !!po.licence;
+          document.querySelectorAll('.ptType').forEach(c => { c.checked = (po.licence_types || []).includes(c.value); });
+          document.getElementById('ptLicNotes').value = po.licence_notes || '';
+        }
+        document.getElementById('ptLicBox').style.display = document.getElementById('ptLicence').checked ? 'block' : 'none';
       }
 
       updatePreview();
@@ -1326,7 +1373,7 @@
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title, summary, desc, industry, ideaType, countries, price, visibility, level, hasPatent, patentNumber, engagements: engValue(), patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, countries, price, visibility, level, hasPatent, patentNumber, engagements: engValue(), patentDetails: patentDetailsValue(), patentOffer: patentOfferValue(), patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
       });
 
       const data = await res.json();

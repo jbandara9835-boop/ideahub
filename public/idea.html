@@ -72,6 +72,19 @@
   .badge-level1 { background:rgba(110,231,183,0.15); color:var(--success); }
   .badge-level2 { background:rgba(245,200,66,0.15); color:var(--accent); }
   .badge-level3 { background:rgba(96,165,250,0.15); color:#60a5fa; }
+.pt-card { border-color: rgba(167,139,250,0.35) !important; }
+  .pt-guide { background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.25); border-radius: 12px; padding: 0.9rem 1rem; font-size: 13px; line-height: 1.6; color: #c9c4ba; margin: 1rem 0; }
+  .pt-guide b { color: #f0ede8; } .pt-guide ol { margin: .4rem 0 .2rem 1.1rem; } .pt-guide a { color: #a78bfa; text-decoration: none; font-weight: 600; }
+  .pt-offers { display: flex; flex-wrap: wrap; gap: 6px; margin: .6rem 0 1rem; }
+  .pt-offer { font-size: 12px; border-radius: 999px; padding: 3px 10px; background: rgba(167,139,250,0.14); color: #a78bfa; }
+  .lic-l { display: block; font-size: 12px; color: var(--muted); margin: .8rem 0 .35rem; text-transform: uppercase; letter-spacing: .4px; } .lic-l span { text-transform: none; }
+  #licModal input:not([type=radio]) { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 0.9rem; font-size: 14px; color: var(--text); font-family: inherit; outline: none; }
+  .lic-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } @media (max-width: 560px) { .lic-row { grid-template-columns: 1fr; } }
+  .lic-types { display: flex; flex-direction: column; gap: 6px; }
+  .lic-type { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; cursor: pointer; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: .55rem .7rem; }
+  .lic-type small { display: block; color: var(--muted); font-size: 12px; }
+  .lic-type input[type=radio] { width: auto; flex: 0 0 auto; margin-top: 3px; accent-color: var(--accent); }
+  .lic-fee { font-size: 12px; color: var(--muted); margin-top: .7rem; line-height: 1.5; }
   .badge-patent { background:rgba(167,139,250,0.15); color:#a78bfa; }
   .badge-type { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--muted); }
 
@@ -249,6 +262,27 @@
       <button class="modal-send" id="sendMsgBtn" onclick="sendMessage()">
         <span id="sendBtnText">Send Message</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- LICENCE REQUEST MODAL -->
+<div class="modal-overlay" id="licModal">
+  <div class="modal">
+    <div class="modal-title">Request a licence</div>
+    <div class="modal-sub">Tell the owner what you need. If they accept, you agree the terms and fee together (ideally drafted by a patent attorney), then register the signed licence on IdeaHub.</div>
+    <label class="lic-l">Type of licence</label>
+    <div id="licTypes" class="lic-types"></div>
+    <div class="lic-row"><div><label class="lic-l">Territory</label><input id="licTerritory" maxlength="200" placeholder="e.g. Sri Lanka, or South Asia" /></div>
+    <div><label class="lic-l">Field of use <span>(optional)</span></label><input id="licField" maxlength="200" placeholder="e.g. Agriculture only" /></div></div>
+    <label class="lic-l">Term you have in mind <span>(optional)</span></label><input id="licTerm" maxlength="120" placeholder="e.g. 5 years" />
+    <label class="lic-l">About you and how you'll use it</label>
+    <textarea id="licMsg" placeholder="Who you are, what you'll make or sell, expected volumes…"></textarea>
+    <div class="lic-fee" id="licFee"></div>
+    <div class="msg-error" id="licError"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeLic()">Cancel</button>
+      <button class="modal-send" id="licSend" onclick="sendLic()">Send request</button>
     </div>
   </div>
 </div>
@@ -464,6 +498,90 @@
     document.getElementById('feeFee').textContent = '$' + c.fee.toLocaleString();
     document.getElementById('feeTotal').textContent = '$' + c.total.toLocaleString();
   }
+  // ── Patents: sold directly between the parties; licences run on IdeaHub ──
+  const LIC_TYPES = { exclusive: ['Exclusive', 'Only the licensee may use it in the agreed territory and field.'], sole: ['Sole', 'The licensee and the owner may use it; nobody else.'], non_exclusive: ['Non-exclusive', 'The owner may license others too.'] };
+  let licCfg = null;
+  function fd(d) { return d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'; }
+  function patentSection(idea) {
+    const d = idea.patent_details || {};
+    const item = (l, v) => `<div class="meta-item"><div class="meta-label">${l}</div><div class="meta-value">${v}</div></div>`;
+    return `<div class="section-card">
+      <div class="section-title">📋 Patent details</div>
+      <div class="meta-grid">
+        ${item('Status', d.status === 'granted' ? '✅ Granted' : '⏳ Pending')}
+        ${item('Office', escI(idea.patent_jurisdiction || '—'))}
+        ${item('Number', escI(idea.patent_number || '—'))}
+        ${item('Filed', fd(d.filing_date))}
+        ${item('Granted', fd(d.grant_date))}
+        ${item('Expires', fd(d.expiry_date))}
+        ${item('Fees paid until', fd(d.fees_paid_until))}
+        ${item('Verified by IdeaHub', idea.patent_verified ? '✅ Documents checked' : '—')}
+      </div>
+      ${d.family ? `<div style="font-size:13px;margin-top:.9rem;color:var(--muted)">Also filed as: <span style="color:var(--text)">${escI(d.family)}</span></div>` : ''}
+      ${d.co_owners ? `<div style="font-size:13px;margin-top:.5rem;color:var(--muted)">Co-owners: <span style="color:var(--text)">${escI(d.co_owners)}</span></div>` : ''}
+      ${d.existing_licences ? `<div style="font-size:13px;margin-top:.5rem;color:var(--muted)">Existing licences: <span style="color:var(--text)">${escI(d.existing_licences)}</span></div>` : ''}
+      <div id="activeLic"></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:.9rem;line-height:1.55">Details given by the owner. Always confirm them on the patent office's register, or ask an attorney to.</div>
+    </div>`;
+  }
+  function patentCard(idea, isOwner) {
+    const o = idea.patent_offer || { sale: true };
+    const offers = [o.sale ? 'Open to selling' : '', ...(o.licence ? (o.licence_types || []).map(t => (LIC_TYPES[t] || [t])[0] + ' licence') : [])].filter(Boolean);
+    return `<div class="buy-card pt-card">
+      <div class="price-sub" style="margin-bottom:4px">${o.sale ? 'Asking price (guide)' : 'Guide value'}</div>
+      <div class="price-big">${formatPrice(idea.price)}</div>
+      <div class="pt-offers">${offers.map(x => `<span class="pt-offer">${escI(x)}</span>`).join('')}</div>
+      ${o.licence_notes ? `<div style="font-size:13px;color:var(--muted);margin-bottom:.8rem;line-height:1.55">${escI(o.licence_notes)}</div>` : ''}
+      ${isOwner ? `<button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your patent</button><a href="/patents#licences" style="display:block;text-align:center;margin:-0.25rem 0 1rem;color:var(--accent);font-size:13px;text-decoration:none;">See licence requests →</a>`
+        : idea.status !== 'live' ? `<button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Not available</button>` : `
+        ${o.licence ? `<button class="buy-btn" onclick="openLic()">📜 Request a licence</button>` : ''}
+        ${o.sale ? `<button class="contact-btn" onclick="enquirePatent()">💬 Enquire about buying the patent</button>` : `<button class="contact-btn" onclick="openModal()">💬 Message the owner</button>`}`}
+      ${!isOwner ? `<div class="pt-guide"><b>How buying a patent works</b>
+        <ol><li>Message the owner and agree a price.</li>
+        <li>Hire a <a href="/find-support?type=patent_attorney">patent attorney</a> to check ownership, status, fees and existing licences, and to prepare the assignment.</li>
+        <li>A <a href="/find-support?type=chartered_accountant">chartered accountant</a> can help with valuation and tax.</li>
+        <li>Sign the assignment and record it with the patent office.</li></ol>
+        The sale, payment and transfer happen directly between you and the owner. IdeaHub connects you but is not part of the sale.</div>` : ''}
+      ${!token && !isOwner ? `<div style="text-align:center;margin-bottom:1rem;"><a href="/login" style="color:var(--accent);font-size:13px;">Sign in to contact the owner</a></div>` : ''}
+      ${originalityPanel(idea.originality_rating, isOwner)}
+    </div>`;
+  }
+  async function loadActiveLicences(id) {
+    try {
+      const list = await fetch(`${API_URL}/api/ideas/${encodeURIComponent(id)}/licences`).then(r => r.json());
+      if (!Array.isArray(list) || !list.length) return;
+      const el = document.getElementById('activeLic'); if (!el) return;
+      el.innerHTML = `<div style="font-size:13px;margin-top:.9rem"><div class="meta-label" style="margin-bottom:6px">Licences registered on IdeaHub</div>${list.map(l => `<div style="color:var(--text);margin-bottom:3px">• ${escI(l.type_label)} · ${escI(l.territory || '')}${l.field_of_use ? ' · ' + escI(l.field_of_use) : ''}${l.end_date ? ' · until ' + fd(l.end_date) : ''}</div>`).join('')}</div>`;
+    } catch (e) {}
+  }
+  function enquirePatent() {
+    openModal();
+    document.getElementById('msgText').value = `Hi, I'm interested in buying your patent for "${currentIdea.title}". Could you share the documents and your terms? I'll have my attorney check the details before we agree anything.`;
+  }
+  async function openLic() {
+    if (!token) { window.location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    if (!licCfg) licCfg = await fetch(`${API_URL}/api/licences/config`).then(r => r.json()).catch(() => ({ amount: 0 }));
+    const types = (currentIdea.patent_offer?.licence_types || []);
+    document.getElementById('licTypes').innerHTML = types.map((t, i) => `<label class="lic-type"><input type="radio" name="licType" value="${escI(t)}" ${i === 0 ? 'checked' : ''} /><span><b>${escI((LIC_TYPES[t] || [t])[0])}</b><small>${escI((LIC_TYPES[t] || ['', ''])[1])}</small></span></label>`).join('');
+    const payer = licCfg.payer === 'split' ? 'shared equally by both sides' : licCfg.payer === 'licensor' ? 'paid by the owner' : 'paid by you';
+    document.getElementById('licFee').textContent = licCfg.amount > 0 ? `When the signed licence is registered on IdeaHub, a fixed IdeaHub fee of $${licCfg.amount} applies (${payer}). The licence fee or royalties themselves are whatever you and the owner agree.` : '';
+    document.getElementById('licError').classList.remove('show');
+    document.getElementById('licModal').classList.add('show');
+  }
+  function closeLic() { document.getElementById('licModal').classList.remove('show'); }
+  async function sendLic() {
+    const err = document.getElementById('licError'), btn = document.getElementById('licSend');
+    err.classList.remove('show'); btn.disabled = true;
+    try {
+      const res = await fetch(`${API_URL}/api/licences`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({
+        idea_id: currentIdea.id, licence_type: document.querySelector('input[name="licType"]:checked')?.value, territory: document.getElementById('licTerritory').value,
+        field_of_use: document.getElementById('licField').value, term: document.getElementById('licTerm').value, message: document.getElementById('licMsg').value }) });
+      const d = await res.json();
+      if (!res.ok) { if (d.id) { location.href = '/licence?id=' + d.id; return; } throw new Error(d.error || 'Could not send.'); }
+      location.href = '/licence?id=' + d.id + '&sent=1';
+    } catch (e) { err.textContent = e.message; err.classList.add('show'); btn.disabled = false; }
+  }
+
   function askAbout(key) {
     openModal();
     const l = Engagements.BY_KEY[key];
@@ -597,6 +715,8 @@
               </div>
             </div>
 
+            ${idea.has_patent ? patentSection(idea) : ''}
+
             <div class="section-card">
               <div class="section-title">👤 About the Creator</div>
               <div class="creator-card" onclick="window.location.href='/public-profile?id=${encodeURIComponent(idea.creator_id)}'" style="cursor:pointer;">
@@ -614,7 +734,7 @@
 
           <!-- RIGHT -->
           <div>
-            <div class="buy-card">
+            ${idea.has_patent ? patentCard(idea, isOwner) : `<div class="buy-card">
               <div class="price-big">${formatPrice(idea.price)}</div>
               <div class="price-sub">One-time purchase · Full ownership transfer</div>
 
@@ -653,10 +773,11 @@
                 <p>↩️ Dispute resolution available</p>
               </div>
               ${originalityPanel(idea.originality_rating, isOwner)}
-            </div>
+            </div>`}
           </div>
         </div>
       `;
+      if (idea.has_patent) loadActiveLicences(idea.id);
     } catch (err) {
       document.getElementById('pageContent').innerHTML = `
         <div style="text-align:center;padding:4rem;color:var(--muted);">

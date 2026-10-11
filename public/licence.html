@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Licence — IdeaHub</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/patents.css" />
+<style>
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.top { margin: 0.75rem 0 1.25rem; }
+.top h1 { font-size: 28px; line-height: 1.25; margin: 8px 0 10px; overflow-wrap: anywhere; }
+.meta { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+.track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px; }
+.track div { border-top: 3px solid var(--surface2); padding-top: 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.track div.done { border-top-color: rgba(110,231,183,0.6); color: var(--soft); }
+.track div.now { border-top-color: var(--accent); color: var(--text); }
+.action h2 { font-size: 19px; margin-bottom: 6px; }
+.action p { color: var(--soft); font-size: 14px; line-height: 1.6; }
+.action .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1rem; }
+.terms dt { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 12px; }
+.terms dt:first-child { margin-top: 0; }
+.terms dd { font-size: 14px; line-height: 1.6; margin-top: 3px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.flist { display: flex; flex-direction: column; gap: 6px; }
+.frow { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.55rem 0.75rem; font-size: 13px; }
+.frow .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thread { display: flex; flex-direction: column; gap: 10px; max-height: 460px; overflow-y: auto; margin-bottom: 12px; }
+.msg { max-width: 82%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0.6rem 0.8rem; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.me { align-self: flex-end; background: var(--accent-dim); border-color: rgba(245,200,66,0.3); }
+.msg small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+.sys { align-self: center; font-size: 12px; color: var(--muted); text-align: center; max-width: 90%; }
+.compose { display: flex; gap: 8px; }
+.compose .textarea { min-height: 46px; height: 46px; }
+.side .person + .person { margin-top: 12px; }
+.help { font-size: 13px; line-height: 1.6; color: var(--soft); }
+.help a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.conf { display: flex; gap: 6px; flex-wrap: wrap; margin-top: .6rem; }
+.conf span { font-size: 12px; border-radius: 999px; padding: 3px 10px; background: var(--surface2); color: var(--muted); }
+.conf span.ok { background: rgba(110,231,183,0.12); color: var(--green); }
+.st-negotiating { background: rgba(96,165,250,0.12); color: var(--blue); }
+.st-signed { background: var(--accent-dim); color: var(--accent); }
+.st-active { background: rgba(110,231,183,0.12); color: var(--green); }
+.st-ended { background: rgba(255,255,255,0.06); color: var(--muted); }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .top h1 { font-size: 23px; } .track div { font-size: 10.5px; } .msg { max-width: 92%; } }
+</style>
+</head>
+<body>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+<main class="wrap"><div id="root"><div class="loading">Loading…</div></div></main>
+<div class="toast" id="toast"></div>
+
+<script>
+  const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
+  const me = (() => { try { return JSON.parse(localStorage.getItem('ih_user') || 'null'); } catch (e) { return null; } })();
+  if (!token) location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
+  const H = () => ({ Authorization: 'Bearer ' + token });
+  const params = new URLSearchParams(location.search);
+  const id = parseInt(params.get('id'), 10);
+  const $ = x => document.getElementById(x);
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  const money = n => '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const fdate = d => d ? new Date(String(d).slice(0, 10) + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const when = d => new Date(d).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 3200); }
+  function initials(n) { return esc(String(n || '?').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase()); }
+  function person(p, role) { if (!p) return ''; return `<div class="person"><div class="av">${p.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : initials(p.name)}</div><div><b>${esc(p.name)}</b><small>${role}${p.email ? ' · ' + esc(p.email) : ''}</small></div></div>`; }
+  let D = null, busy = false;
+
+  async function api(path, body, method) {
+    const r = await fetch(`/api/licences/${id}${path}`, { method: method || 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Something went wrong.');
+    return d;
+  }
+
+  function track(d) {
+    const idx = { requested: 0, negotiating: 1, signed: 2, active: 3, ended: 3 }[d.status];
+    if (idx === undefined) return '';
+    return `<div class="track">${['Requested', 'Agreeing terms', 'Signed', 'Active'].map((l, i) => `<div class="${i < idx || (i === idx && ['active', 'ended'].includes(d.status)) ? 'done' : i === idx ? 'now' : ''}">${l}</div>`).join('')}</div>`;
+  }
+
+  function practitionerHelp() {
+    return `<div class="help" style="margin-top:.8rem">Have the agreement drafted or checked by a <a href="/find-support?type=patent_attorney">patent attorney</a>. A <a href="/find-support?type=chartered_accountant">chartered accountant</a> can help set a fair fee or royalty and with tax. IdeaHub doesn't set the terms.</div>`;
+  }
+
+  function actionPanel(d) {
+    const v = d.viewer, s = d.status, otherName = v === 'licensor' ? d.licensee?.name : d.licensor?.name;
+    if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>You can read this deal. IdeaHub is not a party to the licence.</p></div>`;
+    if (s === 'requested' && v === 'licensor') return `<div class="panel action"><h2>${esc(otherName)} wants a licence</h2><p>Read their request below. Accept to start agreeing terms (you can still say no later), or decline.</p>
+      <div class="btns"><button class="btn btn-gold" data-act="accept">Accept and discuss terms</button><button class="btn btn-danger" data-act="decline">Decline</button></div></div>`;
+    if (s === 'requested') return `<div class="panel action"><h2>Waiting for the owner</h2><p>${esc(otherName)} will accept to discuss terms, or decline. You'll get a notification.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="cancel">Withdraw request</button></div></div>`;
+    if (s === 'negotiating') {
+      const myConf = v === 'licensor' ? d.licensor_confirmed_at : d.licensee_confirmed_at;
+      const theirConf = v === 'licensor' ? d.licensee_confirmed_at : d.licensor_confirmed_at;
+      const myFile = v === 'licensor' ? d.licensor_file : d.licensee_file;
+      const opts = d.files.map(f => `<option value="${f.index}" ${f.index === myFile || (myFile == null && f.index === d.files.length - 1) ? 'selected' : ''}>${esc(f.name)}</option>`).join('');
+      return `<div class="panel action"><h2>Agree the terms</h2>
+        <p>Agree the licence terms and money with ${esc(otherName)}, in messages or on a video call. Put them in a written agreement, both sign it, and upload the signed copy under Files.</p>
+        ${practitionerHelp()}
+        <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+          <b style="font-size:14px">Register the signed agreement</b>
+          <p style="font-size:13px;margin-top:4px">Both of you confirm the same signed file and dates. ${d.fee_amount > 0 ? `Then IdeaHub's fixed fee of ${money(d.fee_amount)} applies${d.fee_payer === 'split' ? ' (split equally)' : d.fee_payer === 'licensor' ? ' (paid by the owner)' : ' (paid by the licensee)'}.` : ''}</p>
+          ${d.files.length ? `<div class="row2" style="margin-top:.8rem"><div class="field"><label for="cFile">Signed agreement</label><select class="select" id="cFile">${opts}</select></div><div></div></div>
+          <div class="row2"><div class="field"><label for="cStart">Licence starts</label><input class="input" id="cStart" type="date" value="${esc(d.start_date || '')}" /></div><div class="field"><label for="cEnd">Licence ends <span class="muted">(empty if no end date)</span></label><input class="input" id="cEnd" type="date" value="${esc(d.end_date || '')}" /></div></div>
+          <div class="conf"><span class="${myConf ? 'ok' : ''}">${myConf ? '✓ You confirmed' : 'You: not confirmed'}</span><span class="${theirConf ? 'ok' : ''}">${theirConf ? `✓ ${esc(otherName)} confirmed` : `${esc(otherName)}: not confirmed`}</span></div>
+          <div class="btns"><button class="btn btn-gold" data-act="confirm">${myConf ? 'Confirm again' : 'Confirm this is the signed agreement'}</button><button class="btn btn-danger btn-sm" data-act="cancel">Withdraw</button></div>`
+          : `<div class="note" style="margin-top:.6rem">Upload the signed agreement under Files to register it.</div><div class="btns"><button class="btn btn-danger btn-sm" data-act="cancel">Withdraw</button></div>`}
+        </div></div>`;
+    }
+    if (s === 'signed') {
+      const owes = d.my_fee_share > 0 && !d.fee_paid_by_me;
+      return `<div class="panel action"><h2>Signed. Register the licence</h2>
+        <p>Both of you confirmed the signed agreement. ${owes ? `Pay IdeaHub's licence fee of <b>${money(d.my_fee_share)}</b> to register it.` : d.fee_paid_by_me ? 'You paid your share. Waiting for the other side.' : `Waiting for ${esc(otherName)} to pay IdeaHub's licence fee.`}</p>
+        ${owes ? (d.payments_open ? `<div class="btns"><button class="btn btn-gold" data-act="pay">Pay ${money(d.my_fee_share)}</button></div>` : '<div class="note" style="margin-top:.8rem">Online payments are launching soon.</div>') : ''}</div>`;
+    }
+    if (s === 'active') return `<div class="panel action"><h2>✅ Licence active</h2><p>${esc(d.type_label)} from <b>${esc(fdate(d.start_date))}</b>${d.end_date ? ` to <b>${esc(fdate(d.end_date))}</b>` : ''}. Payments between you follow your signed agreement. We'll remind you both before it ends.</p>
+      <p style="margin-top:.6rem;font-size:13px" class="muted">Some patent offices record licences. Ask your practitioner whether yours should be.</p></div>`;
+    if (s === 'ended') return `<div class="panel action"><h2>Licence ended</h2><p>It ended on ${esc(fdate(d.end_date))}. To renew, send a new request from the patent listing.</p></div>`;
+    if (s === 'declined') return `<div class="panel action"><h2>Declined</h2><p>${esc(d.decline_reason || '')}</p></div>`;
+    if (s === 'cancelled') return `<div class="panel action"><h2>Withdrawn</h2><p>This deal was withdrawn${d.cancel_reason ? ': ' + esc(d.cancel_reason) : ''}.</p></div>`;
+    return '';
+  }
+
+  function render(d) {
+    const v = d.viewer, open = ['negotiating', 'signed', 'active'].includes(d.status) && v !== 'admin', talk = ['requested', 'negotiating', 'signed', 'active'].includes(d.status) && v !== 'admin';
+    const pd = d.idea?.patent_details || {};
+    const msgs = d.messages.map(m => m.system ? `<div class="sys">${esc(m.text)} · ${when(m.created_at)}</div>`
+      : `<div class="msg ${m.from_id === me?.id ? 'me' : ''}">${esc(m.text)}<small>${m.from_id === d.licensor?.id ? esc(d.licensor.name) : esc(d.licensee?.name || '')} · ${when(m.created_at)}</small></div>`).join('');
+    $('root').innerHTML = `
+      <div class="top"><a href="/patents#licences" class="muted" style="font-size:13px;text-decoration:none">← Licences</a>
+        <h1>${esc(d.idea_title)}</h1>
+        <div class="meta"><span class="pill st-${esc(d.status)}">${esc(d.status_label)}</span><b style="color:var(--text)">${esc(d.type_label)}</b><span>${esc(d.territory)}</span>${d.idea ? `<a href="/idea?id=${Number(d.idea.id)}">📋 Patent listing</a>` : ''}</div></div>
+      ${track(d)}
+      <div class="grid"><div>
+        ${actionPanel(d)}
+        <div class="panel"><div class="panel-title">Licence requested</div><dl class="terms">
+          <dt>Type</dt><dd>${esc(d.type_label)}${d.type_help ? ` <span class="muted">· ${esc(d.type_help)}</span>` : ''}</dd>
+          <dt>Territory</dt><dd>${esc(d.territory)}</dd>
+          ${d.field_of_use ? `<dt>Field of use</dt><dd>${esc(d.field_of_use)}</dd>` : ''}
+          ${d.term ? `<dt>Term in mind</dt><dd>${esc(d.term)}</dd>` : ''}
+          ${d.start_date && ['signed', 'active', 'ended'].includes(d.status) ? `<dt>Registered dates</dt><dd>${esc(fdate(d.start_date))}${d.end_date ? ' to ' + esc(fdate(d.end_date)) : ' (no end date)'}</dd>` : ''}
+          ${d.idea ? `<dt>Patent</dt><dd>${esc(d.idea.patent_jurisdiction || '')} ${esc(d.idea.patent_number || '')} · ${pd.status === 'granted' ? 'Granted' : 'Pending'}${pd.expiry_date ? ' · expires ' + esc(fdate(pd.expiry_date)) : ''}</dd>` : ''}
+        </dl></div>
+        <div class="panel"><div class="panel-title">Files ${open ? `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">📎 Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.txt,image/*" />` : ''}</div>
+          <div class="flist">${d.files.length ? d.files.map(f => `<div class="frow"><span class="nm">📄 ${esc(f.name)}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : `<div class="muted" style="font-size:13px">${d.status === 'requested' ? 'Files can be shared once the owner accepts.' : 'No files yet. Share drafts and the signed agreement here. Only the two of you can open them.'}</div>`}</div></div>
+        <div class="panel"><div class="panel-title">Messages</div>
+          <div class="thread" id="thread">${msgs || '<div class="sys">No messages yet.</div>'}</div>
+          ${talk ? `<div class="compose"><textarea class="textarea" id="msgIn" placeholder="Write a message…" maxlength="4000"></textarea><button class="btn btn-gold" id="sendBtn">Send</button></div>` : ''}
+        </div>
+      </div>
+      <aside class="side">
+        <div class="panel">${person(d.licensor, 'Patent owner (licensor)')}${person(d.licensee, 'Licensee')}
+          ${talk && d.status !== 'requested' ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=licence&id=${d.id}" target="_blank" rel="noopener">📹 Start a video call</a>` : ''}
+        </div>
+        <div class="panel"><div class="panel-title">IdeaHub fee</div>
+          <div class="help">${d.fee_amount > 0 ? `A fixed ${money(d.fee_amount)} to register the signed licence${d.fee_payer === 'split' ? ', split equally' : d.fee_payer === 'licensor' ? ', paid by the owner' : ', paid by the licensee'}.` : 'No IdeaHub fee.'} The licence fee or royalties are agreed between you and paid as your agreement says.</div></div>
+        <div class="note" style="font-size:12.5px">IdeaHub connects you and keeps the record. It is not a party to the licence and does not give legal advice.</div>
+      </aside></div>`;
+    const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
+  }
+
+  async function load() {
+    try {
+      const r = await fetch(`/api/licences/${id}`, { headers: H() });
+      if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+      const d = await r.json();
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}</div>`; return; }
+      const keep = {}; ['msgIn', 'cStart', 'cEnd'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
+      D = d; document.title = `${d.idea_title}: licence — IdeaHub`; render(d);
+      Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
+    } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
+  }
+
+  document.addEventListener('change', async e => {
+    if (e.target.id !== 'fileIn' || !e.target.files[0]) return;
+    const f = e.target.files[0]; if (f.size > 10 * 1048576) return toast('Files must be 10 MB or smaller.');
+    const fd = new FormData(); fd.append('file', f); toast('Uploading…');
+    const r = await fetch(`/api/licences/${id}/files`, { method: 'POST', headers: H(), body: fd });
+    const d = await r.json().catch(() => ({})); if (!r.ok) return toast(d.error || 'Upload failed.');
+    toast('File added.'); load();
+  });
+
+  document.addEventListener('click', async e => {
+    const f = e.target.closest('[data-file]');
+    if (f) { const w = window.open('', '_blank'); try { const d = await api(`/files/${f.dataset.file}`, null, 'GET'); if (w) w.location = d.url; else location.href = d.url; } catch (err) { if (w) w.close(); toast(err.message); } return; }
+    if (e.target.id === 'sendBtn') {
+      const box = $('msgIn'), text = box.value.trim(); if (!text || busy) return;
+      busy = true; try { await api('/messages', { text }); box.value = ''; await load(); } catch (err) { toast(err.message); } busy = false; return;
+    }
+    const b = e.target.closest('[data-act]'); if (!b || busy) return;
+    busy = true;
+    try {
+      const act = b.dataset.act;
+      if (act === 'accept') { await api('/respond', { accept: true }); toast('Accepted. Agree the terms with them.'); }
+      else if (act === 'decline') { const reason = prompt('Tell them briefly why:'); if (!reason) { busy = false; return; } await api('/respond', { accept: false, reason }); }
+      else if (act === 'cancel') { if (!confirm('Withdraw from this licence deal?')) { busy = false; return; } await api('/cancel', { reason: '' }); }
+      else if (act === 'confirm') {
+        if (!confirm('Confirm that this file is the final agreement signed by both of you?')) { busy = false; return; }
+        const d = await api('/confirm-signed', { file_index: $('cFile').value, start_date: $('cStart').value, end_date: $('cEnd').value });
+        toast(d.status === 'negotiating' ? 'Confirmed. Waiting for the other side.' : 'Both confirmed.');
+      }
+      else if (act === 'pay') { b.disabled = true; await api('/pay-fee'); toast('Paid. Thank you!'); }
+      await load();
+    } catch (err) { toast(err.message); await load(); }
+    busy = false;
+  });
+
+  if (!id) $('root').innerHTML = '<div class="empty">Licence not found.</div>';
+  else {
+    load();
+    if (params.get('sent')) { history.replaceState(null, '', location.pathname + '?id=' + id); setTimeout(() => toast('Request sent to the owner.'), 400); }
+    setInterval(() => { if (!document.hidden && !(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) load(); }, 30000);
+  }
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

@@ -19,7 +19,7 @@ const HOUR = 3600 * 1000;
 const EARLY_MIN = 15; // a scheduled call opens 15 minutes before its time
 
 const callPath = (type, id) => `/call?type=${type}&id=${id}`;
-const isSafeLink = l => typeof l === 'string' && (/^https:\/\/[^\s"'<>]+$/i.test(l) || /^\/call\?type=(message|group|patent)&id=\d+$/.test(l));
+const isSafeLink = l => typeof l === 'string' && (/^https:\/\/[^\s"'<>]+$/i.test(l) || /^\/call\?type=(message|group|patent|licence)&id=\d+$/.test(l));
 
 function mount(app, { supabase, authMiddleware, escrow }) {
   const key = () => process.env.DAILY_API_KEY || '';
@@ -65,6 +65,12 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       if (['declined', 'cancelled', 'refunded'].includes(a.status)) return { error: 'This application is closed.', status: 400 };
       return { participants: [a.creator_id, a.attorney_id], title: `Call about "${a.title}"`, opensAt: 0, expiresAt: now + 3 * HOUR, max: 4, back: `/patent-application?id=${a.id}` };
     }
+    if (type === 'licence') {
+      const { data: d } = await supabase.from('licence_deals').select('id, idea_title, licensor_id, licensee_id, status').eq('id', id).single();
+      if (!d || ![d.licensor_id, d.licensee_id].includes(userId)) return { error: 'Call not found.', status: 404 };
+      if (['declined', 'cancelled'].includes(d.status)) return { error: 'This deal is closed.', status: 400 };
+      return { participants: [d.licensor_id, d.licensee_id], title: `Call about licensing "${d.idea_title}"`, opensAt: 0, expiresAt: now + 3 * HOUR, max: 6, back: `/licence?id=${d.id}` };
+    }
     return { error: 'Unknown call type.', status: 400 };
   }
 
@@ -105,9 +111,9 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       const t = await daily('/meeting-tokens', { properties: { room_name: call.room_name, user_name: name(me), user_id: String(req.user.id), exp: tokenExp } });
 
       // Patent calls have no call request, so ring the other person (at most every 10 minutes)
-      if (type === 'patent' && (!existing || !existing.last_rung_at || Date.now() - new Date(existing.last_rung_at).getTime() > 10 * 60000 || existing.room_name !== call.room_name)) {
+      if (['patent', 'licence'].includes(type) && (!existing || !existing.last_rung_at || Date.now() - new Date(existing.last_rung_at).getTime() > 10 * 60000 || existing.room_name !== call.room_name)) {
         for (const uid of ctx.participants.filter(x => x && x !== req.user.id)) {
-          await escrow.notify(uid, { type: 'call_now', title: '📹 Video call started', message: `${name(me)} started a video call: ${ctx.title.replace(/^Call about /, '')}. Join now.`, link: callPath('patent', id) });
+          await escrow.notify(uid, { type: 'call_now', title: '📹 Video call started', message: `${name(me)} started a video call: ${ctx.title.replace(/^Call about /, '')}. Join now.`, link: callPath(type, id) });
         }
         await supabase.from('video_calls').update({ last_rung_at: new Date().toISOString() }).eq('id', call.id);
       }
