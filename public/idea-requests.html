@@ -300,14 +300,14 @@
 
   const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('ih_user') || 'null');
-  const isInvestor = user && ['investor','corporate_services','admin'].includes(user.role);
+  const isInvestor = user && ['investor','admin'].includes(user.role);
   const isCreator = user && ['idea_creator','patent_seller'].includes(user.role);
 
   function initNav() {
     if (!token || !user) return;
     document.getElementById('guestNav').style.display = 'none';
     document.getElementById('userNav').classList.add('visible');
-    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
+    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/support-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
     document.getElementById('dashboardLink').href = roleLinks[user.role] || '/dashboard';
     if (isInvestor) document.getElementById('postRequestNavBtn').style.display = 'inline-flex';
     const avatarEl = document.getElementById('navAvatar');

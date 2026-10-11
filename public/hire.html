@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hires — IdeaHub</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/patents.css" />
+<style>
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.top { margin: 0.75rem 0 1.25rem; }
+.top h1 { font-size: 28px; line-height: 1.25; margin: 8px 0 10px; overflow-wrap: anywhere; }
+.meta { display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+.track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 16px; }
+.track div { border-top: 3px solid var(--surface2); padding-top: 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.track div.done { border-top-color: rgba(110,231,183,0.6); color: var(--soft); }
+.track div.now { border-top-color: var(--accent); color: var(--text); }
+.action h2 { font-size: 19px; margin-bottom: 6px; }
+.action p { color: var(--soft); font-size: 14px; line-height: 1.6; }
+.action .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1rem; }
+.sum { width: 100%; border-collapse: collapse; font-size: 14px; margin: 0.9rem 0; }
+.sum td { padding: 7px 0; border-bottom: 1px solid var(--border); }
+.sum td:last-child { text-align: right; font-weight: 600; }
+.sum tr.total td { border-bottom: 0; font-size: 16px; color: var(--accent); font-weight: 800; }
+.scope { background: var(--surface2); border-radius: 10px; padding: 0.8rem 0.9rem; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; color: var(--soft); }
+.terms dt { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 12px; }
+.terms dt:first-child { margin-top: 0; }
+.terms dd { font-size: 14px; line-height: 1.6; margin-top: 3px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.thread { display: flex; flex-direction: column; gap: 10px; max-height: 460px; overflow-y: auto; margin-bottom: 12px; }
+.msg { max-width: 82%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0.6rem 0.8rem; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.me { align-self: flex-end; background: var(--accent-dim); border-color: rgba(245,200,66,0.3); }
+.msg small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+.sys { align-self: center; font-size: 12px; color: var(--muted); text-align: center; max-width: 90%; }
+.compose { display: flex; gap: 8px; }
+.compose .textarea { min-height: 46px; height: 46px; }
+.side .person + .person { margin-top: 12px; }
+.stars { display: flex; gap: 6px; font-size: 28px; margin: .6rem 0; }
+.stars button { background: none; border: 0; cursor: pointer; color: #3a3a40; font-size: 28px; padding: 0; }
+.stars button.on { color: var(--accent); }
+.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); padding: 0.7rem 0.9rem; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: -1px; }
+.tab.on { color: var(--text); border-bottom-color: var(--accent); }
+.app-row { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.15rem; text-decoration: none; margin-bottom: 10px; }
+.app-row:hover { border-color: rgba(245,200,66,0.35); }
+.app-row h3 { font-size: 16px; margin-bottom: 4px; }
+.app-meta { font-size: 12.5px; color: var(--muted); display: flex; gap: 6px 12px; flex-wrap: wrap; }
+.st-pending, .st-accepted { background: rgba(251,146,60,0.12); color: var(--orange); }
+.st-delivered { background: rgba(167,139,250,0.14); color: var(--purple); }
+.st-rejected { background: rgba(255,255,255,0.06); color: var(--muted); }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .top h1 { font-size: 23px; } .track div { font-size: 10.5px; } .msg { max-width: 92%; } .app-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+<main class="wrap"><div id="root"><div class="loading">Loading…</div></div></main>
+<div class="toast" id="toast"></div>
+
+<script>
+  const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
+  const me = (() => { try { return JSON.parse(localStorage.getItem('ih_user') || 'null'); } catch (e) { return null; } })();
+  if (!token) location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
+  const H = () => ({ Authorization: 'Bearer ' + token });
+  const params = new URLSearchParams(location.search);
+  const id = parseInt(params.get('id'), 10);
+  const $ = x => document.getElementById(x);
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  const money = n => { const v = Number(n || 0); return '$' + v.toLocaleString('en-US', Number.isInteger(v) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  const day = d => d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const when = d => new Date(d).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 3200); }
+  function initials(n) { return esc(String(n || '?').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase()); }
+  function person(p, role) { if (!p) return ''; return `<div class="person"><div class="av">${p.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : initials(p.name)}</div><div><b>${esc(p.name)}</b><small>${esc(role)}</small></div></div>`; }
+  let D = null, busy = false, stars = 0, listTab = 'mine';
+
+  async function api(path, body, method) {
+    const r = await fetch(`/api/hire${path}`, { method: method || 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Something went wrong.');
+    return d;
+  }
+
+  // ── Lists ──
+  async function renderList() {
+    const [mine, incoming] = await Promise.all([api('/my-requests', null, 'GET').catch(() => []), api('/incoming', null, 'GET').catch(() => [])]);
+    const isPro = ['patent_attorney', 'chartered_accountant', 'virtual_manager', 'corporate_services'].includes(me?.role);
+    if (isPro && !mine.length) listTab = 'incoming';
+    const row = (h, other) => `<a class="app-row" href="/hire?id=${Number(h.id)}"><div><h3>${esc(h.title)}</h3>
+      <div class="app-meta"><span>${listTab === 'mine' ? 'Professional' : 'Client'}: ${esc(other.name)}</span><span>${day(h.created_at)}</span>${h.quote_amount ? `<span>${money(h.amount || h.quote_amount)}</span>` : ''}</div></div>
+      <span class="pill st-${esc(h.status)}">${esc(h.status_label)}</span></a>`;
+    const draw = () => {
+      const items = listTab === 'mine' ? mine : incoming;
+      $('root').innerHTML = `<div class="top"><div class="kicker">Hires</div><h1>${listTab === 'mine' ? 'Professionals you hired' : 'Requests from clients'}</h1></div>
+        ${isPro || incoming.length ? `<div class="tabs"><button class="tab ${listTab === 'mine' ? 'on' : ''}" data-lt="mine">I hired (${mine.length})</button><button class="tab ${listTab === 'incoming' ? 'on' : ''}" data-lt="incoming">Client requests (${incoming.length})</button></div>` : ''}
+        ${items.length ? items.map(h => row(h, h.other)).join('') : `<div class="empty"><div class="icon">🤝</div>${listTab === 'mine' ? 'You haven\'t hired anyone yet.<br><a class="btn btn-gold btn-sm" style="margin-top:1rem" href="/find-support">Find a professional</a>' : 'No client requests yet. Clients find you through Find Support once you\'re verified.'}</div>`}`;
+    };
+    document.addEventListener('click', e => { const b = e.target.closest('[data-lt]'); if (b) { listTab = b.dataset.lt; draw(); } });
+    draw();
+  }
+
+  function track(h) {
+    const idx = { pending: 0, accepted: 0, quoted: 1, in_progress: 2, delivered: 3, completed: 4, disputed: h.delivered_at ? 3 : 2 }[h.status];
+    if (idx === undefined) return '';
+    return `<div class="track">${['Requested', 'Quote', 'Paid into escrow', 'Delivered', 'Completed'].map((l, i) => `<div class="${i < idx || (i === idx && h.status === 'completed') ? 'done' : i === idx ? 'now' : ''}">${l}</div>`).join('')}</div>`;
+  }
+
+  function actionPanel(h) {
+    const v = h.viewer, s = h.status, other = v === 'client' ? h.pro?.name : h.client?.name;
+    const due = h.paid_at && h.quote_days ? day(new Date(new Date(h.paid_at).getTime() + h.quote_days * 86400000)) : '';
+    if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>Disputes are settled from the Disputes tab in the admin panel.</p></div>`;
+    if (['pending', 'accepted'].includes(s) && v === 'client') return `<div class="panel action"><h2>Waiting for a quote</h2><p>${esc(other)} will reply with a fixed price and timeline. You pay nothing until you accept.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="cancel">Cancel request</button></div></div>`;
+    if (['pending', 'accepted', 'quoted'].includes(s) && v === 'pro') return `<div class="panel action"><h2>${s === 'quoted' ? 'Your quote' : 'Send a fixed quote'}</h2>
+      <p>${s === 'quoted' ? `You quoted ${money(h.quote_amount)} within ${h.quote_days} days. You can revise it until the client pays.` : `Read the request, then quote one price for the whole job. The client pays it into escrow, and you're paid when they confirm the work.`}</p>
+      <div class="row2" style="margin-top:1rem"><div class="field"><label for="qAmt">Your fee (USD)</label><input class="input" id="qAmt" type="number" min="1" value="${h.quote_amount ? esc(h.quote_amount) : (h.budget ? esc(h.budget) : '')}" /></div><div class="field"><label for="qDays">Days to complete</label><input class="input" id="qDays" type="number" min="1" max="365" value="${h.quote_days ? esc(h.quote_days) : ''}" /></div></div>
+      <div class="field"><label for="qScope">What's included</label><textarea class="textarea" id="qScope" placeholder="e.g. Prepare and file the 2025 company tax return, including one revision.">${esc(h.quote_scope || '')}</textarea></div>
+      <p class="muted" style="font-size:12.5px">IdeaHub adds 8% on top, paid by the client. You receive your full fee.</p>
+      <div class="btns"><button class="btn btn-gold" data-act="quote">${s === 'quoted' ? 'Update quote' : 'Send quote'}</button><button class="btn btn-danger" data-act="decline">Decline</button></div></div>`;
+    if (s === 'quoted' && v === 'client') {
+      const fee = Math.round(h.quote_amount * h.fee_rate * 100) / 100;
+      return `<div class="panel action"><h2>Your quote from ${esc(other)}</h2><p>Done within <b>${Number(h.quote_days)} days</b> of payment.</p>
+      ${h.quote_scope ? `<div class="scope" style="margin-top:.8rem">${esc(h.quote_scope)}</div>` : ''}
+      <table class="sum"><tr><td>Professional's fee</td><td>${money(h.quote_amount)}</td></tr><tr><td>IdeaHub fee (8%, includes escrow protection)</td><td>${money(fee)}</td></tr><tr class="total"><td>Total</td><td>${money(Number(h.quote_amount) + fee)}</td></tr></table>
+      <p style="font-size:13px">Your payment is held by IdeaHub and released only after you confirm the work (or 7 days after delivery without a dispute).</p>
+      ${h.payments_open ? '' : '<div class="note" style="margin-top:.8rem">Online payments are launching soon. Message the professional below in the meantime.</div>'}
+      <div class="btns"><button class="btn btn-gold" data-act="pay" ${h.payments_open ? '' : 'disabled'}>Accept and pay ${money(Number(h.quote_amount) + fee)}</button><button class="btn btn-danger" data-act="cancel">Decline quote</button></div></div>`;
+    }
+    if (s === 'in_progress' && v === 'pro') return `<div class="panel action"><h2>Do the work</h2><p>${money(h.amount)} is held in escrow. Please finish by <b>${esc(due)}</b>, share the results below, then mark it delivered.</p><div class="field" style="margin-top:1rem"><label for="dNote">Delivery note (optional)</label><textarea class="textarea" id="dNote" style="min-height:70px" placeholder="What you delivered and where to find it"></textarea></div><div class="btns"><button class="btn btn-gold" data-act="deliver">Mark as delivered</button></div></div>`;
+    if (s === 'in_progress' && v === 'client') return `<div class="panel action"><h2>Work in progress</h2><p>${money(h.total)} is held safely in escrow. ${esc(other)} expects to finish by <b>${esc(due)}</b>.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="dispute">Report a problem</button></div></div>`;
+    if (s === 'delivered' && v === 'client') return `<div class="panel action"><h2>Work delivered</h2>${h.delivery_note ? `<div class="scope" style="margin:.6rem 0">${esc(h.delivery_note)}</div>` : ''}<p>Check the work. Confirm to release ${money(h.amount)} to ${esc(other)}, or report a problem. If you do nothing, it's released automatically on <b>${day(h.confirm_by)}</b>.</p><div class="btns"><button class="btn btn-gold" data-act="confirm">Confirm and release payment</button><button class="btn btn-danger" data-act="dispute">Report a problem</button></div></div>`;
+    if (s === 'delivered' && v === 'pro') return `<div class="panel action"><h2>Waiting for the client to confirm</h2><p>Your fee of ${money(h.amount)} is released when they confirm, or automatically on <b>${day(h.confirm_by)}</b>.</p></div>`;
+    if (s === 'disputed') return `<div class="panel action"><h2>Under review by IdeaHub</h2><p>A problem was reported: <i>${esc(h.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while IdeaHub reviews the messages here.</p></div>`;
+    if (s === 'completed') {
+      if (v === 'client' && !h.rating) return `<div class="panel action"><h2>✅ Completed: leave a review</h2><p>How was ${esc(other)}? Your review helps other creators choose.</p>
+        <div class="stars" id="stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-star="${n}" aria-label="${n} stars">★</button>`).join('')}</div>
+        <textarea class="textarea" id="rvText" style="min-height:70px" placeholder="What went well? (optional)"></textarea>
+        <div class="btns"><button class="btn btn-gold" data-act="rate">Post review</button></div></div>`;
+      return `<div class="panel action"><h2>✅ Completed</h2>${h.rating ? `<p><span style="color:var(--accent)">${'★'.repeat(h.rating.stars)}</span>${'☆'.repeat(5 - h.rating.stars)} ${h.rating.review ? '· ' + esc(h.rating.review) : ''}</p>` : `<p>${v === 'pro' ? 'The payment was added to your wallet.' : ''}</p>`}</div>`;
+    }
+    if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>IdeaHub refunded ${money(h.total)} to the client.${h.resolution_note ? ' Note: ' + esc(h.resolution_note) : ''}</p></div>`;
+    if (s === 'rejected') return `<div class="panel action"><h2>Declined</h2><p>${esc(h.cancel_reason || 'The professional declined this request.')}</p>${v === 'client' ? '<div class="btns"><a class="btn btn-gold" href="/find-support">Find another professional</a></div>' : ''}</div>`;
+    if (s === 'cancelled') return `<div class="panel action"><h2>Cancelled</h2><p>This request was cancelled before payment.</p></div>`;
+    return '';
+  }
+
+  function delegationPanel(h) {
+    if (!h.delegation || h.viewer === 'admin') return '';
+    if (h.viewer === 'client') return `<div class="panel"><div class="panel-title">Listing access</div>
+      <p class="muted" style="font-size:13.5px;line-height:1.6">${h.delegation.active ? `${esc(h.pro.name)} can create and edit your listings. You're notified of every change.` : `Let ${esc(h.pro.name)} create and edit your listings for you. You're notified of every change and can remove access any time.`}</p>
+      ${h.delegation.active ? '<div id="delLog" style="margin-top:.8rem"></div>' : ''}
+      <div class="btns" style="display:flex;gap:8px;margin-top:.8rem">${h.delegation.active ? '<button class="btn btn-danger btn-sm" data-act="revoke">Remove access</button>' : (['rejected', 'cancelled', 'refunded'].includes(h.status) ? '' : '<button class="btn btn-gold btn-sm" data-act="grant">Give listing access</button>')}</div></div>`;
+    return h.delegation.active ? `<div class="panel"><div class="panel-title">Listing access</div><p class="muted" style="font-size:13.5px">You can manage ${esc(h.client.name)}'s listings.</p><a class="btn btn-gold btn-sm" style="margin-top:.8rem" href="/manage?owner=${h.client.id}">Manage their listings →</a></div>` : '';
+  }
+
+  function render(h) {
+    const v = h.viewer, talk = !['rejected', 'cancelled'].includes(h.status) && v !== 'admin';
+    const msgs = h.messages.map(m => m.system ? `<div class="sys">${esc(m.text)} · ${when(m.created_at)}</div>`
+      : `<div class="msg ${m.from_id === me?.id ? 'me' : ''}">${esc(m.text)}${m.file_url && /^https:\/\//.test(m.file_url) ? `<br><a href="${esc(m.file_url)}" target="_blank" rel="noopener" style="color:var(--accent)">📎 ${esc(m.file_name || 'File')}</a>` : ''}<small>${m.from_id === h.client?.id ? esc(h.client.name) : esc(h.pro?.name || '')} · ${when(m.created_at)}</small></div>`).join('');
+    $('root').innerHTML = `
+      <div class="top"><a href="/hire" class="muted" style="font-size:13px;text-decoration:none">← Hires</a>
+        <h1>${esc(h.title)}</h1>
+        <div class="meta"><span class="pill st-${esc(h.status)}">${esc(h.status_label)}</span><span>${esc(h.pro?.role_label || '')}</span><span>Requested ${day(h.created_at)}</span>${h.idea ? `<a href="/idea?id=${Number(h.idea.id)}" style="color:var(--accent);text-decoration:none">💡 ${esc(h.idea.title)}</a>` : ''}</div></div>
+      ${track(h)}
+      <div class="grid"><div>
+        ${actionPanel(h)}
+        <div class="panel"><div class="panel-title">Request</div><dl class="terms">
+          <dt>What's needed</dt><dd>${esc(h.description || '—')}</dd>
+          ${h.budget ? `<dt>Client's budget</dt><dd>${money(h.budget)}</dd>` : ''}
+          ${h.deadline ? `<dt>Wanted by</dt><dd>${esc(day(h.deadline + 'T00:00:00'))}</dd>` : ''}
+          ${h.country ? `<dt>Country</dt><dd>${esc(h.country)}${h.warning_message ? ` <span class="muted">· ${esc(h.warning_message)}</span>` : ''}</dd>` : ''}
+        </dl></div>
+        <div class="panel"><div class="panel-title">Messages</div>
+          <div class="thread" id="thread">${msgs || '<div class="sys">No messages yet.</div>'}</div>
+          ${talk ? `<div class="compose"><textarea class="textarea" id="msgIn" placeholder="Write a message…" maxlength="4000"></textarea><button class="btn btn-gold" id="sendBtn">Send</button></div>` : ''}
+        </div>
+      </div>
+      <aside class="side">
+        <div class="panel">${person(h.client, 'Client')}${person(h.pro, h.pro?.role_label || 'Professional')}
+          ${talk ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=hire&id=${h.id}" target="_blank" rel="noopener">📹 Start a video call</a>` : ''}
+        </div>
+        ${delegationPanel(h)}
+        <div class="panel"><div class="panel-title">Payment</div>
+          <div class="kv" style="display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">Quote</span><span>${h.quote_amount ? money(h.quote_amount) : '—'}</span></div>
+          <div class="kv" style="display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">Paid into escrow</span><span>${h.total ? money(h.total) : '—'}</span></div>
+          <div class="kv" style="display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0"><span class="muted">Status</span><span>${h.status === 'completed' ? 'Released' : h.status === 'refunded' ? 'Refunded' : h.paid_at ? 'Held in escrow' : 'Not paid'}</span></div>
+        </div>
+        <div class="note" style="font-size:12.5px">Keep messages and files here. If there's a problem, IdeaHub decides based on this page.</div>
+      </aside></div>`;
+    const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
+  }
+
+  async function load() {
+    try {
+      const r = await fetch(`/api/hire/${id}`, { headers: H() });
+      if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+      const d = await r.json();
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/hire">Your hires</a></div>`; return; }
+      const keep = {}; ['msgIn', 'qAmt', 'qDays', 'qScope', 'dNote', 'rvText'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
+      D = d; document.title = `${d.title} — Hire — IdeaHub`; render(d);
+      if (d.viewer === 'client' && d.delegation?.active && d.delegation.id) {
+        fetch('/api/delegations/' + d.delegation.id + '/log', { headers: H() }).then(r => r.ok ? r.json() : []).then(log => {
+          const el = $('delLog'); if (!el) return;
+          el.innerHTML = log.length ? `<div class="muted" style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Recent changes</div>` + log.slice(0, 8).map(x => `<div style="font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border)">${x.action === 'create' ? '📝 Added' : '✏️ Edited'} ${x.idea_id ? `<a href="/idea?id=${Number(x.idea_id)}" style="color:var(--accent);text-decoration:none">${esc(x.detail || 'a listing')}</a>` : esc(x.detail || 'a listing')} <span class="muted">· ${when(x.created_at)}</span></div>`).join('') : '<div class="muted" style="font-size:12.5px">No changes made yet.</div>';
+        }).catch(() => {});
+      }
+      Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
+    } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
+  }
+
+  document.addEventListener('click', async e => {
+    const st = e.target.closest('[data-star]');
+    if (st) { stars = +st.dataset.star; document.querySelectorAll('[data-star]').forEach(b => b.classList.toggle('on', +b.dataset.star <= stars)); return; }
+    if (e.target.id === 'sendBtn') {
+      const box = $('msgIn'), text = box.value.trim(); if (!text || busy) return;
+      busy = true; try { await api(`/${id}/messages`, { text }); box.value = ''; await load(); } catch (err) { toast(err.message); } busy = false; return;
+    }
+    const b = e.target.closest('[data-act]'); if (!b || busy) return;
+    busy = true;
+    try {
+      const act = b.dataset.act;
+      if (act === 'quote') { await api(`/${id}/quote`, { amount: $('qAmt').value, days: $('qDays').value, scope: $('qScope').value }); toast(D.status === 'quoted' ? 'Quote updated.' : 'Quote sent.'); }
+      else if (act === 'decline') { const reason = prompt('Optional: tell the client why'); if (reason === null) { busy = false; return; } await api(`/${id}/decline`, { reason }); }
+      else if (act === 'cancel') { if (!confirm('Cancel this request?')) { busy = false; return; } await api(`/${id}/cancel`, {}); }
+      else if (act === 'pay') { b.disabled = true; await api(`/${id}/pay`, { expected_amount: D.quote_amount }); toast('Paid. The professional has been notified.'); }
+      else if (act === 'deliver') { if (!confirm('Mark the work as delivered? The client will be asked to confirm.')) { busy = false; return; } await api(`/${id}/deliver`, { note: $('dNote').value }); toast('Marked delivered.'); }
+      else if (act === 'confirm') { if (!confirm(`Confirm the work and release ${money(D.amount)}? This can't be undone.`)) { busy = false; return; } await api(`/${id}/confirm`, {}); toast('Confirmed. Thank you!'); }
+      else if (act === 'dispute') { const reason = prompt('What went wrong? The payment stays in escrow while IdeaHub reviews it.'); if (!reason) { busy = false; return; } await api(`/${id}/dispute`, { reason }); }
+      else if (act === 'rate') { if (!stars) { toast('Choose 1 to 5 stars.'); busy = false; return; } await api(`/${id}/rate`, { stars, review: $('rvText').value }); toast('Thanks for your review!'); }
+      else if (act === 'grant') {
+        if (!confirm(`Let ${D.pro.name} create and edit your listings? You can remove access any time.`)) { busy = false; return; }
+        const r = await fetch('/api/delegations', { method: 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: JSON.stringify({ delegate_id: D.pro.id }) });
+        const x = await r.json().catch(() => ({})); if (!r.ok) throw new Error(x.error || 'Could not give access.'); toast('Access given.');
+      }
+      else if (act === 'revoke') { if (!confirm('Remove listing access?')) { busy = false; return; } const r = await fetch('/api/delegations/' + D.delegation.id, { method: 'DELETE', headers: H() }); if (!r.ok) throw new Error('Could not remove access.'); toast('Access removed.'); }
+      await load();
+    } catch (err) { toast(err.message); await load(); }
+    busy = false;
+  });
+
+  if (!id) renderList();
+  else {
+    load();
+    if (params.get('sent')) { history.replaceState(null, '', location.pathname + '?id=' + id); setTimeout(() => toast('Request sent. You\'ll be notified when they reply.'), 400); }
+    setInterval(() => { if (!document.hidden && !(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName))) load(); }, 30000);
+  }
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

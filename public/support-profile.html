@@ -252,6 +252,27 @@
     <!-- RIGHT -->
     <div>
       <!-- PROFESSIONAL INFO -->
+      <!-- VERIFICATION -->
+      <div class="form-card" id="verify">
+        <div class="form-section-title">🪪 Verification <span id="verPill" class="cert-status pending" style="margin-left:8px;vertical-align:middle">Checking…</span></div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6" id="verIntro">Loading…</p>
+        <div class="cert-list" id="verList" style="margin-bottom:1rem"></div>
+        <div id="verForm" class="cert-form show" style="display:none">
+          <div class="row" style="margin-bottom:12px;">
+            <div class="field" style="margin-bottom:0;"><label class="lbl" for="verKind">Credential *</label><select id="verKind"></select></div>
+            <div class="field" style="margin-bottom:0;"><label class="lbl" for="verBody">Issued by *</label><select id="verBody"></select></div>
+          </div>
+          <div class="row" style="margin-bottom:12px;">
+            <div class="field" style="margin-bottom:0;"><label class="lbl" for="verNumber" id="verNumLbl">Number *</label><input type="text" id="verNumber" maxlength="60" /></div>
+            <div class="field" style="margin-bottom:0;"><label class="lbl" for="verName">Name on the record</label><input type="text" id="verName" maxlength="120" placeholder="As it appears on the certificate" /></div>
+          </div>
+          <div class="field"><label class="lbl" for="verFile">Certificate or document (PDF or image, max 10MB) *</label><input type="file" id="verFile" accept=".pdf,.png,.jpg,.jpeg,.webp" style="font-size:13px;color:var(--muted)" /></div>
+          <p style="font-size:12px;color:var(--muted);margin:.4rem 0 .9rem" id="verHint">Stored privately. Only IdeaHub admins can open it.</p>
+          <div class="msg error" id="verError"></div>
+          <button class="save-btn" id="verBtn" onclick="submitCredential()"><span id="verBtnText">Submit for checking</span></button>
+        </div>
+      </div>
+
       <div class="form-card">
         <div class="form-section-title">🧑‍💼 Professional Information</div>
         <div class="field">
@@ -353,8 +374,8 @@
 
       <!-- CERTIFICATES -->
       <div class="form-card">
-        <div class="form-section-title">📜 Qualifications & Certificates</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Upload your qualification certificates. Our team will review and verify them within 2-3 business days.</p>
+        <div class="form-section-title">📜 Other qualifications</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Degrees and certificates shown on your profile. These don't give the Verified badge; use Verification above for that.</p>
 
         <div class="cert-upload-area" onclick="document.getElementById('certFileInput').click()" id="dropZone">
           <span class="upload-icon">📄</span>
@@ -421,7 +442,7 @@
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
       <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
@@ -432,6 +453,7 @@
       <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
     <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
     <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
+    <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
@@ -443,7 +465,7 @@
   renderSidebar();
 
   const SUPPORT_ROLES = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
-  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney / Agent', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
   const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
 
   if (!token || !user) window.location.href = '/login';
@@ -663,12 +685,12 @@
       <div class="cert-item">
         <div class="cert-icon">${c.file_name?.endsWith('.pdf') ? '📄' : '🖼️'}</div>
         <div class="cert-info">
-          <div class="cert-title">${c.title}</div>
-          <div class="cert-meta">${c.issuer || 'Unknown issuer'} ${c.issued_year ? '· ' + c.issued_year : ''} · ${c.file_name || ''}</div>
-          ${c.status === 'rejected' && c.reject_reason ? `<div style="font-size:11px;color:var(--error);margin-top:3px;">Reason: ${c.reject_reason}</div>` : ''}
+          <div class="cert-title">${esc(c.title)}</div>
+          <div class="cert-meta">${esc(c.issuer || 'Unknown issuer')} ${c.issued_year ? '· ' + esc(c.issued_year) : ''} · ${esc(c.file_name || '')}</div>
+          ${c.status === 'rejected' && c.reject_reason ? `<div style="font-size:11px;color:var(--error);margin-top:3px;">Reason: ${esc(c.reject_reason)}</div>` : ''}
         </div>
         <span class="cert-status ${c.status}">${c.status === 'pending' ? '⏳ Pending' : c.status === 'approved' ? '✅ Verified' : '❌ Rejected'}</span>
-        <button class="cert-delete" onclick="deleteCert(${c.id})" title="Delete">🗑</button>
+        <button class="cert-delete" onclick="deleteCert(${Number(c.id)})" title="Delete">🗑</button>
       </div>
     `).join('');
   }
@@ -688,10 +710,10 @@
       <div class="rating-item">
         <div class="rating-header">
           <div class="rating-stars">${'⭐'.repeat(r.stars)}</div>
-          <div class="rating-name">${r.rater?.first_name || 'Anonymous'} ${r.rater?.last_name || ''}</div>
+          <div class="rating-name">${esc(r.rater?.first_name || 'Anonymous')} ${esc(r.rater?.last_name || '')}</div>
           <div class="rating-date">${new Date(r.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</div>
         </div>
-        ${r.review ? `<div class="rating-review">"${r.review}"</div>` : ''}
+        ${r.review ? `<div class="rating-review">"${esc(r.review)}"</div>` : ''}
       </div>
     `).join('');
   }
@@ -766,7 +788,73 @@
     }
   }
 
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  let VER = null;
+  async function loadVerification() {
+    try {
+      const r = await fetch(`${API_URL}/api/pros/credentials`, { headers: { Authorization: `Bearer ${token}` } });
+      VER = await r.json(); if (!r.ok) throw new Error();
+    } catch (e) { document.getElementById('verIntro').textContent = 'Could not load verification status.'; return; }
+    const pill = document.getElementById('verPill');
+    pill.className = 'cert-status ' + (VER.verified ? 'approved' : 'pending'); pill.textContent = VER.verified ? '✅ Verified' : 'Not verified';
+    const need = (VER.required || []).map(x => x.label).join(' or ');
+    const attorney = (VER.required || []).some(x => x.manage);
+    document.getElementById('verIntro').innerHTML = attorney
+      ? `Patent attorneys and agents are verified through their patent-office registrations. ${VER.verified ? 'You\'re verified.' : 'Add each office you\'re registered with on the Patents page.'} <a href="/patents#regSection" style="color:var(--accent)">Manage registrations →</a>`
+      : VER.verified ? `You're verified. Clients see the ✅ badge and your checked credential on Find Support.`
+      : `To appear in Find Support and receive requests, add your <b>${esc(need)}</b> with a copy of the certificate. IdeaHub checks it, usually within 2 business days.${VER.verified_only ? '' : ' (Unverified profiles are currently still shown.)'}`;
+    const st = { pending: ['pending', '⏳ Being checked'], verified: ['approved', '✅ Verified'], rejected: ['rejected', '❌ Not accepted'] };
+    document.getElementById('verList').innerHTML = (VER.credentials || []).map(c => `
+      <div class="cert-item"><div class="cert-icon">🪪</div><div class="cert-info">
+        <div class="cert-title">${esc(c.kind_label)}</div>
+        <div class="cert-meta">${esc(c.body)} · ${c.kind === 'identity' ? 'ending ' : 'No. '}${esc(c.number)} · ${esc(c.name_on_record || '')}</div>
+        ${c.status === 'rejected' && c.review_note ? `<div style="font-size:11px;color:var(--error);margin-top:3px;">${esc(c.review_note)}</div>` : ''}
+      </div><span class="cert-status ${st[c.status]?.[0] || 'pending'}">${st[c.status]?.[1] || esc(c.status)}</span>
+      <button class="cert-delete" onclick="deleteCredential(${Number(c.id)})" title="Remove">🗑</button></div>`).join('');
+    const form = document.getElementById('verForm');
+    if (!(VER.kinds || []).length) { form.style.display = 'none'; return; }
+    form.style.display = 'block';
+    const sel = document.getElementById('verKind');
+    sel.innerHTML = VER.kinds.map(k => `<option value="${esc(k.kind)}">${esc(k.label)}${(VER.required || []).some(x => x.kind === k.kind) ? '' : ' (optional extra)'}</option>`).join('');
+    sel.onchange = kindChanged; kindChanged();
+  }
+  function kindChanged() {
+    const k = (VER.kinds || []).find(x => x.kind === document.getElementById('verKind').value); if (!k) return;
+    document.getElementById('verBody').innerHTML = k.bodies.map(b => `<option>${esc(b)}</option>`).join('');
+    document.getElementById('verNumLbl').textContent = k.numberLabel + ' *';
+    const n = document.getElementById('verNumber'); n.value = ''; n.maxLength = k.kind === 'identity' ? 4 : 60;
+    document.getElementById('verHint').textContent = k.kind === 'identity'
+      ? 'Enter only the last 4 characters of your ID. Upload a photo of the ID; it is stored privately and only IdeaHub admins can open it.'
+      : 'Stored privately. Only IdeaHub admins can open it. If your body isn\'t listed, choose Other and name it in "Name on the record".';
+  }
+  async function submitCredential() {
+    const err = document.getElementById('verError'); err.classList.remove('show');
+    const file = document.getElementById('verFile').files[0];
+    const fd = new FormData();
+    fd.append('kind', document.getElementById('verKind').value);
+    fd.append('body', document.getElementById('verBody').value);
+    fd.append('number', document.getElementById('verNumber').value.trim());
+    fd.append('name_on_record', document.getElementById('verName').value.trim());
+    if (!file) { err.textContent = 'Please attach the certificate or document.'; err.classList.add('show'); return; }
+    fd.append('file', file);
+    const btn = document.getElementById('verBtn'); btn.disabled = true; document.getElementById('verBtnText').textContent = 'Uploading…';
+    try {
+      const r = await fetch(`${API_URL}/api/pros/credentials`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || 'Upload failed.');
+      document.getElementById('verFile').value = ''; document.getElementById('verNumber').value = '';
+      await loadVerification();
+    } catch (e) { err.textContent = e.message; err.classList.add('show'); }
+    btn.disabled = false; document.getElementById('verBtnText').textContent = 'Submit for checking';
+  }
+  async function deleteCredential(id) {
+    if (!confirm('Remove this credential? If it was your verified one, you lose the badge.')) return;
+    await fetch(`${API_URL}/api/pros/credentials/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    loadVerification();
+  }
+
   loadProfile();
+  loadVerification();
   loadCertificates();
   loadRatings();
 </script>

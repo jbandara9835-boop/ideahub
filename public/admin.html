@@ -234,7 +234,7 @@
     <button class="tab active" onclick="switchTab('certs', this)">📜 Certificates <span class="tab-count red" id="tabCertCount">0</span></button>
     <button class="tab" onclick="switchTab('roles', this)">🔄 Role Requests <span class="tab-count red" id="tabRoleCount">0</span></button>
     <button class="tab" onclick="switchTab('disputes', this)">⚖️ Disputes <span class="tab-count red" id="tabDisputeCount">0</span></button>
-    <button class="tab" onclick="switchTab('practitioners', this)">⚖️ Practitioners <span class="tab-count red" id="tabPracCount">0</span></button>
+    <button class="tab" onclick="switchTab('practitioners', this)">🪪 Professionals <span class="tab-count red" id="tabPracCount">0</span></button>
     <button class="tab" onclick="switchTab('withdrawals', this)">💸 Withdrawals <span class="tab-count red" id="tabWithdrawCount">0</span></button>
     <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
     <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
@@ -262,6 +262,9 @@
   <div class="tab-content" id="tab-practitioners">
     <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Patent attorneys and agents add their patent-office registrations here. Check each number on the office's official register (name must match), then verify it. Only verified registrations let them receive patent work for that office. For the USPTO, use the public practitioner search.</div>
     <div id="pracList"><div class="loading"><div class="spin"></div> Loading…</div></div>
+    <div style="font-size:15px;font-weight:700;margin:2rem 0 .5rem">Accountants, company secretaries and virtual managers</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Open the document and check it against the issuing body's public register (CA Sri Lanka member search, ACCA register, Registrar of Companies, etc.). For a government ID, check the photo, name and that the last 4 characters match. Verifying gives the ✅ badge and lists them in Find Support.</div>
+    <div id="credList"><div class="loading"><div class="spin"></div> Loading…</div></div>
   </div>
 
   <!-- DISPUTES TAB -->
@@ -553,6 +556,7 @@
     el.innerHTML = allDisputes.map(t => {
       if (t.kind === 'patent') return patentDisputeCard(t);
       if (t.kind === 'room_job') return roomJobCard(t);
+      if (t.kind === 'hire') return hireDisputeCard(t);
       const buyer = `${t.buyer?.first_name||''} ${t.buyer?.last_name||''}`.trim() || 'Buyer';
       const seller = `${t.seller?.first_name||''} ${t.seller?.last_name||''}`.trim() || 'Seller';
       const days = t.disputed_at ? Math.floor((Date.now() - new Date(t.disputed_at)) / 86400000) : 0;
@@ -617,8 +621,7 @@
   }
   function renderRegs() {
     const el = document.getElementById('pracList');
-    const pending = allRegs.filter(r => r.status === 'pending');
-    document.getElementById('tabPracCount').textContent = pending.length;
+    updatePracCount();
     if (!allRegs.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⚖️</div><div class="empty-text">No registrations submitted yet</div></div>`; return; }
     const order = { pending: 0, rejected: 1, verified: 2 };
     el.innerHTML = [...allRegs].sort((a, b) => order[a.status] - order[b.status]).map(r => {
@@ -648,6 +651,99 @@
         </div>`;
     }).join('');
   }
+  let allCreds = [];
+  async function loadCreds() {
+    try { const r = await fetch(`${API_URL}/api/admin/pro-credentials`, { headers:{ Authorization:`Bearer ${token}` } }); allCreds = r.ok ? await r.json() : []; } catch (e) { allCreds = []; }
+    renderCreds();
+  }
+  function updatePracCount() {
+    document.getElementById('tabPracCount').textContent = allRegs.filter(r => r.status === 'pending').length + allCreds.filter(c => c.status === 'pending').length;
+  }
+  function renderCreds() {
+    updatePracCount();
+    const el = document.getElementById('credList');
+    if (!allCreds.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🪪</div><div class="empty-text">No credentials submitted yet</div></div>`; return; }
+    const order = { pending: 0, rejected: 1, verified: 2 };
+    const roleLbl = { chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney / Agent' };
+    el.innerHTML = [...allCreds].sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3)).map(c => {
+      const name = `${c.user?.first_name||''} ${c.user?.last_name||''}`.trim() || 'Unknown';
+      return `
+        <div class="cert-card ${c.status === 'pending' ? 'pending' : ''}">
+          <div class="cert-top">
+            <div class="cert-user-info">
+              <div class="cert-user-name">${escHtml(name)} · <span style="color:var(--accent);">${escHtml(c.kind_label || c.kind)}</span></div>
+              <div class="cert-user-role">${escHtml(roleLbl[c.user?.role] || c.user?.role || '')} · ${escHtml(c.user?.email || '')}${c.user?.country ? ' · ' + escHtml(c.user.country) : ''} · submitted ${formatDate(c.updated_at || c.created_at)}</div>
+            </div>
+            <span class="cert-status-badge ${c.status === 'verified' ? 'approved' : c.status === 'rejected' ? 'rejected' : 'pending'}">${c.status === 'verified' ? '✅ Verified' : c.status === 'rejected' ? '❌ Rejected' : '⏳ To check'}</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Issued by</div><div class="cert-detail-val">${escHtml(c.body)}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">${c.kind === 'identity' ? 'ID ends with' : 'Number'}</div><div class="cert-detail-val">${escHtml(c.number)}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Name on record</div><div class="cert-detail-val">${escHtml(c.name_on_record || '—')}</div></div>
+          </div>
+          ${c.review_note ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:.8rem">Note: ${escHtml(c.review_note)}</div>` : ''}
+          <div class="cert-actions">
+            <button class="cert-file-btn" onclick="openCredFile(${Number(c.id)})">📄 Open document</button>
+            ${c.kind !== 'identity' ? `<a class="cert-file-btn" href="https://www.google.com/search?q=${encodeURIComponent((c.name_on_record || name) + ' ' + c.body + ' ' + c.number)}" target="_blank" rel="noopener">🔎 Search the web</a>` : ''}
+            ${c.status !== 'verified' ? `<button class="btn-approve" onclick="reviewCred(${Number(c.id)},'verified')">✅ Verify</button>` : ''}
+            ${c.status !== 'rejected' ? `<button class="btn-reject-cert" onclick="reviewCred(${Number(c.id)},'rejected')">❌ ${c.status === 'verified' ? 'Revoke' : 'Reject'}</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+  async function openCredFile(id) {
+    const w = window.open('', '_blank');
+    try {
+      const r = await fetch(`${API_URL}/api/pros/credentials/${id}/file`, { headers:{ Authorization:`Bearer ${token}` } });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Could not open');
+      if (w) w.location = d.url; else location.href = d.url;
+    } catch (e) { if (w) w.close(); alert(e.message); }
+  }
+  async function reviewCred(id, status) {
+    const note = status === 'rejected' ? prompt('Reason (shown to the professional), e.g. "Membership number not found on the CA Sri Lanka register":') : '';
+    if (note === null) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/pro-credentials/${id}`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body: JSON.stringify({ status, note }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadCreds(); else alert(d.error || 'Failed');
+    } catch (e) { alert('Something went wrong.'); }
+  }
+
+  function hireDisputeCard(h) {
+    const nm = u => `${u?.first_name||''} ${u?.last_name||''}`.trim() || '—';
+    return `
+        <div class="cert-card pending">
+          <div class="cert-top">
+            <div class="cert-user-info">
+              <div class="cert-user-name">💼 ${escHtml(h.title)} · <span style="color:var(--accent);">$${Number(h.amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-role">Hire #${escHtml(h.id)} · disputed ${formatDate(h.disputed_at)}</div>
+            </div>
+            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Client (paid)</div><div class="cert-detail-val">${escHtml(nm(h.client))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(h.client?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Professional</div><div class="cert-detail-val">${escHtml(nm(h.support))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(h.support?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Delivered</div><div class="cert-detail-val">${h.delivered_at ? formatDate(h.delivered_at) : 'Not marked delivered'}</div></div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Agreed scope</div>${escHtml(h.quote_scope||h.description||'')}<div class="cert-detail-label" style="margin-top:8px">Client's reason</div>${escHtml(h.dispute_reason||'—')}</div>
+          <div class="cert-actions">
+            <a class="cert-file-btn" href="/hire?id=${encodeURIComponent(h.id)}" target="_blank">📄 Open hire &amp; messages</a>
+            <button class="btn-approve" onclick="resolveHire('${escHtml(h.id)}','release')">💰 Release to professional</button>
+            <button class="btn-reject-cert" onclick="resolveHire('${escHtml(h.id)}','refund')">↩️ Refund client ($${Number(h.total||0).toLocaleString()})</button>
+          </div>
+        </div>`;
+  }
+  async function resolveHire(id, outcome) {
+    const note = prompt(`You are about to ${outcome === 'release' ? 'release the fee to the professional' : 'refund the client in full'}.\n\nOptional note for both parties:`);
+    if (note === null) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/hire/${id}/resolve`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body: JSON.stringify({ outcome, note }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadAll(); else alert(d.error || 'Failed');
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
   async function reviewReg(id, status) {
     const note = status === 'rejected' ? prompt('Reason (shown to the practitioner), e.g. "Number not found on the register":') : '';
     if (note === null) return;
@@ -996,11 +1092,11 @@
     if (!hires.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🤝</div><div class="empty-text">No hire requests yet</div></div>'; return; }
     el.innerHTML = hires.map(h => `
       <div class="hire-row">
-        <div style="font-weight:500;font-size:13px;">${h.title}</div>
-        <div style="font-size:12px;color:var(--muted);">${h.client?.first_name||''} ${h.client?.last_name||''}</div>
-        <div style="font-size:12px;color:var(--muted);">${h.support?.first_name||''} ${h.support?.last_name||''}</div>
-        <div style="font-weight:600;color:var(--accent);">${h.budget?'$'+h.budget.toLocaleString():'—'}</div>
-        <div><span class="badge badge-${h.status||'pending'}">${(h.status||'pending').replace('_',' ')}</span></div>
+        <div style="font-weight:500;font-size:13px;"><a href="/hire?id=${Number(h.id)}" target="_blank" style="color:inherit">${escHtml(h.title)}</a></div>
+        <div style="font-size:12px;color:var(--muted);">${escHtml(h.client?.first_name||'')} ${escHtml(h.client?.last_name||'')}</div>
+        <div style="font-size:12px;color:var(--muted);">${escHtml(h.support?.first_name||'')} ${escHtml(h.support?.last_name||'')}</div>
+        <div style="font-weight:600;color:var(--accent);">${(h.amount||h.quote_amount||h.budget)?'$'+Number(h.amount||h.quote_amount||h.budget).toLocaleString():'—'}</div>
+        <div><span class="badge badge-${escHtml(h.status||'pending')}">${escHtml((h.status||'pending').replace('_',' '))}</span></div>
       </div>
     `).join('');
   }
@@ -1074,18 +1170,20 @@
 
   async function loadAll() {
     try {
-      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes, patentDisputesRes, roomJobsRes] = await Promise.all([
+      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes, patentDisputesRes, roomJobsRes, hireDisputesRes] = await Promise.all([
         fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/users`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/ideas`, { headers:{ Authorization:`Bearer ${token}` } }),
-        fetch(`${API_URL}/api/hire/incoming`, { headers:{ Authorization:`Bearer ${token}` } }),
+        fetch(`${API_URL}/api/admin/hires`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/role-requests`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/disputes`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/patent-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null),
-        fetch(`${API_URL}/api/admin/room-job-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
+        fetch(`${API_URL}/api/admin/room-job-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null),
+        fetch(`${API_URL}/api/admin/hire-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
       ]);
       loadRegs();
+      loadCreds();
       fetch(`${API_URL}/api/admin/appeals`, { headers:{ Authorization:`Bearer ${token}` } })
         .then(r => r.ok ? r.json() : []).then(a => { allAppeals = Array.isArray(a) ? a : []; renderAppeals(); updateIdeaTabCount(); if (allIdeas.length) filterIdeas(); }).catch(() => {});
       allWithdrawals = withdrawalsRes.ok ? await withdrawalsRes.json() : [];
@@ -1094,6 +1192,8 @@
       allDisputes = allDisputes.concat((Array.isArray(patentDisputes) ? patentDisputes : []).map(p => ({ ...p, kind: 'patent' })));
       const roomJobs = roomJobsRes && roomJobsRes.ok ? await roomJobsRes.json() : [];
       allDisputes = allDisputes.concat((Array.isArray(roomJobs) ? roomJobs : []).map(j => ({ ...j, kind: 'room_job' })));
+      const hireDisp = hireDisputesRes && hireDisputesRes.ok ? await hireDisputesRes.json() : [];
+      allDisputes = allDisputes.concat((Array.isArray(hireDisp) ? hireDisp : []).map(h => ({ ...h, kind: 'hire' })));
 
       allIdeas = ideasRes.ok ? await ideasRes.json() : [];
       allHires = hiresRes.ok ? await hiresRes.json() : [];
@@ -1107,7 +1207,7 @@
       document.getElementById('sPendingCerts').textContent = pendingCerts;
       document.getElementById('sTotalUsers').textContent = allUsers.length;
       document.getElementById('sTotalIdeas').textContent = allIdeas.length;
-      document.getElementById('sActiveHires').textContent = allHires.filter(h=>['accepted','in_progress'].includes(h.status)).length;
+      document.getElementById('sActiveHires').textContent = allHires.filter(h=>['quoted','in_progress','delivered','disputed'].includes(h.status)).length;
       document.getElementById('sVerifiedPros').textContent = allUsers.filter(u=>u.verification_status==='verified').length;
       document.getElementById('tabCertCount').textContent = pendingCerts;
       document.getElementById('tabRoleCount').textContent = pendingRoles;

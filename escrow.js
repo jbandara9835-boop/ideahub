@@ -10,7 +10,8 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 function money(n) {
-  return '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const v = Number(n || 0);
+  return '$' + v.toLocaleString('en-US', Number.isInteger(v) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 function emailShell(heading, bodyHtml, ctaText, ctaPath) {
   return `

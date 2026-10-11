@@ -805,7 +805,7 @@
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
       <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
@@ -816,6 +816,7 @@
       <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
     <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
     <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
+    <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
@@ -891,6 +892,19 @@
     document.getElementById('imageUploadLabel').style.display = 'flex';
   }
   const editId = new URLSearchParams(window.location.search).get('edit')?.split(':')[0];
+  const forOwner = parseInt(new URLSearchParams(window.location.search).get('for'), 10) || null;
+  if (forOwner) {
+    fetch(`${API_URL}/api/delegations/owner/${forOwner}/ideas`, { headers: { Authorization: `Bearer ${localStorage.getItem('ih_token')}` } })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => {
+        const bar = document.createElement('div');
+        bar.style.cssText = 'background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.35);border-radius:14px;padding:.85rem 1.15rem;font-size:13.5px;margin:0 0 1.25rem;line-height:1.6';
+        bar.textContent = `You're ${editId ? 'editing a listing' : 'creating a listing'} for ${d.owner.name}. It will be published under their name, and they'll be notified.`;
+        document.querySelector('.topbar').insertAdjacentElement('afterend', bar); if (!editId) document.querySelector('.page-title').textContent = 'New listing for ' + d.owner.name.split(' ')[0];
+      })
+      .then(() => { const bb = document.querySelector('.back-btn'); if (bb) bb.href = '/manage?owner=' + forOwner; })
+      .catch(() => { alert('You no longer have access to manage this person\'s listings.'); location.href = '/support-dashboard'; });
+  }
   if (editId) {
   document.querySelector('.page-title').textContent = 'Edit Idea';
   document.getElementById('btnText').textContent = 'Save Changes';
@@ -975,7 +989,7 @@
     const sbName = document.getElementById('sidebarName');
       if (sbName) sbName.textContent = `${user.first_name || ''} ${user.last_name || user.Last_name || ''}`.trim();
       // stars handled below
-    document.getElementById('sidebarRole').textContent = user.role === 'idea_creator' ? 'Idea Creator' : 'Investor';
+    document.getElementById('sidebarRole').textContent = ({ idea_creator:'Idea Creator', patent_seller:'Patent Seller', investor:'Investor', virtual_manager:'Virtual Manager', chartered_accountant:'Chartered Accountant', patent_attorney:'Patent Attorney / Agent', corporate_services:'Corporate Services', business_owner:'Business Owner', admin:'Admin' })[user.role] || '';
   }
 
   function logout() {
@@ -1374,7 +1388,7 @@
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title, summary, desc, industry, ideaType, countries, price, visibility, level, hasPatent, patentNumber, engagements: engValue(), patentDetails: patentDetailsValue(), patentOffer: patentOfferValue(), patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages })
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, countries, price, visibility, level, hasPatent, patentNumber, engagements: engValue(), patentDetails: patentDetailsValue(), patentOffer: patentOfferValue(), patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages, onBehalfOf: forOwner || undefined })
       });
 
       const data = await res.json();
@@ -1383,7 +1397,7 @@
       successMsg.classList.add('show');
       btnText.textContent = 'Submitted!';
 
-      setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
+      setTimeout(() => { window.location.href = forOwner ? `/manage?owner=${forOwner}` : '/dashboard'; }, 1500);
 
     } catch (err) {
       errorMsg.textContent = err.message || 'Something went wrong. Please try again.';

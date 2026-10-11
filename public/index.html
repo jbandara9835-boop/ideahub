@@ -842,9 +842,9 @@ footer a:hover { color: var(--text); }
 
       <a class="role-card corporate" href="/signup?role=corporate_services">
         <span class="role-emoji-big">🏢</span>
-        <div class="role-hook">Need corporate-grade solutions fast?</div>
-        <div class="role-desc-text">Procurement, licensing, partnerships — IdeaHub connects corporations with the fresh ideas and talent they need to stay ahead.</div>
-        <div class="role-cta">Explore corporate →</div>
+        <div class="role-hook">Company secretary or corporate services firm?</div>
+        <div class="role-desc-text">Help creators register companies and stay compliant: incorporation, company secretarial work and annual filings. Get verified and receive clients through IdeaHub.</div>
+        <div class="role-cta">Offer your services →</div>
       </a>
 
     </div>
@@ -949,8 +949,8 @@ footer a:hover { color: var(--text); }
     const tUser = JSON.parse(localStorage.getItem('ih_user') || 'null');
     const dashMap = {
       idea_creator: '/dashboard', patent_seller: '/dashboard',
-      investor: '/buyer-dashboard', corporate_services: '/buyer-dashboard',
-      virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/attorney-dashboard',
+      investor: '/buyer-dashboard', corporate_services: '/support-dashboard',
+      virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/support-dashboard',
       business_owner: '/business-dashboard', admin: '/admin'
     };
     const postBtn = document.getElementById('tabPostBtn');
@@ -1027,8 +1027,8 @@ footer a:hover { color: var(--text); }
   if (token && user) {
     const dashMap = {
       idea_creator: '/dashboard', patent_seller: '/dashboard',
-      investor: '/buyer-dashboard', corporate_services: '/buyer-dashboard',
-      virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/attorney-dashboard',
+      investor: '/buyer-dashboard', corporate_services: '/support-dashboard',
+      virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/support-dashboard',
       business_owner: '/business-dashboard'
     };
     // Update nav for logged in users

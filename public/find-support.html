@@ -333,9 +333,9 @@
     <div class="modal-sub" id="modalSub">Send a hire request</div>
     <div class="warning-box" id="warningBox"></div>
     <div class="field"><label class="lbl">Job Title *</label><input type="text" id="hireTitle" placeholder="e.g. Help me file a patent for my idea" /></div>
-    <div class="field"><label class="lbl">Description</label><textarea id="hireDesc" placeholder="Describe what you need help with…"></textarea></div>
+    <div class="field"><label class="lbl">What do you need? *</label><textarea id="hireDesc" placeholder="Describe the work in a few sentences so they can send you a fixed quote…"></textarea></div>
     <div class="form-row">
-      <div class="field"><label class="lbl">Budget (USD)</label><input type="number" id="hireBudget" placeholder="500" min="1" /></div>
+      <div class="field"><label class="lbl">Budget, optional (USD)</label><input type="number" id="hireBudget" placeholder="500" min="1" /></div>
       <div class="field"><label class="lbl">Deadline</label><input type="date" id="hireDeadline" /></div>
     </div>
     <div class="field">
@@ -354,7 +354,7 @@
       <select id="hireIdea"><option value="">No specific idea</option></select>
     </div>
     <div class="modal-error" id="hireError"></div>
-    <div class="modal-success" id="hireSuccess">🎉 Hire request sent! The professional will respond soon.</div>
+    <div class="modal-success" id="hireSuccess">🎉 Request sent! Opening it now…</div>
     <div class="modal-actions">
       <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-modal-hire" id="hireBtn" onclick="submitHire()">
@@ -366,9 +366,7 @@
 </div>
 
 <script>
-  const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : 'https://ideahub.it.com';
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
   let allProfiles = [], advOpen = false, verifiedOnly = false;
   let activeRole = 'all', activeCountry = 'all', activeAvail = 'all';
@@ -377,18 +375,19 @@
   const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('ih_user') || 'null');
 
-  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney / Agent', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
   const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
 
   function initNav() {
     if (!token || !user) return;
     document.getElementById('guestNav').style.display = 'none';
     document.getElementById('userNav').classList.add('visible');
-    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/buyer-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
+    const roleLinks = { idea_creator:'/dashboard', patent_seller:'/dashboard', investor:'/buyer-dashboard', corporate_services:'/support-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', business_owner:'/business-dashboard', admin:'/admin' };
     document.getElementById('dashboardLink').href = roleLinks[user.role] || '/dashboard';
     const avatarEl = document.getElementById('navAvatar');
     const avatarUrl = user.avatar_url || user.avatarUrl;
-    if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
+    if (avatarUrl) avatarEl.innerHTML = `<img src="${esc(avatarUrl)}" alt="">`;
     else avatarEl.textContent = (user.name || user.first_name || user.email || 'U')[0].toUpperCase();
   }
 
@@ -514,42 +513,43 @@
 
   function cardHTML(p) {
     const name = `${p.users?.first_name||''} ${p.users?.last_name||''}`.trim() || 'Anonymous';
-    const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    const initials = esc(name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2));
     const avatarUrl = p.users?.avatar_url;
-    const avatarContent = avatarUrl ? `<img src="${avatarUrl}" alt="">` : initials;
+    const avatarContent = avatarUrl ? `<img src="${esc(avatarUrl)}" alt="">` : initials;
     const canHire = p.availability === 'available';
     const langs = (p.languages||[]).slice(0,3);
     const avail = p.availability || 'available';
     const availLabel = avail==='available'?'Available':avail==='busy'?'Busy':'Unavailable';
 
     return `
-      <div class="support-card ${p.role}">
+      <div class="support-card ${esc(p.role)}">
         <div class="card-top">
-          <div class="card-avatar ${p.role}">${avatarContent}</div>
+          <div class="card-avatar ${esc(p.role)}">${avatarContent}</div>
           <div style="flex:1;min-width:0;">
             <div class="card-name">
-              ${name}
-              ${p.is_verified?'<span class="verified-tick" title="Verified">✅</span>':''}
+              ${esc(name)}
+              ${p.is_verified?'<span class="verified-tick" title="Credentials checked by IdeaHub">✅ Verified</span>':''}
             </div>
-            <div class="card-role">${roleEmoji[p.role]||''} ${roleMap[p.role]||p.role}</div>
+            <div class="card-role">${roleEmoji[p.role]||''} ${esc(roleMap[p.role]||p.role)}</div>
           </div>
         </div>
-        ${p.tagline?`<div class="card-tagline">"${p.tagline}"</div>`:''}
+        ${p.tagline?`<div class="card-tagline">"${esc(p.tagline)}"</div>`:''}
+        ${(p.credentials||[]).length?`<div class="card-tags">${p.credentials.map(c=>`<span class="card-tag" title="Checked by IdeaHub">🪪 ${esc(c)}</span>`).join('')}</div>`:''}
         <div class="card-stats">
           <div class="stat-item">${starsHTML(p.avg_rating, p.completed_jobs)}</div>
           <div class="stat-item">✅ <strong>${p.completed_jobs||0}</strong> jobs</div>
           <div class="stat-item">🏆 <strong>${p.experience_years||0}yr</strong> exp</div>
         </div>
-        ${langs.length?`<div class="card-tags">${langs.map(l=>`<span class="card-tag">🗣 ${l}</span>`).join('')}</div>`:''}
+        ${langs.length?`<div class="card-tags">${langs.map(l=>`<span class="card-tag">🗣 ${esc(l)}</span>`).join('')}</div>`:''}
         <div class="card-location">
           <div class="avail-dot ${avail}"></div>
-          ${availLabel} · ${p.home_country||'Worldwide'}
+          ${availLabel} · ${esc(p.home_country||'Worldwide')}
           ${p.service_type==='specific_countries'?'<span style="color:var(--blue);font-size:0.72rem;"> · Limited countries</span>':''}
           ${p.service_type==='restricted_countries'?'<span style="color:var(--error);font-size:0.72rem;"> · Some restrictions</span>':''}
         </div>
         <div class="card-footer">
-          <div class="card-rate">${p.hourly_rate?'$'+p.hourly_rate+'<span>/hr</span>':'<span>Rate negotiable</span>'}</div>
-          <button class="btn-hire ${canHire?'':'busy'}" onclick="${canHire?`openHireModal(${p.user_id},'${name.replace(/'/g,"\\'")}','${p.role}')`:'void(0)'}">
+          <div class="card-rate">${p.hourly_rate?'$'+esc(p.hourly_rate)+'<span>/hr</span>':'<span>Rate negotiable</span>'}</div>
+          <button class="btn-hire ${canHire?'':'busy'}" data-hire="${canHire?Number(p.user_id):''}" data-name="${esc(name)}" data-role="${esc(p.role)}">
             ${canHire?'Hire Now →':'Busy'}
           </button>
         </div>
@@ -558,10 +558,10 @@
 
   // HIRE MODAL
   async function openHireModal(supportId, name, role) {
-    if (!token) { window.location.href = '/login'; return; }
+    if (!token) { window.location.href = '/login?next=' + encodeURIComponent('/find-support'); return; }
     selectedSupportId = supportId;
     document.getElementById('modalTitle').textContent = `Hire ${name}`;
-    document.getElementById('modalSub').textContent = `${roleEmoji[role]} ${roleMap[role]} · Send a hire request`;
+    document.getElementById('modalSub').textContent = `${roleEmoji[role]} ${roleMap[role]} · They reply with a fixed quote. You pay only if you accept.`;
     document.getElementById('warningBox').classList.remove('show');
     document.getElementById('hireError').classList.remove('show');
     document.getElementById('hireSuccess').classList.remove('show');
@@ -578,7 +578,7 @@
       const res = await fetch(`${API_URL}/api/my-ideas`, { headers:{ Authorization:`Bearer ${token}` } });
       const ideas = await res.json();
       const sel = document.getElementById('hireIdea');
-      sel.innerHTML = '<option value="">No specific idea</option>' + (Array.isArray(ideas)?ideas.map(i=>`<option value="${i.id}">${i.title}</option>`).join(''):'');
+      sel.innerHTML = '<option value="">No specific idea</option>' + (Array.isArray(ideas)?ideas.map(i=>`<option value="${Number(i.id)}">${esc(i.title)}</option>`).join(''):'');
     } catch(e) {}
     document.getElementById('hireModal').classList.add('show');
   }
@@ -619,6 +619,7 @@
     const errorEl = document.getElementById('hireError');
     errorEl.classList.remove('show');
     if (!title) { errorEl.textContent='Please enter a job title.'; errorEl.classList.add('show'); return; }
+    if (description.length < 20) { errorEl.textContent='Please describe what you need (at least 20 characters) so they can quote.'; errorEl.classList.add('show'); return; }
     if (!country) { errorEl.textContent='Please select your country.'; errorEl.classList.add('show'); return; }
     const btn = document.getElementById('hireBtn');
     const spinner = document.getElementById('hireSpinner');
@@ -632,13 +633,18 @@
       if (!res.ok) throw new Error(data.error||'Failed');
       document.getElementById('hireSuccess').classList.add('show');
       document.getElementById('hireBtnText').textContent='Sent!';
-      setTimeout(closeModal, 2000);
+      setTimeout(() => { location.href = '/hire?id=' + Number(data.id) + '&sent=1'; }, 900);
     } catch(err) {
       errorEl.textContent = err.message||'Something went wrong.';
       errorEl.classList.add('show');
       btn.disabled=false; spinner.style.display='none'; document.getElementById('hireBtnText').textContent='Send Hire Request';
     }
   }
+
+  document.getElementById('supportGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-hire]'); if (!b || !b.dataset.hire) return;
+    openHireModal(Number(b.dataset.hire), b.dataset.name, b.dataset.role);
+  });
 
   // Chip event listeners
   document.getElementById('roleChips').addEventListener('click', e => {

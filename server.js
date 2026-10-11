@@ -168,6 +168,10 @@ app.get('/robots.txt', (req, res) => {
   licences.mount(app, { supabase, authMiddleware, escrow });
   // Deal rooms: each side brings its own advisers (shared + private side channels, adviser jobs in escrow)
   require('./rooms').mount(app, { supabase, authMiddleware, escrow, sendEmail });
+  // Professionals: verification + Virtual Manager delegation; hiring with quotes and escrow
+  const pros = require('./pros');
+  pros.mount(app, { supabase, authMiddleware, escrow });
+  require('./hire').mount(app, { supabase, authMiddleware, escrow });
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -282,9 +286,8 @@ app.get('/robots.txt', (req, res) => {
   app.get('/support-dashboard', (req, res) => {
     res.sendFile(__dirname + '/public/support-dashboard.html');
   });
-  app.get('/attorney-dashboard', (req, res) => {
-    res.sendFile(__dirname + '/public/attorney-dashboard.html');
-  });
+  // One dashboard for every professional role
+  app.get('/attorney-dashboard', (req, res) => res.redirect(301, '/support-dashboard'));
   app.get('/wall', (req, res) => res.sendFile(__dirname + '/public/wall.html'));
   app.get('/life-hacks', (req, res) => res.sendFile(__dirname + '/public/life-hacks.html'));
   app.get('/patents', (req, res) => res.sendFile(__dirname + '/public/patents.html'));
@@ -293,6 +296,8 @@ app.get('/robots.txt', (req, res) => {
   app.get('/call', (req, res) => res.sendFile(__dirname + '/public/call.html'));
   app.get('/licence', (req, res) => res.sendFile(__dirname + '/public/licence.html'));
   app.get('/deal-room', (req, res) => res.sendFile(__dirname + '/public/deal-room.html'));
+  app.get('/hire', (req, res) => res.sendFile(__dirname + '/public/hire.html'));
+  app.get('/manage', (req, res) => res.sendFile(__dirname + '/public/manage.html'));
 
   // Sitemap: the static pages in public/sitemap.xml + each public idea and life hack (cached 1 hour)
   let sitemapCache = { at: 0, xml: '' };
@@ -676,7 +681,7 @@ app.get('/robots.txt', (req, res) => {
     if (!idea || error) return res.status(404).json({ error: 'Idea not found' });
 
     const viewer = await viewerContext(req);
-    const isOwner = !!viewer.id && viewer.id === idea.creator_id;
+    const isOwner = !!viewer.id && (viewer.id === idea.creator_id || await pros.canManage(supabase, viewer.id, idea.creator_id));
     const isAdmin = viewer.role === 'admin';
     let isBuyer = false;
     if (viewer.id && !isOwner) {
@@ -712,7 +717,11 @@ app.get('/robots.txt', (req, res) => {
     const eng = readEngagements(req.body);
     if (eng.error) return res.status(400).json({ error: eng.error });
 
-    const { data: user } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
+    // A Virtual Manager with access can list for their client
+    const behalf = parseInt(req.body.onBehalfOf, 10) || null;
+    if (behalf && behalf !== req.user.id && !(await pros.canManage(supabase, req.user.id, behalf))) return res.status(403).json({ error: 'You no longer have access to list for this person.' });
+    const ownerId = behalf || req.user.id;
+    const { data: user } = await supabase.from('users').select('first_name, last_name').eq('id', ownerId).single();
 
     const { data: idea, error } = await supabase
       .from('ideas')
@@ -732,7 +741,7 @@ app.get('/robots.txt', (req, res) => {
         icon: '💡',
         images: req.body.images || [],
       countries: req.body.countries || [],
-        creator_id: req.user.id,
+        creator_id: ownerId,
         creator_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
         status: (hasPatent && req.body.patentCertUrl) ? 'under_review' : 'live',
         patent_jurisdiction: req.body.patentJurisdiction || '',
@@ -747,7 +756,8 @@ app.get('/robots.txt', (req, res) => {
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-    originality.checkInBackground(idea, req.user.id);
+    originality.checkInBackground(idea, ownerId);
+    if (ownerId !== req.user.id) await pros.logDelegation(supabase, escrow, req.user.id, ownerId, 'create', idea);
     // A few minutes later (after the originality bot), tell investors whose open request this idea fits
     setTimeout(async () => {
       try {
@@ -759,7 +769,7 @@ app.get('/robots.txt', (req, res) => {
     // Share to IdeaWall if requested
     if (req.body.shareToWall && idea) {
       await supabase.from('wall_posts').insert([{
-        user_id: req.user.id,
+        user_id: ownerId,
         title: idea.title,
         description: idea.summary || '',
         category: 'Innovation',
@@ -780,7 +790,9 @@ app.get('/robots.txt', (req, res) => {
     const { title, summary, desc, industry, ideaType, price, level, visibility, hasPatent, patentNumber } = req.body;
     if (!title || !industry || !price) return res.status(400).json({ error: 'Title, industry and price are required' });
     // A taken-down idea goes back to the admin for review once the creator edits it
-    const { data: current } = await supabase.from('ideas').select('status').eq('id', req.params.id).eq('creator_id', req.user.id).single();
+    const { data: cur0 } = await supabase.from('ideas').select('creator_id').eq('id', req.params.id).single();
+    const ownerId = cur0 && await pros.canManage(supabase, req.user.id, cur0.creator_id) ? cur0.creator_id : req.user.id;
+    const { data: current } = await supabase.from('ideas').select('status').eq('id', req.params.id).eq('creator_id', ownerId).single();
     const resubmit = current?.status === 'rejected';
     const qc = await checkQuality(req.body);
     if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
@@ -806,12 +818,13 @@ app.get('/robots.txt', (req, res) => {
         ...qualityFields(qc.report),
       })
       .eq('id', req.params.id)
-      .eq('creator_id', req.user.id)
+      .eq('creator_id', ownerId)
       .select()
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-    originality.checkInBackground(idea, req.user.id);
+    originality.checkInBackground(idea, ownerId);
+    if (ownerId !== req.user.id) await pros.logDelegation(supabase, escrow, req.user.id, ownerId, 'edit', idea);
     res.json(ownerIdea(idea));
   });
 
@@ -893,10 +906,12 @@ app.get('/robots.txt', (req, res) => {
 
   // GET my ideas
   app.get('/api/my-ideas', authMiddleware, async (req, res) => {
+    const forId = parseInt(req.query.for, 10);
+    const ownerId = forId && await pros.canManage(supabase, req.user.id, forId) ? forId : req.user.id;
     const { data, error } = await supabase
       .from('ideas')
       .select('*')
-      .eq('creator_id', req.user.id)
+      .eq('creator_id', ownerId)
       .order('created_at', { ascending: false });
 
     if (error) return res.status(500).json({ error: error.message });
@@ -2998,6 +3013,7 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
       if (error) return res.status(500).json({ error: error.message });
       result = data;
     }
+    result.is_verified = await pros.refreshVerified(supabase, req.user.id);
     res.json(result);
   });
 
@@ -3005,23 +3021,24 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
   app.get('/api/support/browse', async (req, res) => {
     let query = supabase
       .from('support_profiles')
-      .select('*, users(id, first_name, last_name, email, role, verified)')
+      .select('*, users(id, first_name, last_name, role, avatar_url)')
       .eq('availability', 'available');
 
     if (req.query.role) query = query.eq('role', req.query.role);
     if (req.query.country) query = query.eq('home_country', req.query.country);
-    if (req.query.verified === 'true') query = query.eq('is_verified', true);
+    if (req.query.verified === 'true' || pros.verifiedOnly()) query = query.eq('is_verified', true);
 
     const { data, error } = await query.order('avg_rating', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
-    res.json(data || []);
+    const badges = await pros.badgeMap(supabase, (data || []).map(p => p.user_id));
+    res.json((data || []).map(p => ({ ...p, credentials: badges[p.user_id] || [] })));
   });
 
   // GET single support profile by user_id — public
   app.get('/api/support/profile/:userId', async (req, res) => {
     const { data, error } = await supabase
       .from('support_profiles')
-      .select('*, users(id, first_name, last_name, email, role, country, bio)')
+      .select('*, users(id, first_name, last_name, role, country, bio, avatar_url)')
       .eq('user_id', req.params.userId)
       .single();
     if (!data || error) return res.status(404).json({ error: 'Profile not found' });

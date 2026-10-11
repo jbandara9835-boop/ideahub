@@ -326,6 +326,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   app.delete('/api/patents/registrations/:rid', authMiddleware, async (req, res) => {
     const { error } = await supabase.from('patent_registrations').delete().eq('id', parseInt(req.params.rid, 10)).eq('user_id', req.user.id);
     if (error) return res.status(500).json({ error: error.message });
+    try { await require('./pros').refreshVerified(supabase, req.user.id); } catch (e) {}
     res.json({ ok: true });
   });
   app.get('/api/admin/patent-registrations', authMiddleware, async (req, res) => {
@@ -341,6 +342,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const note = txt(req.body?.note, 500);
     const { data: r, error } = await supabase.from('patent_registrations').update({ status, review_note: note || null, reviewed_by: req.user.id, reviewed_at: new Date().toISOString() }).eq('id', parseInt(req.params.rid, 10)).select().single();
     if (error || !r) return res.status(400).json({ error: error?.message || 'Not found' });
+    try { await require('./pros').refreshVerified(supabase, r.user_id); } catch (e) { console.error('Verified badge refresh failed:', e.message); }
     const label = (R.OFFICES[r.office] || {}).label || r.office;
     await escrow.notify(r.user_id, status === 'verified'
       ? { type: 'registration_verified', title: '✅ Registration verified', message: `Your ${label} registration (${r.reg_number}) is verified. Creators filing there can now choose you.`, link: '/patents' }

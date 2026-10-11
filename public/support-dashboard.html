@@ -216,6 +216,17 @@
     .role-banner { flex-direction:column; gap:10px; }
     .verified-pill { margin-left:0; }
   }
+  .job-link { display:block; text-decoration:none; color:inherit; transition:border-color .15s; }
+  .job-link:hover { border-color:rgba(245,200,66,0.35); }
+  .sec-link { font-size:12.5px; color:var(--accent); text-decoration:none; font-weight:600; }
+  .badge-quoted { background:rgba(96,165,250,0.12); color:#60a5fa; }
+  .badge-delivered { background:rgba(167,139,250,0.14); color:#a78bfa; }
+  .badge-disputed { background:rgba(248,113,113,0.12); color:#f87171; }
+  .verify-card { display:flex; gap:16px; align-items:center; justify-content:space-between; background:rgba(245,200,66,0.07); border:1px solid rgba(245,200,66,0.3); border-radius:14px; padding:1rem 1.15rem; margin-bottom:1.25rem; }
+  .verify-card.wait { background:rgba(96,165,250,0.07); border-color:rgba(96,165,250,0.3); }
+  .verify-card p { font-size:13.5px; color:var(--muted); line-height:1.55; margin-top:4px; }
+  .btn-verify { flex-shrink:0; background:var(--accent); color:#111; font-weight:700; font-size:13px; padding:9px 16px; border-radius:9px; text-decoration:none; }
+  @media (max-width:600px){ .verify-card { flex-direction:column; align-items:flex-start; } }
 </style>
 </head>
 <body>
@@ -277,66 +288,33 @@
     </div>
   </div>
   <div id="roleBanner"></div>
+  <div id="verifyCard"></div>
   <div style="margin-bottom:1.75rem;">
     <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
     <div class="page-subtitle" style="color:var(--muted);font-size:14px;margin-top:4px;">Your clients, requests and earnings in one place</div>
   </div>
   <div class="stats-grid">
-    <div class="stat-card"><div class="stat-label">Pending Requests</div><div class="stat-value yellow" id="statPending">—</div><div class="stat-sub">awaiting response</div></div>
-    <div class="stat-card"><div class="stat-label">Active Jobs</div><div class="stat-value purple" id="statActive">—</div><div class="stat-sub">in progress</div></div>
-    <div class="stat-card"><div class="stat-label">Completed Jobs</div><div class="stat-value green" id="statCompleted">—</div><div class="stat-sub">all time</div></div>
-    <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value yellow" id="statRating">—</div><div class="stat-sub">from clients</div></div>
+    <div class="stat-card"><div class="stat-label">Need your quote</div><div class="stat-value yellow" id="statPending">—</div><div class="stat-sub">new requests</div></div>
+    <div class="stat-card"><div class="stat-label">Active jobs</div><div class="stat-value purple" id="statActive">—</div><div class="stat-sub">quoted, paid or delivered</div></div>
+    <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value green" id="statCompleted">—</div><div class="stat-sub">all time</div></div>
+    <div class="stat-card"><div class="stat-label">Avg rating</div><div class="stat-value yellow" id="statRating">—</div><div class="stat-sub" id="statRatingSub">from clients</div></div>
   </div>
   <div class="section-card">
-    <div class="section-header"><div class="section-title">📬 Pending Hire Requests</div></div>
+    <div class="section-header"><div class="section-title">📬 New requests: send a quote</div><a href="/hire" class="sec-link">All hires →</a></div>
     <div id="pendingList"><div class="loading"><div class="spin"></div> Loading...</div></div>
   </div>
   <div class="two-col">
     <div class="section-card" style="margin-bottom:0;">
-      <div class="section-header"><div class="section-title">⚡ Active Jobs</div></div>
+      <div class="section-header"><div class="section-title">⚡ Active jobs</div></div>
       <div id="activeList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
     <div class="section-card" style="margin-bottom:0;">
-      <div class="section-header"><div class="section-title">✅ Completed Jobs</div></div>
+      <div class="section-header"><div class="section-title">✅ Completed</div></div>
       <div id="completedList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
   </div>
+  <div id="extraPanels" style="margin-top:1.5rem"></div>
 </main>
-
-<!-- CHAT MODAL -->
-<div class="modal-overlay" id="chatModal">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-title" id="chatTitle">Job Chat</div>
-      <button class="modal-close" onclick="closeChat()">×</button>
-    </div>
-    <div class="chat-msgs" id="chatMsgs"></div>
-    <div class="chat-input-row">
-      <input class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="handleChatKey(event)" />
-      <button class="chat-send" onclick="sendChatMsg()">➤</button>
-    </div>
-  </div>
-</div>
-
-<!-- RATE MODAL -->
-<div class="modal-overlay" id="rateModal">
-  <div class="rate-modal">
-    <div class="rate-title">Rate this job</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:0.5rem;">How was your experience with the client?</p>
-    <div class="stars-row">
-      <button class="star-btn" onclick="setStar(1)">⭐</button>
-      <button class="star-btn" onclick="setStar(2)">⭐</button>
-      <button class="star-btn" onclick="setStar(3)">⭐</button>
-      <button class="star-btn" onclick="setStar(4)">⭐</button>
-      <button class="star-btn" onclick="setStar(5)">⭐</button>
-    </div>
-    <textarea class="rate-review" id="rateReview" placeholder="Write a review (optional)..."></textarea>
-    <div class="rate-btns">
-      <button class="rate-cancel" onclick="closeRate()">Cancel</button>
-      <button class="rate-submit" onclick="submitRate()">Submit Rating</button>
-    </div>
-  </div>
-</div>
 
 <!-- BOTTOM TAB BAR (mobile only) -->
 <nav class="bottom-tabbar" id="bottomTabbar">
@@ -357,9 +335,9 @@
   if (!token || !user) window.location.href = '/login';
 
   const SUPPORT_ROLES = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
-  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
+  const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney / Agent', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
   const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
-  const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Provide business solutions and partnerships', chartered_accountant:'Audit, tax, company setup and financial advice for creators and investors' };
+  const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Company registration, company secretarial and compliance services for creators', chartered_accountant:'Audit, tax, company setup and financial advice for creators and investors' };
 
   if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/dashboard';
 
@@ -367,14 +345,16 @@
     const path = window.location.pathname;
     const nav = document.getElementById('sidebarNav');
     if (!nav) return;
-    const dashUrl = user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard'
-      : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard'
+    const dashUrl = user && ['investor'].includes(user.role) ? '/buyer-dashboard'
+      : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard'
       : user && user.role === 'business_owner' ? '/business-dashboard'
       : user && user.role === 'admin' ? '/admin' : '/dashboard';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
       <a class="nav-item ${path.includes('dashboard') ? 'active' : ''}" href="${dashUrl}">Dashboard</a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile">My Profile</a>
+      <a class="nav-item ${path === '/support-profile' ? 'active' : ''}" href="/support-profile">Service Profile &amp; Verification</a>
+      <a class="nav-item ${path === '/hire' ? 'active' : ''}" href="/hire">My Hires</a>
       <div class="nav-section-label">Marketplace</div>
       <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse">Marketplace</a>
       <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests">Request an Idea</a>
@@ -397,7 +377,7 @@
   // Init sidebar user info
   const avatarUrl = user?.avatar_url || user?.avatarUrl;
   const avatarEl = document.getElementById('sidebarAvatar');
-  if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+  if (avatarUrl) avatarEl.innerHTML = `<img src="${esc(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
   else document.getElementById('sidebarAvatarText').textContent = (user?.first_name?.[0]||'?');
   document.getElementById('sidebarName').textContent = `${user?.first_name||''} ${user?.last_name||''}`.trim();
   document.getElementById('sidebarRole').textContent = roleMap[user?.role]||'—';
@@ -428,126 +408,98 @@
     return new Date(d).toLocaleDateString([],{month:'short',day:'numeric'});
   }
 
-  let activeChatId = null, selectedStars = 0, rateHireId = null, rateClientId = null;
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  const money = n => '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const H = () => ({ Authorization: `Bearer ${token}` });
+  const getJSON = (u, dflt) => fetch(`${API_URL}${u}`, { headers: H() }).then(r => r.ok ? r.json() : dflt).catch(() => dflt);
 
-  function clientInitials(hire) {
-    const name = `${hire.client?.first_name||''} ${hire.client?.last_name||''}`.trim();
-    return name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)||'?';
-  }
-  function clientName(hire) {
-    return `${hire.client?.first_name||''} ${hire.client?.last_name||''}`.trim()||'Client';
-  }
-
-  function jobCard(hire, showActions) {
-    const badge = `<span class="badge badge-${hire.status}">${hire.status.replace('_',' ')}</span>`;
-    const ci = clientInitials(hire);
-    const cn = clientName(hire);
+  function jobCard(h) {
+    const cn = h.other?.name || 'Client';
+    const ci = esc(cn.split(' ').map(n => n[0] || '').join('').toUpperCase().slice(0, 2) || '?');
+    const price = h.amount || h.quote_amount || h.budget;
     return `
-      <div class="job-row">
-        <div class="job-top"><div class="job-title">${hire.title}</div>${badge}</div>
+      <a class="job-row job-link" href="/hire?id=${Number(h.id)}">
+        <div class="job-top"><div class="job-title">${esc(h.title)}</div><span class="badge badge-${esc(h.status)}">${esc(h.status_label || h.status)}</span></div>
         <div class="job-meta">
-          ${hire.description ? `<div style="margin-bottom:4px;color:var(--muted);font-size:12px;">${hire.description.slice(0,80)}${hire.description.length>80?'...':''}</div>` : ''}
+          ${h.description ? `<div style="margin-bottom:4px;color:var(--muted);font-size:12px;">${esc(h.description.slice(0, 90))}${h.description.length > 90 ? '…' : ''}</div>` : ''}
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <div class="client-info"><div class="client-avatar">${ci}</div><span class="client-name">by ${cn}</span></div>
-            ${hire.budget ? `<span class="budget-pill">$${hire.budget.toLocaleString()}</span>` : ''}
-            ${hire.deadline ? `<span style="font-size:11px;color:var(--muted);">📅 ${formatDate(hire.deadline)}</span>` : ''}
-            ${hire.country_warning ? `<span style="font-size:11px;color:var(--accent);">⚠️ Country restriction noted</span>` : ''}
+            <div class="client-info"><div class="client-avatar">${ci}</div><span class="client-name">by ${esc(cn)}</span></div>
+            ${price ? `<span class="budget-pill">${money(price)}${h.quote_amount ? '' : ' budget'}</span>` : ''}
+            ${h.deadline ? `<span style="font-size:11px;color:var(--muted);">📅 ${formatDate(h.deadline + 'T00:00:00')}</span>` : ''}
           </div>
         </div>
-        ${showActions ? `
-        <div class="job-actions">
-          ${hire.status==='pending' ? `<button class="btn-accept" onclick="updateStatus(${hire.id},'accepted')">Accept</button><button class="btn-reject" onclick="updateStatus(${hire.id},'cancelled')">Decline</button>` : ''}
-          ${hire.status==='accepted' ? `<button class="btn-complete" onclick="updateStatus(${hire.id},'in_progress')">Start Job</button>` : ''}
-          ${hire.status==='in_progress' ? `<button class="btn-complete" onclick="updateStatus(${hire.id},'completed')">Mark Complete</button>` : ''}
-          ${hire.status==='completed' ? `<span style="font-size:12px;color:var(--success);">✅ Completed ${formatDate(hire.completed_at)}</span>` : ''}
-          <button class="btn-msg" onclick="openChat(${hire.id},'${hire.title.replace(/'/g,"\\'")}')">💬 Chat</button>
-        </div>` : ''}
-      </div>`;
+      </a>`;
   }
 
-  async function updateStatus(id, status) {
-    const confirmMap = { accepted:'Accept this job?', cancelled:'Decline this request?', in_progress:'Start this job?', completed:'Mark as completed?' };
-    if (!confirm(confirmMap[status]||'Update status?')) return;
-    try {
-      const res = await fetch(`${API_URL}/api/hire/${id}/status`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body:JSON.stringify({status}) });
-      if (res.ok) loadDashboard();
-    } catch { alert('Failed to update.'); }
+  function verifyCard(v) {
+    if (!v || !v.is_pro || v.verified) return '';
+    const pending = (v.credentials || []).filter(c => c.status === 'pending');
+    const rejected = (v.credentials || []).filter(c => c.status === 'rejected');
+    const need = (v.required || []).map(r => esc(r.label)).join(' or ');
+    const isAtt = (v.required || []).some(r => r.manage);
+    let body = `To appear in Find Support and receive requests, add your <b>${need}</b> with a copy of the certificate. IdeaHub checks it and gives you the ✅ Verified badge.`;
+    if (pending.length) body = `Thanks. Your ${esc(pending[0].kind_label.toLowerCase())} is being checked. You'll be notified when it's approved.`;
+    else if (rejected.length) body = `Your ${esc(rejected[0].kind_label.toLowerCase())} couldn't be verified${rejected[0].review_note ? ': ' + esc(rejected[0].review_note) : '.'} Please upload it again.`;
+    return `<div class="verify-card ${pending.length ? 'wait' : ''}"><div><b>${pending.length ? '⏳ Verification in progress' : '🪪 Get verified to receive clients'}</b><p>${body}</p></div>
+      ${pending.length ? '' : `<a class="btn-verify" href="${isAtt ? '/patents#regSection' : '/support-profile#verify'}">${rejected.length ? 'Upload again' : 'Add credential'} →</a>`}</div>`;
   }
 
-  async function openChat(hireId, title) {
-    activeChatId = hireId;
-    document.getElementById('chatTitle').textContent = title;
-    document.getElementById('chatModal').classList.add('show');
-    loadChatMsgs();
-  }
-  function closeChat() { document.getElementById('chatModal').classList.remove('show'); activeChatId=null; }
-  document.getElementById('chatModal').addEventListener('click', e => { if(e.target===document.getElementById('chatModal')) closeChat(); });
-
-  async function loadChatMsgs() {
-    if(!activeChatId) return;
-    try {
-      const res = await fetch(`${API_URL}/api/hire/${activeChatId}/messages`,{headers:{Authorization:`Bearer ${token}`}});
-      const msgs = await res.json();
-      const el = document.getElementById('chatMsgs');
-      if(!msgs.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">No messages yet.</div>';return;}
-      el.innerHTML = msgs.map(m=>{
-        const isMe = m.from_id===user.id;
-        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${String(m.text ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
-      }).join('');
-      el.scrollTop=el.scrollHeight;
-    }catch{}
-  }
-  function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMsg();}}
-  async function sendChatMsg(){
-    const input=document.getElementById('chatInput');
-    const text=input.value.trim();
-    if(!text||!activeChatId) return;
-    input.value='';
-    try{ await fetch(`${API_URL}/api/hire/${activeChatId}/messages`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({text})}); loadChatMsgs(); }catch{}
-  }
-
-  function setStar(n){ selectedStars=n; document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('active',i<n)); }
-  function openRate(hireId,clientId){ rateHireId=hireId; rateClientId=clientId; selectedStars=0; document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('active')); document.getElementById('rateReview').value=''; document.getElementById('rateModal').classList.add('show'); }
-  function closeRate(){ document.getElementById('rateModal').classList.remove('show'); }
-  async function submitRate(){
-    if(!selectedStars){alert('Please select a star rating.');return;}
-    try{
-      const res=await fetch(`${API_URL}/api/ratings`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({hire_id:rateHireId,rated_user_id:rateClientId,stars:selectedStars,review:document.getElementById('rateReview').value.trim()})});
-      if(res.ok){closeRate();alert('Rating submitted!');}
-      else{const d=await res.json();alert(d.error||'Failed.');}
-    }catch{alert('Something went wrong.');}
+  function extraPanels(role, apps, rooms, del) {
+    let out = '';
+    if (role === 'patent_attorney') {
+      const cl = (apps?.clients || []).filter(a => !['completed', 'cancelled', 'rejected', 'refunded'].includes(a.status));
+      const dl = (apps?.deadlines || []).slice(0, 5);
+      out += `<div class="section-card"><div class="section-header"><div class="section-title">📜 Patent work</div><a href="/patents" class="sec-link">Open patents →</a></div>
+        ${cl.length ? cl.slice(0, 6).map(a => `<a class="job-row job-link" href="/patent-application?id=${Number(a.id)}"><div class="job-top"><div class="job-title">${esc(a.title)}</div><span class="badge">${esc(a.status_label || a.status)}</span></div><div class="job-meta" style="font-size:12px;color:var(--muted)">${esc(a.stage_label || '')} · ${esc(a.other?.name || '')}</div></a>`).join('') : '<div class="empty"><div class="empty-text">No open patent cases.</div></div>'}
+        ${dl.length ? `<div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Upcoming deadlines</div>${dl.map(d => `<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)"><span>${esc(d.title)} <span style="color:var(--muted)">· ${esc(d.case_title)}</span></span><span>${formatDate(d.due_date + 'T00:00:00')}</span></div>`).join('')}` : ''}</div>`;
+    }
+    if (role === 'virtual_manager') {
+      const m = del?.managing || [];
+      out += `<div class="section-card"><div class="section-header"><div class="section-title">🗂️ Clients whose listings you manage</div></div>
+        ${m.length ? m.map(d => `<a class="job-row job-link" href="/manage?owner=${Number(d.user_id)}"><div class="job-top"><div class="job-title">${esc(d.name)}</div><span class="badge badge-in_progress">Manage listings →</span></div><div class="job-meta" style="font-size:12px;color:var(--muted)">Access since ${formatDate(d.since)}</div></a>`).join('')
+          : '<div class="empty"><div class="empty-text">When a client gives you listing access from their hire page, they appear here.</div></div>'}</div>`;
+    }
+    const rs = (rooms || []).filter(r => r.status !== 'closed');
+    out += `<div class="section-card"><div class="section-header"><div class="section-title">🤝 Deal rooms</div><a href="/deal-room" class="sec-link">All rooms →</a></div>
+      ${rs.length ? rs.slice(0, 6).map(r => `<a class="job-row job-link" href="/deal-room?id=${Number(r.id)}"><div class="job-top"><div class="job-title">${esc(r.title)}</div><span class="badge ${r.my_status === 'invited' ? 'badge-pending' : ''}">${r.my_status === 'invited' ? 'Invitation' : 'Member'}</span></div></a>`).join('')
+        : '<div class="empty"><div class="empty-text">Clients can invite you into a deal room to advise on a licence or sale.</div></div>'}</div>`;
+    return out;
   }
 
   async function loadDashboard(){
     try{
-      const [hireRes, profileRes] = await Promise.all([
-        fetch(`${API_URL}/api/hire/incoming`,{headers:{Authorization:`Bearer ${token}`}}),
-        fetch(`${API_URL}/api/support/profile`,{headers:{Authorization:`Bearer ${token}`}})
+      const role = user?.role || 'virtual_manager';
+      const [hires, profile, ver, apps, rooms, del] = await Promise.all([
+        getJSON('/api/hire/incoming', []),
+        getJSON('/api/support/profile', null),
+        getJSON('/api/pros/credentials', null),
+        role === 'patent_attorney' ? getJSON('/api/patent-applications', null) : null,
+        getJSON('/api/rooms', []),
+        role === 'virtual_manager' ? getJSON('/api/delegations', null) : null
       ]);
-      const hires = hireRes.ok ? await hireRes.json() : [];
-      const profile = profileRes.ok ? await profileRes.json() : null;
-      const role = user?.role||'virtual_manager';
+      const verified = ver ? ver.verified : !!profile?.is_verified;
       document.getElementById('roleBanner').innerHTML = `
-        <div class="role-banner ${role}">
+        <div class="role-banner ${esc(role)}">
           <div class="role-banner-icon">${roleEmoji[role]}</div>
           <div><div class="role-banner-title">${roleMap[role]}</div><div class="role-banner-sub">${roleDesc[role]}</div></div>
-          <div class="verified-pill ${profile?.is_verified?'yes':'no'}">${profile?.is_verified?'✅ Verified':'⏳ Pending Verification'}</div>
+          <div class="verified-pill ${verified?'yes':'no'}">${verified?'✅ Verified':'⏳ Not verified yet'}</div>
         </div>`;
-      const pending = hires.filter(h=>h.status==='pending');
-      const active = hires.filter(h=>['accepted','in_progress'].includes(h.status));
-      const completed = hires.filter(h=>h.status==='completed');
+      document.getElementById('verifyCard').innerHTML = verifyCard(ver);
+      const pending = hires.filter(h => ['pending', 'accepted'].includes(h.status));
+      const active = hires.filter(h => ['quoted', 'in_progress', 'delivered', 'disputed'].includes(h.status));
+      const completed = hires.filter(h => h.status === 'completed');
       document.getElementById('statPending').textContent = pending.length;
       document.getElementById('statActive').textContent = active.length;
-      document.getElementById('statCompleted').textContent = completed.length;
-      document.getElementById('statRating').textContent = profile?.avg_rating ? '⭐ '+profile.avg_rating : '—';
-      const renderList = (el, list, actions) => {
-        el.innerHTML = !list.length
-          ? `<div class="empty"><div class="empty-icon">${actions?'📭':'🎉'}</div><div class="empty-text">${actions?'No requests yet':'No jobs here yet'}</div></div>`
-          : list.map(h=>jobCard(h,actions)).join('');
+      document.getElementById('statCompleted').textContent = profile?.completed_jobs ?? completed.length;
+      document.getElementById('statRating').textContent = profile?.avg_rating ? '⭐ ' + Number(profile.avg_rating).toFixed(1) : '—';
+      if (profile?.rating_count) document.getElementById('statRatingSub').textContent = `${profile.rating_count} review${profile.rating_count === 1 ? '' : 's'}`;
+      const fill = (el, list, emptyIcon, emptyText) => {
+        el.innerHTML = !list.length ? `<div class="empty"><div class="empty-icon">${emptyIcon}</div><div class="empty-text">${emptyText}</div></div>` : list.map(jobCard).join('');
       };
-      renderList(document.getElementById('pendingList'), pending, true);
-      renderList(document.getElementById('activeList'), active, true);
-      renderList(document.getElementById('completedList'), completed, false);
+      fill(document.getElementById('pendingList'), pending, '📭', verified ? 'No new requests' : 'Requests arrive once you are verified');
+      fill(document.getElementById('activeList'), active, '⚡', 'No active jobs');
+      fill(document.getElementById('completedList'), completed.slice(0, 8), '🎉', 'No completed jobs yet');
+      document.getElementById('extraPanels').innerHTML = extraPanels(role, apps, rooms, del);
     }catch(err){console.error(err);}
   }
 
@@ -627,7 +579,7 @@
   loadDashboard();
   loadUnreadCount();
   setInterval(loadUnreadCount, 30000);
-  setInterval(loadChatMsgs, 10000);
+  setInterval(() => { if (!document.hidden) loadDashboard(); }, 60000);
 
   // ── SIDEBAR TOGGLE ──
   function toggleSidebar() {

@@ -201,7 +201,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
     <a class="role-card" href="/signup?role=corporate_services">
       <div class="r-icon">🏢</div>
       <h3>Corporate Services</h3>
-      <p>Offer company formation and accounting services to new ventures born on IdeaHub.</p>
+      <p>Registered company secretaries and firms: offer company registration, secretarial and compliance services to new ventures born on IdeaHub.</p>
       <div class="r-link">Offer services →</div>
     </a>
   </div>
@@ -430,7 +430,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor','corporate_services'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
       <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
       <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
@@ -441,6 +441,7 @@ footer{padding:50px 5% 36px;border-top:1px solid var(--bl);text-align:center}
       <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
     <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
     <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
+    <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
       <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
       <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
