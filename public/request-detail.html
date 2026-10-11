@@ -109,6 +109,20 @@
     .escrow-amount { font-size:1.8rem; font-weight:800; color:var(--gold); margin-bottom:4px; }
     .escrow-note { font-size:0.8rem; color:var(--muted); }
 
+    .deal-sum { width:100%; border-collapse:collapse; font-size:0.85rem; margin:10px 0 12px; }
+    .deal-sum td { padding:7px 0; border-bottom:1px solid var(--border); }
+    .deal-sum td:last-child { text-align:right; font-weight:600; }
+    .deal-sum tr.tot td { border-bottom:0; color:var(--gold); font-weight:800; font-size:0.95rem; }
+    .deal-p { font-size:0.85rem; color:var(--muted); line-height:1.65; margin-bottom:10px; }
+    .deal-scope { background:var(--surface2); border-radius:8px; padding:10px 12px; font-size:0.83rem; line-height:1.6; white-space:pre-wrap; margin-bottom:10px; }
+    .file-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.83rem; }
+    .file-row button { background:none; border:0; color:var(--gold); cursor:pointer; font-size:0.83rem; padding:0; text-align:left; flex:1; overflow-wrap:anywhere; }
+    .file-row .rm { color:var(--muted); flex:0; }
+    .deal-steps { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:14px; }
+    .deal-steps div { border-top:3px solid var(--surface2); padding-top:6px; font-size:0.68rem; color:var(--muted); font-weight:600; }
+    .deal-steps div.done { border-top-color:rgba(74,222,128,0.6); color:var(--text); }
+    .deal-steps div.now { border-top-color:var(--gold); color:var(--text); }
+
     /* RIGHT SIDEBAR CARDS */
     .budget-display { font-size:1.8rem; font-weight:800; color:var(--gold); margin-bottom:4px; }
     .budget-sub { font-size:0.78rem; color:var(--muted); }
@@ -268,7 +282,7 @@
     return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   }
 
-  const statusMap = { open:'Open', proposals_received:'Proposals In', shortlisting:'Shortlisting', pitching:'Pitching', agreed:'Agreed', in_escrow:'In Escrow 🔒', delivered:'Delivered', completed:'Completed ✅', disputed:'Disputed ⚠️' };
+  const statusMap = { open:'Open', proposals_received:'Proposals In', shortlisting:'Shortlisting', pitching:'Pitching', agreed:'Agreed', in_escrow:'In Escrow 🔒', delivered:'Delivered', completed:'Completed ✅', disputed:'Under review ⚠️', refunded:'Refunded', closed:'Closed' };
 
   async function updateProposalStatus(proposalId, status) {
     const msgs = { shortlisted:'Shortlist this proposal?', invited_to_pitch:'Invite to pitch?', selected:'Select this creator?', rejected:'Reject this proposal?' };
@@ -282,33 +296,102 @@
     } catch(e) { alert('Failed to update.'); }
   }
 
-  async function lockEscrow(proposalId, creatorId, amount) {
-    if (!confirm(`Lock $${amount} in escrow?`)) return;
+  // ── DEAL: price, escrow payment, delivery, confirmation ──
+  const money = n => { const v = Number(n || 0); return '$' + v.toLocaleString('en-US', Number.isInteger(v) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  const dday = d => d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  let dealBusy = false;
+  function filesList(r, canRemove) {
+    const f = r.files || [];
+    if (!f.length) return '<div class="deal-p" style="margin-bottom:0">No files yet.</div>';
+    return f.map(x => `<div class="file-row">📎 <button onclick="openFile(${Number(x.id)})">${escR(x.file_name)}</button><span style="color:var(--muted);font-size:0.75rem">${x.size ? Math.max(1, Math.round(x.size / 1024)) + ' KB' : ''}</span>${canRemove ? `<button class="rm" title="Remove" onclick="removeFile(${Number(x.id)})">✕</button>` : ''}</div>`).join('');
+  }
+  function dealPanel(r) {
+    const v = r.viewer, s = r.status;
+    if (!v || !['agreed', 'in_escrow', 'delivered', 'completed', 'disputed', 'refunded'].includes(s)) return '';
+    const idx = { agreed: 0, in_escrow: 1, delivered: 2, completed: 3, disputed: r.delivered_at ? 2 : 1, refunded: 1 }[s];
+    const steps = `<div class="deal-steps">${['Price agreed', 'Paid into escrow', 'Delivered', 'Completed'].map((l, i) => `<div class="${i < idx || (s === 'completed') ? 'done' : i === idx ? 'now' : ''}">${l}</div>`).join('')}</div>`;
+    const q = r.price_quote;
+    const sum = q ? `<table class="deal-sum"><tr><td>Creator's price</td><td>${money(q.amount)}</td></tr><tr><td>IdeaHub fee (8%, includes escrow protection)</td><td>${money(q.fee)}</td></tr><tr class="tot"><td>Total</td><td>${money(q.total)}</td></tr></table>` : '';
+    const scope = r.agreed_scope ? `<div class="deal-scope">${escR(r.agreed_scope)}</div>` : '';
+    let body = '';
+    if (s === 'agreed' && v === 'creator') body = `
+      <div class="deal-p">${r.agreed_price ? `Your price is <b style="color:var(--text)">${money(r.agreed_price)}</b>${r.agreed_days ? ` within ${Number(r.agreed_days)} days` : ''}. Change it if you agreed something different with the investor; it's fixed once they pay.` : 'Set your final price so the investor can pay into escrow.'}</div>
+      <div class="form-row"><div class="field"><label class="lbl" for="tAmt">Your price ($)</label><input type="number" id="tAmt" min="1" value="${r.agreed_price ? Number(r.agreed_price) : ''}" /></div>
+      <div class="field"><label class="lbl" for="tDays">Days to deliver</label><input type="number" id="tDays" min="1" max="365" value="${r.agreed_days ? Number(r.agreed_days) : ''}" /></div></div>
+      <div class="field"><label class="lbl" for="tScope">What you'll deliver</label><textarea id="tScope" placeholder="e.g. Full product concept, supplier list and cost sheet">${escR(r.agreed_scope || '')}</textarea></div>
+      <div class="deal-p" style="font-size:0.75rem">IdeaHub adds 8% on top, paid by the investor. You receive your full price.</div>
+      <button class="btn-primary" onclick="dealAct('terms')">${r.terms_at ? 'Update price' : 'Confirm price'}</button>`;
+    else if (s === 'agreed' && v === 'investor') body = r.agreed_price ? `
+      <div class="deal-p">Delivered within <b style="color:var(--text)">${Number(r.agreed_days || 0) || '—'} days</b> of payment.</div>${scope}${sum}
+      <div class="deal-p">Your payment is held by IdeaHub and released only when you confirm the delivery (or ${7} days after delivery if you don't respond).</div>
+      ${r.payments_open ? '' : '<div class="info-box info-gold">Online payments are launching soon. Message the creator in the meantime.</div>'}
+      <button class="btn-primary" onclick="dealAct('pay')" ${r.payments_open ? '' : 'disabled'}>Pay ${money(q.total)} into escrow</button>
+      <button class="btn-secondary" onclick="dealAct('reselect')">Choose a different proposal</button>`
+      : `<div class="deal-p">Waiting for the creator to confirm their final price. You'll be notified.</div><button class="btn-secondary" onclick="dealAct('reselect')">Choose a different proposal</button>`;
+    else if (s === 'in_escrow' && v === 'creator') body = `
+      <div class="deal-p">${money(r.escrow_amount)} is held in escrow. Please deliver by <b style="color:var(--text)">${dday(new Date(new Date(r.paid_at).getTime() + Number(r.agreed_days || 7) * 86400000))}</b>.</div>${scope}
+      <div class="lbl" style="margin-top:6px">Your files</div>${filesList(r, true)}
+      <div class="field" style="margin-top:10px"><input type="file" id="dFile" style="font-size:0.8rem;color:var(--muted)" onchange="uploadFile()" /></div>
+      <div class="field"><label class="lbl" for="dNote">Delivery note</label><textarea id="dNote" placeholder="What you delivered and how to use it"></textarea></div>
+      <button class="btn-primary" onclick="dealAct('deliver')">📦 Mark as delivered</button>`;
+    else if (s === 'in_escrow' && v === 'investor') body = `
+      <div class="deal-p">${money(r.total)} is held safely in escrow. The creator should deliver by <b style="color:var(--text)">${dday(new Date(new Date(r.paid_at).getTime() + Number(r.agreed_days || 7) * 86400000))}</b>.</div>${scope}
+      <button class="btn-secondary" style="color:var(--error);border-color:rgba(255,107,107,0.4)" onclick="dealAct('dispute')">Report a problem</button>`;
+    else if (s === 'delivered' && v === 'investor') body = `
+      <div class="deal-p">The creator delivered on ${dday(r.delivered_at)}. Check the work, then confirm to release ${money(r.escrow_amount)}. If you do nothing, it's released automatically on <b style="color:var(--text)">${dday(r.confirm_by)}</b>.</div>
+      ${r.delivery_note ? `<div class="deal-scope">${escR(r.delivery_note)}</div>` : ''}<div class="lbl">Files</div>${filesList(r, false)}
+      <button class="btn-primary" style="margin-top:12px;background:var(--green)" onclick="dealAct('confirm')">✅ Confirm and release payment</button>
+      <button class="btn-secondary" style="color:var(--error);border-color:rgba(255,107,107,0.4)" onclick="dealAct('dispute')">Report a problem</button>`;
+    else if (s === 'delivered' && v === 'creator') body = `<div class="deal-p">Waiting for the investor to confirm. Your ${money(r.escrow_amount)} is released when they do, or automatically on <b style="color:var(--text)">${dday(r.confirm_by)}</b>.</div><div class="lbl">Files</div>${filesList(r, false)}`;
+    else if (s === 'disputed') body = `<div class="deal-p">A problem was reported: <i>${escR(r.dispute_reason || '')}</i><br>The money stays in escrow while IdeaHub reviews the messages and files.</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, v === 'creator') : ''}`;
+    else if (s === 'completed') body = `<div class="deal-p">✅ Completed${r.paid_at ? `: ${money(r.escrow_amount)} was released to the creator` : ''}.${r.resolution_note ? ' Note from IdeaHub: ' + escR(r.resolution_note) : ''}</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, false) : ''}`;
+    else if (s === 'refunded') body = `<div class="deal-p">↩️ IdeaHub refunded ${money(r.total)} to the investor.${r.resolution_note ? ' Note: ' + escR(r.resolution_note) : ''}</div>`;
+    return `<div class="card"><div class="card-title">🤝 The deal</div>${steps}${body}</div>`;
+  }
+  async function dealAct(act) {
+    if (dealBusy) return;
+    const r = currentRequest; let path = act, body = {};
+    if (act === 'terms') body = { amount: document.getElementById('tAmt').value, days: document.getElementById('tDays').value, scope: document.getElementById('tScope').value };
+    else if (act === 'pay') { if (!confirm(`Pay ${money(r.price_quote.total)} into escrow? The creator is paid only when you confirm the delivery.`)) return; body = { expected_amount: r.agreed_price }; }
+    else if (act === 'reselect') { if (!confirm('Go back and choose a different proposal? The creator will be told.')) return; }
+    else if (act === 'deliver') { if (!confirm('Mark as delivered? The investor will be asked to confirm.')) return; body = { note: document.getElementById('dNote').value }; }
+    else if (act === 'confirm') { if (!confirm(`Confirm the delivery and release ${money(r.escrow_amount)} to the creator? This can't be undone.`)) return; }
+    else if (act === 'dispute') { const reason = prompt('What went wrong? The payment stays in escrow while IdeaHub reviews it.'); if (!reason) return; body = { reason }; }
+    dealBusy = true;
     try {
-      const res = await fetch(`${API_URL}/api/requests/${requestId}/escrow`, {
-        method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-        body:JSON.stringify({amount, proposal_id:proposalId, creator_id:creatorId})
-      });
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) { alert(d.error || 'Could not lock escrow.'); return; }
-      loadPage();
-    } catch(e) { alert('Failed.'); }
+      if (!res.ok) alert(d.error || 'Something went wrong.');
+      else if (act === 'confirm') alert('Thank you! The payment was released to the creator.');
+    } catch (e) { alert('Something went wrong. Check your connection.'); }
+    dealBusy = false; loadPage();
   }
-
-  async function markDelivered() {
-    if (!confirm('Mark as delivered?')) return;
-    try { const res = await fetch(`${API_URL}/api/requests/${requestId}/deliver`,{method:'POST',headers:{Authorization:`Bearer ${token}`}}); if(res.ok) loadPage(); } catch(e) { alert('Failed.'); }
+  async function uploadFile() {
+    const inp = document.getElementById('dFile'); const f = inp.files[0]; if (!f) return;
+    if (f.size > 25 * 1024 * 1024) { alert('Files can be up to 25 MB.'); inp.value = ''; return; }
+    const keepNote = document.getElementById('dNote')?.value || '';
+    const fd = new FormData(); fd.append('file', f);
+    inp.disabled = true;
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/files`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) alert(d.error || 'Upload failed.');
+    } catch (e) { alert('Upload failed.'); }
+    await loadPage();
+    const n = document.getElementById('dNote'); if (n) n.value = keepNote;
   }
-
-  async function confirmDelivery() {
-    if (!confirm('Confirm delivery and release payment?')) return;
-    try { const res = await fetch(`${API_URL}/api/requests/${requestId}/confirm`,{method:'POST',headers:{Authorization:`Bearer ${token}`}}); const d = await res.json().catch(() => ({})); if(res.ok) { alert('Confirmed. Thank you!'); loadPage(); } else alert(d.error || 'Could not confirm.'); } catch(e) { alert('Failed.'); }
+  async function removeFile(fid) {
+    if (!confirm('Remove this file?')) return;
+    await fetch(`${API_URL}/api/requests/${requestId}/files/${fid}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    loadPage();
   }
-
-  async function raiseDispute() {
-    const reason = prompt('Describe the issue:');
-    if (!reason) return;
-    try { const res = await fetch(`${API_URL}/api/requests/${requestId}/dispute`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({reason})}); const d = await res.json().catch(() => ({})); if(res.ok) loadPage(); else alert(d.error || 'Could not open a dispute.'); } catch(e) { alert('Failed.'); }
+  async function openFile(fid) {
+    const w = window.open('', '_blank');
+    try {
+      const res = await fetch(`${API_URL}/api/requests/${requestId}/files/${fid}`, { headers: { Authorization: `Bearer ${token}` } });
+      const d = await res.json(); if (!res.ok) throw new Error(d.error || 'Could not open the file.');
+      if (w) w.location = d.url; else location.href = d.url;
+    } catch (e) { if (w) w.close(); alert(e.message); }
   }
 
   async function openChat(creatorId, creatorName) {
@@ -367,7 +450,7 @@
 
   async function loadPage() {
     try {
-      const reqRes = await fetch(`${API_URL}/api/requests/${requestId}`);
+      const reqRes = await fetch(`${API_URL}/api/requests/${requestId}`, token ? { headers: { Authorization: `Bearer ${token}` } } : {});
       if (!reqRes.ok) throw new Error('Not found');
       currentRequest = await reqRes.json();
       const r = currentRequest;
@@ -412,17 +495,7 @@
             <div id="matchIdeas"></div>
             ${isOwner ? '<div id="matchCreators"></div>' : ''}
 
-            <!-- ESCROW -->
-            ${['in_escrow','delivered','completed'].includes(r.status)?`
-            <div class="card">
-              <div class="card-title">🔒 Escrow Status</div>
-              <div class="escrow-box">
-                <div class="escrow-amount">$${(r.escrow_amount||0).toLocaleString()}</div>
-                <div class="escrow-note">${r.status==='in_escrow'?'Agreed, waiting for delivery':r.status==='delivered'?'Delivered, investor reviewing':'Completed ✅'}</div>
-              </div>
-              ${r.status==='in_escrow'&&isSelectedCreator?`<button class="btn-primary" onclick="markDelivered()">📦 Mark as Delivered</button>`:''}
-              ${r.status==='delivered'&&isOwner?`<div style="display:flex;gap:10px;"><button class="btn-primary" style="background:var(--green);color:#000;" onclick="confirmDelivery()">✅ Confirm & Release Payment</button><button class="btn-secondary" style="color:var(--error);border-color:var(--error);" onclick="raiseDispute()">⚠️ Dispute</button></div>`:''}
-            </div>`:''}
+            ${dealPanel(r)}
 
             <!-- PROPOSALS (investor view) -->
             ${isOwner&&proposals.length>0?`
@@ -448,7 +521,7 @@
                       ${p.status==='pending'?`<button class="btn-sm btn-shortlist" onclick="updateProposalStatus(${p.id},'shortlisted')">⭐ Shortlist</button>`:''}
                       ${['pending','shortlisted'].includes(p.status)?`<button class="btn-sm btn-invite" onclick="updateProposalStatus(${p.id},'invited_to_pitch')">🎤 Invite to Pitch</button>`:''}
                       ${['shortlisted','invited_to_pitch'].includes(p.status)?`<button class="btn-sm btn-select" onclick="updateProposalStatus(${p.id},'selected')">🏆 Select</button>`:''}
-                      ${p.status==='selected'&&r.status==='agreed'?`<span style="font-size:0.75rem;color:var(--muted);">Paying through IdeaHub for requests is being upgraded. Message the creator to agree next steps.</span>`:''}
+                      ${p.status==='selected'&&r.status==='agreed'?`<span style="font-size:0.75rem;color:var(--muted);">Selected · see the deal above</span>`:''}
                       ${!['rejected','selected'].includes(p.status)?`<button class="btn-sm btn-reject" onclick="updateProposalStatus(${p.id},'rejected')">✕ Reject</button>`:''}
                       <button class="btn-sm btn-chat" onclick="openChat(${Number(p.creator_id)}, this.dataset.n)" data-n="${escR(name)}">💬 Chat</button>
                     </div>
@@ -500,8 +573,7 @@
                   </div>
                 </div>
                 ${myProposal.status==='invited_to_pitch'?`<div class="info-box info-blue">🎤 You've been invited to pitch! Send a message to the investor.</div><button class="btn-primary" onclick="openChat(${r.investor_id},'Investor')">💬 Start Pitch Chat</button>`:''}
-                ${myProposal.status==='selected'?`<div class="info-box info-green">🏆 Your proposal was selected! Paying through IdeaHub for requests is being upgraded. Message the investor to agree next steps.</div><button class="btn-primary" onclick="openChat(${r.investor_id},'Investor')">💬 Message the investor</button>`:''}
-                ${r.status==='in_escrow'&&isSelectedCreator?`<div class="info-box info-gold">🔒 $${(r.escrow_amount||0).toLocaleString()} locked. Deliver your idea then mark as delivered.</div>`:''}
+                ${myProposal.status==='selected'?`<div class="info-box info-green">🏆 Your proposal was selected! ${r.status==='agreed'?'Confirm your final price in the deal panel so the investor can pay into escrow.':''}</div><button class="btn-primary" onclick="openChat(${Number(r.investor_id)},'Investor')">💬 Message the investor</button>`:''}
               `:`
                 <div class="card-title">Submit a Proposal</div>
                 ${['open','proposals_received'].includes(r.status)?`

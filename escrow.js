@@ -98,19 +98,11 @@ module.exports = function makeEscrow(supabase, sendEmail) {
   }
 
   // Idea Requests: auto-complete a delivered request (same 7-day rule)
+  // Idea Requests are paid out by reqpay.js (only requests that were really paid reach a wallet)
   async function releaseRequest(requestId) {
-    const now = new Date().toISOString();
-    const { data: rows, error } = await supabase.from('idea_requests')
-      .update({ status: 'completed', completed_at: now, updated_at: now })
-      .eq('id', requestId).eq('status', 'delivered').select();
-    if (error) throw error;
-    const r = rows && rows[0];
-    if (!r) return null;
-    // HOTFIX: no payment was ever taken for requests, so nothing is added to the creator's wallet.
-    await notify(r.selected_creator_id, { type: 'completed', title: '✅ Request completed', message: `"${r.title}" was completed automatically 7 days after delivery.`, link: `/request/${r.id}` });
-    await notify(r.investor_id, { type: 'completed', title: '✅ Request Completed', message: `"${r.title}" was completed automatically 7 days after delivery.`, link: `/request/${r.id}` });
-    return r;
+    return require('./reqpay').core(supabase, api).release(requestId, 'auto');
   }
 
-  return { notify, emailUser, emailShell, releaseTransaction, refundTransaction, releaseRequest, money, esc };
+  const api = { notify, emailUser, emailShell, releaseTransaction, refundTransaction, releaseRequest, money, esc };
+  return api;
 };

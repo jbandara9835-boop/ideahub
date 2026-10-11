@@ -173,6 +173,7 @@ app.get('/robots.txt', (req, res) => {
   const pros = require('./pros');
   pros.mount(app, { supabase, authMiddleware, escrow });
   require('./hire').mount(app, { supabase, authMiddleware, escrow });
+  require('./reqpay').mount(app, { supabase, authMiddleware, escrow });
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -1525,19 +1526,6 @@ app.get('/robots.txt', (req, res) => {
     res.json(data || []);
   });
 
-  // GET single request
-  app.get('/api/requests/:id', async (req, res) => {
-    const { data, error } = await supabase
-      .from('idea_requests')
-      .select('*')
-      .eq('id', req.params.id)
-      .single();
-
-    if (!data || error) return res.status(404).json({ error: 'Request not found' });
-    supabase.from('idea_requests').update({ view_count: (data.view_count || 0) + 1 }).eq('id', data.id).then(() => {});
-    res.json(data);
-  });
-
   // Matching for one request: fitting ideas (everyone), suggested creators (the investor/admin), "you're a match" (matched creator)
   const matchCache = new Map();
   app.get('/api/requests/:id/matches', async (req, res) => {
@@ -1675,121 +1663,7 @@ app.get('/robots.txt', (req, res) => {
     res.json(data || []);
   });
 
-  // LOCK ESCROW for selected proposal
-  app.post('/api/requests/:id/escrow', authMiddleware, async (req, res) => {
-    const { amount, proposal_id, creator_id } = req.body;
-    const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
-    if (!request) return res.status(404).json({ error: 'Request not found' });
-    if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can lock escrow' });
-    // HOTFIX: this step never took a payment. It is switched off until request payments are rebuilt
-    // on the same escrow flow as hires (real charge, 8% fee, price taken from the selected proposal).
-    if (process.env.REQUEST_ESCROW !== 'on') return res.status(403).json({ error: 'Paying through IdeaHub for requests is being upgraded and will be back soon. Message the creator to agree the next steps in the meantime.', code: 'request_payments_paused' });
-
-    const { data, error } = await supabase
-      .from('idea_requests')
-      .update({
-        status: 'in_escrow',
-        escrow_amount: amount,
-        escrow_locked_at: new Date().toISOString(),
-        selected_creator_id: creator_id,
-        selected_proposal_id: proposal_id,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', req.params.id)
-      .select().single();
-
-    if (error) return res.status(500).json({ error: error.message });
-
-    // Notify selected creator
-    await supabase.from('notifications').insert([{
-      user_id: creator_id,
-      type: 'escrow_locked',
-      title: '🔒 Escrow Locked!',
-      message: `The investor has locked $${amount} in escrow for your proposal. Please deliver your idea.`,
-      link: `/request/${req.params.id}`,
-      data: { request_id: req.params.id, amount }
-    }]);
-
-    res.json(data);
-  });
-
-  // MARK as delivered (creator)
-  app.post('/api/requests/:id/deliver', authMiddleware, async (req, res) => {
-    const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
-    if (!request) return res.status(404).json({ error: 'Request not found' });
-    if (request.selected_creator_id !== req.user.id) return res.status(403).json({ error: 'Only the selected creator can mark as delivered' });
-    if (request.status !== 'in_escrow') return res.status(400).json({ error: 'You can mark this delivered only after the investor has paid.' });
-
-    const { data, error } = await supabase
-      .from('idea_requests')
-      .update({ status: 'delivered', delivered_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq('id', req.params.id).eq('status', 'in_escrow')
-      .select().single();
-
-    if (error) return res.status(500).json({ error: error.message });
-
-    // Notify investor
-    await supabase.from('notifications').insert([{
-      user_id: request.investor_id,
-      type: 'delivered',
-      title: '📦 Idea Delivered!',
-      message: `The creator has delivered the idea for "${request.title}". Please review and confirm.`,
-      link: `/request/${req.params.id}`,
-      data: { request_id: req.params.id }
-    }]);
-
-    res.json(data);
-  });
-
-  // CONFIRM delivery & release escrow (investor)
-  app.post('/api/requests/:id/confirm', authMiddleware, async (req, res) => {
-    const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
-    if (!request) return res.status(404).json({ error: 'Request not found' });
-    if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can confirm' });
-    if (request.status !== 'delivered') return res.status(400).json({ error: 'You can confirm once the creator has marked it delivered.' });
-
-    const { data, error } = await supabase
-      .from('idea_requests')
-      .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq('id', req.params.id).eq('status', 'delivered')
-      .select().single();
-
-    if (error || !data) return res.status(400).json({ error: error?.message || 'This request is already settled.' });
-
-    // HOTFIX: no payment was ever taken for requests, so nothing is added to the creator's wallet here.
-    // Real payouts come back with the rebuilt request payments.
-
-    // Notify creator
-    await supabase.from('notifications').insert([{
-      user_id: request.selected_creator_id,
-      type: 'completed',
-      title: '✅ Request completed',
-      message: `The investor confirmed delivery for "${request.title}".`,
-      link: `/request/${req.params.id}`,
-      data: { request_id: req.params.id, amount: request.escrow_amount }
-    }]);
-
-    res.json(data);
-  });
-
-  // DISPUTE a request
-  app.post('/api/requests/:id/dispute', authMiddleware, async (req, res) => {
-    const { reason } = req.body;
-    const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
-    if (!request) return res.status(404).json({ error: 'Request not found' });
-    if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can dispute' });
-    if (!['in_escrow', 'delivered'].includes(request.status)) return res.status(400).json({ error: 'Only paid requests can be disputed.' });
-    if (String(reason || '').trim().length < 10) return res.status(400).json({ error: 'Please describe the problem (at least 10 characters).' });
-
-    const { data, error } = await supabase
-      .from('idea_requests')
-      .update({ status: 'disputed', disputed_at: new Date().toISOString(), dispute_reason: reason, updated_at: new Date().toISOString() })
-      .eq('id', req.params.id)
-      .select().single();
-
-    if (error) return res.status(500).json({ error: error.message });
-    res.json(data);
-  });
+  // Paying, delivering, confirming and disputing requests: see reqpay.js
 
   // ── PROPOSALS ─────────────────────────────────────────────────────────────────
 
@@ -1911,7 +1785,7 @@ app.get('/robots.txt', (req, res) => {
       shortlisted: { title: '⭐ You\'ve been shortlisted!', msg: `Your proposal for "${proposal.request.title}" has been shortlisted by the investor.` },
       invited_to_pitch: { title: '🎤 Pitch Invitation!', msg: `You\'ve been invited to pitch your idea for "${proposal.request.title}". Check your messages!` },
       rejected: { title: '❌ Proposal Not Selected', msg: `Your proposal for "${proposal.request.title}" was not selected this time.` },
-      selected: { title: '🏆 Your Proposal Was Selected!', msg: `Congratulations! The investor selected your proposal for "${proposal.request.title}". Escrow will be locked soon.` }
+      selected: { title: '🏆 Your Proposal Was Selected!', msg: `Congratulations! The investor selected your proposal for "${proposal.request.title}". Confirm your final price on the request page so they can pay into escrow.` }
     };
 
     if (notifMap[status]) {
@@ -1931,6 +1805,9 @@ app.get('/robots.txt', (req, res) => {
         status: 'agreed',
         selected_creator_id: proposal.creator_id,
         selected_proposal_id: proposal.id,
+        agreed_price: Number(proposal.proposed_price) >= 1 ? Number(proposal.proposed_price) : null,
+        agreed_days: parseInt(proposal.delivery_days, 10) || null,
+        agreed_scope: null, terms_at: null,
         updated_at: new Date().toISOString()
       }).eq('id', proposal.request_id);
     }
@@ -1964,6 +1841,19 @@ app.get('/robots.txt', (req, res) => {
   app.post('/api/requests/:id/messages', authMiddleware, async (req, res) => {
     const { to_id, text, proposal_id } = req.body;
     if (!to_id || !text) return res.status(400).json({ error: 'to_id and text required' });
+    if (String(text).length > 5000) return res.status(400).json({ error: 'Messages can be up to 5,000 characters.' });
+    // Only between the investor and a creator who sent a proposal or was invited/matched
+    {
+      const { data: rq } = await supabase.from('idea_requests').select('investor_id').eq('id', req.params.id).single();
+      const other = parseInt(to_id, 10);
+      if (!rq || ![req.user.id, other].includes(rq.investor_id) || req.user.id === other) return res.status(403).json({ error: 'You can only message the people on this request.' });
+      const creatorId = rq.investor_id === req.user.id ? other : req.user.id;
+      const [{ data: pr }, { data: mt }] = await Promise.all([
+        supabase.from('idea_proposals').select('id').eq('request_id', req.params.id).eq('creator_id', creatorId).limit(1),
+        supabase.from('request_matches').select('id').eq('request_id', req.params.id).eq('creator_id', creatorId).limit(1)
+      ]);
+      if (!(pr && pr.length) && !(mt && mt.length)) return res.status(403).json({ error: 'Send a proposal first, then you can message the investor.' });
+    }
 
     const { data, error } = await supabase
       .from('request_messages')

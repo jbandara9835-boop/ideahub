@@ -557,6 +557,7 @@
       if (t.kind === 'patent') return patentDisputeCard(t);
       if (t.kind === 'room_job') return roomJobCard(t);
       if (t.kind === 'hire') return hireDisputeCard(t);
+      if (t.kind === 'request') return requestDisputeCard(t);
       const buyer = `${t.buyer?.first_name||''} ${t.buyer?.last_name||''}`.trim() || 'Buyer';
       const seller = `${t.seller?.first_name||''} ${t.seller?.last_name||''}`.trim() || 'Seller';
       const days = t.disputed_at ? Math.floor((Date.now() - new Date(t.disputed_at)) / 86400000) : 0;
@@ -733,6 +734,39 @@
             <button class="btn-reject-cert" onclick="resolveHire('${escHtml(h.id)}','refund')">↩️ Refund client ($${Number(h.total||0).toLocaleString()})</button>
           </div>
         </div>`;
+  }
+  function requestDisputeCard(r) {
+    const nm = u => `${u?.first_name||''} ${u?.last_name||''}`.trim() || '—';
+    return `
+        <div class="cert-card pending">
+          <div class="cert-top">
+            <div class="cert-user-info">
+              <div class="cert-user-name">🎯 ${escHtml(r.title)} · <span style="color:var(--accent);">$${Number(r.escrow_amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-role">Idea request #${escHtml(r.id)} · disputed ${formatDate(r.disputed_at)}</div>
+            </div>
+            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Investor (paid)</div><div class="cert-detail-val">${escHtml(nm(r.investor))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(r.investor?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Creator</div><div class="cert-detail-val">${escHtml(nm(r.creator))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(r.creator?.email||'')}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Delivered</div><div class="cert-detail-val">${r.delivered_at ? formatDate(r.delivered_at) : 'Not marked delivered'}</div></div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Agreed scope</div>${escHtml(r.agreed_scope||'—')}${r.delivery_note ? `<div class="cert-detail-label" style="margin-top:8px">Delivery note</div>${escHtml(r.delivery_note)}` : ''}<div class="cert-detail-label" style="margin-top:8px">Investor's reason</div>${escHtml(r.dispute_reason||'—')}</div>
+          <div class="cert-actions">
+            <a class="cert-file-btn" href="/request/${encodeURIComponent(r.id)}" target="_blank">📄 Open request &amp; files</a>
+            <button class="btn-approve" onclick="resolveRequest('${escHtml(r.id)}','release')">💰 Release to creator</button>
+            <button class="btn-reject-cert" onclick="resolveRequest('${escHtml(r.id)}','refund')">↩️ Refund investor ($${Number(r.total||0).toLocaleString()})</button>
+          </div>
+        </div>`;
+  }
+  async function resolveRequest(id, outcome) {
+    const note = prompt(`You are about to ${outcome === 'release' ? 'release the payment to the creator' : 'refund the investor in full'}.\n\nOptional note for both parties:`);
+    if (note === null) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/requests/${id}/resolve`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body: JSON.stringify({ outcome, note }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadAll(); else alert(d.error || 'Failed');
+    } catch(e) { alert('Something went wrong.'); }
   }
   async function resolveHire(id, outcome) {
     const note = prompt(`You are about to ${outcome === 'release' ? 'release the fee to the professional' : 'refund the client in full'}.\n\nOptional note for both parties:`);
@@ -1170,7 +1204,7 @@
 
   async function loadAll() {
     try {
-      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes, patentDisputesRes, roomJobsRes, hireDisputesRes] = await Promise.all([
+      const [certsRes, usersRes, ideasRes, hiresRes, rolesRes, disputesRes, withdrawalsRes, patentDisputesRes, roomJobsRes, hireDisputesRes, reqDisputesRes] = await Promise.all([
         fetch(`${API_URL}/api/certificates`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/users`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/ideas`, { headers:{ Authorization:`Bearer ${token}` } }),
@@ -1180,7 +1214,8 @@
         fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/patent-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null),
         fetch(`${API_URL}/api/admin/room-job-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null),
-        fetch(`${API_URL}/api/admin/hire-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
+        fetch(`${API_URL}/api/admin/hire-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null),
+        fetch(`${API_URL}/api/admin/request-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
       ]);
       loadRegs();
       loadCreds();
@@ -1194,6 +1229,8 @@
       allDisputes = allDisputes.concat((Array.isArray(roomJobs) ? roomJobs : []).map(j => ({ ...j, kind: 'room_job' })));
       const hireDisp = hireDisputesRes && hireDisputesRes.ok ? await hireDisputesRes.json() : [];
       allDisputes = allDisputes.concat((Array.isArray(hireDisp) ? hireDisp : []).map(h => ({ ...h, kind: 'hire' })));
+      const reqDisp = reqDisputesRes && reqDisputesRes.ok ? await reqDisputesRes.json() : [];
+      allDisputes = allDisputes.concat((Array.isArray(reqDisp) ? reqDisp : []).map(r => ({ ...r, kind: 'request' })));
 
       allIdeas = ideasRes.ok ? await ideasRes.json() : [];
       allHires = hiresRes.ok ? await hiresRes.json() : [];
