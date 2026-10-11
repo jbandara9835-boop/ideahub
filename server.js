@@ -160,6 +160,9 @@ app.get('/robots.txt', (req, res) => {
   const matching = require('./matching')(supabase, escrow);
   // Patent applications through IdeaHub (routes live in patents.js)
   require('./patents').mount(app, { supabase, authMiddleware, escrow });
+  // Built-in video calls (Daily). Needs DAILY_API_KEY.
+  const calls = require('./calls');
+  calls.mount(app, { supabase, authMiddleware, escrow });
   const quality = require('./public/listing-quality');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
@@ -282,6 +285,7 @@ app.get('/robots.txt', (req, res) => {
   app.get('/patents', (req, res) => res.sendFile(__dirname + '/public/patents.html'));
   app.get('/patent-apply', (req, res) => res.sendFile(__dirname + '/public/patent-apply.html'));
   app.get('/patent-application', (req, res) => res.sendFile(__dirname + '/public/patent-application.html'));
+  app.get('/call', (req, res) => res.sendFile(__dirname + '/public/call.html'));
 
   // Sitemap: the static pages in public/sitemap.xml + each public idea and life hack (cached 1 hour)
   let sitemapCache = { at: 0, xml: '' };
@@ -1362,30 +1366,37 @@ app.get('/robots.txt', (req, res) => {
 
   // REQUEST a call (creates a special message of type 'call_request')
   app.post('/api/messages/call-request', authMiddleware, async (req, res) => {
-    const { toId, callDate, note, meetLink } = req.body;
+    const { toId, callDate, note } = req.body;
+    const video = req.body.video === true; // "Call now" with IdeaHub video
+    const meetLink = calls.isSafeLink(req.body.meetLink) ? req.body.meetLink : null;
     if (!toId || !callDate) return res.status(400).json({ error: 'toId and callDate required' });
-    const { data, error } = await supabase
+    const callNow = video || !!meetLink;
+    let { data, error } = await supabase
       .from('messages')
       .insert([{
         from_id: req.user.id, to_id: parseInt(toId),
-        text: note || '',
+        text: String(note || '').slice(0, 500),
         type: 'call_request',
         call_date: callDate,
-        call_status: meetLink ? 'accepted' : 'pending',
+        call_status: callNow ? 'accepted' : 'pending',
         meet_link: meetLink || null
       }])
       .select().single();
     if (error) return res.status(500).json({ error: error.message });
+    if (video) {
+      const upd = await supabase.from('messages').update({ meet_link: calls.callPath('message', data.id) }).eq('id', data.id).select().single();
+      if (upd.data) data = upd.data;
+    }
 
     // Notify recipient
     const { data: sender } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
     const senderName = sender ? `${sender.first_name} ${sender.last_name||''}`.trim() : 'Someone';
     await supabase.from('notifications').insert([{
       user_id: parseInt(toId),
-      type: meetLink ? 'call_now' : 'call_request',
-      title: meetLink ? '📞 Incoming Call!' : '📅 Call Request',
-      message: meetLink ? `${senderName} is calling you now!` : `${senderName} requested a call.`,
-      link: `/messages?user=${req.user.id}`,
+      type: callNow ? 'call_now' : 'call_request',
+      title: callNow ? '📞 Incoming Call!' : '📅 Call Request',
+      message: callNow ? `${senderName} is calling you now!${video ? ' Tap to join the video call.' : ''}` : `${senderName} requested a call.`,
+      link: video ? data.meet_link : `/messages?user=${req.user.id}`,
       data: { from_id: req.user.id }
     }]);
 
@@ -1394,7 +1405,8 @@ app.get('/robots.txt', (req, res) => {
 
   // RESPOND to a call request (accept with meet link, or decline)
   app.put('/api/messages/:id/call-response', authMiddleware, async (req, res) => {
-    const { status, meetLink } = req.body; // status: 'accepted' or 'declined'
+    const { status } = req.body; // status: 'accepted' or 'declined'
+    const meetLink = calls.isSafeLink(req.body.meetLink) ? req.body.meetLink : null; // optional own link; default is IdeaHub video
     if (!['accepted','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
     const { data: msg } = await supabase.from('messages').select('*').eq('id', req.params.id).single();
@@ -1403,7 +1415,7 @@ app.get('/robots.txt', (req, res) => {
     if (msg.type !== 'call_request') return res.status(400).json({ error: 'Not a call request' });
 
     const updateData = { call_status: status };
-    if (status === 'accepted' && meetLink) updateData.meet_link = meetLink;
+    if (status === 'accepted') updateData.meet_link = meetLink || calls.callPath('message', msg.id);
 
     const { data, error } = await supabase
       .from('messages')
@@ -3243,7 +3255,8 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
 
   // RESPOND to a call request within a group
   app.put('/api/groups/call-response/:msgId', authMiddleware, async (req, res) => {
-    const { status, meetLink } = req.body;
+    const { status } = req.body;
+    const meetLink = calls.isSafeLink(req.body.meetLink) ? req.body.meetLink : null;
     if (!['accepted','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
     const { data: msg } = await supabase.from('group_messages').select('*').eq('id', req.params.msgId).single();
@@ -3253,7 +3266,7 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
     if (!member || member.status !== 'approved') return res.status(403).json({ error: 'Not authorized' });
 
     const updateData = { call_status: status };
-    if (status === 'accepted' && meetLink) updateData.meet_link = meetLink;
+    if (status === 'accepted') updateData.meet_link = meetLink || calls.callPath('group', msg.id);
 
     const { data, error } = await supabase
       .from('group_messages')
@@ -3266,7 +3279,9 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
 
   // CALL REQUEST within a group
   app.post('/api/groups/:id/call-request', authMiddleware, async (req, res) => {
-    const { callDate, note, meetLink } = req.body;
+    const { callDate, note } = req.body;
+    const video = req.body.video === true;
+    const meetLink = calls.isSafeLink(req.body.meetLink) ? req.body.meetLink : null;
     if (!callDate) return res.status(400).json({ error: 'callDate required' });
 
     const { data: member } = await supabase.from('group_members').select('status').eq('conversation_id', req.params.id).eq('user_id', req.user.id).single();
@@ -3276,11 +3291,12 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
       .from('group_messages')
       .insert([{
         conversation_id: parseInt(req.params.id), from_id: req.user.id,
-        text: note || '', type: 'call_request', call_date: callDate,
-        call_status: meetLink ? 'accepted' : 'pending', meet_link: meetLink || null
+        text: String(note || '').slice(0, 500), type: 'call_request', call_date: callDate,
+        call_status: (video || meetLink) ? 'accepted' : 'pending', meet_link: meetLink || null
       }])
       .select('*, sender:from_id(id, first_name, last_name)').single();
     if (error) return res.status(500).json({ error: error.message });
+    if (video) { await supabase.from('group_messages').update({ meet_link: calls.callPath('group', data.id) }).eq('id', data.id); data.meet_link = calls.callPath('group', data.id); }
     res.status(201).json(data);
   });
 

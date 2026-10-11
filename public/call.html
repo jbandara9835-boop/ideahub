@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📹</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Video call — IdeaHub</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg: #080809; --surface: #111114; --border: rgba(255,255,255,0.08); --accent: #f5c842; --text: #f0ede8; --muted: #8a867e; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+.bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--border); background: rgba(8,8,9,0.9); }
+.logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 17px; flex-shrink: 0; }
+.logo span { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+.title small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.back { color: var(--muted); text-decoration: none; font-size: 13px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; flex-shrink: 0; }
+.back:hover { color: var(--text); }
+#stage { flex: 1; position: relative; min-height: 0; }
+#frame { position: absolute; inset: 0; }
+.msg { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 14px; }
+.msg .icon { font-size: 44px; }
+.msg h1 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 24px; font-weight: 800; }
+.msg p { color: var(--muted); font-size: 14.5px; max-width: 440px; line-height: 1.6; }
+.btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 12px; padding: 0.75rem 1.2rem; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text); font-family: inherit; }
+.btn.gold { background: var(--accent); color: #080809; border-color: var(--accent); }
+.btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.spin { width: 34px; height: 34px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: s 0.8s linear infinite; }
+@keyframes s { to { transform: rotate(360deg); } }
+.hidden { display: none !important; }
+@media (max-width: 560px) { .logo b { display: none; } }
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="/" aria-label="IdeaHub home"><span>💡</span><b>IdeaHub</b></a>
+  <div class="title" id="title">Video call</div>
+  <a class="back" id="back" href="/messages">← Back</a>
+</div>
+<div id="stage">
+  <div id="frame"></div>
+  <div class="msg" id="msg"><div class="spin"></div><p>Connecting…</p></div>
+</div>
+
+<script src="https://unpkg.com/@daily-co/daily-js@0.92.2/dist/daily.js"></script>
+<script>
+  const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
+  const params = new URLSearchParams(location.search);
+  const type = params.get('type'), id = parseInt(params.get('id'), 10);
+  if (!token) location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search);
+  const $ = x => document.getElementById(x);
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  let frame = null, back = '/messages', retry = null;
+
+  function show(icon, title, text, actions) {
+    $('msg').classList.remove('hidden');
+    $('msg').innerHTML = `<div class="icon">${icon}</div><h1>${esc(title)}</h1>${text ? `<p>${esc(text)}</p>` : ''}<div class="btns">${actions || ''}</div>`;
+  }
+  const backBtn = () => `<a class="btn" href="${esc(back)}">Back</a>`;
+
+  async function start() {
+    clearTimeout(retry);
+    $('msg').classList.remove('hidden');
+    $('msg').innerHTML = '<div class="spin"></div><p>Connecting…</p>';
+    let d, r;
+    try {
+      r = await fetch('/api/calls/join', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ type, id }) });
+      d = await r.json().catch(() => ({}));
+    } catch (e) { return show('📶', 'No connection', 'Check your internet connection and try again.', `<button class="btn gold" onclick="start()">Try again</button>${backBtn()}`); }
+    if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    if (d.back) { back = d.back; $('back').href = back; }
+    if (!r.ok) {
+      if (d.code === 'too_early') {
+        const at = new Date(d.opens_at);
+        show('🕒', 'Not open yet', `You can join from ${at.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}. Keep this page open and it will connect automatically.`, backBtn());
+        retry = setTimeout(start, Math.max(15000, Math.min(at - Date.now() + 2000, 5 * 60000)));
+        return;
+      }
+      return show(d.code === 'video_not_configured' ? '🛠️' : '⚠️', d.code === 'video_not_configured' ? 'Video calls are coming soon' : 'Can\'t join this call', d.error || 'Something went wrong.', `${r.status >= 500 ? '<button class="btn gold" onclick="start()">Try again</button>' : ''}${backBtn()}`);
+    }
+    $('title').innerHTML = `${esc(d.title)}<small>🔒 Private</small>`;
+    document.title = `${d.title} — IdeaHub`;
+    if (!window.Daily) return show('⚠️', 'Video couldn\'t load', 'Something blocked the video component. Disable ad blockers for this page and try again.', `<button class="btn gold" onclick="location.reload()">Reload</button>${backBtn()}`);
+    $('msg').classList.add('hidden');
+    try {
+      if (frame) { try { await frame.destroy(); } catch (e) {} }
+      frame = window.Daily.createFrame($('frame'), {
+        showLeaveButton: true, showFullscreenButton: true,
+        iframeStyle: { position: 'absolute', inset: '0', width: '100%', height: '100%', border: '0', background: '#080809' },
+        theme: { colors: { accent: '#f5c842', accentText: '#080809', background: '#080809', backgroundAccent: '#1a1a1f', baseText: '#f0ede8', border: '#2a2a30', mainAreaBg: '#111114', mainAreaBgAccent: '#1a1a1f', mainAreaText: '#f0ede8', supportiveText: '#8a867e' } }
+      });
+      frame.on('left-meeting', () => { frame.destroy().catch(() => {}); frame = null; show('👋', 'You left the call', '', `<button class="btn gold" onclick="start()">Rejoin</button>${backBtn()}`); });
+      frame.on('error', ev => { show('⚠️', 'The call ended', (ev && ev.errorMsg) || 'The call was interrupted.', `<button class="btn gold" onclick="start()">Rejoin</button>${backBtn()}`); });
+      await frame.join({ url: d.url, token: d.token });
+    } catch (e) {
+      show('⚠️', 'Couldn\'t start the video', e.message || 'Please try again.', `<button class="btn gold" onclick="start()">Try again</button>${backBtn()}`);
+    }
+  }
+  if (!type || !id) show('⚠️', 'Call not found', 'This link is incomplete.', backBtn()); else start();
+</script>
+</body>
+</html>
