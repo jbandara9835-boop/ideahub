@@ -175,7 +175,9 @@ app.get('/robots.txt', (req, res) => {
   require('./hire').mount(app, { supabase, authMiddleware, escrow });
   require('./reqpay').mount(app, { supabase, authMiddleware, escrow });
   require('./biz').mount(app, { supabase, authMiddleware, escrow }); // Business Expansion (overrides the older routes below)
+  require('./market').mount(app, { supabase, authMiddleware, escrow }); // delivery files, wallet history
   const quality = require('./public/listing-quality');
+  const ideaTerms = require('./public/idea-terms');
   const engagementLevels = require('./public/engagements');
   // Cleans the creator's engagement levels; returns { value, error }
   function readEngagements(body) {
@@ -462,10 +464,10 @@ app.get('/robots.txt', (req, res) => {
       .eq('email', email)
       .single();
 
-    if (!user || error) return res.status(400).json({ error: 'No account found with this email' });
+    if (!user || error) return res.status(400).json({ error: 'Incorrect email or password.' });
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(400).json({ error: 'Incorrect password' });
+    const match = user.password ? await bcrypt.compare(String(password || ''), user.password) : false;
+    if (!match) return res.status(400).json({ error: 'Incorrect email or password.' });
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
     const { password: _, ...safeUser } = user;
@@ -642,7 +644,7 @@ app.get('/robots.txt', (req, res) => {
 
   // GET all ideas
   app.get('/api/ideas', async (req, res) => {
-    let query = supabase.from('ideas').select('*, creator:creator_id(tagline, avatar_url, profile_stars)').eq('status', 'live');
+    let query = supabase.from('ideas').select('*, creator:creator_id(tagline, avatar_url, profile_stars, rating_avg, rating_count, deals_completed)').eq('status', 'live');
 
     if (req.query.industry && req.query.industry !== 'all') {
       query = query.eq('industry', req.query.industry);
@@ -671,7 +673,7 @@ app.get('/robots.txt', (req, res) => {
   app.get('/api/ideas/:id', async (req, res) => {
     const { data: idea, error } = await supabase
       .from('ideas')
-      .select('*, creator:creator_id(first_name, last_name, avatar_url, tagline, profile_stars, role)')
+      .select('*, creator:creator_id(first_name, last_name, avatar_url, tagline, profile_stars, role, rating_avg, rating_count, deals_completed)')
       .eq('id', req.params.id)
       .single();
 
@@ -790,6 +792,9 @@ app.get('/robots.txt', (req, res) => {
     const { data: cur0 } = await supabase.from('ideas').select('creator_id').eq('id', req.params.id).single();
     const ownerId = cur0 && await pros.canManage(supabase, req.user.id, cur0.creator_id) ? cur0.creator_id : req.user.id;
     const { data: current } = await supabase.from('ideas').select('status').eq('id', req.params.id).eq('creator_id', ownerId).single();
+    if (!current) return res.status(404).json({ error: 'Idea not found' });
+    // Once a buyer has paid, the listing is what they bought: it can't change
+    if (['escrow', 'sold'].includes(current.status)) return res.status(400).json({ error: current.status === 'sold' ? 'This idea has been sold, so it can no longer be edited.' : 'A buyer has paid for this idea, so it can\'t be edited while the deal is in progress.', code: 'locked' });
     const resubmit = current?.status === 'rejected';
     const qc = await checkQuality(req.body);
     if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
@@ -917,6 +922,15 @@ app.get('/robots.txt', (req, res) => {
 
   // DELETE idea
   app.delete('/api/ideas/:id', authMiddleware, async (req, res) => {
+    const { data: idea } = await supabase.from('ideas').select('id, status').eq('id', req.params.id).eq('creator_id', req.user.id).single();
+    if (!idea) return res.status(404).json({ error: 'Idea not found' });
+    if (['escrow', 'sold'].includes(idea.status)) return res.status(400).json({ error: idea.status === 'sold' ? 'Sold ideas are kept as a record of the sale.' : 'A buyer has paid for this idea, so it can\'t be deleted while the deal is in progress.', code: 'locked' });
+    const { data: deals } = await supabase.from('transactions').select('id').eq('idea_id', idea.id).limit(1);
+    if (deals && deals.length) {
+      // Keep the record of past deals (e.g. a refunded purchase); just take the listing down
+      await supabase.from('ideas').update({ status: 'withdrawn' }).eq('id', idea.id);
+      return res.json({ message: 'Idea removed from the marketplace' });
+    }
     const { error } = await supabase
       .from('ideas')
       .delete()
@@ -939,6 +953,7 @@ app.get('/robots.txt', (req, res) => {
     if (idea.has_patent) return res.status(400).json({ error: 'Patents are not sold through IdeaHub checkout. Message the owner, and use a registered patent attorney for the checks and the transfer.', code: 'patent_direct' });
     if (!payments.purchasesOpen()) return res.status(403).json({ error: 'Online payments are launching soon. Message the creator to discuss this idea in the meantime.', code: 'payments_closed' });
     // Engagement levels the buyer added (fixed-price ones); free ones are always included
+    if (req.body.agreement !== ideaTerms.VERSION) return res.status(400).json({ error: 'Please read and accept the Idea Transfer Agreement.', code: 'agreement_required', version: ideaTerms.VERSION });
     const extras = engagementLevels.addOns(idea.engagements, Array.isArray(req.body.engagements) ? req.body.engagements.slice(0, 10) : []);
     if (extras.errors.length) return res.status(400).json({ error: extras.errors.join(' ') });
 
@@ -947,14 +962,15 @@ app.get('/robots.txt', (req, res) => {
     if (!claimed || !claimed.length) return res.status(400).json({ error: 'This idea was just purchased by someone else.' });
 
     const amount = Math.round((Number(idea.price) + extras.total) * 100) / 100;
-    const fee = Math.round(amount * 0.08);
+    const fee = Math.round(amount * 0.08 * 100) / 100;
     const { data: tx, error } = await supabase
       .from('transactions')
       .insert([{
         idea_id: idea.id, idea_title: idea.title,
         buyer_id: req.user.id, seller_id: idea.creator_id,
-        amount, fee, total: amount + fee, engagements: extras.items,
+        amount, fee, total: Math.round((amount + fee) * 100) / 100, engagements: extras.items,
         payment_method: paymentMethod || 'card', status: 'escrow',
+        agreement_version: ideaTerms.VERSION, agreement_text: ideaTerms.TEXT, agreement_accepted_at: new Date().toISOString(),
       }])
       .select().single();
 
@@ -1092,6 +1108,11 @@ app.get('/robots.txt', (req, res) => {
     if (tx.seller_id !== req.user.id) return res.status(403).json({ error: 'Only the seller can mark this delivered' });
     if (tx.status !== 'escrow') return res.status(400).json({ error: 'Only deals in escrow can be marked delivered.' });
     if (tx.delivered_at) return res.status(400).json({ error: 'Already marked as delivered.' });
+    {
+      const { data: files } = await supabase.from('transaction_files').select('id').eq('transaction_id', String(tx.id)).limit(1);
+      const noteLen = String(req.body?.note || '').trim().length;
+      if (!(files && files.length) && noteLen < 20) return res.status(400).json({ error: 'Upload the idea materials, or describe what you delivered (at least 20 characters).' });
+    }
 
     const now = new Date();
     const { data: updated, error } = await supabase.from('transactions')

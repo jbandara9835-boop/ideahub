@@ -208,6 +208,10 @@
     .modal { padding:1.25rem; }
     .modal-overlay { padding:0.5rem; }
   }
+  .agree-box { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:.75rem .85rem; margin:0 0 .9rem; }
+  .agree-text { display:none; max-height:220px; overflow:auto; font-size:12px; color:var(--muted); line-height:1.55; margin-top:.6rem; }
+  .agree-text.open { display:block; }
+  .agree-text ol { padding-left:1.1rem; } .agree-text li { margin-bottom:.4rem; }
 </style>
 </head>
 <body>
@@ -288,6 +292,7 @@
 </div>
 
 <script src="/engagements.js"></script>
+<script src="/idea-terms.js"></script>
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -373,10 +378,12 @@
     return map[level] || map[1];
   }
 
-  function formatPrice(p) { return '$' + (p || 0).toLocaleString(); }
+  function formatPrice(p) { const v = Number(p || 0); return '$' + v.toLocaleString('en-US', Number.isInteger(v) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  const loginUrl = () => '/login?next=' + encodeURIComponent(location.pathname + location.search);
+  const STATUS_TEXT = { live: 'Available', escrow: 'Under offer', sold: 'Sold', under_review: 'Under review', rejected: 'Needs changes', withdrawn: 'Withdrawn' };
 
   function openModal() {
-    if (!token) { window.location.href = '/login'; return; }
+    if (!token) { window.location.href = loginUrl(); return; }
     document.getElementById('msgModal').classList.add('show');
     document.getElementById('msgText').focus();
     document.getElementById('msgSuccess').classList.remove('show');
@@ -425,8 +432,9 @@
   }
 
   async function handleBuy() {
-    if (!token) { window.location.href = '/login'; return; }
+    if (!token) { window.location.href = loginUrl(); return; }
     if (!currentIdea) return;
+    if (!document.getElementById('agreeChk')?.checked) { alert('Please read and accept the Idea Transfer Agreement first.'); document.getElementById('agreeBox')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     const payCfg = await fetch(`${API_URL}/api/payments/config`).then(r => r.json()).catch(() => ({ purchasesOpen: false }));
     if (!payCfg.purchasesOpen) {
       alert('Online payments are launching soon.\n\nIn the meantime, message the creator to discuss this idea.');
@@ -436,13 +444,13 @@
     if (payCfg.provider === 'test' && !confirm('TEST MODE: no real payment will be taken for this purchase. Continue?')) return;
     const c = checkoutAmount();
     const extrasNote = chosenAddOns.size ? `\nIncludes: ${[...chosenAddOns].map(k => Engagements.BY_KEY[k].short).join(', ')}` : '';
-    if (!confirm(`Purchase "${currentIdea.title}" for $${c.total.toLocaleString()} (including the 8% platform fee)?${extrasNote}\n\nPayment will be held in escrow until you confirm delivery.`)) return;
+    if (!confirm(`Purchase "${currentIdea.title}" for ${formatPrice(c.total)} (including the 8% platform fee)?${extrasNote}\n\nPayment will be held in escrow until you confirm delivery.`)) return;
 
     try {
       const res = await fetch(`${API_URL}/api/transactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ideaId: currentIdea.id, paymentMethod: 'card', engagements: [...chosenAddOns] })
+        body: JSON.stringify({ ideaId: currentIdea.id, paymentMethod: 'card', engagements: [...chosenAddOns], agreement: IdeaTerms.VERSION })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Purchase failed');
@@ -491,15 +499,15 @@
   function checkoutAmount() {
     const extra = window.Engagements ? Engagements.addOns(currentIdea.engagements, [...chosenAddOns]).total : 0;
     const amount = Number(currentIdea.price || 0) + extra;
-    const fee = Math.round(amount * 0.08);
-    return { extra, amount, fee, total: amount + fee };
+    const fee = Math.round(amount * 0.08 * 100) / 100;
+    return { extra, amount, fee, total: Math.round((amount + fee) * 100) / 100 };
   }
   function updateTotals() {
     const c = checkoutAmount();
     const ex = document.getElementById('feeExtras');
     if (ex) { ex.style.display = c.extra ? 'flex' : 'none'; ex.lastElementChild.textContent = '$' + c.extra.toLocaleString(); }
-    document.getElementById('feeFee').textContent = '$' + c.fee.toLocaleString();
-    document.getElementById('feeTotal').textContent = '$' + c.total.toLocaleString();
+    document.getElementById('feeFee').textContent = formatPrice(c.fee);
+    document.getElementById('feeTotal').textContent = formatPrice(c.total);
   }
   // ── Patents: sold directly between the parties; licences run on IdeaHub ──
   const LIC_TYPES = { exclusive: ['Exclusive', 'Only the licensee may use it in the agreed territory and field.'], sole: ['Sole', 'The licensee and the owner may use it; nobody else.'], non_exclusive: ['Non-exclusive', 'The owner may license others too.'] };
@@ -546,7 +554,7 @@
         <li>A <a href="/find-support?type=chartered_accountant">chartered accountant</a> can help with valuation and tax.</li>
         <li>Sign the assignment and record it with the patent office.</li></ol>
         The sale, payment and transfer happen directly between you and the owner. IdeaHub connects you but is not part of the sale.</div>` : ''}
-      ${!token && !isOwner ? `<div style="text-align:center;margin-bottom:1rem;"><a href="/login" style="color:var(--accent);font-size:13px;">Sign in to contact the owner</a></div>` : ''}
+      ${!token && !isOwner ? `<div style="text-align:center;margin-bottom:1rem;"><a href="${loginUrl()}" style="color:var(--accent);font-size:13px;">Sign in to contact the owner</a></div>` : ''}
       ${originalityPanel(idea.originality_rating, isOwner)}
     </div>`;
   }
@@ -631,7 +639,7 @@
             <div style="font-size:48px;margin-bottom:1rem;">🔒</div>
             <div style="font-size:16px;color:var(--text);margin-bottom:0.5rem;">This idea is only visible to verified members.</div>
             <div style="font-size:14px;">${token ? 'Complete your profile and verify your phone to get verified.' : 'Sign in with a verified account to view it.'}</div>
-            <a href="${token ? '/profile' : '/login'}" style="color:var(--accent);font-size:14px;margin-top:1rem;display:inline-block;">${token ? 'Go to my profile →' : 'Sign in →'}</a>
+            <a href="${token ? '/profile' : loginUrl()}" style="color:var(--accent);font-size:14px;margin-top:1rem;display:inline-block;">${token ? 'Go to my profile →' : 'Sign in →'}</a>
           </div>`;
         return;
       }
@@ -653,8 +661,8 @@
       document.getElementById('twDesc').setAttribute('content', seoDesc);
 
       const lvl = getLevelInfo(idea.level);
-      const fee = Math.round((idea.price || 0) * 0.08);
-      const total = (idea.price || 0) + fee;
+      const fee = Math.round((idea.price || 0) * 0.08 * 100) / 100;
+      const total = Math.round(((idea.price || 0) + fee) * 100) / 100;
       const creatorInitials = idea.creator_name ? idea.creator_name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) : '?';
       const isOwner = user && user.id === idea.creator_id;
 
@@ -722,7 +730,7 @@
                 </div>
                 <div class="meta-item">
                   <div class="meta-label">Status</div>
-                  <div class="meta-value" style="text-transform:capitalize">${escI((idea.status || 'live').replace('_', ' '))}</div>
+                  <div class="meta-value">${escI(STATUS_TEXT[idea.status] || idea.status || 'Available')}</div>
                 </div>
               </div>
             </div>
@@ -737,7 +745,10 @@
                   <div class="creator-name">${escI(idea.creator_name || 'Anonymous')}</div>
                   <div class="creator-role">${(idea.creator?.role||'idea_creator').replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase())}</div>
                   ${idea.creator?.tagline ? `<div class="creator-tagline">"${escI(idea.creator.tagline)}"</div>` : ''}
-                  <div class="creator-stars">${idea.creator?.profile_stars > 0 ? '★'.repeat(Math.round(idea.creator.profile_stars)) + '☆'.repeat(5-Math.round(idea.creator.profile_stars)) : '<span style="color:var(--muted);">No ratings yet</span>'}</div>
+                  <div class="creator-stars">${(() => { const avg = Number(idea.creator?.rating_avg), n = Number(idea.creator?.rating_count) || 0, deals = Number(idea.creator?.deals_completed) || 0;
+                    const k = Math.max(1, Math.min(5, Math.round(avg || 0)));
+                    return (n && avg ? `${'★'.repeat(k)}${'☆'.repeat(5 - k)} <span style="color:var(--muted);font-size:12px">${avg.toFixed(1)} from ${n} review${n === 1 ? '' : 's'}</span>` : '<span style="color:var(--muted);font-size:12px">No reviews yet</span>')
+                      + (deals ? ` <span style="color:var(--muted);font-size:12px">· ${deals} completed deal${deals === 1 ? '' : 's'}</span>` : ''); })()}</div>
                 </div>
                 ${!isOwner ? `<button class="msg-creator-btn" onclick="event.stopPropagation();openModal()">💬 Message</button>` : '<span style="font-size:12px;color:var(--accent)">Your idea</span>'}
               </div>
@@ -753,12 +764,16 @@
               <div class="fee-breakdown">
                 <div class="fee-row"><span>Idea price</span><span>${formatPrice(idea.price)}</span></div>
                 <div class="fee-row" id="feeExtras" style="display:none"><span>Extras</span><span>$0</span></div>
-                <div class="fee-row"><span>Platform fee (8%)</span><span id="feeFee">$${fee.toLocaleString()}</span></div>
-                <div class="fee-row total"><span>Total</span><span class="fee-val" id="feeTotal">$${total.toLocaleString()}</span></div>
+                <div class="fee-row"><span>Platform fee (8%)</span><span id="feeFee">${formatPrice(fee)}</span></div>
+                <div class="fee-row total"><span>Total</span><span class="fee-val" id="feeTotal">${formatPrice(total)}</span></div>
               </div>
               ${idea.status === 'live' && !isOwner ? addOnsBox(idea) : ''}
 
               ${idea.status === 'live' && !isOwner ? `
+                <div class="agree-box" id="agreeBox">
+                  <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;cursor:pointer"><input type="checkbox" id="agreeChk" style="accent-color:#f5c842;width:16px;height:16px;margin-top:2px;flex-shrink:0" /> <span>I accept the <a href="#" onclick="event.preventDefault();document.getElementById('agreeText').classList.toggle('open')" style="color:var(--accent)">Idea Transfer Agreement</a>: the seller transfers their rights in the idea to me when the payment is released.</span></label>
+                  <div class="agree-text" id="agreeText"><ol>${IdeaTerms.POINTS.map(p => `<li>${escI(p)}</li>`).join('')}</ol></div>
+                </div>
                 <button class="buy-btn" onclick="handleBuy()">
                   🛒 Purchase Idea
                 </button>
@@ -772,12 +787,12 @@
                 <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your own idea</button>
                 <a href="/patent-apply?idea=${encodeURIComponent(idea.id)}" style="display:block;text-align:center;margin:-0.25rem 0 1rem;color:var(--accent);font-size:13px;text-decoration:none;">📜 Patent this idea with a verified attorney →</a>
               ` : `
-                <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Not available</button>
+                <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">${escI(idea.status === 'escrow' ? 'Under offer' : idea.status === 'sold' ? 'Sold' : 'Not available')}</button>
               `}
 
               ${!token ? `
                 <div style="text-align:center;margin-bottom:1rem;">
-                  <a href="/login" style="color:var(--accent);font-size:13px;">Sign in to purchase</a>
+                  <a href="${loginUrl()}" style="color:var(--accent);font-size:13px;">Sign in to purchase</a>
                 </div>
               ` : ''}
 

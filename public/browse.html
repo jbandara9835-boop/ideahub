@@ -264,13 +264,17 @@
   <div class="cat-chips" id="catChips">
     <button class="chip active" data-cat="all">All</button>
     <button class="chip" data-cat="Technology">Technology</button>
-    <button class="chip" data-cat="Health">Health</button>
+    <button class="chip" data-cat="Health &amp; Wellness">Health &amp; Wellness</button>
     <button class="chip" data-cat="Education">Education</button>
     <button class="chip" data-cat="Finance">Finance</button>
-    <button class="chip" data-cat="Food">Food</button>
+    <button class="chip" data-cat="Food &amp; Beverage">Food &amp; Beverage</button>
     <button class="chip" data-cat="E-commerce">E-commerce</button>
-    <button class="chip" data-cat="Environment">Environment</button>
     <button class="chip" data-cat="Entertainment">Entertainment</button>
+    <button class="chip" data-cat="Real Estate">Real Estate</button>
+    <button class="chip" data-cat="Travel">Travel</button>
+    <button class="chip" data-cat="Environment">Environment</button>
+    <button class="chip" data-cat="Agriculture">Agriculture</button>
+    <button class="chip" data-cat="Other">Other</button>
   </div>
   <div class="hero-stats">
     <div class="hero-stat"><strong id="statIdeas">—</strong> ideas listed</div>
@@ -403,9 +407,7 @@
 </nav>
 
 <script>
-  const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : 'https://ideahub.it.com';
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
   let allIdeas = [], filteredIdeas = [], currentPage = 1;
   const PER_PAGE = 12;
@@ -611,7 +613,7 @@
       allIdeas = data.ideas || data || [];
       document.getElementById('statIdeas').textContent = allIdeas.length;
       document.getElementById('statCreators').textContent = new Set(allIdeas.map(i => i.creator_id)).size;
-      document.getElementById('statSold').textContent = allIdeas.filter(i => i.sold).length;
+      fetch(`${API_URL}/api/stats/public`).then(r => r.json()).then(st => { document.getElementById('statSold').textContent = Number(st.deals) || 0; }).catch(() => { document.getElementById('statSold').textContent = '—'; });
       applyFilters();
     } catch(e) {
       document.getElementById('ideasGrid').innerHTML = '<div class="empty"><h3>Failed to load ideas</h3><p>Please refresh the page</p></div>';
@@ -691,16 +693,18 @@
   }
 
   const levelLabel = { 1:'Concept', 2:'Prototype', 3:'Market Ready' };
-  const emojiMap = { Technology:'💻', Health:'🏥', Education:'📚', Finance:'💰', Food:'🍔', 'E-commerce':'🛒', Environment:'🌿', Entertainment:'🎮', 'Health & Wellness':'💊', Transport:'🚗', Agriculture:'🌾' };
+  const emojiMap = { Technology:'💻', Health:'🏥', Education:'📚', Finance:'💰', Food:'🍔', 'Food & Beverage':'🍔', 'Real Estate':'🏠', Travel:'✈️', Other:'💡', 'E-commerce':'🛒', Environment:'🌿', Entertainment:'🎮', 'Health & Wellness':'💊', Transport:'🚗', Agriculture:'🌾' };
 
   function formatPrice(p) {
     if (!p) return 'Make Offer';
     return p >= 1000 ? '$'+(p/1000).toFixed(p%1000===0?0:1)+'k' : '$'+p;
   }
-  function starsHTML(r) {
-    if (!r || r <= 0) return '☆☆☆☆☆ <span style="color:var(--muted);">(No ratings)</span>';
-    const n = Math.max(1, Math.min(5, Math.round(r)));
-    return '★'.repeat(n)+'☆'.repeat(5-n);
+  // Buyer and client reviews (not profile completeness)
+  function starsHTML(c) {
+    const avg = Number(c && c.rating_avg), n = Number(c && c.rating_count) || 0;
+    if (!n || !avg) return '<span style="color:var(--muted);font-size:11px">No reviews yet</span>';
+    const k = Math.max(1, Math.min(5, Math.round(avg)));
+    return `<span title="${avg.toFixed(1)} from ${n} review${n === 1 ? '' : 's'}">${'★'.repeat(k)}${'☆'.repeat(5 - k)} <span style="color:var(--muted);font-size:11px">${avg.toFixed(1)} (${n})</span></span>`;
   }
   function stageClass(s) {
     return 'badge-'+String(s||'concept').toLowerCase().replace(/ /g,'_').replace(/[^a-z0-9_-]/g,'');
@@ -759,7 +763,7 @@
         <div class="card-tags">
           ${origTag(idea.originality_rating)}
           ${industry ? `<span class="card-tag">${escH(industry)}</span>` : ''}
-          ${idea.patent_verified ? `<span class="card-tag">✅ Verified Patent</span>` : ''}
+          ${idea.has_patent ? `<span class="card-tag">${idea.patent_verified ? '✅ Verified patent' : '📋 Patent'}</span>` : ''}
           ${engTag(idea.engagements)}
         </div>
         <div class="card-creator">
@@ -768,10 +772,10 @@
             <div class="creator-name">${escH(idea.creator_name||'Creator')}</div>
             <div class="creator-tagline">${idea.creator?.tagline ? `"${escH(idea.creator.tagline)}"` : '&nbsp;'}</div>
           </div>
-          <div class="creator-stars">${starsHTML(idea.creator?.profile_stars)}</div>
+          <div class="creator-stars">${starsHTML(idea.creator)}</div>
         </div>
         <div class="card-footer">
-          <div class="card-price">${formatPrice(idea.price)}</div>
+          <div class="card-price">${idea.has_patent ? `<span title="Patents are licensed or sold by negotiation with the owner">${formatPrice(idea.price)}<span style="font-size:11px;color:var(--muted);font-weight:500;display:block;margin-top:2px">guide · licence or sale</span></span>` : formatPrice(idea.price)}</div>
           <div class="card-meta">👁 ${Number(idea.views)||0}</div>
           <span class="btn-view">View →</span>
         </div>

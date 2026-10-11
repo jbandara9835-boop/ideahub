@@ -272,7 +272,16 @@ async function runEscrow(supabase, escrow) {
   for (const tx of waiting || []) {
     const age = (now - new Date(tx.created_at).getTime()) / DAY;
     const sent = tx.seller_reminders || 0;
-    if (age >= 14) stale++;
+    if (age >= 14) {
+      stale++;
+      // Tell the buyer they can ask for a refund, and IdeaHub to look at it (once)
+      if (!tx.stale_notified) {
+        await escrow.notify(tx.buyer_id, { type: 'undelivered', title: '⏰ Still not delivered', message: `"${tx.idea_title}" hasn't been delivered after ${Math.floor(age)} days. You can open a dispute on the Wallet page and IdeaHub will review it for a refund.`, link: '/transactions' });
+        const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
+        for (const ad of admins || []) await escrow.notify(ad.id, { type: 'undelivered', title: '⏰ Idea not delivered for 14+ days', message: `Deal #${tx.id} "${tx.idea_title}" (${escrow.money(tx.amount)}) is still waiting for the seller.`, link: '/admin' });
+        await supabase.from('transactions').update({ stale_notified: true }).eq('id', tx.id);
+      }
+    }
     if ((age >= 7 && sent < 2) || (age >= 3 && sent < 1)) {
       await escrow.notify(tx.seller_id, { type: 'deliver_reminder', title: '📦 Buyer is waiting', message: `"${tx.idea_title}" was paid ${Math.floor(age)} days ago. Share the idea materials with the buyer and mark it delivered to get paid.`, link: '/transactions' });
       await escrow.emailUser(tx.seller_id, `Reminder: deliver "${tx.idea_title}"`, 'Your buyer is waiting',

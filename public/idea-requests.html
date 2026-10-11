@@ -289,9 +289,7 @@
 </footer>
 
 <script>
-  const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : 'https://ideahub.it.com';
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
   let allRequests = [], filteredRequests = [];
   let activeStatus = 'all', activeCategory = 'all', activeDeadline = 'all';

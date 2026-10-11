@@ -98,6 +98,15 @@
   .badge-refunded { background: rgba(255,255,255,0.08); color: var(--muted); }
   .badge-delivered { background: rgba(96,165,250,0.15); color: #60a5fa; }
   .tx-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .hist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.4rem 1.5rem; margin-top: 1.5rem; }
+  .hist-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 16px; }
+  .hist-sub { font-size: 12.5px; color: var(--muted); margin: 4px 0 1rem; }
+  .hist-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 12px; align-items: center; padding: .65rem 0; border-top: 1px solid var(--border); font-size: 13px; }
+  .hist-row a { color: var(--text); text-decoration: none; } .hist-row a:hover { color: var(--accent); }
+  .hist-in { color: var(--success); font-weight: 700; } .hist-out { color: var(--text); font-weight: 600; }
+  .file-row { display: flex; gap: 10px; align-items: center; padding: .55rem 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .file-row button.link { background: none; border: 0; color: var(--accent); cursor: pointer; font-size: 13px; padding: 0; flex: 1; text-align: left; overflow-wrap: anywhere; }
+  @media (max-width: 600px) { .hist-row { grid-template-columns: 1fr auto; } .hist-row .hd { grid-column: 1 / -1; color: var(--muted); font-size: 11.5px; } }
   .ghost-btn { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
   .ghost-btn:hover { border-color: var(--accent); color: var(--accent); }
   .ghost-btn.danger:hover { border-color: var(--error); color: var(--error); }
@@ -294,7 +303,24 @@
       <div class="loading"><div class="spin"></div> Loading transactions...</div>
     </div>
   </div>
+  <div class="hist-card">
+    <div class="hist-title">💳 All money in and out</div>
+    <div class="hist-sub">Every payment on IdeaHub: idea sales, hires, idea requests, adviser jobs, patents, licences, refunds and withdrawals.</div>
+    <div id="histBody"><div class="loading"><div class="spin"></div> Loading…</div></div>
+  </div>
 </main>
+
+<div class="modal-overlay" id="filesModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title" id="filesTitle">Idea materials</div>
+    <div class="modal-sub" id="filesSub"></div>
+    <div id="filesList"></div>
+    <div id="filesUpload" style="display:none;margin-top:.8rem"><input type="file" id="filesInput" style="font-size:13px;color:var(--muted)" /><div style="font-size:11.5px;color:var(--muted);margin-top:4px">Up to 25 MB each, 20 files. Stored privately: only the buyer and IdeaHub can open them.</div></div>
+    <div id="filesAgree" style="margin-top:1rem;font-size:12.5px"></div>
+    <div class="modal-error" id="filesError"></div>
+    <div class="modal-actions"><button class="modal-cancel" type="button" onclick="closeFiles()">Close</button></div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="withdrawModal">
   <div class="modal">
@@ -471,6 +497,7 @@
         else if (tx.status === 'disputed') actions = `<span class="tx-note">Payment on hold: buyer opened a dispute</span>`;
       }
 
+      if (['escrow', 'disputed', 'completed', 'refunded'].includes(tx.status)) actions += `<button class="ghost-btn" onclick="openFiles('${txEsc(tx.id)}')">📎 Files</button>`;
       return `
         <div class="tx-row">
           <div class="tx-idea">
@@ -482,8 +509,8 @@
             </div>
           </div>
           <div>${isSale ? '<span style="color:var(--success);font-size:12px;font-weight:500;">Sale</span>' : '<span style="color:var(--accent);font-size:12px;font-weight:500;">Purchase</span>'}</div>
-          <div style="color:var(--muted)">$${(tx.fee || 0).toLocaleString()}</div>
-          <div class="${isSale ? 'amount-sale' : 'amount-purchase'}">${isSale ? '+' : '-'}$${(tx.amount || 0).toLocaleString()}</div>
+          <div style="color:var(--muted)">$${Number(tx.fee || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
+          <div class="${isSale ? 'amount-sale' : 'amount-purchase'}" title="${isSale ? 'You receive the price; the buyer pays the fee' : 'Price + 8% fee'}">${isSale ? '+' : '-'}$${Number((isSale ? tx.amount : (tx.total || tx.amount)) || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
           <div><span class="badge ${badge}">${statusLabel}</span></div>
           <div class="tx-actions">${actions}</div>
         </div>
@@ -523,6 +550,70 @@
     document.getElementById('actionModal').classList.add('show');
   }
   function closeModal() { document.getElementById('actionModal').classList.remove('show'); }
+
+  // ── Delivery files ──
+  let filesTx = null;
+  const kb = n => n ? Math.max(1, Math.round(n / 1024)) + ' KB' : '';
+  async function openFiles(id) {
+    filesTx = id;
+    const tx = allTx.find(t => String(t.id) === String(id));
+    document.getElementById('filesTitle').textContent = tx ? `Idea materials: ${tx.idea_title || ''}` : 'Idea materials';
+    document.getElementById('filesError').style.display = 'none';
+    document.getElementById('filesModal').classList.add('show');
+    await loadFiles();
+  }
+  function closeFiles() { document.getElementById('filesModal').classList.remove('show'); filesTx = null; }
+  async function loadFiles() {
+    const el = document.getElementById('filesList'); el.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+    try {
+      const r = await fetch(`${API_URL}/api/transactions/${filesTx}/files`, { headers: { Authorization: `Bearer ${token}` } });
+      const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Could not load files.');
+      document.getElementById('filesSub').textContent = d.can_upload ? 'Add the files the buyer paid for, then mark the deal delivered.' : 'Files the seller delivered for this deal.';
+      el.innerHTML = d.files.length ? d.files.map(f => `<div class="file-row">📎 <button class="link" onclick="openFile(${Number(f.id)})">${txEsc(f.file_name)}</button><span style="color:var(--muted);font-size:12px">${kb(f.size)}</span>${d.can_upload ? `<button class="ghost-btn danger" onclick="removeFile(${Number(f.id)})">Remove</button>` : ''}</div>`).join('') : '<div style="font-size:13px;color:var(--muted);padding:.4rem 0">No files yet.</div>';
+      document.getElementById('filesUpload').style.display = d.can_upload ? 'block' : 'none';
+      document.getElementById('filesAgree').innerHTML = d.agreement && d.agreement.version ? `📄 Idea Transfer Agreement ${txEsc(d.agreement.version)}, accepted ${new Date(d.agreement.accepted_at).toLocaleDateString()} · <a href="#" onclick="event.preventDefault();showAgreement()" style="color:var(--accent)">Read it</a><pre id="agreeFull" style="display:none;white-space:pre-wrap;font-family:inherit;font-size:12px;color:var(--muted);max-height:220px;overflow:auto;margin-top:.5rem">${txEsc(d.agreement.text || '')}</pre>` : '';
+    } catch (e) { el.innerHTML = `<div style="color:var(--error);font-size:13px">${txEsc(e.message)}</div>`; }
+  }
+  function showAgreement() { const p = document.getElementById('agreeFull'); if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none'; }
+  document.getElementById('filesInput').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const err = document.getElementById('filesError'); err.style.display = 'none';
+    if (f.size > 25 * 1024 * 1024) { err.textContent = 'Files can be up to 25 MB.'; err.style.display = 'block'; e.target.value = ''; return; }
+    const fd = new FormData(); fd.append('file', f); e.target.disabled = true;
+    try {
+      const r = await fetch(`${API_URL}/api/transactions/${filesTx}/files`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Upload failed.');
+    } catch (x) { err.textContent = x.message; err.style.display = 'block'; }
+    e.target.disabled = false; e.target.value = ''; loadFiles();
+  });
+  async function removeFile(fid) {
+    if (!confirm('Remove this file?')) return;
+    await fetch(`${API_URL}/api/transactions/${filesTx}/files/${fid}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    loadFiles();
+  }
+  async function openFile(fid) {
+    const w = window.open('', '_blank');
+    try {
+      const r = await fetch(`${API_URL}/api/transactions/${filesTx}/files/${fid}`, { headers: { Authorization: `Bearer ${token}` } });
+      const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Could not open the file.');
+      if (w) w.location = d.url; else location.href = d.url;
+    } catch (e) { if (w) w.close(); alert(e.message); }
+  }
+  document.getElementById('filesModal').addEventListener('click', e => { if (e.target.id === 'filesModal') closeFiles(); });
+
+  // ── Money history ──
+  async function loadHistory() {
+    const el = document.getElementById('histBody');
+    try {
+      const r = await fetch(`${API_URL}/api/wallet/activity`, { headers: { Authorization: `Bearer ${token}` } });
+      const list = await r.json(); if (!r.ok) throw new Error();
+      if (!list.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted)">No payments yet.</div>'; return; }
+      const m = v => '$' + Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(Number(v)) ? 0 : 2, maximumFractionDigits: 2 });
+      el.innerHTML = list.map(p => `<div class="hist-row"><div class="hd">${new Date(p.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+        <div>${p.link ? `<a href="${txEsc(p.link)}">` : ''}${txEsc(p.verb)} · ${txEsc(p.text)}${p.link ? '</a>' : ''}${p.test ? ' <span style="font-size:11px;color:var(--muted)">(test)</span>' : ''}</div>
+        <div class="${p.dir === 'in' ? 'hist-in' : 'hist-out'}">${p.dir === 'in' ? '+' : '−'}${m(p.amount)}</div></div>`).join('');
+    } catch (e) { el.innerHTML = '<div style="font-size:13px;color:var(--muted)">Could not load your history.</div>'; }
+  }
   function paintStars() {
     document.querySelectorAll('#starPick button').forEach(b => b.classList.toggle('on', Number(b.dataset.v) <= modalStars));
   }
@@ -531,8 +622,8 @@
 
   function openDeliver(id) {
     openModalFor('deliver', id, 'Mark as delivered',
-      'Share the idea materials with the buyer (you can also send files through Messages). The buyer then has 7 days to confirm or dispute before the payment is released automatically.',
-      'Optional message to the buyer, e.g. where to find the documents...', 'Mark delivered', false);
+      'Upload the idea materials with 📎 Files first, so the buyer gets them and there is a record if anything is disputed. The buyer then has 7 days to confirm or dispute before the payment is released automatically.',
+      'Message to the buyer, e.g. what you delivered and how to use it (at least 20 characters if you upload no files)', 'Mark delivered', false);
   }
   function openDispute(id) {
     openModalFor('dispute', id, 'Open a dispute',
@@ -709,6 +800,7 @@
 
   loadTransactions().then(() => {
     loadWallet();
+    loadHistory();
     const rateId = new URLSearchParams(window.location.search).get('rate');
     if (rateId) openRate(rateId);
   });
