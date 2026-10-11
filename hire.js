@@ -165,7 +165,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   });
 
   // One hire (both sides)
-  app.get('/api/hire/:id(\\d+)', authMiddleware, async (req, res) => {
+  app.get('/api/hire/:id', (req, res, next) => /^\d+$/.test(req.params.id) ? next() : next('route'), authMiddleware, async (req, res) => {
     const { h, as } = await load(req); if (!h) return fail(res);
     const [{ data: people }, { data: msgs }, { data: rating }, { data: idea }] = await Promise.all([
       supabase.from('users').select('id, first_name, last_name, avatar_url, role, email').in('id', [h.client_id, h.support_id]),
