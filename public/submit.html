@@ -152,6 +152,16 @@
     letter-spacing: 0.4px; text-transform: uppercase;
   }
 
+  .seller-terms { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:1rem 1.1rem; margin:1.25rem 0 1rem; font-size:13px; }
+  .st-head { font-weight:700; margin-bottom:0.35rem; }
+  .st-intro { color:var(--muted); line-height:1.5; margin-bottom:0.6rem; }
+  .st-details summary { cursor:pointer; color:var(--accent); font-size:12.5px; margin-bottom:0.4rem; }
+  .st-details ol { color:var(--muted); line-height:1.5; padding-left:1.2rem; margin:0.4rem 0 0.7rem; font-size:12.5px; }
+  .st-details li { margin-bottom:0.35rem; }
+  .seller-terms .st-check { display:flex; gap:0.6rem; align-items:flex-start; cursor:pointer; line-height:1.45; text-transform:none; letter-spacing:normal; font-size:13px; font-weight:500; color:var(--text); margin:0; }
+  .st-check input { appearance:auto; accent-color:#f5c842; width:16px; height:16px; margin-top:2px; flex-shrink:0; }
+  .st-done { color:#4ade80; font-size:12.5px; }
+  .seller-terms.need { border-color:rgba(248,113,113,0.6); }
   input[type=text], input[type=number], textarea, select {
     width: 100%;
     background: rgba(255,255,255,0.04);
@@ -688,6 +698,14 @@
           <div class="orig-result" id="origResult"></div>
         </div>
 
+        <div class="seller-terms" id="sellerTerms">
+          <div class="st-head">📜 Idea Transfer Agreement</div>
+          <div class="st-intro">Every sale on IdeaHub uses the same standard agreement between you and the buyer. When the buyer's payment is released to you, the idea and its materials pass to them.</div>
+          <details class="st-details"><summary>Read the agreement</summary><ol id="stPoints"></ol></details>
+          <label class="st-check"><input type="checkbox" id="sellerAgree" /> <span id="stLabel">I own this idea (or have the right to sell it) and agree to sell it under the Idea Transfer Agreement. Once sold, I won't sell, license or publish it to anyone else.</span></label>
+          <div class="st-done" id="stDone" style="display:none">✓ You accepted the Idea Transfer Agreement for this listing.</div>
+        </div>
+
         <div class="error-msg" id="errorMsg"></div>
         <div class="success-msg" id="successMsg">🎉 Idea submitted successfully! Redirecting to dashboard...</div>
 
@@ -726,6 +744,15 @@
 
 <script src="/listing-quality.js"></script>
 <script src="/engagements.js"></script>
+<script src="/idea-terms.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ol = document.getElementById('stPoints');
+    if (ol && window.IdeaTerms) ol.innerHTML = IdeaTerms.POINTS.map(p => { const i = p.indexOf('. '); return '<li><strong>' + p.slice(0, i + 1) + '</strong>' + p.slice(i + 1) + '</li>'; }).join('');
+    document.getElementById('sellerAgree').addEventListener('change', () => document.getElementById('sellerTerms').classList.remove('need'));
+  });
+  let sellerAccepted = false;
+</script>
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -900,6 +927,7 @@
       .then(d => {
         const bar = document.createElement('div');
         bar.style.cssText = 'background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.35);border-radius:14px;padding:.85rem 1.15rem;font-size:13.5px;margin:0 0 1.25rem;line-height:1.6';
+        document.getElementById('stLabel').textContent = `${d.owner.name} owns this idea (or has the right to sell it) and has authorised me to accept the Idea Transfer Agreement for them. Once sold, it won't be sold, licensed or published to anyone else.`;
         bar.textContent = `You're ${editId ? 'editing a listing' : 'creating a listing'} for ${d.owner.name}. It will be published under their name, and they'll be notified.`;
         document.querySelector('.topbar').insertAdjacentElement('afterend', bar); if (!editId) document.querySelector('.page-title').textContent = 'New listing for ' + d.owner.name.split(' ')[0];
       })
@@ -931,6 +959,7 @@
       document.getElementById('ideaType').value   = idea.idea_type   || '';
       document.getElementById('price').value      = idea.price       || '';
       document.getElementById('visibility').value = idea.visibility  || '1';
+      if (window.IdeaTerms && idea.seller_terms_version === IdeaTerms.VERSION) { sellerAccepted = true; document.querySelector('#sellerTerms .st-check').style.display = 'none'; document.getElementById('stDone').style.display = 'block'; }
 
       const lvl = String(idea.level || '1');
       document.querySelectorAll('input[name="level"]').forEach(r => {
@@ -1374,6 +1403,14 @@
       return;
     }
 
+    const sellerAgree = document.getElementById('sellerAgree').checked;
+    if (!sellerAccepted && !sellerAgree) {
+      errorMsg.textContent = 'Please tick the Idea Transfer Agreement box to list this idea.';
+      errorMsg.classList.add('show');
+      const st = document.getElementById('sellerTerms'); st.classList.add('need'); st.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     const btn = document.getElementById('submitBtn');
     const spinner = document.getElementById('spinner');
     const btnText = document.getElementById('btnText');
@@ -1389,7 +1426,7 @@
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ title, summary, desc, industry, ideaType, countries, price, visibility, level, hasPatent, patentNumber, engagements: engValue(), patentDetails: patentDetailsValue(), patentOffer: patentOfferValue(), patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages, onBehalfOf: forOwner || undefined })
+        body: JSON.stringify({ title, summary, desc, industry, ideaType, countries, price, visibility, level, hasPatent, patentNumber, engagements: engValue(), patentDetails: patentDetailsValue(), patentOffer: patentOfferValue(), patentJurisdiction: document.getElementById('patentJurisdiction')?.value, patentVerified, patentCertUrl, patentIdUrl, images: uploadedImages, onBehalfOf: forOwner || undefined, sellerAgreement: sellerAgree ? IdeaTerms.VERSION : undefined })
       });
 
       const data = await res.json();

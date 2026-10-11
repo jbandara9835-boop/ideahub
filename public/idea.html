@@ -773,6 +773,7 @@
                 <div class="agree-box" id="agreeBox">
                   <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;cursor:pointer"><input type="checkbox" id="agreeChk" style="accent-color:#f5c842;width:16px;height:16px;margin-top:2px;flex-shrink:0" /> <span>I accept the <a href="#" onclick="event.preventDefault();document.getElementById('agreeText').classList.toggle('open')" style="color:var(--accent)">Idea Transfer Agreement</a>: the seller transfers their rights in the idea to me when the payment is released.</span></label>
                   <div class="agree-text" id="agreeText"><ol>${IdeaTerms.POINTS.map(p => `<li>${escI(p)}</li>`).join('')}</ol></div>
+                  ${idea.seller_terms_version ? `<div style="font-size:12px;color:#4ade80;margin-top:6px">✓ The seller has accepted this agreement for this listing.</div>` : ''}
                 </div>
                 <button class="buy-btn" onclick="handleBuy()">
                   🛒 Purchase Idea

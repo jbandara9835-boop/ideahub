@@ -620,7 +620,7 @@ app.get('/robots.txt', (req, res) => {
   // ── IDEA PRIVACY ─────────────────────────────────────────────────────────────
   // Full description + patent/ID documents are never sent to the public.
   // Owner and admin see everything; buyers (escrow/completed) also see the description.
-  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url', 'originality', 'originality_score', 'originality_checked_at', 'moderation', 'quality_score', 'quality_issues'];
+  const PRIVATE_IDEA_FIELDS = ['description', 'patent_cert_url', 'patent_id_url', 'originality', 'originality_score', 'originality_checked_at', 'moderation', 'quality_score', 'quality_issues', 'seller_terms_by'];
   async function viewerContext(req) {
     const t = req.headers.authorization?.split(' ')[1];
     if (!t) return { id: null, role: null, verified: false };
@@ -715,6 +715,7 @@ app.get('/robots.txt', (req, res) => {
     if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
     const eng = readEngagements(req.body);
     if (eng.error) return res.status(400).json({ error: eng.error });
+    if (req.body.sellerAgreement !== ideaTerms.VERSION) return res.status(400).json({ error: 'Please accept the Idea Transfer Agreement to list this idea.', code: 'seller_agreement_required', version: ideaTerms.VERSION });
 
     // A Virtual Manager with access can list for their client
     const behalf = parseInt(req.body.onBehalfOf, 10) || null;
@@ -749,6 +750,7 @@ app.get('/robots.txt', (req, res) => {
         patent_id_url: req.body.patentIdUrl || '',
         views: 0,
         inquiries: 0,
+        seller_terms_version: ideaTerms.VERSION, seller_terms_accepted_at: new Date().toISOString(), seller_terms_by: req.user.id,
         ...qualityFields(qc.report),
       }])
       .select()
@@ -791,11 +793,14 @@ app.get('/robots.txt', (req, res) => {
     // A taken-down idea goes back to the admin for review once the creator edits it
     const { data: cur0 } = await supabase.from('ideas').select('creator_id').eq('id', req.params.id).single();
     const ownerId = cur0 && await pros.canManage(supabase, req.user.id, cur0.creator_id) ? cur0.creator_id : req.user.id;
-    const { data: current } = await supabase.from('ideas').select('status').eq('id', req.params.id).eq('creator_id', ownerId).single();
+    const { data: current } = await supabase.from('ideas').select('status, seller_terms_version').eq('id', req.params.id).eq('creator_id', ownerId).single();
     if (!current) return res.status(404).json({ error: 'Idea not found' });
     // Once a buyer has paid, the listing is what they bought: it can't change
     if (['escrow', 'sold'].includes(current.status)) return res.status(400).json({ error: current.status === 'sold' ? 'This idea has been sold, so it can no longer be edited.' : 'A buyer has paid for this idea, so it can\'t be edited while the deal is in progress.', code: 'locked' });
     const resubmit = current?.status === 'rejected';
+    // Listings made before the seller agreement existed accept it on their next edit
+    const acceptNow = req.body.sellerAgreement === ideaTerms.VERSION && current.seller_terms_version !== ideaTerms.VERSION;
+    if (!current.seller_terms_version && !acceptNow) return res.status(400).json({ error: 'Please accept the Idea Transfer Agreement to keep this idea listed.', code: 'seller_agreement_required', version: ideaTerms.VERSION });
     const qc = await checkQuality(req.body);
     if (qc.error) return res.status(400).json({ error: qc.error, quality: qc.report });
     const eng = readEngagements(req.body);
@@ -817,6 +822,7 @@ app.get('/robots.txt', (req, res) => {
         ...(hasPatent ? licences.cleanPatentListing(req.body) : { patent_details: null, patent_offer: null }),
         ...(resubmit ? { status: 'under_review' } : {}),
         engagements: eng.value, eng_level: Object.keys(eng.value).length,
+        ...(acceptNow ? { seller_terms_version: ideaTerms.VERSION, seller_terms_accepted_at: new Date().toISOString(), seller_terms_by: req.user.id } : {}),
         ...qualityFields(qc.report),
       })
       .eq('id', req.params.id)
