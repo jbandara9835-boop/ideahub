@@ -5,7 +5,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Patent your idea — IdeaHub</title>
-<meta name="description" content="Apply for a patent through IdeaHub: describe your invention, get a fixed quote from a verified patent attorney, and pay safely through escrow. The fee is released only after your application is filed." />
+<meta name="description" content="Apply for a patent through IdeaHub: describe your invention, get a fixed quote from a registered patent attorney or agent, and pay safely through escrow. The fee is released only after your application is filed." />
 <link rel="canonical" href="https://ideahub.it.com/patents" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://ideahub.it.com/patents" />
@@ -50,8 +50,16 @@
 .app-right .amt { font-weight: 700; font-size: 14px; }
 .section-h { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 2rem 0 1rem; }
 .section-h h2 { font-size: 22px; }
+.regrows { display: flex; flex-direction: column; gap: 6px; }
+.regrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.8rem; font-size: 13.5px; }
+.regrow small { color: var(--muted); display: block; font-size: 12px; margin-top: 2px; }
+.st-pending { background: rgba(251,146,60,0.12); color: var(--orange); } .st-verified { background: rgba(110,231,183,0.12); color: var(--green); } .st-rejected { background: rgba(255,107,107,0.12); color: var(--red); }
+.dlrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--border-hover); border-radius: 12px; padding: 0.8rem 1rem; text-decoration: none; }
+.dlrow.soon { border-left-color: var(--accent); } .dlrow.late { border-left-color: var(--red); }
+.dlrow b { font-size: 14.5px; } .dlrow small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
 
-@media (max-width: 900px) { .steps { grid-template-columns: repeat(2, 1fr); } .trust { grid-template-columns: 1fr; } }
+.trust.two { grid-template-columns: 1fr 1fr; }
+@media (max-width: 900px) { .steps { grid-template-columns: repeat(2, 1fr); } .trust, .trust.two { grid-template-columns: 1fr; } }
 @media (max-width: 560px) {
   .hero { padding: 3rem 1rem 1.75rem; }
   .steps { grid-template-columns: 1fr; }
@@ -66,14 +74,36 @@
 <section class="hero" id="hero">
   <div class="kicker">Patent applications</div>
   <h1>Patent your <span>idea</span></h1>
-  <p>Get a fixed quote from a verified patent attorney and pay through IdeaHub escrow. The attorney is paid only after your application is filed.</p>
+  <p>Get a fixed quote from a registered patent attorney or agent and pay through IdeaHub escrow. They are paid only after your application is filed, and IdeaHub tracks every deadline after that.</p>
   <div class="hero-actions">
     <a class="btn btn-gold" id="startBtn" href="/patent-apply">Start a patent application →</a>
-    <a class="btn btn-ghost" href="/find-support?type=patent_attorney">Browse patent attorneys</a>
+    <a class="btn btn-ghost" href="/find-support?type=patent_attorney">Browse patent attorneys &amp; agents</a>
   </div>
 </section>
 
 <main class="wrap">
+  <div id="regSection" class="hidden">
+    <div class="section-h" style="margin-top:0"><h2>Your patent-office registrations</h2></div>
+    <div class="panel">
+      <p class="muted" style="font-size:13.5px;line-height:1.6;margin-bottom:1rem">Creators only see you for the offices where IdeaHub has verified your registration. For US filings by anyone living outside the US, a USPTO registration is required by law (since 20 July 2026).</p>
+      <div id="regList" class="regrows"></div>
+      <div class="row2 regform" style="margin-top:1rem">
+        <select class="select" id="regOffice"></select>
+        <input class="input" id="regNo" maxlength="60" placeholder="Registration number" />
+      </div>
+      <div class="row2 regform" style="margin-top:10px">
+        <select class="select" id="regKind"><option value="attorney">Patent attorney</option><option value="agent">Patent agent</option></select>
+        <input class="input" id="regName" maxlength="120" placeholder="Name exactly as on the register" />
+      </div>
+      <button class="btn btn-gold btn-sm" id="regAdd" style="margin-top:10px">Submit for verification</button>
+    </div>
+  </div>
+
+  <div id="dlSection" class="hidden">
+    <div class="section-h"><h2>Upcoming deadlines</h2></div>
+    <div class="list" id="dlList"></div>
+  </div>
+
   <div id="mineSection" class="hidden">
     <div class="tabs" id="tabs">
       <button class="tab on" data-tab="mine">My applications <span class="n" id="nMine">0</span></button>
@@ -89,10 +119,14 @@
     <div class="step"><h3>Pay into escrow</h3><p>Accept the quote and pay. IdeaHub holds the money while the attorney prepares and files.</p></div>
     <div class="step"><h3>Filed, then released</h3><p>The attorney uploads the official filing receipt. You confirm and the fee is released.</p></div>
   </div>
+  <div class="trust two">
+    <div><b>🗺️ The right route</b>Tell us where you live and where you want to sell. We suggest a route (home office first, PCT, or straight to the US) and your practitioner confirms it.</div>
+    <div><b>📅 Every deadline tracked</b>A patent takes years. Your case keeps each stage, the 12-month and 30-month deadlines and US maintenance fees, and reminds you and your practitioner before each one.</div>
+  </div>
   <div class="trust">
     <div><b>🔒 Confidential</b>Only the attorney you choose and IdeaHub admins can read your invention. Files are stored privately, never in public links.</div>
     <div><b>🛡️ Protected payment</b>If the attorney doesn't file, open a dispute and IdeaHub reviews it. Refunds come from escrow.</div>
-    <div><b>✅ Verified attorneys</b>Only patent attorneys whose identity and credentials IdeaHub has checked can receive applications.</div>
+    <div><b>✅ Registered practitioners</b>Only attorneys and agents whose patent-office registration IdeaHub has checked are shown, for the office you file at.</div>
   </div>
 </main>
 
@@ -127,7 +161,7 @@
     return `<a class="app-row" href="/patent-application?id=${Number(a.id)}">
       <div>
         <h3>${esc(a.title)}</h3>
-        <div class="app-meta"><span>${who}: ${esc(a.other.name)}</span><span>${esc(a.jurisdiction || '')}</span><span>Started ${day(a.created_at)}</span>${a.application_number ? `<span>No. ${esc(a.application_number)}</span>` : ''}</div>
+        <div class="app-meta"><span>${esc(a.stage_label || '')}</span><span>${who}: ${esc(a.other.name)}</span><span>${esc(a.jurisdiction || '')}</span><span>Started ${day(a.created_at)}</span>${a.application_number ? `<span>No. ${esc(a.application_number)}</span>` : ''}</div>
       </div>
       <div class="app-right"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span>${amt ? `<span class="amt">${money(amt)}</span>` : ''}</div>
     </a>`;
@@ -148,6 +182,8 @@
       if (!r.ok) return;
       data = await r.json();
       const isAttorney = user && user.role === 'patent_attorney';
+      renderDeadlines(data.deadlines || []);
+      if (isAttorney) loadRegs();
       if (!data.mine.length && !data.clients.length && !isAttorney) return; // first visit: keep the landing view
       document.getElementById('hero').classList.add('compact');
       document.getElementById('mineSection').classList.remove('hidden');
@@ -158,6 +194,40 @@
       render();
     } catch (e) {}
   }
+  function renderDeadlines(list) {
+    if (!list.length) return;
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('dlSection').classList.remove('hidden');
+    document.getElementById('dlList').innerHTML = list.slice(0, 6).map(d => {
+      const left = Math.round((new Date(d.due_date + 'T00:00:00') - new Date(today + 'T00:00:00')) / 86400000);
+      return `<a class="dlrow ${left < 0 ? 'late' : left <= 30 ? 'soon' : ''}" href="/patent-application?id=${Number(d.case_id)}#deadlines"><div><b>${esc(d.title)}</b><small>${esc(d.case_title)}</small></div><span class="muted" style="font-size:13px;white-space:nowrap">${left < 0 ? `${-left} days late` : left === 0 ? 'Today' : `in ${left} days`}<br>${new Date(d.due_date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span></a>`;
+    }).join('');
+  }
+
+  async function loadRegs() {
+    document.getElementById('regSection').classList.remove('hidden');
+    try {
+      const r = await fetch('/api/patents/registrations', { headers: { Authorization: 'Bearer ' + token } });
+      const d = await r.json();
+      document.getElementById('regOffice').innerHTML = (d.offices || []).map(o => `<option value="${esc(o.code)}">${esc(o.label)}</option>`).join('');
+      document.getElementById('regList').innerHTML = (d.registrations || []).length ? d.registrations.map(g => {
+        const o = (d.offices || []).find(x => x.code === g.office);
+        return `<div class="regrow"><div><b>${esc(o ? o.label : g.office)}</b> · ${esc(g.reg_number)}<small>${g.kind === 'agent' ? 'Patent agent' : 'Patent attorney'}${g.name_on_register ? ' · ' + esc(g.name_on_register) : ''}${g.review_note ? ' · ' + esc(g.review_note) : ''}</small></div><div style="display:flex;gap:8px;align-items:center"><span class="pill st-${esc(g.status)}">${g.status === 'verified' ? '✓ Verified' : g.status === 'rejected' ? 'Not verified' : 'Checking'}</span><button class="btn btn-ghost btn-sm" data-delreg="${g.id}" aria-label="Remove">✕</button></div></div>`;
+      }).join('') : '<div class="muted" style="font-size:13px">No registrations yet. Add each patent office you are registered with.</div>';
+    } catch (e) {}
+  }
+  document.getElementById('regAdd').onclick = async () => {
+    const body = { office: document.getElementById('regOffice').value, reg_number: document.getElementById('regNo').value, kind: document.getElementById('regKind').value, name_on_register: document.getElementById('regName').value };
+    const r = await fetch('/api/patents/registrations', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) return alert(d.error || 'Could not save.');
+    document.getElementById('regNo').value = ''; loadRegs();
+  };
+  document.getElementById('regList').addEventListener('click', async e => {
+    const b = e.target.closest('[data-delreg]'); if (!b || !confirm('Remove this registration?')) return;
+    await fetch('/api/patents/registrations/' + b.dataset.delreg, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } }); loadRegs();
+  });
+
   load();
 </script>
 <script src="/chat-widget.js" defer></script>

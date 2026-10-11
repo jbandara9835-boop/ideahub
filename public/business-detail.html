@@ -262,7 +262,7 @@
       if (!msgs.length) { el.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">No messages yet. Start the conversation!</div>'; return; }
       el.innerHTML = msgs.map(m => {
         const isMe = m.from_id === user?.id;
-        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${String(m.text ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
+        return `<div class="msg-bubble ${isMe?'me':'them'}"><div class="bubble">${m.text}</div><div class="bubble-time">${formatTime(m.created_at)}</div></div>`;
       }).join('');
       el.scrollTop = el.scrollHeight;
     } catch(e) {}

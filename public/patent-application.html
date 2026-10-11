@@ -53,6 +53,21 @@
 .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 520px; width: 100%; padding: 1.5rem; }
 .modal h3 { font-size: 20px; margin-bottom: 6px; }
 .modal p { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin-bottom: 12px; }
+.cstages { display: flex; flex-direction: column; gap: 6px; }
+.cstage { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.8rem; text-decoration: none; color: inherit; }
+a.cstage:hover { border-color: var(--border-hover); }
+.cstage.here { border-color: rgba(245,200,66,0.4); }
+.cs-main b { display: block; font-size: 13.5px; }
+.cs-main small, .dl small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; line-height: 1.45; }
+.sub-h { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 1.1rem 0 .6rem; }
+.dls { display: flex; flex-direction: column; gap: 6px; }
+.dl { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-left: 3px solid var(--border-hover); background: var(--surface2); border-radius: 8px; padding: 0.55rem 0.75rem; }
+.dl b { font-size: 13.5px; }
+.dl.soon { border-left-color: var(--accent); } .dl.late { border-left-color: var(--red); } .dl.done { opacity: .55; }
+.nextbox summary { list-style: none; display: inline-flex; } .nextbox summary::-webkit-details-marker { display: none; }
+.regs { display: flex; flex-wrap: wrap; gap: 5px; }
+.reg { font-size: 11px; border-radius: 999px; padding: 2px 8px; background: rgba(110,231,183,0.1); color: var(--green); border: 1px solid rgba(110,231,183,0.25); }
+.ul { margin: 0 0 0 1.1rem; } .ul li { margin-bottom: 4px; }
 @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .track { grid-template-columns: repeat(5, minmax(0,1fr)); } .track div { font-size: 10.5px; } .track div small { display: none; } .top h1 { font-size: 23px; } .msg { max-width: 92%; } }
 </style>
@@ -74,6 +89,7 @@
 </div></div>
 <div class="toast" id="toast"></div>
 
+<script src="/patent-rules.js"></script>
 <script>
   const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
   const me = (() => { try { return JSON.parse(localStorage.getItem('ih_user') || 'null'); } catch (e) { return null; } })();
@@ -111,75 +127,158 @@
     });
   }
 
+  const S = () => A.stage_meta || {};
+  const isFiling = a => !!(a.stage_meta && a.stage_meta.filing);
+  const doneWord = a => isFiling(a) ? 'Filed' : (a.stage_meta?.done || 'Done');
+  const proofWord = a => a.stage_meta?.proof || 'official filing receipt';
+
   function track(a) {
     const stepIdx = { requested: 0, quoted: 1, in_progress: 2, filed: 3, completed: 4, disputed: a.filed_at ? 3 : 2 }[a.status];
-    const steps = [['Request sent', a.created_at], ['Quote', a.quoted_at], ['Paid into escrow', a.paid_at], ['Filed', a.filed_at], ['Completed', a.completed_at]];
+    const steps = [['Request sent', a.created_at], ['Quote', a.quoted_at], ['Paid into escrow', a.paid_at], [doneWord(a), a.filed_at], ['Completed', a.completed_at]];
     if (stepIdx === undefined) return '';
-    return `<div class="track">${steps.map(([l, d], i) => `<div class="${i < stepIdx || (i === stepIdx && a.status === 'completed') ? 'done' : i === stepIdx ? 'now' : ''}">${l}<small>${i <= stepIdx && d ? day(d) : ''}</small></div>`).join('')}</div>`;
+    return `<div class="track">${steps.map(([l, d], i) => `<div class="${i < stepIdx || (i === stepIdx && a.status === 'completed') ? 'done' : i === stepIdx ? 'now' : ''}">${esc(l)}<small>${i <= stepIdx && d ? day(d) : ''}</small></div>`).join('')}</div>`;
   }
 
+  function split(a) {
+    const amt = Number(a.amount || a.quote_amount || 0);
+    const official = a.quote_official != null ? Number(a.quote_official) : 0;
+    const prof = a.quote_professional != null ? Number(a.quote_professional) : amt - official;
+    const fee = a.fee != null ? Number(a.fee) : Math.round(prof * a.fee_rate * 100) / 100;
+    return { amt, official, prof, fee, total: a.total != null ? Number(a.total) : Math.round((amt + fee) * 100) / 100 };
+  }
   function quoteTable(a) {
-    const amt = Number(a.amount || a.quote_amount), fee = a.fee != null ? Number(a.fee) : Math.round(amt * a.fee_rate * 100) / 100;
-    return `<table class="sum"><tr><td>Attorney's fee</td><td>${money(amt)}</td></tr><tr><td>IdeaHub fee (${Math.round(a.fee_rate * 100)}%, includes escrow protection)</td><td>${money(fee)}</td></tr><tr class="total"><td>Total</td><td>${money(a.total || amt + fee)}</td></tr></table>`;
+    const q = split(a);
+    return `<table class="sum"><tr><td>Professional fee</td><td>${money(q.prof)}</td></tr>
+      ${q.official ? `<tr><td>Official fees (paid to the patent office)</td><td>${money(q.official)}</td></tr>` : ''}
+      <tr><td>IdeaHub fee (${Math.round(a.fee_rate * 100)}% of the professional fee, includes escrow protection)</td><td>${money(q.fee)}</td></tr>
+      <tr class="total"><td>Total</td><td>${money(q.total)}</td></tr></table>`;
   }
 
   function actionPanel(a) {
-    const v = a.viewer, atty = a.attorney?.name || 'The attorney', s = a.status;
+    const v = a.viewer, atty = a.attorney?.name || 'The practitioner', s = a.status, m = a.stage_meta || {};
     const due = a.paid_at && a.quote_days ? day(new Date(new Date(a.paid_at).getTime() + a.quote_days * 86400000)) : '';
     if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>You can read everything here. Disputes are settled from the Disputes tab in the admin panel.</p></div>`;
-    if (s === 'requested' && v === 'creator') return `<div class="panel action"><h2>Waiting for a quote</h2><p>${esc(atty)} is reviewing your invention and will send a fixed price. You'll get a notification. You can message them below.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="cancel">Cancel request</button></div></div>`;
-    if ((s === 'requested' || s === 'quoted') && v === 'attorney') return `<div class="panel action">
+    if (s === 'requested' && v === 'creator') return `<div class="panel action"><h2>Waiting for a quote</h2><p>${esc(atty)} is reviewing your request and will send a fixed price. You'll get a notification. You can message them below.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="cancel">Cancel request</button></div></div>`;
+    if ((s === 'requested' || s === 'quoted') && v === 'attorney') {
+      const q = split(a);
+      return `<div class="panel action">
       <h2>${s === 'quoted' ? 'Your quote' : 'Send a fixed quote'}</h2>
-      <p>${s === 'quoted' ? `You quoted ${money(a.quote_amount)}, filing within ${a.quote_days} days. You can revise it until the creator pays.` : 'Read the invention below, then quote one price for the whole job. The creator pays it into escrow, and you are paid when the filing is confirmed.'}</p>
-      <div class="row2" style="margin-top:1rem"><div class="field"><label for="qAmt">Your fee (USD)</label><input class="input" id="qAmt" type="number" min="1" step="1" value="${a.quote_amount ? esc(a.quote_amount) : ''}" placeholder="e.g. 450" /></div>
-      <div class="field"><label for="qDays">Days until filing</label><input class="input" id="qDays" type="number" min="1" max="365" value="${a.quote_days ? esc(a.quote_days) : ''}" placeholder="e.g. 21" /></div></div>
-      <div class="field"><label for="qScope">What's included</label><textarea class="textarea" id="qScope" placeholder="e.g. Novelty search, drafting the specification and claims, 3 drawings, official filing fee at NIPO.">${esc(a.quote_scope || '')}</textarea></div>
-      <p class="muted" style="font-size:12.5px">IdeaHub adds an 8% fee on top, paid by the creator. You receive your full fee.</p>
+      <p>${s === 'quoted' ? `You quoted ${money(a.quote_amount)} within ${a.quote_days} days. You can revise it until the creator pays.` : 'Read the request below, then quote one fixed price. The creator pays it into escrow, and you are paid when the work is confirmed.'}</p>
+      ${a.stage === 'advise' ? `<div class="field" style="margin-top:1rem"><label for="qStage">Route you recommend</label><select class="select" id="qStage">${(window.PatentRules.QUOTE_STAGES).map(k => `<option value="${k}">${esc(window.PatentRules.STAGES[k].label)}</option>`).join('')}</select></div>` : ''}
+      <div class="row2" style="margin-top:1rem"><div class="field"><label for="qProf">Professional fee (USD)</label><input class="input" id="qProf" type="number" min="1" step="1" value="${a.quote_amount ? esc(q.prof) : ''}" placeholder="Your fee, e.g. 400" /></div>
+      <div class="field"><label for="qOff">Official fees (USD)</label><input class="input" id="qOff" type="number" min="0" step="1" value="${a.quote_amount ? esc(q.official) : ''}" placeholder="Paid to the office, e.g. 50" /></div></div>
+      <div class="row2"><div class="field"><label for="qDays">Days to complete</label><input class="input" id="qDays" type="number" min="1" max="365" value="${a.quote_days ? esc(a.quote_days) : ''}" placeholder="e.g. 21" /></div><div></div></div>
+      <div class="field"><label for="qScope">What's included</label><textarea class="textarea" id="qScope" placeholder="e.g. Novelty search, drafting the specification and claims, 3 drawings, official filing at NIPO.">${esc(a.quote_scope || '')}</textarea></div>
+      <p class="muted" style="font-size:12.5px">You pay the official fees to the patent office from the escrow payout. IdeaHub adds 8% of your professional fee on top, paid by the creator.</p>
       <div class="btns"><button class="btn btn-gold" data-act="quote">${s === 'quoted' ? 'Update quote' : 'Send quote'}</button><button class="btn btn-danger" data-act="decline">Decline</button></div></div>`;
+    }
     if (s === 'quoted' && v === 'creator') return `<div class="panel action">
-      <h2>Your quote from ${esc(atty)}</h2><p>Filing within <b>${Number(a.quote_days)} days</b> of payment.</p>
+      <h2>Your quote from ${esc(atty)}</h2><p><b>${esc(a.stage_label)}</b>, done within <b>${Number(a.quote_days)} days</b> of payment.</p>
       ${a.quote_scope ? `<div class="scope" style="margin-top:.8rem">${esc(a.quote_scope)}</div>` : ''}
       ${quoteTable(a)}
-      <p style="font-size:13px">Your payment is held by IdeaHub. ${esc(atty)} is paid only after uploading the filing receipt and you confirm (or ${7} days pass without a dispute).</p>
-      ${a.payments_open ? '' : '<div class="note" style="margin-top:.8rem">Online payments are launching soon. Message the attorney below in the meantime.</div>'}
-      <div class="btns"><button class="btn btn-gold" data-act="pay" ${a.payments_open ? '' : 'disabled'}>Accept and pay ${money(Number(a.quote_amount) + Math.round(Number(a.quote_amount) * a.fee_rate * 100) / 100)}</button><button class="btn btn-danger" data-act="cancel">Decline quote</button></div></div>`;
-    if (s === 'in_progress' && v === 'attorney') return `<div class="panel action">
-      <h2>Prepare and file</h2><p>${money(a.amount)} is held in escrow. Please file by <b>${esc(due)}</b>. When it's filed, upload the official filing receipt and enter the details.</p>
-      <div class="row2" style="margin-top:1rem"><div class="field"><label for="fNo">Application number</label><input class="input" id="fNo" maxlength="60" placeholder="From the patent office" /></div>
-      <div class="field"><label for="fDate">Filing date</label><input class="input" id="fDate" type="date" max="${new Date().toISOString().slice(0, 10)}" /></div></div>
-      <div class="field"><label for="fOffice">Patent office</label><input class="input" id="fOffice" maxlength="80" value="${esc(a.jurisdiction || '')}" /></div>
-      <div class="field"><label>Official filing receipt</label>${a.attachments.some(f => f.kind === 'receipt') ? '<div class="verified">✓ Receipt uploaded</div>' : `<label class="btn btn-ghost btn-sm" for="receiptIn">📎 Upload receipt (PDF or image)</label><input type="file" id="receiptIn" class="hidden" accept=".pdf,image/*" />`}</div>
-      <div class="btns"><button class="btn btn-gold" data-act="filed">Mark as filed</button></div></div>`;
-    if (s === 'in_progress' && v === 'creator') return `<div class="panel action"><h2>Your attorney is working on it</h2><p>${money(a.total)} is held safely in escrow. ${esc(atty)} expects to file by <b>${esc(due)}</b>. Share anything else they need below.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="dispute">Report a problem</button></div></div>`;
-    if (s === 'filed' && v === 'creator') return `<div class="panel action"><h2>Your application was filed</h2>
-      <p>Filed with <b>${esc(a.filing_office)}</b> on <b>${esc(fdate(a.filing_date))}</b>. Application number <b style="color:var(--accent)">${esc(a.application_number)}</b>.</p>
-      <p style="margin-top:.6rem">Open the filing receipt in Files and check the details. If everything is right, confirm to release the fee. If nothing happens, it is released automatically on <b>${day(a.confirm_by)}</b>.</p>
-      <div class="btns"><button class="btn btn-gold" data-act="confirm">Confirm filing and release fee</button><button class="btn btn-danger" data-act="dispute">Open a dispute</button></div></div>`;
-    if (s === 'filed' && v === 'attorney') return `<div class="panel action"><h2>Waiting for the creator to confirm</h2><p>Application ${esc(a.application_number)} was filed on ${esc(fdate(a.filing_date))}. Your fee of ${money(a.amount)} is released when the creator confirms, or automatically on <b>${day(a.confirm_by)}</b>.</p></div>`;
+      <p style="font-size:13px">Your payment is held by IdeaHub. ${esc(atty)} is paid only after uploading the ${esc(proofWord(a))} and you confirm (or 7 days pass without a dispute).</p>
+      ${a.payments_open ? '' : '<div class="note" style="margin-top:.8rem">Online payments are launching soon. Message the practitioner below in the meantime.</div>'}
+      <div class="btns"><button class="btn btn-gold" data-act="pay" ${a.payments_open ? '' : 'disabled'}>Accept and pay ${money(split(a).total)}</button><button class="btn btn-danger" data-act="cancel">Decline quote</button></div></div>`;
+    if (s === 'in_progress' && v === 'attorney') {
+      const hasProof = a.attachments.some(f => f.kind === 'receipt' && !f.inherited);
+      const refLabel = isFiling(a) ? 'Application number' : (m.refLabel || 'Reference (optional)');
+      return `<div class="panel action">
+      <h2>${isFiling(a) ? 'Prepare and file' : 'Complete the work'}</h2><p>${money(a.amount)} is held in escrow. Please complete <b>${esc(a.stage_label)}</b> by <b>${esc(due)}</b>, then upload the ${esc(proofWord(a))} and enter the details.</p>
+      <div class="row2" style="margin-top:1rem"><div class="field"><label for="fNo">${esc(refLabel)}</label><input class="input" id="fNo" maxlength="60" placeholder="${isFiling(a) ? 'From the patent office' : ''}" /></div>
+      <div class="field"><label for="fDate">${isFiling(a) ? 'Filing date' : a.stage === 'grant' ? 'Grant date' : 'Date'}</label><input class="input" id="fDate" type="date" max="${new Date().toISOString().slice(0, 10)}" /></div></div>
+      ${isFiling(a) ? `<div class="field"><label for="fOffice">Patent office</label><input class="input" id="fOffice" maxlength="80" value="${esc(a.jurisdiction || '')}" /></div>` : ''}
+      <div class="field"><label>Proof: ${esc(proofWord(a))}</label>${hasProof ? '<div class="verified">✓ Uploaded</div>' : `<label class="btn btn-ghost btn-sm" for="receiptIn">📎 Upload (PDF or image)</label><input type="file" id="receiptIn" class="hidden" accept=".pdf,image/*" />`}</div>
+      <div class="btns"><button class="btn btn-gold" data-act="filed">Mark as ${esc(doneWord(a).toLowerCase())}</button></div></div>`;
+    }
+    if (s === 'in_progress' && v === 'creator') return `<div class="panel action"><h2>Your practitioner is working on it</h2><p>${money(a.total)} is held safely in escrow. ${esc(atty)} expects to finish <b>${esc(a.stage_label)}</b> by <b>${esc(due)}</b>. Share anything else they need below.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="dispute">Report a problem</button></div></div>`;
+    const summary = isFiling(a) ? `Filed with <b>${esc(a.filing_office || a.jurisdiction)}</b> on <b>${esc(fdate(a.filing_date))}</b>. Application number <b style="color:var(--accent)">${esc(a.application_number)}</b>.`
+      : `${esc(doneWord(a))} on <b>${esc(fdate(a.filing_date))}</b>${a.application_number ? `. Reference <b style="color:var(--accent)">${esc(a.application_number)}</b>` : ''}.`;
+    if (s === 'filed' && v === 'creator') return `<div class="panel action"><h2>${isFiling(a) ? 'Your application was filed' : esc(doneWord(a))}</h2>
+      <p>${summary}</p>
+      <p style="margin-top:.6rem">Open the ${esc(proofWord(a))} in Files and check it. If everything is right, confirm to release the fee. If nothing happens, it is released automatically on <b>${day(a.confirm_by)}</b>.</p>
+      <div class="btns"><button class="btn btn-gold" data-act="confirm">Confirm and release fee</button><button class="btn btn-danger" data-act="dispute">Open a dispute</button></div></div>`;
+    if (s === 'filed' && v === 'attorney') return `<div class="panel action"><h2>Waiting for the creator to confirm</h2><p>${summary} Your fee of ${money(a.amount)} is released when the creator confirms, or automatically on <b>${day(a.confirm_by)}</b>.</p></div>`;
     if (s === 'disputed') return `<div class="panel action"><h2>Under review by IdeaHub</h2><p>A dispute was opened on ${day(a.disputed_at)}: <i>${esc(a.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while IdeaHub reviews the messages and files here. Both of you will be notified of the decision.</p></div>`;
-    if (s === 'completed') return `<div class="panel action"><h2>✅ Completed</h2><p>${a.application_number ? `Application number <b style="color:var(--accent)">${esc(a.application_number)}</b>, filed ${esc(fdate(a.filing_date))} with ${esc(a.filing_office)}.` : ''} ${v === 'creator' ? 'Keep the filing receipt safe. If you filed a provisional application, the full application is due within 12 months.' : 'The fee was added to your wallet.'}</p></div>`;
+    if (s === 'completed') return `<div class="panel action"><h2>✅ Completed</h2><p>${summary} ${v === 'creator' ? 'Keep the documents safe. The case deadlines below show what comes next.' : 'The fee was added to your wallet.'}</p></div>`;
     if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>IdeaHub refunded ${money(a.total)} to the creator.${a.resolution_note ? ' Note: ' + esc(a.resolution_note) : ''}</p></div>`;
-    if (s === 'declined') return `<div class="panel action"><h2>Declined</h2><p>${esc(atty)} declined: <i>${esc(a.decline_reason)}</i></p>${v === 'creator' ? `<div class="btns"><a class="btn btn-gold" href="/patent-apply?from=${a.id}">Send to another attorney</a></div>` : ''}</div>`;
-    if (s === 'cancelled') return `<div class="panel action"><h2>Cancelled</h2><p>This request was cancelled before payment.</p>${v === 'creator' ? `<div class="btns"><a class="btn btn-ghost" href="/patent-apply?from=${a.id}">Start again from this request</a></div>` : ''}</div>`;
+    if (s === 'declined') return `<div class="panel action"><h2>Declined</h2><p>${esc(atty)} declined: <i>${esc(a.decline_reason)}</i></p>${v === 'creator' ? `<div class="btns">${a.case_id ? '<a class="btn btn-gold" href="#case">Choose another practitioner below</a>' : `<a class="btn btn-gold" href="/patent-apply?from=${a.id}">Send to another practitioner</a>`}</div>` : ''}</div>`;
+    if (s === 'cancelled') return `<div class="panel action"><h2>Cancelled</h2><p>This request was cancelled before payment.</p>${v === 'creator' && !a.case_id ? `<div class="btns"><a class="btn btn-ghost" href="/patent-apply?from=${a.id}">Start again from this request</a></div>` : ''}</div>`;
     return '';
+  }
+
+  function casePanel(a) {
+    const c = a.case, v = a.viewer, PR = window.PatentRules;
+    const today = new Date().toISOString().slice(0, 10);
+    const stages = c.stages.map(s => {
+      const link = s.mine || v === 'creator' || v === 'admin';
+      const body = `<div class="cs-main"><b>${esc(s.stage_label)}</b><small>${esc(s.jurisdiction)}${s.attorney ? ' · ' + esc(s.attorney) : ''}${s.reference ? ' · ' + esc(s.reference) : ''}${s.date ? ' · ' + esc(fdate(s.date)) : ''}</small></div><span class="pill st-${esc(s.status)}">${esc(s.status_label)}</span>`;
+      return link && !s.mine ? `<a class="cstage" href="/patent-application?id=${Number(s.id)}">${body}</a>` : `<div class="cstage ${s.mine ? 'here' : ''}">${body}</div>`;
+    }).join('');
+    const dls = c.deadlines.length ? c.deadlines.map(d => {
+      const left = Math.round((new Date(d.due_date + 'T00:00:00') - new Date(today + 'T00:00:00')) / 86400000);
+      const cls = d.done_at ? 'done' : left < 0 ? 'late' : left <= 30 ? 'soon' : '';
+      const tag = d.done_at ? 'Done' : left < 0 ? `${-left} days late` : left === 0 ? 'Today' : `in ${left} days`;
+      return `<div class="dl ${cls}"><div><b>${esc(d.title)}</b><small>${esc(fdate(d.due_date))} · ${tag}${d.note ? ' · ' + esc(d.note) : ''}</small></div>${v !== 'admin' ? `<button class="btn btn-ghost btn-sm" data-dl="${d.id}" data-done="${d.done_at ? '0' : '1'}">${d.done_at ? 'Undo' : 'Mark done'}</button>` : ''}</div>`;
+    }).join('') : '<div class="muted" style="font-size:13px">No deadlines yet. They are added automatically when a filing is completed, and you can add your own.</div>';
+    const canNext = c.stages.some(x => ['in_progress', 'filed', 'completed', 'disputed'].includes(x.status)) || ['declined', 'cancelled'].includes(a.status);
+    const next = v === 'creator' && canNext ? `
+      <details class="nextbox" id="nextBox"><summary class="btn btn-gold btn-sm">+ Start the next stage</summary>
+        <div style="margin-top:1rem">
+          <div class="row2"><div class="field"><label for="nsStage">What needs doing?</label><select class="select" id="nsStage">${PR.NEXT_STAGES.map(k => `<option value="${k}">${esc(PR.STAGES[k].label)}</option>`).join('')}</select></div>
+          <div class="field"><label for="nsJur">Patent office</label><select class="select" id="nsJur">${PR.JUR_LABELS.map(j => `<option ${j === a.jurisdiction ? 'selected' : ''}>${esc(j)}</option>`).join('')}</select></div></div>
+          <div class="field"><label for="nsAtty">Practitioner</label><select class="select" id="nsAtty"><option value="">Loading…</option></select></div>
+          <div class="field"><label for="nsNote">Note for the practitioner <span class="muted">(optional)</span></label><textarea class="textarea" id="nsNote" style="min-height:70px" placeholder="e.g. Please file the PCT before our 12-month deadline, covering US, EU and India later."></textarea></div>
+          <button class="btn btn-gold btn-sm" data-act="next-stage">Send request</button>
+        </div></details>` : '';
+    const add = v !== 'admin' ? `<details class="nextbox" style="margin-top:10px"><summary class="btn btn-ghost btn-sm">+ Add a deadline</summary>
+        <div class="row2" style="margin-top:.8rem"><input class="input" id="dlTitle" maxlength="150" placeholder="e.g. Reply to examiner's report" /><input class="input" id="dlDate" type="date" /></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" data-act="add-dl">Add</button></details>` : '';
+    return `<div class="panel" id="case"><div class="panel-title">Patent case ${c.patent_number ? `<span style="text-transform:none;letter-spacing:0;color:var(--green)">Granted · ${esc(c.patent_number)}</span>` : c.priority_date ? `<span style="text-transform:none;letter-spacing:0;font-weight:500">Priority date ${esc(fdate(c.priority_date))}</span>` : ''}</div>
+      <div class="cstages">${stages}</div>
+      <div class="sub-h" id="deadlines">Deadlines</div><div class="dls">${dls}</div>
+      <div style="margin-top:1rem">${next}${add}</div></div>`;
+  }
+
+  function aiPanel(a) {
+    const r = a.ai_check;
+    if (!r) return a.viewer === 'creator' ? `<div class="panel"><div class="panel-title">AI pre-check</div><p class="muted" style="font-size:13.5px">Running a quick private pre-check of your invention… refresh in a minute. <button class="btn btn-ghost btn-sm" data-act="precheck">Run now</button></p></div>` : '';
+    const risk = { low: ['Low', 'var(--green)'], medium: ['Medium', 'var(--accent)'], high: ['High', 'var(--red)'] }[r.novelty_risk] || ['—', 'var(--muted)'];
+    const list = (title, items, fmt) => items && items.length ? `<dt>${title}</dt><dd><ul class="ul">${items.map(fmt).join('')}</ul></dd>` : '';
+    return `<div class="panel"><div class="panel-title">AI pre-check <span style="text-transform:none;letter-spacing:0;font-weight:500">Similar inventions: <b style="color:${risk[1]}">${risk[0]} risk</b></span></div>
+      <p style="font-size:14px;line-height:1.65;color:var(--soft)">${esc(r.summary)}</p>
+      <dl class="details" style="margin-top:.6rem">
+        ${list('Things that already exist', r.prior_art, p => `<li><b>${esc(p.name)}</b>: ${esc(p.note)}</li>`)}
+        ${list('Points to discuss (subject matter)', r.eligibility_flags, f => `<li><b>${esc(f.issue)}</b>: ${esc(f.note)}</li>`)}
+        ${list('What looks most likely to be new', r.likely_novel_points, s => `<li>${esc(s)}</li>`)}
+        ${list('Questions for your practitioner', r.questions_for_attorney, s => `<li>${esc(s)}</li>`)}
+      </dl>
+      <div class="btns" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.8rem">${r.search_url ? `<a class="btn btn-ghost btn-sm" href="${esc(r.search_url)}" target="_blank" rel="noopener">Search Google Patents →</a>` : ''}${a.viewer === 'creator' ? '<button class="btn btn-ghost btn-sm" data-act="precheck">Run again</button>' : ''}</div>
+      <p class="muted" style="font-size:11.5px;margin-top:.8rem">An automatic estimate from IdeaHub's AI on ${esc(day(r.checked_at))}, seen only by you and your practitioners. It is not a patent search or legal advice.</p></div>`;
   }
 
   function render(a) {
     const v = a.viewer;
     const open = ['requested', 'quoted', 'in_progress', 'filed', 'disputed', 'completed'].includes(a.status) && v !== 'admin';
-    const files = a.attachments.length ? a.attachments.map(f => `<div class="frow"><span class="nm">📄 ${esc(f.name)}${f.kind === 'receipt' ? '<span class="tagr">Filing receipt</span>' : ''}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files yet.</div>';
+    const files = a.attachments.length ? a.attachments.map(f => `<div class="frow"><span class="nm">📄 ${esc(f.name)}${f.kind === 'receipt' ? `<span class="tagr">${f.inherited ? 'Earlier stage' : 'Proof'}</span>` : f.inherited ? '<span class="tagr" style="color:var(--muted);background:var(--surface)">Earlier stage</span>' : ''}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files yet.</div>';
     const msgs = a.messages.map(m => m.system ? `<div class="sys">${esc(m.text)} · ${when(m.created_at)}</div>`
       : `<div class="msg ${m.from_id === me?.id ? 'me' : ''}">${esc(m.text)}<small>${m.from_id === a.creator?.id ? esc(a.creator.name) : esc(a.attorney?.name || '')} · ${when(m.created_at)}</small></div>`).join('');
+    const inv = Array.isArray(a.inventors_list) && a.inventors_list.length ? a.inventors_list.map(p => `${p.name} (${[p.city, p.country].filter(Boolean).join(', ')})`).join('\n') : a.inventors;
+    const owner = a.applicant ? (a.applicant.type === 'company' ? `${a.applicant.name} (company, ${a.applicant.country})` : 'The inventors') : '';
+    const PR = window.PatentRules;
+    const ent = a.entity_info ? PR.usEntity(a.entity_info).text : '';
+    const regs = (a.attorney_registrations || []).map(r => `<span class="reg">✓ ${esc(r.label)} · ${esc(r.reg_number)}</span>`).join('');
     $('root').innerHTML = `
       <div class="top">
         <a href="/patents" class="muted" style="font-size:13px;text-decoration:none">← Patent applications</a>
         <h1>${esc(a.title)}</h1>
-        <div class="meta"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span><span>${esc(a.jurisdiction)}</span><span>${esc(a.filing_type)}</span><span>Started ${day(a.created_at)}</span>${a.idea ? `<a href="/idea?id=${Number(a.idea.id)}">💡 ${esc(a.idea.title)}</a>` : ''}</div>
+        <div class="meta"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span><b style="color:var(--text)">${esc(a.stage_label)}</b><span>${esc(a.jurisdiction)}</span><span>Started ${day(a.created_at)}</span>${a.idea ? `<a href="/idea?id=${Number(a.idea.id)}">💡 ${esc(a.idea.title)}</a>` : ''}</div>
       </div>
       ${track(a)}
       <div class="grid">
         <div>
           ${actionPanel(a)}
+          ${casePanel(a)}
+          ${aiPanel(a)}
           <div class="panel"><div class="panel-title">Invention <span style="text-transform:none;letter-spacing:0;font-weight:500">🔒 Confidential</span></div>
             <dl class="details">
               ${a.field ? `<dt>Field</dt><dd>${esc(a.field)}</dd>` : ''}
@@ -187,7 +286,11 @@
               <dt>How it works</dt><dd>${esc(a.solution)}</dd>
               <dt>What's new</dt><dd>${esc(a.novelty)}</dd>
               ${a.prior_art ? `<dt>Known similar products / patents</dt><dd>${esc(a.prior_art)}</dd>` : ''}
-              ${a.inventors ? `<dt>Inventors</dt><dd>${esc(a.inventors)}</dd>` : ''}
+              ${inv ? `<dt>Inventors</dt><dd>${esc(inv)}</dd>` : ''}
+              ${owner ? `<dt>Owner</dt><dd>${esc(owner)}</dd>` : ''}
+              ${a.residence_country ? `<dt>Creator lives in</dt><dd>${esc(a.residence_country)}</dd>` : ''}
+              ${Array.isArray(a.markets) && a.markets.length ? `<dt>Markets</dt><dd>${esc(a.markets.join(', '))}${a.route ? ` · suggested route: ${esc(a.route)}` : ''}</dd>` : ''}
+              ${ent ? `<dt>US fees</dt><dd>${esc(ent)}</dd>` : ''}
             </dl></div>
           <div class="panel"><div class="panel-title">Files ${open ? `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">📎 Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.txt,image/*" />` : ''}</div><div class="flist">${files}</div></div>
           <div class="panel"><div class="panel-title">Messages</div>
@@ -196,19 +299,37 @@
           </div>
         </div>
         <aside class="side">
-          <div class="panel">${person(a.creator, 'Creator')}${person(a.attorney, 'Patent attorney')}
-            ${v !== 'admin' && !['declined', 'cancelled', 'refunded'].includes(a.status) ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=patent&id=${a.id}" target="_blank" rel="noopener">📹 Start a video call</a><div class="muted" style="font-size:11.5px;text-align:center;margin-top:6px">Private, in the browser. ${v === 'creator' ? 'Your attorney' : 'The creator'} gets a notification to join.</div>` : ''}
+          <div class="panel">${person(a.creator, 'Creator')}${person(a.attorney, a.attorney_registrations?.some(r => r.kind === 'attorney') || !a.attorney_registrations?.length ? 'Patent attorney' : 'Patent agent')}
+            ${regs ? `<div class="regs" style="margin-top:10px">${regs}</div>` : ''}
+            ${v !== 'admin' && !['declined', 'cancelled', 'refunded'].includes(a.status) ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=patent&id=${a.id}" target="_blank" rel="noopener">📹 Start a video call</a><div class="muted" style="font-size:11.5px;text-align:center;margin-top:6px">Private, in the browser. ${v === 'creator' ? 'Your practitioner' : 'The creator'} gets a notification to join.</div>` : ''}
           </div>
           <div class="panel"><div class="panel-title">Payment</div>
             <div class="kv"><span>Quote</span><span>${a.quote_amount ? money(a.quote_amount) : '—'}</span></div>
+            ${a.quote_official ? `<div class="kv"><span>of which official fees</span><span>${money(a.quote_official)}</span></div>` : ''}
             <div class="kv"><span>Paid into escrow</span><span>${a.total ? money(a.total) : '—'}</span></div>
-            <div class="kv"><span>Status</span><span>${a.status === 'completed' ? 'Released to attorney' : a.status === 'refunded' ? 'Refunded' : a.paid_at ? 'Held in escrow' : 'Not paid'}</span></div>
+            <div class="kv"><span>Status</span><span>${a.status === 'completed' ? 'Released' : a.status === 'refunded' ? 'Refunded' : a.paid_at ? 'Held in escrow' : 'Not paid'}</span></div>
           </div>
           <div class="note" style="font-size:12.5px">Keep all communication and files here. If there's a dispute, IdeaHub decides based on what's on this page.</div>
         </aside>
       </div>`;
     const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
+    if (location.hash === '#deadlines' && !render._jumped) { render._jumped = true; setTimeout(() => $('deadlines')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 200); }
   }
+
+  // Practitioners for the next-stage form
+  async function fillNextAttorneys() {
+    const sel = $('nsAtty'); if (!sel) return;
+    const jur = $('nsJur').value;
+    sel.innerHTML = '<option value="">Loading…</option>';
+    try {
+      const r = await fetch('/api/patents/attorneys?jurisdiction=' + encodeURIComponent(jur), { headers: H() });
+      const d = await r.json();
+      const list = d.attorneys || [];
+      sel.innerHTML = list.length ? list.map(x => `<option value="${x.id}" ${x.id === A.attorney?.id ? 'selected' : ''}>${esc(x.name)}${x.registrations.length ? ' · ' + esc(x.registrations.map(r => r.label.split(' (')[0] + ' ' + r.reg_number).join(', ')) : ''}</option>`).join('')
+        : '<option value="">No registered practitioners for this office yet</option>';
+    } catch (e) { sel.innerHTML = '<option value="">Could not load</option>'; }
+  }
+  document.addEventListener('toggle', e => { if (e.target.id === 'nextBox' && e.target.open) fillNextAttorneys(); }, true);
 
   async function load() {
     try {
@@ -217,7 +338,7 @@
       const d = await r.json();
       if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/patents">Back to patent applications</a></div>`; return; }
       // Keep anything typed in forms across refreshes
-      const keep = {}; ['fNo', 'fDate', 'fOffice', 'qAmt', 'qDays', 'qScope', 'msgIn'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
+      const keep = {}; ['fNo', 'fDate', 'fOffice', 'qProf', 'qOff', 'qDays', 'qScope', 'qStage', 'msgIn', 'nsNote', 'dlTitle', 'dlDate'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
       A = d; document.title = `${d.title} — Patent application — IdeaHub`; render(d);
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
     } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
@@ -236,6 +357,7 @@
   document.addEventListener('change', e => {
     if (e.target.id === 'fileIn' && e.target.files[0]) upload(e.target.files[0]);
     if (e.target.id === 'receiptIn' && e.target.files[0]) upload(e.target.files[0], 'receipt');
+    if (e.target.id === 'nsJur') fillNextAttorneys();
   });
 
   document.addEventListener('click', async e => {
@@ -253,11 +375,19 @@
       sending = false; const b = $('sendBtn'); if (b) b.disabled = false;
       return;
     }
+    const dlb = e.target.closest('[data-dl]');
+    if (dlb) {
+      try {
+        const r = await fetch(`/api/patent-cases/${A.case.id}/deadlines/${dlb.dataset.dl}`, { method: 'PUT', headers: { ...H(), 'Content-Type': 'application/json' }, body: JSON.stringify({ done: dlb.dataset.done === '1' }) });
+        if (!r.ok) throw new Error('Could not update.'); await load();
+      } catch (err) { toast(err.message); }
+      return;
+    }
     const b = e.target.closest('[data-act]'); if (!b) return;
     const act = b.dataset.act;
     try {
       if (act === 'quote') {
-        await api('/quote', { amount: $('qAmt').value, days: $('qDays').value, scope: $('qScope').value });
+        await api('/quote', { professional: $('qProf').value, official: $('qOff').value || 0, days: $('qDays').value, scope: $('qScope').value, stage: $('qStage') ? $('qStage').value : undefined });
         toast(A.status === 'quoted' ? 'Quote updated.' : 'Quote sent.');
       } else if (act === 'decline') {
         const reason = await ask({ title: 'Decline this request', text: 'Tell the creator briefly why, e.g. outside your jurisdiction or area of practice.', ok: 'Decline', min: 5 });
@@ -269,11 +399,21 @@
         b.disabled = true; b.textContent = 'Processing…';
         await api('/pay', { expected_amount: A.quote_amount }); toast('Paid. The attorney has been notified.');
       } else if (act === 'filed') {
-        if (!confirm('Mark this application as filed? The creator will be asked to confirm.')) return;
-        await api('/filed', { application_number: $('fNo').value, filing_date: $('fDate').value, office: $('fOffice').value }); toast('Marked as filed.');
+        if (!confirm(`Mark this as ${doneWord(A).toLowerCase()}? The creator will be asked to confirm.`)) return;
+        await api('/filed', { reference: $('fNo').value, date: $('fDate').value, office: $('fOffice') ? $('fOffice').value : '' }); toast('Done. The creator has been asked to confirm.');
       } else if (act === 'confirm') {
-        if (!confirm(`Confirm the filing and release ${money(A.amount)} to the attorney? This can't be undone.`)) return;
+        if (!confirm(`Confirm the work and release ${money(A.amount)} to the practitioner? This can't be undone.`)) return;
         await api('/confirm'); toast('Confirmed. Thank you!');
+      } else if (act === 'precheck') {
+        b.disabled = true; b.textContent = 'Checking…'; await api('/precheck'); toast('Pre-check updated.');
+      } else if (act === 'next-stage') {
+        if (!$('nsAtty').value) return toast('Choose a practitioner.');
+        const d = await api('/next-stage', { stage: $('nsStage').value, jurisdiction: $('nsJur').value, attorney_id: $('nsAtty').value, note: $('nsNote').value });
+        location.href = `/patent-application?id=${d.id}&sent=1`; return;
+      } else if (act === 'add-dl') {
+        const r = await fetch(`/api/patent-cases/${A.case.id}/deadlines`, { method: 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: JSON.stringify({ title: $('dlTitle').value, due_date: $('dlDate').value }) });
+        const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Could not add.');
+        $('dlTitle').value = ''; $('dlDate').value = ''; toast('Deadline added.');
       } else if (act === 'dispute') {
         const reason = await ask({ title: 'Open a dispute', text: 'The fee stays in escrow while IdeaHub reviews this page. Explain what went wrong.', ok: 'Open dispute', min: 15 });
         if (reason === null) return; await api('/dispute', { reason });

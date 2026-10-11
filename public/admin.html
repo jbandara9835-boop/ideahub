@@ -234,6 +234,7 @@
     <button class="tab active" onclick="switchTab('certs', this)">📜 Certificates <span class="tab-count red" id="tabCertCount">0</span></button>
     <button class="tab" onclick="switchTab('roles', this)">🔄 Role Requests <span class="tab-count red" id="tabRoleCount">0</span></button>
     <button class="tab" onclick="switchTab('disputes', this)">⚖️ Disputes <span class="tab-count red" id="tabDisputeCount">0</span></button>
+    <button class="tab" onclick="switchTab('practitioners', this)">⚖️ Practitioners <span class="tab-count red" id="tabPracCount">0</span></button>
     <button class="tab" onclick="switchTab('withdrawals', this)">💸 Withdrawals <span class="tab-count red" id="tabWithdrawCount">0</span></button>
     <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
     <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
@@ -255,6 +256,12 @@
   <!-- ROLE REQUESTS TAB -->
   <div class="tab-content" id="tab-roles">
     <div id="rolesList"><div class="loading"><div class="spin"></div> Loading role requests...</div></div>
+  </div>
+
+  <!-- PRACTITIONERS TAB -->
+  <div class="tab-content" id="tab-practitioners">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Patent attorneys and agents add their patent-office registrations here. Check each number on the office's official register (name must match), then verify it. Only verified registrations let them receive patent work for that office. For the USPTO, use the public practitioner search.</div>
+    <div id="pracList"><div class="loading"><div class="spin"></div> Loading…</div></div>
   </div>
 
   <!-- DISPUTES TAB -->
@@ -580,7 +587,7 @@
           <div class="cert-top">
             <div class="cert-user-info">
               <div class="cert-user-name">📜 ${escHtml(p.title || 'Patent application')} · <span style="color:var(--accent);">$${Number(p.amount||0).toLocaleString()}</span></div>
-              <div class="cert-user-role">Patent application #${escHtml(p.id)} · ${escHtml(p.jurisdiction||'')} · disputed ${formatDate(p.disputed_at)}${days ? ` (${days} day${days>1?'s':''} ago)` : ''}</div>
+              <div class="cert-user-role">Patent job #${escHtml(p.id)} · ${escHtml((p.stage||'').replace(/_/g,' '))} · ${escHtml(p.jurisdiction||'')} · disputed ${formatDate(p.disputed_at)}${days ? ` (${days} day${days>1?'s':''} ago)` : ''}</div>
             </div>
             <span class="cert-status-badge rejected">⚠️ Disputed</span>
           </div>
@@ -596,6 +603,58 @@
             <button class="btn-reject-cert" onclick="resolvePatentDispute('${escHtml(p.id)}','refund')">↩️ Refund creator ($${Number(p.total||0).toLocaleString()})</button>
           </div>
         </div>`;
+  }
+
+  // PRACTITIONER REGISTRATIONS
+  let allRegs = [];
+  async function loadRegs() {
+    try {
+      const r = await fetch(`${API_URL}/api/admin/patent-registrations`, { headers:{ Authorization:`Bearer ${token}` } });
+      allRegs = r.ok ? await r.json() : [];
+    } catch (e) { allRegs = []; }
+    renderRegs();
+  }
+  function renderRegs() {
+    const el = document.getElementById('pracList');
+    const pending = allRegs.filter(r => r.status === 'pending');
+    document.getElementById('tabPracCount').textContent = pending.length;
+    if (!allRegs.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⚖️</div><div class="empty-text">No registrations submitted yet</div></div>`; return; }
+    const order = { pending: 0, rejected: 1, verified: 2 };
+    el.innerHTML = [...allRegs].sort((a, b) => order[a.status] - order[b.status]).map(r => {
+      const name = `${r.user?.first_name||''} ${r.user?.last_name||''}`.trim() || 'Unknown';
+      const q = encodeURIComponent(`${r.name_on_register || name} ${r.office_label} registered patent ${r.kind}`);
+      return `
+        <div class="cert-card ${r.status === 'pending' ? 'pending' : ''}">
+          <div class="cert-top">
+            <div class="cert-user-info">
+              <div class="cert-user-name">${escHtml(name)} · <span style="color:var(--accent);">${escHtml(r.office_label)}</span></div>
+              <div class="cert-user-role">${escHtml(r.user?.email || '')}${r.user?.country ? ' · ' + escHtml(r.user.country) : ''} · submitted ${formatDate(r.updated_at || r.created_at)}</div>
+            </div>
+            <span class="cert-status-badge ${r.status === 'verified' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending'}">${r.status === 'verified' ? '✅ Verified' : r.status === 'rejected' ? '❌ Rejected' : '⏳ To check'}</span>
+          </div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cert-detail-label">Registration number</div><div class="cert-detail-val">${escHtml(r.reg_number)}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Type</div><div class="cert-detail-val">${r.kind === 'agent' ? 'Patent agent' : 'Patent attorney'}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Name on register</div><div class="cert-detail-val">${escHtml(r.name_on_register || '—')}</div></div>
+          </div>
+          ${r.review_note ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:.8rem">Note: ${escHtml(r.review_note)}</div>` : ''}
+          <div class="cert-actions">
+            ${r.register_url ? `<a class="cert-file-btn" href="${escHtml(r.register_url)}" target="_blank" rel="noopener">🔎 Official register</a>` : ''}
+            <a class="cert-file-btn" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔎 Search the web</a>
+            ${r.status !== 'verified' ? `<button class="btn-approve" onclick="reviewReg(${Number(r.id)},'verified')">✅ Verify</button>` : ''}
+            ${r.status !== 'rejected' ? `<button class="btn-reject-cert" onclick="reviewReg(${Number(r.id)},'rejected')">❌ ${r.status === 'verified' ? 'Revoke' : 'Reject'}</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+  async function reviewReg(id, status) {
+    const note = status === 'rejected' ? prompt('Reason (shown to the practitioner), e.g. "Number not found on the register":') : '';
+    if (note === null) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/patent-registrations/${id}`, { method:'PUT', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`}, body: JSON.stringify({ status, note }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadRegs(); else alert(d.error || 'Failed');
+    } catch (e) { alert('Something went wrong.'); }
   }
 
   async function resolvePatentDispute(id, outcome) {
@@ -990,6 +1049,7 @@
         fetch(`${API_URL}/api/admin/withdrawals`, { headers:{ Authorization:`Bearer ${token}` } }),
         fetch(`${API_URL}/api/admin/patent-disputes`, { headers:{ Authorization:`Bearer ${token}` } }).catch(() => null)
       ]);
+      loadRegs();
       fetch(`${API_URL}/api/admin/appeals`, { headers:{ Authorization:`Bearer ${token}` } })
         .then(r => r.ok ? r.json() : []).then(a => { allAppeals = Array.isArray(a) ? a : []; renderAppeals(); updateIdeaTabCount(); if (allIdeas.length) filterIdeas(); }).catch(() => {});
       allWithdrawals = withdrawalsRes.ok ? await withdrawalsRes.json() : [];

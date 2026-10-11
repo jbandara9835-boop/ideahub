@@ -134,8 +134,8 @@
       <div class="approval-tag">Needs Approval</div>
       <div class="role-check">✓</div>
       <span class="role-emoji">⚖️</span>
-      <span class="role-name">Patent Attorney</span>
-      <span class="role-desc">Legal services</span>
+      <span class="role-name">Patent Attorney / Agent</span>
+      <span class="role-desc">Patent filing &amp; advice</span>
     </div>
     <div class="role-card needs-approval" data-role="chartered_accountant" onclick="selectRole(this)">
       <div class="approval-tag">Needs Approval</div>
@@ -191,7 +191,7 @@
 
   <!-- EXTRA FIELDS FOR PATENT ATTORNEY -->
   <div class="extra-fields card" id="attorneyFields">
-    <div class="card-title"><span id="proTitle">⚖️ Patent Attorney Details</span> <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
+    <div class="card-title"><span id="proTitle">⚖️ Patent Attorney / Agent Details</span> <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
     <div class="field">
       <label id="proLicenceLbl">Bar Licence Number</label>
       <input type="text" id="licenceNumber" placeholder="e.g. BAR-2024-00123" />
@@ -289,7 +289,7 @@
   const APPROVAL_ROLES = ['patent_attorney', 'chartered_accountant', 'patent_seller'];
   const roleLabels = {
     idea_creator: 'Idea Creator', investor: 'Investor', virtual_manager: 'Virtual Manager',
-    patent_attorney: 'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller: 'Patent Seller',
+    patent_attorney: 'Patent Attorney / Agent', chartered_accountant:'Chartered Accountant', patent_seller: 'Patent Seller',
     business_owner: 'Business Owner', corporate_services: 'Corporate Services'
   };
   const roleEmojis = {
@@ -339,7 +339,7 @@
     document.getElementById('attorneyFields').classList.toggle('show', isPro);
     if (isPro) {
       const ca = selectedRole === 'chartered_accountant';
-      document.getElementById('proTitle').textContent = ca ? '🧮 Chartered Accountant Details' : '⚖️ Patent Attorney Details';
+      document.getElementById('proTitle').textContent = ca ? '🧮 Chartered Accountant Details' : '⚖️ Patent Attorney / Agent Details';
       document.getElementById('proLicenceLbl').textContent = ca ? 'Membership Number' : 'Bar Licence Number';
       document.getElementById('licenceNumber').placeholder = ca ? 'e.g. CA 12345' : 'e.g. BAR-2024-00123';
       document.getElementById('proBodyLbl').textContent = ca ? 'Professional Body' : 'Bar Association';
