@@ -340,13 +340,14 @@
     const avatarUrl = user.avatar_url || user.avatarUrl;
     const avatarEl = document.getElementById('sidebarAvatar');
     if (avatarEl) {
-      if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      if (avatarUrl) avatarEl.innerHTML = `<img src="${escB(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
       else document.getElementById('sidebarAvatarText').textContent = user.first_name?.[0]||'?';
     }
     document.getElementById('sidebarName').textContent = `${user.first_name||''} ${user.last_name||''}`.trim();
     (document.getElementById('welcomeTitle')||{}).textContent = `Welcome back, ${user.first_name||'there'} 👋`;
   }
 
+  function escB(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
   function timeAgo(d) {
     const diff = Date.now()-new Date(d);
     if (diff<3600000) return Math.floor(diff/60000)+'m ago';
@@ -406,11 +407,12 @@
       listingsEl.innerHTML = !businesses.length
         ? `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem">🏢</div><div style="font-size:13px">No listings yet</div><a href="/list-business" style="color:var(--accent);font-size:13px;margin-top:0.5rem;display:inline-block">List your first business →</a></div>`
         : businesses.map(b => {
-          const initials = b.business_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+          const initials = escB(String(b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
+          const nApps = allApps.filter(a => a.biz_id === b.id).length;
           return `<div class="listing-row">
             <div class="listing-logo">${initials}</div>
-            <div class="listing-info"><div class="listing-name">${b.business_name}</div><div class="listing-meta">${b.industry||'—'} · ${b.country||'—'} · ${b.application_count||0} applications · ${b.view_count||0} views</div></div>
-            <div class="listing-actions"><a class="btn-view" href="/business/${b.id}">View</a><span class="btn-apps">${b.application_count||0} Apps</span></div>
+            <div class="listing-info"><div class="listing-name">${escB(b.business_name)}</div><div class="listing-meta">${escB(b.industry||'—')} · ${escB(b.country||'—')} · ${nApps} application${nApps===1?'':'s'} · ${Number(b.view_count)||0} views</div></div>
+            <div class="listing-actions"><a class="btn-view" href="/business/${encodeURIComponent(b.id)}">View</a><span class="btn-apps">${nApps} Apps</span></div>
           </div>`;
         }).join('');
 
@@ -419,24 +421,25 @@
         ? `<div class="empty"><div style="font-size:32px;margin-bottom:0.75rem">📭</div><div style="font-size:13px">No applications yet</div></div>`
         : allApps.map(app => {
           const name = `${app.investor?.first_name||''} ${app.investor?.last_name||''}`.trim()||app.investor_name||'Investor';
-          const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+          const initials = escB(name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2));
           return `<div class="app-row">
             <div class="app-header">
               <div class="app-investor">
                 <div class="investor-av">${initials}</div>
-                <div><div class="investor-name">${name}</div><div class="investor-sub">${app.expansion_type?.replace('_',' ')} · ${app.biz_name} · ${timeAgo(app.created_at)}</div></div>
+                <div><div class="investor-name">${escB(name)}</div><div class="investor-sub">${escB(String(app.expansion_type||'').replace('_',' '))} · ${escB(app.biz_name)} · ${timeAgo(app.created_at)}</div></div>
               </div>
-              <span class="badge badge-${app.status}">${app.status.replace('_',' ')}</span>
+              <span class="badge badge-${escB(app.status)}">${escB(String(app.status||'').replace('_',' '))}</span>
             </div>
-            <div class="app-message">${app.message||'—'}</div>
-            ${app.investment_capacity ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem">💰 ${app.investment_capacity} · 📍 ${app.territory||'—'}</div>` : ''}
+            <div class="app-message" style="white-space:pre-wrap">${escB(app.message||'—')}</div>
+            ${app.investment_capacity ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem">💰 ${escB(app.investment_capacity)} · 📍 ${escB(app.territory||'—')}</div>` : ''}
+            ${app.background ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;white-space:pre-wrap">${escB(app.background)}</div>` : ''}
             <div class="app-actions">
-              ${app.status==='pending' ? `<button class="btn-shortlist" onclick="updateAppStatus(${app.id},'shortlisted')">⭐ Shortlist</button>` : ''}
-              ${['pending','shortlisted'].includes(app.status) ? `<button class="btn-meetup" onclick="openMeetup(${app.id})">📅 Schedule Meetup</button>` : ''}
-              ${app.status==='meetup_scheduled' ? `<button class="btn-meetup" onclick="updateAppStatus(${app.id},'negotiating')">🤝 Start Negotiating</button>` : ''}
-              ${app.status==='negotiating' ? `<button class="btn-agree" onclick="updateAppStatus(${app.id},'agreed')">🎉 Mark as Agreed</button>` : ''}
-              ${!['rejected','agreed'].includes(app.status) ? `<button class="btn-reject" onclick="updateAppStatus(${app.id},'rejected')">✕ Reject</button>` : ''}
-              <a class="btn-chat" href="/business/${app.biz_id}">💬 Chat</a>
+              ${app.status==='pending' ? `<button class="btn-shortlist" onclick="updateAppStatus(${Number(app.id)},'shortlisted')">⭐ Shortlist</button>` : ''}
+              ${['pending','shortlisted'].includes(app.status) ? `<button class="btn-meetup" onclick="openMeetup(${Number(app.id)})">📅 Schedule Meetup</button>` : ''}
+              ${app.status==='meetup_scheduled' ? `<button class="btn-meetup" onclick="updateAppStatus(${Number(app.id)},'negotiating')">🤝 Start Negotiating</button>` : ''}
+              ${app.status==='negotiating' ? `<button class="btn-agree" onclick="updateAppStatus(${Number(app.id)},'agreed')">🎉 Mark as Agreed</button>` : ''}
+              ${!['rejected','agreed'].includes(app.status) ? `<button class="btn-reject" onclick="updateAppStatus(${Number(app.id)},'rejected')">✕ Reject</button>` : ''}
+              <a class="btn-chat" href="/messages?user=${Number(app.investor_id)}">💬 Message</a>
             </div>
           </div>`;
         }).join('');

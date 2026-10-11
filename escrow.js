@@ -106,11 +106,8 @@ module.exports = function makeEscrow(supabase, sendEmail) {
     if (error) throw error;
     const r = rows && rows[0];
     if (!r) return null;
-    if (r.selected_creator_id && r.escrow_amount) {
-      await addEarnings(r.selected_creator_id, r.escrow_amount);
-      await payments.record({ kind: 'release', userId: r.selected_creator_id, amount: r.escrow_amount, meta: { idea_request_id: r.id, release_type: 'auto' } });
-    }
-    await notify(r.selected_creator_id, { type: 'completed', title: '💰 Payment Released!', message: `"${r.title}" was completed automatically 7 days after delivery. ${money(r.escrow_amount)} has been added to your earnings.`, link: `/request/${r.id}` });
+    // HOTFIX: no payment was ever taken for requests, so nothing is added to the creator's wallet.
+    await notify(r.selected_creator_id, { type: 'completed', title: '✅ Request completed', message: `"${r.title}" was completed automatically 7 days after delivery.`, link: `/request/${r.id}` });
     await notify(r.investor_id, { type: 'completed', title: '✅ Request Completed', message: `"${r.title}" was completed automatically 7 days after delivery.`, link: `/request/${r.id}` });
     return r;
   }

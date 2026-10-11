@@ -1,3 +1,4 @@
+const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
   }
@@ -378,14 +379,6 @@ app.get('/robots.txt', (req, res) => {
     res.json(enriched);
   });
 
-  app.get('/api/test', async (req, res) => {
-    try {
-      const { data, error } = await supabase.from('users').select('count');
-      res.json({ supabase: 'connected', data, error });
-    } catch(e) {
-      res.json({ supabase: 'failed', error: e.message });
-    }
-  });
   // ── HELPER: verify JWT token ─────────────────────────────────────────────────
   function authMiddleware(req, res, next) {
     const header = req.headers.authorization;
@@ -445,7 +438,7 @@ app.get('/robots.txt', (req, res) => {
     sendEmail(email, 'Welcome to IdeaHub! 🎉', `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
         <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
-        <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${firstName}! 👋</h2>
+        <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${escHtml(firstName)}! 👋</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully. You're now part of the global marketplace where ideas become empires.</p>
         <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:24px;">Go to Dashboard →</a>
         <p style="color:#6e6b65;font-size:12px;">IdeaHub by Picela (Pvt) Ltd</p>
@@ -980,7 +973,7 @@ app.get('/robots.txt', (req, res) => {
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
           <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
           <h2 style="margin-bottom:8px;">Your idea has a buyer! 🎉</h2>
-          <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">${buyer?.first_name || 'A buyer'} has locked <strong style="color:#f5c842;">$${amount.toLocaleString()}</strong> in escrow for your idea <strong>"${escrow.esc(idea.title)}"</strong>.</p>
+          <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">${escHtml(buyer?.first_name || 'A buyer')} has locked <strong style="color:#f5c842;">$${amount.toLocaleString()}</strong> in escrow for your idea <strong>"${escrow.esc(idea.title)}"</strong>.</p>
           ${extras.items.length ? `<p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">Included with the purchase: <strong style="color:#f0ede8;">${extras.items.map(i => escrow.esc(i.label) + (i.price ? ' ($' + i.price.toLocaleString() + ')' : ' (included)')).join(', ')}</strong>. Agree the details with the buyer in IdeaHub messages.</p>` : ''}
           <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Deliver the idea materials to the buyer. Once they confirm delivery, funds will be released to your wallet.</p>
           <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Transaction →</a>
@@ -1356,6 +1349,7 @@ app.get('/robots.txt', (req, res) => {
   app.post('/api/messages', authMiddleware, async (req, res) => {
     const { toId, text, ideaId } = req.body;
     if (!toId || !text) return res.status(400).json({ error: 'toId and text required' });
+    if (String(text).length > 5000) return res.status(400).json({ error: 'Messages can be up to 5,000 characters.' });
     const { data, error } = await supabase
       .from('messages')
       .insert([{ from_id: req.user.id, to_id: parseInt(toId), text, idea_id: ideaId || null }])
@@ -1380,8 +1374,8 @@ app.get('/robots.txt', (req, res) => {
       sendEmail(recipient.email, `💬 New message from ${senderName} — IdeaHub`, `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
           <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
-          <h2 style="margin-bottom:8px;">New message from ${senderName}</h2>
-          <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-bottom:20px;color:#9a9080;">"${text.slice(0,200)}${text.length>200?'...':''}"</div>
+          <h2 style="margin-bottom:8px;">New message from ${escHtml(senderName)}</h2>
+          <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-bottom:20px;color:#9a9080;white-space:pre-wrap;">"${escHtml(String(text).slice(0,200))}${String(text).length>200?'...':''}"</div>
           <a href="https://ideahub.it.com/messages?user=${req.user.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Reply →</a>
           <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
         </div>
@@ -1654,6 +1648,10 @@ app.get('/robots.txt', (req, res) => {
     const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
     if (!request) return res.status(404).json({ error: 'Request not found' });
     if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can update this' });
+    // The investor may only move a request between its open stages, or close it before anyone is paid
+    const OPEN_STAGES = ['open', 'proposals_received', 'shortlisting', 'pitching'];
+    if (![...OPEN_STAGES, 'closed'].includes(status)) return res.status(400).json({ error: 'That status can\'t be set here.' });
+    if (!OPEN_STAGES.includes(request.status) && !(status === 'closed' && request.status === 'agreed')) return res.status(400).json({ error: 'This request can no longer be changed.' });
 
     const { data, error } = await supabase
       .from('idea_requests')
@@ -1683,6 +1681,9 @@ app.get('/robots.txt', (req, res) => {
     const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
     if (!request) return res.status(404).json({ error: 'Request not found' });
     if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can lock escrow' });
+    // HOTFIX: this step never took a payment. It is switched off until request payments are rebuilt
+    // on the same escrow flow as hires (real charge, 8% fee, price taken from the selected proposal).
+    if (process.env.REQUEST_ESCROW !== 'on') return res.status(403).json({ error: 'Paying through IdeaHub for requests is being upgraded and will be back soon. Message the creator to agree the next steps in the meantime.', code: 'request_payments_paused' });
 
     const { data, error } = await supabase
       .from('idea_requests')
@@ -1717,11 +1718,12 @@ app.get('/robots.txt', (req, res) => {
     const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
     if (!request) return res.status(404).json({ error: 'Request not found' });
     if (request.selected_creator_id !== req.user.id) return res.status(403).json({ error: 'Only the selected creator can mark as delivered' });
+    if (request.status !== 'in_escrow') return res.status(400).json({ error: 'You can mark this delivered only after the investor has paid.' });
 
     const { data, error } = await supabase
       .from('idea_requests')
       .update({ status: 'delivered', delivered_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq('id', req.params.id)
+      .eq('id', req.params.id).eq('status', 'in_escrow')
       .select().single();
 
     if (error) return res.status(500).json({ error: error.message });
@@ -1744,27 +1746,25 @@ app.get('/robots.txt', (req, res) => {
     const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
     if (!request) return res.status(404).json({ error: 'Request not found' });
     if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can confirm' });
+    if (request.status !== 'delivered') return res.status(400).json({ error: 'You can confirm once the creator has marked it delivered.' });
 
     const { data, error } = await supabase
       .from('idea_requests')
       .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq('id', req.params.id)
+      .eq('id', req.params.id).eq('status', 'delivered')
       .select().single();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error || !data) return res.status(400).json({ error: error?.message || 'This request is already settled.' });
 
-    // Update creator earnings
-    if (request.selected_creator_id && request.escrow_amount) {
-      const { data: creator } = await supabase.from('users').select('earnings').eq('id', request.selected_creator_id).single();
-      await supabase.from('users').update({ earnings: (creator?.earnings || 0) + request.escrow_amount }).eq('id', request.selected_creator_id);
-    }
+    // HOTFIX: no payment was ever taken for requests, so nothing is added to the creator's wallet here.
+    // Real payouts come back with the rebuilt request payments.
 
     // Notify creator
     await supabase.from('notifications').insert([{
       user_id: request.selected_creator_id,
       type: 'completed',
-      title: '💰 Payment Released!',
-      message: `The investor confirmed delivery. $${request.escrow_amount} has been added to your earnings!`,
+      title: '✅ Request completed',
+      message: `The investor confirmed delivery for "${request.title}".`,
       link: `/request/${req.params.id}`,
       data: { request_id: req.params.id, amount: request.escrow_amount }
     }]);
@@ -1778,6 +1778,8 @@ app.get('/robots.txt', (req, res) => {
     const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
     if (!request) return res.status(404).json({ error: 'Request not found' });
     if (request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can dispute' });
+    if (!['in_escrow', 'delivered'].includes(request.status)) return res.status(400).json({ error: 'Only paid requests can be disputed.' });
+    if (String(reason || '').trim().length < 10) return res.status(400).json({ error: 'Please describe the problem (at least 10 characters).' });
 
     const { data, error } = await supabase
       .from('idea_requests')
@@ -1828,6 +1830,7 @@ app.get('/robots.txt', (req, res) => {
     const { data: request } = await supabase.from('idea_requests').select('*').eq('id', req.params.id).single();
     if (!request) return res.status(404).json({ error: 'Request not found' });
     if (!['open', 'proposals_received'].includes(request.status)) return res.status(400).json({ error: 'This request is no longer accepting proposals' });
+    if (request.investor_id === req.user.id) return res.status(400).json({ error: 'You can\'t send a proposal to your own request.' });
 
     const { data: creator } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
 
@@ -1850,7 +1853,7 @@ app.get('/robots.txt', (req, res) => {
     }
 
     // Update request status
-    await supabase.from('idea_requests').update({ status: 'proposals_received', updated_at: new Date().toISOString() }).eq('id', req.params.id);
+    await supabase.from('idea_requests').update({ status: request.status === 'open' ? 'proposals_received' : request.status, proposal_count: (request.proposal_count || 0) + 1, updated_at: new Date().toISOString() }).eq('id', req.params.id);
 
     // Notify investor
     await supabase.from('notifications').insert([{
@@ -1869,7 +1872,7 @@ app.get('/robots.txt', (req, res) => {
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
           <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
           <h2 style="margin-bottom:8px;">New proposal received! 📝</h2>
-          <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;"><strong>${creator?.first_name || 'A creator'} ${creator?.last_name || ''}</strong> submitted a proposal for your request <strong>"${request.title}"</strong>.</p>
+          <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;"><strong>${escHtml(creator?.first_name || 'A creator')} ${escHtml(creator?.last_name || '')}</strong> submitted a proposal for your request <strong>"${escHtml(request.title)}"</strong>.</p>
           <a href="https://ideahub.it.com/request-detail?id=${req.params.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Review Proposal →</a>
           <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
         </div>
@@ -1885,6 +1888,12 @@ app.get('/robots.txt', (req, res) => {
     const { data: proposal } = await supabase.from('idea_proposals').select('*, request:request_id(investor_id, title)').eq('id', req.params.id).single();
     if (!proposal) return res.status(404).json({ error: 'Proposal not found' });
     if (proposal.request.investor_id !== req.user.id) return res.status(403).json({ error: 'Only the investor can update proposal status' });
+    if (!['shortlisted', 'invited_to_pitch', 'rejected', 'selected'].includes(status)) return res.status(400).json({ error: 'Unknown proposal status.' });
+    if (proposal.status === 'selected') return res.status(400).json({ error: 'This proposal is already selected.' });
+    if (status === 'selected') {
+      const { data: rq } = await supabase.from('idea_requests').select('status').eq('id', proposal.request_id).single();
+      if (!['open', 'proposals_received', 'shortlisting', 'pitching'].includes(rq?.status)) return res.status(400).json({ error: 'A creator has already been selected for this request.' });
+    }
 
     const updateData = { status, updated_at: new Date().toISOString() };
     if (status === 'invited_to_pitch') updateData.pitch_requested_at = new Date().toISOString();
@@ -2552,7 +2561,7 @@ app.get('/robots.txt', (req, res) => {
     sendEmail(email, 'Welcome to IdeaHub! 🎉', `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
         <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
-        <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${first_name}! 👋</h2>
+        <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${escHtml(first_name)}! 👋</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully via Google.</p>
         <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Dashboard →</a>
         <p style="color:#6e6b65;font-size:12px;">IdeaHub by Picela (Pvt) Ltd</p>
@@ -2886,7 +2895,7 @@ app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
         <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
         <h2 style="margin-bottom:8px;">Reset your password</h2>
-        <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${user.first_name}, we received a request to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${escHtml(user.first_name)}, we received a request to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>
         <a href="${resetLink}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:20px;">Reset Password →</a>
         <p style="color:#6e6b65;font-size:12px;margin-top:16px;">If you didn't request this, ignore this email. Your password won't change.</p>
         <p style="color:#6e6b65;font-size:12px;">IdeaHub by Picela (Pvt) Ltd</p>
@@ -2938,12 +2947,12 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
     `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
       <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub — Contact Form</div>
-      <p><strong>Name:</strong> ${firstName} ${lastName || ''}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Role:</strong> ${role || 'Not specified'}</p>
-      <p><strong>Subject:</strong> ${subject || 'Not specified'}</p>
+      <p><strong>Name:</strong> ${escHtml(firstName)} ${escHtml(lastName || '')}</p>
+      <p><strong>Email:</strong> ${escHtml(email)}</p>
+      <p><strong>Role:</strong> ${escHtml(role || 'Not specified')}</p>
+      <p><strong>Subject:</strong> ${escHtml(subject || 'Not specified')}</p>
       <p style="margin-top:16px;"><strong>Message:</strong></p>
-      <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-top:8px;color:#9a9080;">${message}</div>
+      <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-top:8px;color:#9a9080;white-space:pre-wrap;">${escHtml(message)}</div>
       <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Sent from ideahub.it.com/about</p>
     </div>
     `

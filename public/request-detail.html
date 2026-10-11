@@ -183,9 +183,7 @@
 </footer>
 
 <script>
-  const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : 'https://ideahub.it.com';
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
   const token = localStorage.getItem('token') || localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('user') || localStorage.getItem('ih_user') || 'null');
@@ -291,7 +289,9 @@
         method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
         body:JSON.stringify({amount, proposal_id:proposalId, creator_id:creatorId})
       });
-      if (res.ok) loadPage();
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) { alert(d.error || 'Could not lock escrow.'); return; }
+      loadPage();
     } catch(e) { alert('Failed.'); }
   }
 
@@ -302,13 +302,13 @@
 
   async function confirmDelivery() {
     if (!confirm('Confirm delivery and release payment?')) return;
-    try { const res = await fetch(`${API_URL}/api/requests/${requestId}/confirm`,{method:'POST',headers:{Authorization:`Bearer ${token}`}}); if(res.ok) { alert('Payment released! 🎉'); loadPage(); } } catch(e) { alert('Failed.'); }
+    try { const res = await fetch(`${API_URL}/api/requests/${requestId}/confirm`,{method:'POST',headers:{Authorization:`Bearer ${token}`}}); const d = await res.json().catch(() => ({})); if(res.ok) { alert('Confirmed. Thank you!'); loadPage(); } else alert(d.error || 'Could not confirm.'); } catch(e) { alert('Failed.'); }
   }
 
   async function raiseDispute() {
     const reason = prompt('Describe the issue:');
     if (!reason) return;
-    try { const res = await fetch(`${API_URL}/api/requests/${requestId}/dispute`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({reason})}); if(res.ok) loadPage(); } catch(e) { alert('Failed.'); }
+    try { const res = await fetch(`${API_URL}/api/requests/${requestId}/dispute`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({reason})}); const d = await res.json().catch(() => ({})); if(res.ok) loadPage(); else alert(d.error || 'Could not open a dispute.'); } catch(e) { alert('Failed.'); }
   }
 
   async function openChat(creatorId, creatorName) {
@@ -418,7 +418,7 @@
               <div class="card-title">🔒 Escrow Status</div>
               <div class="escrow-box">
                 <div class="escrow-amount">$${(r.escrow_amount||0).toLocaleString()}</div>
-                <div class="escrow-note">${r.status==='in_escrow'?'Locked — waiting for delivery':r.status==='delivered'?'Delivered — investor reviewing':'Payment released ✅'}</div>
+                <div class="escrow-note">${r.status==='in_escrow'?'Agreed, waiting for delivery':r.status==='delivered'?'Delivered, investor reviewing':'Completed ✅'}</div>
               </div>
               ${r.status==='in_escrow'&&isSelectedCreator?`<button class="btn-primary" onclick="markDelivered()">📦 Mark as Delivered</button>`:''}
               ${r.status==='delivered'&&isOwner?`<div style="display:flex;gap:10px;"><button class="btn-primary" style="background:var(--green);color:#000;" onclick="confirmDelivery()">✅ Confirm & Release Payment</button><button class="btn-secondary" style="color:var(--error);border-color:var(--error);" onclick="raiseDispute()">⚠️ Dispute</button></div>`:''}
@@ -448,7 +448,7 @@
                       ${p.status==='pending'?`<button class="btn-sm btn-shortlist" onclick="updateProposalStatus(${p.id},'shortlisted')">⭐ Shortlist</button>`:''}
                       ${['pending','shortlisted'].includes(p.status)?`<button class="btn-sm btn-invite" onclick="updateProposalStatus(${p.id},'invited_to_pitch')">🎤 Invite to Pitch</button>`:''}
                       ${['shortlisted','invited_to_pitch'].includes(p.status)?`<button class="btn-sm btn-select" onclick="updateProposalStatus(${p.id},'selected')">🏆 Select</button>`:''}
-                      ${p.status==='selected'&&r.status==='agreed'?`<button class="btn-sm btn-select" onclick="lockEscrow(${p.id},${p.creator_id},${p.proposed_price||r.budget_max||0})">🔒 Lock Escrow</button>`:''}
+                      ${p.status==='selected'&&r.status==='agreed'?`<span style="font-size:0.75rem;color:var(--muted);">Paying through IdeaHub for requests is being upgraded. Message the creator to agree next steps.</span>`:''}
                       ${!['rejected','selected'].includes(p.status)?`<button class="btn-sm btn-reject" onclick="updateProposalStatus(${p.id},'rejected')">✕ Reject</button>`:''}
                       <button class="btn-sm btn-chat" onclick="openChat(${Number(p.creator_id)}, this.dataset.n)" data-n="${escR(name)}">💬 Chat</button>
                     </div>
@@ -500,7 +500,7 @@
                   </div>
                 </div>
                 ${myProposal.status==='invited_to_pitch'?`<div class="info-box info-blue">🎤 You've been invited to pitch! Send a message to the investor.</div><button class="btn-primary" onclick="openChat(${r.investor_id},'Investor')">💬 Start Pitch Chat</button>`:''}
-                ${myProposal.status==='selected'?`<div class="info-box info-green">🏆 Your proposal was selected! Waiting for investor to lock escrow.</div>`:''}
+                ${myProposal.status==='selected'?`<div class="info-box info-green">🏆 Your proposal was selected! Paying through IdeaHub for requests is being upgraded. Message the investor to agree next steps.</div><button class="btn-primary" onclick="openChat(${r.investor_id},'Investor')">💬 Message the investor</button>`:''}
                 ${r.status==='in_escrow'&&isSelectedCreator?`<div class="info-box info-gold">🔒 $${(r.escrow_amount||0).toLocaleString()} locked. Deliver your idea then mark as delivered.</div>`:''}
               `:`
                 <div class="card-title">Submit a Proposal</div>

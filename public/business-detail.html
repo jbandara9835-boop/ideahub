@@ -194,7 +194,9 @@
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
   renderSidebar();
-  const bizId = window.location.pathname.split('/').pop();
+  function escB(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  const bizId = new URLSearchParams(location.search).get('id') || window.location.pathname.split('/').pop();
+  const money = n => '$' + (Number(n) || 0).toLocaleString();
 
   const typeConfig = {
     franchise: { label:'Franchise', emoji:'📦', cls:'type-franchise' },
@@ -208,9 +210,9 @@
   const supportRoles = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
 
   if (user) {
-    const initials = (user.first_name?.[0]||'') + (user.Last_name?.[0]||'');
+    const initials = (user.first_name?.[0]||'') + (user.last_name?.[0]||'');
     document.getElementById('sidebarAvatar').textContent = initials||'?';
-    document.getElementById('sidebarName').textContent = `${user.firstName||''} ${user.lastName||''}`.trim();
+    document.getElementById('sidebarName').textContent = `${user.first_name||user.firstName||''} ${user.last_name||user.lastName||''}`.trim();
     document.getElementById('sidebarRole').textContent = user.role||'—';
     // document.getElementById('dashLink').href = creatorRoles.includes(user.role) ? '/dashboard' : supportRoles.includes(user.role) ? '/support-dashboard' : user.role==='business_owner' ? '/business-dashboard' : '/buyer-dashboard';
   }
@@ -295,7 +297,7 @@
       currentBiz = await bizRes.json();
 
       const isOwner = user && currentBiz.owner_id === user.id;
-      const canApply = user && !isOwner;
+      const canApply = !isOwner;
 
       if (canApply && token) {
         const appRes = await fetch(`${API_URL}/api/businesses/${bizId}/my-application`, {headers:{Authorization:`Bearer ${token}`}});
@@ -303,7 +305,7 @@
       }
 
       const b = currentBiz;
-      const initials = b.business_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const initials = escB(String(b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
       const types = (b.expansion_types||[]);
 
       document.title = `${b.business_name} — IdeaHub`;
@@ -316,42 +318,44 @@
               <div class="biz-header">
                 <div class="biz-logo-lg">${initials}</div>
                 <div>
-                  <div class="biz-name-lg">${b.business_name}</div>
-                  <div class="biz-tagline-lg">${b.tagline||''}</div>
-                  <div>${types.map(t=>`<span class="type-pill ${typeConfig[t]?.cls||''}">${typeConfig[t]?.emoji||'•'} ${typeConfig[t]?.label||t}</span>`).join('')}</div>
+                  <div class="biz-name-lg">${escB(b.business_name)}</div>
+                  <div class="biz-tagline-lg">${escB(b.tagline||'')}</div>
+                  <div>${types.map(t=>`<span class="type-pill ${typeConfig[t]?.cls||''}">${typeConfig[t]?.emoji||'•'} ${escB(typeConfig[t]?.label||t)}</span>`).join('')}</div>
                 </div>
               </div>
 
               <div class="meta-grid">
-                <div class="meta-item"><div class="meta-label">Industry</div><div class="meta-value">${b.industry||'—'}</div></div>
-                <div class="meta-item"><div class="meta-label">Location</div><div class="meta-value">${b.city?b.city+', ':''}${b.country||'—'}</div></div>
-                <div class="meta-item"><div class="meta-label">Founded</div><div class="meta-value">${b.founded_year||'—'}</div></div>
-                <div class="meta-item"><div class="meta-label">Revenue</div><div class="meta-value">${b.annual_revenue||'—'}</div></div>
-                <div class="meta-item"><div class="meta-label">Employees</div><div class="meta-value">${b.employees||'—'}</div></div>
-                <div class="meta-item"><div class="meta-label">Locations</div><div class="meta-value">${b.locations||1}</div></div>
+                <div class="meta-item"><div class="meta-label">Industry</div><div class="meta-value">${escB(b.industry||'—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Location</div><div class="meta-value">${b.city?escB(b.city)+', ':''}${escB(b.country||'—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Founded</div><div class="meta-value">${escB(b.founded_year||'—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Revenue</div><div class="meta-value">${escB(b.annual_revenue||'—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Employees</div><div class="meta-value">${escB(b.employees||'—')}</div></div>
+                <div class="meta-item"><div class="meta-label">Locations</div><div class="meta-value">${escB(b.locations||1)}</div></div>
               </div>
 
-              <div class="biz-description">${b.description}</div>
+              <div class="biz-description" style="white-space:pre-wrap">${escB(b.description)}</div>
             </div>
 
             ${b.requirements ? `
             <div class="card">
               <div class="card-title">📋 Partner Requirements</div>
-              <div class="requirements-box">${b.requirements}</div>
+              <div class="requirements-box" style="white-space:pre-wrap">${escB(b.requirements)}</div>
             </div>` : ''}
 
             ${b.territories?.length ? `
             <div class="card">
               <div class="card-title">🌍 Target Territories</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                ${b.territories.map(t=>`<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;">${t}</span>`).join('')}
+                ${b.territories.map(t=>`<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;">${escB(t)}</span>`).join('')}
               </div>
             </div>` : ''}
 
             <!-- CHAT SECTION -->
             ${myApplication && token ? `
             <div class="card" id="chatCard">
-              <div class="card-title">💬 Negotiation Chat</div>
+              <div class="card-title">💬 Talk to the owner</div>
+              <a href="/messages?user=${Number(b.owner_id)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.75rem;font-weight:700;text-decoration:none;margin-bottom:1rem;">Message ${escB(b.owner_name || 'the owner')} →</a>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:.6rem">Earlier notes on this application:</div>
               <div class="chat-area">
                 <div class="chat-msgs" id="chatMsgs"><div style="text-align:center;color:var(--muted);padding:2rem;font-size:13px;">Loading messages...</div></div>
                 <div class="chat-input-row">
@@ -368,11 +372,11 @@
             <div class="card">
               <div class="card-title">💰 Investment Range</div>
               <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;">
-                ${b.investment_min&&b.investment_max ? `$${b.investment_min.toLocaleString()} — $${b.investment_max.toLocaleString()}` : b.investment_min ? `From $${b.investment_min.toLocaleString()}` : b.investment_max ? `Up to $${b.investment_max.toLocaleString()}` : 'Negotiable'}
+                ${b.investment_min&&b.investment_max ? `${money(b.investment_min)} — ${money(b.investment_max)}` : b.investment_min ? `From ${money(b.investment_min)}` : b.investment_max ? `Up to ${money(b.investment_max)}` : 'Negotiable'}
               </div>
               <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Required investment range</div>
               <div style="font-size:13px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:0.75rem;">
-                📋 ${b.application_count||0} investor${b.application_count!==1?'s':''} applied · 👁 ${b.view_count||0} views
+                📋 ${Number(b.application_count)||0} investor${Number(b.application_count)!==1?'s':''} applied · 👁 ${Number(b.view_count)||0} views
               </div>
             </div>
 
@@ -382,15 +386,15 @@
               ${myApplication ? `
                 <div class="card-title">Your Application</div>
                 <div style="background:var(--surface2);border-radius:10px;padding:1rem;margin-bottom:1rem;">
-                  <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${myApplication.expansion_type?.replace('_',' ')} Interest</div>
-                  <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">${myApplication.message}</div>
+                  <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${escB(typeConfig[myApplication.expansion_type]?.label || String(myApplication.expansion_type||'').replace('_',' '))} interest</div>
+                  <div style="font-size:13px;color:var(--muted);margin-bottom:8px;white-space:pre-wrap">${escB(myApplication.message)}</div>
                   <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);">${myApplication.status}</span>
+                    <span style="background:var(--accent-dim);border:1px solid rgba(245,200,66,0.3);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--accent);">${escB(({pending:'Sent',reviewed:'Reviewed',shortlisted:'Shortlisted',meetup_scheduled:'Meetup scheduled',negotiating:'Negotiating',agreed:'Agreed',rejected:'Not selected'})[myApplication.status] || myApplication.status)}</span>
                   </div>
                 </div>
                 ${['shortlisted','meetup_scheduled','negotiating'].includes(myApplication.status) ? `
                   <div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13px;color:var(--success);">
-                    ${myApplication.status==='meetup_scheduled' ? `📅 Meetup scheduled!<br><strong>${myApplication.meetup_type==='virtual'?'Virtual':'In-person'}</strong> · ${myApplication.meetup_date ? new Date(myApplication.meetup_date).toLocaleDateString() : 'Date TBD'}<br>${myApplication.meetup_location||''}` : myApplication.status==='negotiating' ? '🤝 Negotiation in progress. Use the chat below.' : '⭐ You\'ve been shortlisted! The owner will be in touch.'}
+                    ${myApplication.status==='meetup_scheduled' ? `📅 Meetup scheduled!<br><strong>${myApplication.meetup_type==='virtual'?'Virtual':'In-person'}</strong> · ${myApplication.meetup_date ? new Date(myApplication.meetup_date).toLocaleDateString() : 'Date TBD'}<br>${escB(myApplication.meetup_location||'')}` : myApplication.status==='negotiating' ? '🤝 Negotiation in progress. Use the chat below.' : '⭐ You\'ve been shortlisted! The owner will be in touch.'}
                   </div>` : ''}
                 ${myApplication.status==='agreed' ? `
                   <div style="background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.3);border-radius:10px;padding:1rem;font-size:13px;color:var(--success);">
@@ -402,7 +406,7 @@
                   <label class="lbl">Expansion Type *</label>
                   <select id="appType">
                     <option value="">Select type</option>
-                    ${types.map(t=>`<option value="${t}">${typeConfig[t]?.emoji} ${typeConfig[t]?.label||t}</option>`).join('')}
+                    ${types.map(t=>`<option value="${escB(t)}">${typeConfig[t]?.emoji||''} ${escB(typeConfig[t]?.label||t)}</option>`).join('')}
                   </select>
                 </div>
                 <div class="field">
@@ -421,7 +425,7 @@
                   <label class="lbl">Your Background</label>
                   <textarea id="appBackground" placeholder="Your business experience, relevant skills..." style="min-height:70px;"></textarea>
                 </div>
-                ${!token ? `<a href="/login" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.85rem;font-weight:700;text-decoration:none;">Login to Apply</a>` : `
+                ${!token ? `<a href="/login?next=${encodeURIComponent(location.pathname)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.85rem;font-weight:700;text-decoration:none;">Login to Apply</a>` : `
                 <button class="btn-primary" id="applyBtn" onclick="submitApplication()">Submit Application →</button>`}
                 <p style="font-size:11px;color:var(--muted);margin-top:0.75rem;text-align:center;">No payment required — this is a connection platform</p>
               `}

@@ -270,9 +270,7 @@
   </footer>
 
   <script>
-    const API_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:3000'
-      : 'https://ideahub.it.com';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
     let allBusinesses = [], activeCategory = 'all', activeType = 'all';
     let advOpen = false;
@@ -361,7 +359,7 @@
       }
       const avatarEl = document.getElementById('navAvatar');
       const avatarUrl = user.avatar_url || user.avatarUrl;
-      if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
+      if (avatarUrl) avatarEl.innerHTML = `<img src="${escB(avatarUrl)}" alt="">`;
       else avatarEl.textContent = (user.name || user.first_name || user.email || 'U')[0].toUpperCase();
     }
 
@@ -406,6 +404,7 @@
         : '<div class="empty"><h3>No businesses found</h3><p>Try adjusting your filters</p></div>';
     }
 
+  function escB(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
     function formatInvestment(min, max) {
       if (!min && !max) return 'Negotiable';
       const fmt = n => n >= 1000000 ? '$'+(n/1000000).toFixed(1)+'M' : n >= 1000 ? '$'+(n/1000).toFixed(0)+'k' : '$'+n;
@@ -415,32 +414,32 @@
     }
 
     function cardHTML(b) {
-      const logoContent = catEmoji[b.category] || (b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const logoContent = catEmoji[b.category] || escB((b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
       const types = (b.expansion_types||[]).slice(0,3);
       return `
-        <a class="biz-card" href="/business-detail?id=${b.id}">
+        <a class="biz-card" href="/business/${encodeURIComponent(b.id)}">
           <div class="card-top">
             <div class="card-header">
               <div class="biz-logo">${logoContent}</div>
               <div style="flex:1;min-width:0">
-                <div class="biz-name">${b.business_name||'Business'}</div>
-                <div class="biz-location">${b.city ? b.city+', ' : ''}${b.country||''}</div>
+                <div class="biz-name">${escB(b.business_name||'Business')}</div>
+                <div class="biz-location">${b.city ? escB(b.city)+', ' : ''}${escB(b.country||'')}</div>
               </div>
             </div>
-            <div class="biz-desc">${b.description||b.tagline||''}</div>
+            <div class="biz-desc">${escB(b.description||b.tagline||'')}</div>
             <div class="type-pills">
-              ${b.category ? `<span class="cat-badge">${catEmoji[b.category]||'🏢'} ${b.category}</span>` : ''}
-              ${types.map(t => `<span class="type-pill ${typeConfig[t]?.cls||''}">${typeConfig[t]?.emoji||'•'} ${typeConfig[t]?.label||t}</span>`).join('')}
+              ${b.category ? `<span class="cat-badge">${catEmoji[b.category]||'🏢'} ${escB(b.category)}</span>` : ''}
+              ${types.map(t => `<span class="type-pill ${typeConfig[t]?.cls||''}">${typeConfig[t]?.emoji||'•'} ${escB(typeConfig[t]?.label||t)}</span>`).join('')}
             </div>
             <div class="biz-meta-row">
-              ${b.employees ? `<span>👥 ${b.employees} employees</span>` : ''}
-              ${b.annual_revenue ? `<span>💰 ${b.annual_revenue}</span>` : ''}
-              ${b.founded_year ? `<span>📅 Est. ${b.founded_year}</span>` : ''}
+              ${b.employees ? `<span>👥 ${escB(b.employees)} employees</span>` : ''}
+              ${b.annual_revenue ? `<span>💰 ${escB(b.annual_revenue)}</span>` : ''}
+              ${b.founded_year ? `<span>📅 Est. ${escB(b.founded_year)}</span>` : ''}
             </div>
           </div>
           <div class="card-footer">
-            <div class="investment">${formatInvestment(b.investment_min, b.investment_max)}</div>
-            <div class="apps-count">📋 ${b.application_count||0} applications</div>
+            <div class="investment">${escB(formatInvestment(b.investment_min, b.investment_max))}</div>
+            <div class="apps-count">📋 ${Number(b.application_count)||0} applications</div>
             <span class="btn-view">View →</span>
           </div>
         </a>`;
