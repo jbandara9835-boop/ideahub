@@ -156,7 +156,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   const IMG = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
   const VID = { 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov' };
   app.post('/api/wall/upload', authMiddleware, (req, res, next) => upload.single('file')(req, res, err => {
-    if (err) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'That file is too large. Photos up to 8 MB, videos up to 25 MB.' : 'Upload failed. Please try again.' });
+    if (err) { console.error('Wall upload (multer):', err.code || '', err.message); return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'That file is too large. Photos up to 8 MB, videos up to 25 MB.' : 'Upload failed. Please try again.' }); }
     next();
   }), async (req, res) => {
     if (limited('up:' + req.user.id, 60, 3600000)) return res.status(429).json({ error: 'Too many uploads. Please wait a while.' });
@@ -167,7 +167,14 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (isImg && f.size > 8 * 1024 * 1024) return res.status(400).json({ error: 'Photos can be up to 8 MB.' });
     const name = `wall/${req.user.id}/${Date.now()}-${crypto.randomBytes(4).toString('hex')}.${IMG[f.mimetype] || VID[f.mimetype]}`;
     const { error } = await supabase.storage.from(BUCKET).upload(name, f.buffer, { contentType: f.mimetype, upsert: false });
-    if (error) return res.status(500).json({ error: 'Upload failed. Please try again.' });
+    if (error) {
+      const m = String(error.message || error.error || error);
+      console.error('Wall upload (storage):', f.mimetype, f.size, m);
+      const why = /size|exceed|too large|payload/i.test(m) ? `This file (${(f.size / 1048576).toFixed(1)} MB) is bigger than the storage allows. Try a smaller file.`
+        : /mime|type|not supported|invalid/i.test(m) ? 'Storage does not accept this file type. Try a JPG or PNG photo, or an MP4 video.'
+        : 'Upload failed. Please try again.';
+      return res.status(500).json({ error: why, detail: m.slice(0, 200) });
+    }
     res.json({ url: supabase.storage.from(BUCKET).getPublicUrl(name).data.publicUrl, type: isVid ? 'video' : 'image' });
   });
 

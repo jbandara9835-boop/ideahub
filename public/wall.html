@@ -829,10 +829,13 @@ a { color: inherit; }
     if (list.length > room) cmpError(`Only ${room} more photo${room === 1 ? '' : 's'} can be added.`);
     for (const f of list.slice(0, room)) {
       const isV = f.type.startsWith('video/');
-      if (isV ? f.size > 25 * 1024 * 1024 : f.size > 8 * 1024 * 1024) { cmpError(isV ? 'Videos can be up to 25 MB.' : 'Photos can be up to 8 MB each.'); continue; }
+      if (isV && f.size > 25 * 1024 * 1024) { cmpError('Videos can be up to 25 MB.'); continue; }
+      if (!isV && f.size > 40 * 1024 * 1024) { cmpError('That photo is too large.'); continue; }
       const item = { type: isV ? 'video' : 'image', preview: URL.createObjectURL(f), busy: true };
       cmp.media.push(item); cmp.uploading++; cmp.dirty = true; thumbs(); cmpSync();
-      const fd = new FormData(); fd.append('file', f);
+      const up = isV ? f : await shrinkPhoto(f);
+      if (!isV && up.size > 8 * 1024 * 1024) { cmp.media = cmp.media.filter(m => m !== item); cmp.uploading--; thumbs(); cmpSync(); cmpError('Photos can be up to 8 MB each.'); continue; }
+      const fd = new FormData(); fd.append('file', up, up.name || f.name);
       try {
         const r = await fetch('/api/wall/upload', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
         const d = await r.json().catch(() => ({}));
@@ -841,6 +844,22 @@ a { color: inherit; }
       } catch (e) { cmp.media = cmp.media.filter(m => m !== item); cmpError(e.message); }
       cmp.uploading--; thumbs(); cmpSync();
     }
+  }
+  // Photos from phones are often 3–8 MB. Resize to at most 2048 px and re-save as JPEG
+  // (usually under 1 MB): faster uploads, less storage, sharp enough for the feed and viewer.
+  async function shrinkPhoto(f) {
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type) || f.size < 600 * 1024) return f;
+    try {
+      const bmp = await createImageBitmap(f, { imageOrientation: 'from-image' });
+      const k = Math.min(1, 2048 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+      if (!blob || blob.size >= f.size) return f;
+      return new File([blob], (f.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+    } catch (e) { return f; }
   }
   function cmpError(msg) { const e = $('cmpErr'); e.textContent = msg; e.style.display = 'block'; }
   async function submitComposer() {
