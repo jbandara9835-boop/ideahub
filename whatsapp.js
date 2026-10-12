@@ -58,6 +58,7 @@ const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const newCode = () => Array.from(crypto.randomBytes(8), x => CODE_ABC[x % 32]).join('');
 const hash = s => crypto.createHash('sha256').update(String(s) + (process.env.JWT_SECRET || '')).digest('hex');
 const CODE_RE = /IDEAHUB\s*CODE\s*:?\s*([A-Z2-9]{4}[\s-]?[A-Z2-9]{4})/i;
+const BARE_CODE_RE = /^\s*([A-Z2-9]{4}[\s-]?[A-Z2-9]{4})\s*$/i;   // just the code, e.g. "ANQG-9DBF"
 
 // In-memory limits (one Railway instance)
 const hits = new Map();
@@ -283,7 +284,9 @@ function bot(supabase, opts = {}) {
     if (limited('in:' + number, 40, 60000)) return replies;   // flooding: ignore quietly
 
     // 1. A verification code from the Profile page → link this number
-    const m = (text.toUpperCase().match(CODE_RE) || [])[1];
+    // The full pre-written message, or just the code from a number that isn't linked yet
+    let m = (text.toUpperCase().match(CODE_RE) || [])[1];
+    if (!m && input.type === 'text' && BARE_CODE_RE.test(text) && !(await C.userByNumber(number))) m = text.toUpperCase().match(BARE_CODE_RE)[1];
     if (m) {
       if (limited('code:' + number, 6, 3600000)) { return flush([{ text: 'Too many attempts. Please try again in an hour.' }]); }
       const code = m.replace(/[\s-]/g, '');
