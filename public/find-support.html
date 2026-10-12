@@ -397,6 +397,15 @@
   if (preType && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(preType)) {
     activeRole = preType;
   }
+  (function vmBanner() {
+    const b = document.createElement('div');
+    b.id = 'vmBanner';
+    b.style.cssText = 'max-width:1200px;margin:0 auto 18px;padding:14px 18px;border-radius:14px;border:1px solid rgba(167,139,250,0.35);background:rgba(167,139,250,0.08);display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px;line-height:1.5';
+    b.innerHTML = '<div><b style="color:#c4b5fd">🤝 Need someone to act for you?</b> Virtual Managers are checked, take one side only, and work under a mandate with approvals and escrowed fees.</div><a href="/managers" style="background:#a78bfa;color:#160f2b;font-weight:700;padding:8px 14px;border-radius:9px;text-decoration:none;white-space:nowrap">Find a Manager →</a>';
+    const bar = document.querySelector('.sort-bar');
+    if (bar) bar.parentNode.insertBefore(b, bar);
+    b.style.margin = '18px auto 0'; b.style.width = 'calc(100% - 32px)';
+  })();
 
   function toggleAdvanced() {
     advOpen = !advOpen;

@@ -695,6 +695,7 @@
             return `
               <div class="msg-bubble ${isMe ? 'me' : 'them'}">
                 ${msg.idea_id ? `<div class="idea-ref">💡 Re: Idea #${escapeHtml(msg.idea_id)}</div>` : ''}
+                ${msg.on_behalf_of ? `<div class="idea-ref">🤝 ${isMe ? 'Sent as manager for' : 'Manager for'} ${escapeHtml(behalfName(msg.on_behalf_of))}</div>` : ''}
                 <div class="bubble">${escapeHtml(msg.text)}</div>
                 <div class="bubble-time">${formatTime(msg.created_at)}</div>
               </div>
@@ -702,6 +703,7 @@
           }).join('')
         }
       </div>
+      ${actingFor ? `<div style="padding:8px 14px;font-size:12.5px;background:rgba(167,139,250,0.1);border-top:1px solid rgba(167,139,250,0.3);color:#c4b5fd;display:flex;justify-content:space-between;gap:10px;align-items:center">✍️ Writing as manager for ${escapeHtml(behalfName(actingFor))}. They see this label on your messages.<button onclick="stopActing()" style="background:none;border:none;color:#c4b5fd;font-weight:700;cursor:pointer;font-size:12.5px">Write as myself</button></div>` : ''}
       <div class="chat-input-area">
         <textarea class="chat-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
         <button class="send-btn" onclick="sendMessage()">
@@ -957,7 +959,7 @@
       const res = await fetch(`${API_URL}/api/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ toId: activeConv.id, text })
+        body: JSON.stringify({ toId: activeConv.id, text, ...(actingFor ? { onBehalfOf: actingFor } : {}) })
       });
 
       if (res.ok) {
@@ -967,6 +969,12 @@
         activeConv.lastMsg = saved;
         renderConvList();
         renderChatArea();
+      } else {
+        const e = await res.json().catch(() => ({}));
+        activeConv.messages = activeConv.messages.filter(m => m.id !== tempMsg.id);
+        renderChatArea();
+        const box = document.getElementById('msgInput'); if (box) box.value = text;
+        alert(e.error || 'Your message could not be sent.');
       }
     } catch (err) {
       console.error('Send failed:', err);
@@ -974,6 +982,16 @@
   }
 
   let pendingConv = null;
+  // A manager writing for a client: /messages?user=ID&for=CLIENT_ID (managers.js checks the mandate)
+  let actingFor = parseInt(new URLSearchParams(location.search).get('for'), 10) || null;
+  const behalfNames = {};
+  function behalfName(id) {
+    if (behalfNames[id]) return behalfNames[id];
+    behalfNames[id] = 'a client';
+    fetch(`${API_URL}/api/users/${id}/public`).then(r => r.ok ? r.json() : null).then(u => { if (u) { behalfNames[id] = `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'a client'; if (activeConv) renderChatArea(); } }).catch(() => {});
+    return behalfNames[id];
+  }
+  function stopActing() { actingFor = null; const u = new URL(location); u.searchParams.delete('for'); history.replaceState({}, '', u); renderChatArea(); }
   async function restoreActiveConv() {
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('user') || params.get('userId');

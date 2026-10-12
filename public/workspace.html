@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manager workspace — IdeaHub</title>
+<meta name="robots" content="noindex" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/mgr.css" />
+<style>
+.lvl-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.lvl { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.lvl.on { border-color: rgba(167,139,250,.55); background: var(--vm-dim); }
+.lvl b { display: block; margin-bottom: 4px; }
+.lvl span { font-size: 12.5px; color: var(--sub); line-height: 1.45; }
+.chk { display: flex; gap: 10px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); }
+.chk:first-child { border-top: none; }
+.chk .ic { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; background: var(--card2); color: var(--muted); flex-shrink: 0; }
+.chk .ic.ok { background: var(--green-dim); color: var(--green); }
+.chk .ic.wait { background: var(--gold-dim); color: var(--gold); }
+.board { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.stage-col { background: var(--card2); border-radius: 12px; padding: 10px; min-width: 220px; flex: 1; }
+.stage-col h4 { margin: 0 0 8px; font-size: 13px; color: var(--sub); display: flex; justify-content: space-between; }
+.item { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 13.5px; text-decoration: none; }
+.item:hover { border-color: var(--line2); }
+.item .t { font-weight: 700; overflow-wrap: anywhere; }
+.q { padding: 14px 0; border-top: 1px solid var(--line); }
+.q:first-child { border-top: none; }
+.q.bad { background: var(--red-dim); border-radius: 10px; padding: 14px 12px; }
+.q p { margin: 0 0 8px; font-weight: 700; }
+.q label { display: flex; gap: 9px; align-items: flex-start; padding: 6px 0; cursor: pointer; font-size: 14px; color: var(--sub); }
+.q input { appearance: auto; accent-color: #a78bfa; margin-top: 3px; }
+@media (max-width: 760px) { .lvl-steps { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+<main class="mg-wrap" id="root"><div class="loading">Loading…</div></main>
+<script src="/mgr-common.js"></script>
+<script>
+(function () {
+  const { esc, money, api, toast, avatar, levelPill, statusPill, billPill, token } = MG;
+  if (!token) return MG.login();
+  const $ = x => document.getElementById(x);
+  const lastNum = s => { const m = String(s || '').match(/(\d+)(?!.*\d)/); return m ? Number(m[1]) : null; };
+  let W = null, P = null, META = null, tab = new URLSearchParams(location.search).get('tab') || 'clients';
+  const STAGES = [['sourcing', 'Sourcing'], ['contacted', 'Contacted'], ['negotiating', 'Negotiating'], ['approval', 'Client approval'], ['closed', 'Closed']];
+  const BILL_KIND = { retainer: 'Retainer', hours: 'Hours', success: 'Success fee', oneoff: 'One-off fee', milestone: 'Milestone fee' };
+
+  async function load() {
+    try { [P, META] = await Promise.all([api('/api/manager/profile'), MG.meta()]); }
+    catch (e) { $('root').innerHTML = `<div class="card empty">${esc(e.message)}</div>`; return; }
+    if (!P.is_manager) {
+      $('root').innerHTML = `<div class="card pad" style="max-width:640px;margin:30px auto;text-align:center"><div style="font-size:40px">🧭</div><h1 style="font-family:'Cabinet Grotesk',sans-serif">The manager workspace</h1><p class="sub">This is where Virtual Managers run their clients, pipeline and fees. To become a manager, switch your role to Virtual Manager.</p><div class="row" style="justify-content:center"><a class="btn btn-vm" href="/switch-role">Become a manager</a><a class="btn btn-ghost" href="/managers">Find a manager</a></div></div>`;
+      return;
+    }
+    try { W = await api('/api/manager/workspace'); } catch (e) { $('root').innerHTML = `<div class="card empty">${esc(e.message)}</div>`; return; }
+    render();
+  }
+
+  function render() {
+    const active = W.mandates.filter(m => m.status === 'active');
+    const waiting = W.mandates.filter(m => m.status === 'proposed');
+    const pendingActs = W.actions.filter(a => a.status === 'pending').length;
+    const soon = W.tasks.filter(t => t.due_date && new Date(t.due_date) <= new Date(Date.now() + 2 * 86400000)).length;
+    const tabs = [['clients', 'Clients', waiting.filter(m => m.proposed_by !== MG.me.id).length], ['pipeline', 'Pipeline', 0], ['tasks', 'Tasks', soon], ['earnings', 'Earnings', 0], ['profile', 'Profile & level', P.level === 'new' ? 1 : 0]];
+    if (!tabs.some(t => t[0] === tab)) tab = 'clients';
+    $('root').innerHTML = `
+      <div class="mg-hero"><div><div class="eyebrow">Virtual Manager</div><h1>Your workspace</h1><p>Your clients, what you're working on for them, and what you've earned. ${levelPill(P.level)}</p></div>
+        <div class="row"><a class="btn btn-ghost" href="/managers?tab=requests">🙋 Requests board</a><button class="btn btn-vm" data-propose ${P.level === 'new' ? 'disabled title="Finish your level checks first"' : ''}>＋ Propose a mandate</button></div></div>
+      ${P.level === 'new' ? `<div class="notice gold" style="margin-bottom:16px">You're not listed yet. Finish the ID check and the induction quiz to appear in Find a Manager. <button class="btn btn-gold btn-sm" data-tab="profile" style="margin-left:8px">Finish now</button></div>` : ''}
+      <div class="grid g4" style="margin-bottom:18px">
+        <div class="card stat"><b>${money(W.earnings.released + W.earnings.referral)}</b><span>Earned${W.earnings.referral ? ` (incl. ${money(W.earnings.referral)} referral)` : ''}</span></div>
+        <div class="card stat"><b>${money(W.earnings.held)}</b><span>Held until work is done</span></div>
+        <div class="card stat"><b>${active.length}</b><span>Active client${active.length === 1 ? '' : 's'}</span></div>
+        <div class="card stat"><b>${pendingActs}</b><span>Steps waiting for clients</span></div>
+      </div>
+      <div class="tabs">${tabs.map(([k, l, c]) => `<button class="tab ${tab === k ? 'on' : ''}" data-tab="${k}">${l}${c ? `<span class="n">${c}</span>` : ''}</button>`).join('')}</div>
+      <div id="pane"></div>`;
+    $('pane').innerHTML = ({ clients, pipeline, tasks, earnings, profile }[tab])();
+  }
+
+  function mandateRow(m) {
+    const acts = W.actions.filter(a => a.mandate_id === m.id && a.status === 'pending').length;
+    const due = W.bills.filter(b => b.mandate_id === m.id && b.status === 'due').length;
+    return `<a class="list-item" href="/mandate?id=${m.id}" style="text-decoration:none">${avatar(m.client.avatar_url, m.client.name)}<div class="grow"><div class="li-title">${esc(m.title)}</div><div class="li-sub">${esc(m.client.name)} · ${esc(META.sides[m.client_side] || '')} · ${esc(m.focus_industry || '')} · ${esc(MG.feeText(m.fee_retainer, m.fee_hourly, m.fee_success_pct))}</div>
+      <div class="chips" style="margin-top:6px">${acts ? `<span class="chip">✋ ${acts} waiting for approval</span>` : ''}${due ? `<span class="chip">🧾 ${due} fee${due > 1 ? 's' : ''} unpaid</span>` : ''}${m.status === 'proposed' ? `<span class="chip">${m.proposed_by === MG.me.id ? 'Waiting for the client' : 'The client proposed this: review it'}</span>` : ''}</div></div>${statusPill(m.status)}</a>`;
+  }
+  function clients() {
+    const groups = [['Proposals', W.mandates.filter(m => m.status === 'proposed')], ['Active', W.mandates.filter(m => m.status === 'active')], ['Past', W.mandates.filter(m => !['proposed', 'active'].includes(m.status))]];
+    if (!W.mandates.length) return `<div class="card empty"><div class="big">🤝</div>No clients yet.<br>Pitch on the <a href="/managers?tab=requests" style="color:var(--vm)">Requests board</a>, or propose a mandate to someone you know on IdeaHub.<br><span class="tiny">Clients can also find you in Find a Manager once your level checks are done.</span></div>`;
+    return `<div class="stack">${groups.filter(g => g[1].length).map(([l, ms]) => `<div class="card pad"><div class="card-title">${l} <small>${ms.length}</small></div>${ms.map(mandateRow).join('')}</div>`).join('')}
+      <div class="notice vm small">You work for one side only, and for one client per industry at a time. IdeaHub blocks anything that would put you on both sides of a deal.</div></div>`;
+  }
+  function pipeline() {
+    const byM = Object.fromEntries(W.mandates.map(m => [m.id, m]));
+    const items = W.items.filter(i => i.stage !== 'dropped' && byM[i.mandate_id] && byM[i.mandate_id].status === 'active');
+    if (!items.length) return `<div class="card empty"><div class="big">🗂️</div>Your pipeline across all clients shows here. Add items from a client's mandate page.</div>`;
+    return `<div class="board">${STAGES.map(([k, l]) => { const its = items.filter(i => i.stage === k); return `<div class="stage-col"><h4>${l}<span>${its.length}</span></h4>${its.map(i => `<a class="item" href="/mandate?id=${i.mandate_id}&tab=pipeline"><div class="t">${esc(i.title)}</div><div class="tiny muted" style="margin-top:4px">for ${esc(byM[i.mandate_id].client.name)}${i.shared ? ' · shown to client' : ''}${i.client_feedback ? ` · client ${i.client_feedback === 'interested' ? '👍' : '👎'}` : ''}</div></a>`).join('')}</div>`; }).join('')}</div>`;
+  }
+  function tasks() {
+    const byM = Object.fromEntries(W.mandates.map(m => [m.id, m]));
+    if (!W.tasks.length) return `<div class="card empty"><div class="big">✅</div>No open tasks. Add tasks on each client's mandate page.</div>`;
+    return `<div class="card pad">${W.tasks.map(t => { const late = t.due_date && new Date(t.due_date) < new Date(new Date().toISOString().slice(0, 10)); return `<div class="list-item" style="align-items:center"><input type="checkbox" data-task="${t.id}" style="appearance:auto;accent-color:#a78bfa;width:17px;height:17px"><div class="grow"><div class="li-title">${esc(t.title)}</div><div class="li-sub"><a href="/mandate?id=${t.mandate_id}&tab=tasks" style="color:var(--vm)">${esc((byM[t.mandate_id] || {}).client ? byM[t.mandate_id].client.name : 'Mandate')}</a>${t.due_date ? ` · <span style="${late ? 'color:var(--red)' : ''}">due ${MG.date(t.due_date)}</span>` : ''}</div></div></div>`; }).join('')}</div>`;
+  }
+  function earnings() {
+    const byM = Object.fromEntries(W.mandates.map(m => [m.id, m]));
+    const ref = W.deals.filter(d => d.referral_paid);
+    return `<div class="grid g4" style="margin-bottom:16px">
+        <div class="card stat"><b>${money(W.earnings.released)}</b><span>Fees paid to you</span></div>
+        <div class="card stat"><b>${money(W.earnings.held)}</b><span>Paid by clients, held</span></div>
+        <div class="card stat"><b>${money(W.earnings.due)}</b><span>Waiting for clients to pay</span></div>
+        <div class="card stat"><b>${money(W.earnings.referral)}</b><span>Referral rewards</span></div></div>
+      <div class="card pad"><div class="card-title">Fees <a class="btn btn-ghost btn-sm" href="/transactions">Wallet & withdrawals</a></div>
+      ${W.bills.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client</th><th>What</th><th>Amount</th><th>Status</th></tr></thead><tbody>${W.bills.map(b => `<tr><td><a href="/mandate?id=${b.mandate_id}&tab=fees" style="color:var(--vm)">${esc(byM[b.mandate_id] ? byM[b.mandate_id].client.name : '')}</a></td><td>${esc(BILL_KIND[b.kind] || b.kind)}<div class="tiny muted">${esc(b.description || '')}</div></td><td>${money(b.amount)}</td><td>${billPill(b.status)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No fees yet.</div>'}
+      ${ref.length ? `<div class="hr"></div><div class="lbl" style="margin-bottom:6px">Referral rewards</div>${ref.map(d => `<div class="small sub" style="padding:4px 0">${money(d.referral_amount)} · deal #${d.ref_id} you introduced</div>`).join('')}` : ''}
+      <div class="notice vm small" style="margin-top:14px">When a deal you introduced completes, IdeaHub also shares ${Math.round(META.referral_share * 100)}% of its own 8% fee with you as a referral reward. It never comes out of your client's pocket.</div></div>`;
+  }
+  function profile() {
+    const ck = P.checks, p = P.profile || {};
+    const ic = s => s === 'verified' || s === true ? '<span class="ic ok">✓</span>' : s === 'pending' ? '<span class="ic wait">…</span>' : '<span class="ic">•</span>';
+    const st = s => s === 'verified' ? 'Checked' : s === 'pending' ? 'Being checked by IdeaHub' : s === 'rejected' ? 'Not accepted: upload again' : 'Not done yet';
+    const L = ['new', 'associate', 'verified', 'senior'], cur = L.indexOf(P.level);
+    const sides = p.sides || [], fees = p.fee_models || [];
+    return `<div class="card pad" style="margin-bottom:16px"><div class="card-title">Your level ${levelPill(P.level)}</div>
+        <div class="lvl-steps">${[['New', 'Not listed yet.'], ['Associate', 'ID checked and induction passed. Listed; can take mandates.'], ['Verified', 'Proof of address checked too. Can run managed ventures.'], ['Senior', '5 completed mandates or deals, rated 4.5★ or more.']].map(([n, d], i) => `<div class="lvl ${i === cur ? 'on' : ''}"><b>${i <= cur ? '✓ ' : ''}${n}</b><span>${d}</span></div>`).join('')}</div>
+        <div class="hr"></div>
+        <div class="chk">${ic(ck.identity)}<div class="grow" style="flex:1"><b>ID check</b><div class="li-sub">${st(ck.identity)}</div></div>${ck.identity === 'verified' ? '' : '<a class="btn btn-ghost btn-sm" href="/support-profile#verify">Upload ID</a>'}</div>
+        <div class="chk">${ic(ck.induction)}<div class="grow" style="flex:1"><b>Induction quiz</b><div class="li-sub">${ck.induction ? 'Passed' : '10 questions on the manager rules. Pass mark 8.'}</div></div>${ck.induction ? '' : '<button class="btn btn-vm btn-sm" data-quiz>Take the quiz</button>'}</div>
+        <div class="chk">${ic(ck.address)}<div class="grow" style="flex:1"><b>Proof of address</b><div class="li-sub">${st(ck.address)} · needed for the Verified level</div></div>${ck.address === 'verified' ? '' : '<a class="btn btn-ghost btn-sm" href="/support-profile#verify">Upload</a>'}</div>
+      </div>
+      <div class="card pad"><div class="card-title">How clients see you <a class="btn btn-ghost btn-sm" href="/support-profile">Photo, languages, availability</a></div>
+        <div class="field"><label for="pfHead">Headline</label><input class="in" id="pfHead" maxlength="120" value="${esc(p.headline || '')}" placeholder="e.g. Helping investors buy and launch food-tech ideas in Sri Lanka"></div>
+        <div class="field"><label for="pfAbout">About you</label><textarea class="in" id="pfAbout" maxlength="1500" placeholder="Your experience, the deals you've done, how you work.">${esc(p.about || '')}</textarea></div>
+        <div class="grid g2"><div class="field"><label for="pfInd">Industries (comma separated)</label><input class="in" id="pfInd" value="${esc((p.industries || []).join(', '))}" placeholder="Agriculture, Food & Beverage"></div><div class="field"><label for="pfCty">Countries you cover</label><input class="in" id="pfCty" value="${esc((p.countries || []).join(', '))}" placeholder="Sri Lanka, Maldives"></div></div>
+        <div class="field"><span class="lbl">I work for</span><div class="row">${Object.entries(META.sides).map(([k, v]) => `<label class="check"><input type="checkbox" data-side value="${k}" ${sides.includes(k) ? 'checked' : ''}> <span>${esc({ creator: 'Idea creators', investor: 'Investors', business: 'Businesses' }[k] || v)}</span></label>`).join('')}</div></div>
+        <div class="field"><span class="lbl">Fee models I offer</span><div class="row">${[['retainer', 'Monthly retainer'], ['hourly', 'Hourly'], ['success', 'Success fee']].map(([k, v]) => `<label class="check"><input type="checkbox" data-fee value="${k}" ${fees.includes(k) ? 'checked' : ''}> <span>${v}</span></label>`).join('')}</div></div>
+        <div class="fee-row"><div class="field"><label for="pfRet">Retainer from ($/month)</label><input class="in" id="pfRet" type="number" min="0" value="${p.retainer_from || ''}"></div><div class="field"><label for="pfHr">Hourly rate ($)</label><input class="in" id="pfHr" type="number" min="0" value="${p.hourly_rate || ''}"></div><div class="field"><label for="pfPct">Success fee (%)</label><input class="in" id="pfPct" type="number" min="0" max="50" step="0.5" value="${p.success_pct || ''}"></div></div>
+        <button class="btn btn-vm" data-saveprof>Save profile</button></div>`;
+  }
+  function quiz() {
+    MG.dialog('Manager induction', `<p class="sub small" style="margin-top:0">Ten questions about how managers work on IdeaHub. You need 8 right. You can retake it.</p><div class="terms" style="max-height:none;margin-bottom:14px">${esc(META.terms.text)}</div>${META.quiz.map((x, i) => `<div class="q" id="q${i}"><p>${i + 1}. ${esc(x.q)}</p>${x.a.map((a, j) => `<label><input type="radio" name="q${i}" value="${j}"> <span>${esc(a)}</span></label>`).join('')}</div>`).join('')}`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="qsend">Submit answers</button>`, { width: '720px' });
+    $('qsend').onclick = e => MG.busy(e.currentTarget, async () => {
+      const answers = META.quiz.map((x, i) => { const c = document.querySelector(`input[name=q${i}]:checked`); return c ? Number(c.value) : -1; });
+      if (answers.includes(-1)) throw new Error('Answer every question.');
+      const r = await api('/api/manager/induction', { method: 'POST', body: { answers } });
+      document.querySelectorAll('.q').forEach((q, i) => q.classList.toggle('bad', r.wrong.includes(i)));
+      if (r.passed) { MG.close(); toast(`Passed: ${r.score}/10`); await load(); }
+      else MG.err(`You got ${r.score}/10. The highlighted answers are wrong; try again.`);
+    });
+  }
+  async function propose() {
+    const body = await MG.mandateForm({ side: 'creator', chooseSide: true, intro: 'Propose a mandate to an idea creator, investor or business. They review the terms and accept before anything starts.' });
+    MG.dialog('Propose a mandate', `<div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" placeholder="e.g. https://ideahub.it.com/public-profile?id=42"></div>` + body,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="psend">Send proposal</button>`, { width: '680px' });
+    const onSide = async () => { const d = MG.readMandateForm(); const html = await MG.mandateForm({ side: $('mfSide').value, chooseSide: true, defaults: d }); const keep = $('pcl').value; $('mgDialogBody').innerHTML = `<div class="notice red err" id="mgErr" role="alert"></div><div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" value="${esc(keep)}"></div>` + html; $('mfSide').onchange = onSide; };
+    $('mfSide').onchange = onSide;
+    $('psend').onclick = e => MG.busy(e.currentTarget, async () => {
+      const cid = lastNum($('pcl').value); if (!cid) throw new Error('Paste the client\'s profile link.');
+      const d = await api('/api/mandates', { method: 'POST', body: { ...MG.readMandateForm(), client_id: cid } });
+      location.href = '/mandate?id=' + d.id;
+    });
+  }
+
+  document.addEventListener('click', e => {
+    const q = s => e.target.closest(s); let b;
+    if ((b = q('[data-tab]'))) { tab = b.dataset.tab; const u = new URL(location); u.searchParams.set('tab', tab); history.replaceState(null, '', u); render(); return; }
+    if (q('[data-quiz]')) return quiz();
+    if ((b = q('[data-propose]'))) { if (!b.disabled) propose(); return; }
+    if ((b = q('[data-saveprof]'))) return MG.busy(b, async () => {
+      await api('/api/manager/profile', { method: 'PUT', body: { headline: $('pfHead').value, about: $('pfAbout').value, industries: $('pfInd').value, countries: $('pfCty').value,
+        sides: [...document.querySelectorAll('[data-side]:checked')].map(i => i.value), fee_models: [...document.querySelectorAll('[data-fee]:checked')].map(i => i.value),
+        retainer_from: $('pfRet').value || null, hourly_rate: $('pfHr').value || null, success_pct: $('pfPct').value || null } });
+      toast('Profile saved'); P = await api('/api/manager/profile');
+    });
+  });
+  document.addEventListener('change', async e => {
+    const t = e.target;
+    if (t.dataset.task) { try { await api(`/api/mandate-tasks/${t.dataset.task}`, { method: 'PUT', body: { done: true } }); toast('Done'); W = await api('/api/manager/workspace'); render(); } catch (err) { toast(err.message); } }
+  });
+  load();
+})();
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

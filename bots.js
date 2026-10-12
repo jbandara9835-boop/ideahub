@@ -528,6 +528,8 @@ module.exports = function registerBots(app, supabase, sendEmail) {
     verification: () => runVerification(supabase, sendEmail),
     digest: () => runDigest(supabase, sendEmail),
     nudge: () => runNudge(supabase, sendEmail),
+    managers: () => require('./managers').core(supabase, escrow).runBot(),
+    managers_weekly: () => require('./managers').core(supabase, escrow).runWeekly(),
   };
 
   async function run(name) {
@@ -554,6 +556,8 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   cron.schedule('20 * * * *', () => run('originality'), { timezone: TZ }); // every hour at :20
   cron.schedule('30 0 * * *', () => run('quality'), { timezone: TZ });    // 12:30 AM
   cron.schedule('50 6 * * *', () => run('requests'), { timezone: TZ });   // 6:50 AM
+  cron.schedule('55 6 * * *', () => run('managers'), { timezone: TZ });   // 6:55 AM: manager fees, deals, retainers
+  cron.schedule('5 9 * * 1', () => run('managers_weekly'), { timezone: TZ }); // Mondays 9:05 AM: weekly summaries to clients
 
   // Admin-only manual trigger, for testing: POST /api/admin/bots/digest/run
   app.post('/api/admin/bots/:name/run', async (req, res) => {

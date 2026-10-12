@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Find a Manager — IdeaHub</title>
+<meta name="description" content="Hire an IdeaHub Manager to find ideas, run deals and build a business for you, under a clear mandate. You approve every step and pay only through IdeaHub." />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/mgr.css" />
+<style>
+.how { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+.how .card { padding: 16px; }
+.how b { display: block; font-family: 'Cabinet Grotesk', sans-serif; font-size: 15.5px; margin: 6px 0 4px; }
+.how p { margin: 0; color: var(--sub); font-size: 13px; line-height: 1.5; }
+.how .n { width: 28px; height: 28px; border-radius: 50%; background: var(--vm-dim); color: var(--vm); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+.filters { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.mcard { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.mcard .name { font-weight: 800; font-size: 16px; }
+.mcard .head { color: var(--sub); font-size: 13.5px; line-height: 1.45; }
+.mstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; background: var(--card2); border-radius: 12px; padding: 10px 6px; }
+.mstats b { display: block; font-size: 16px; }
+.mstats span { font-size: 11.5px; color: var(--muted); }
+.req .needs { color: var(--sub); font-size: 14px; line-height: 1.55; white-space: pre-wrap; margin: 8px 0 10px; }
+@media (max-width: 900px) { .how { grid-template-columns: 1fr 1fr; } .filters { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .how { grid-template-columns: 1fr; } .filters { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+<main class="mg-wrap">
+  <div class="mg-hero">
+    <div>
+      <div class="eyebrow">IdeaHub Managers</div>
+      <h1>A manager who works for you</h1>
+      <p>Managers find ideas and partners, negotiate, and build businesses on your behalf. You set what they may do, approve every binding step, and pay only through IdeaHub.</p>
+    </div>
+    <div class="row" id="heroBtns"></div>
+  </div>
+  <div id="vmBanner"></div>
+  <div class="how">
+    <div class="card"><span class="n">1</span><b>Choose or post</b><p>Pick a checked manager, or post what you need and let managers pitch.</p></div>
+    <div class="card"><span class="n">2</span><b>Agree a mandate</b><p>The tasks they may do, a monthly, hourly or success fee, and a spending limit.</p></div>
+    <div class="card"><span class="n">3</span><b>You approve</b><p>They prepare purchases, applications and hires. Nothing binding happens without your click.</p></div>
+    <div class="card"><span class="n">4</span><b>One side only</b><p>Your manager never works for the other side of your deal, or for a competitor.</p></div>
+  </div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab on" data-tab="find" role="tab">Find a manager</button>
+    <button class="tab" data-tab="requests" role="tab">Requests for managers</button>
+    <button class="tab" data-tab="mine" role="tab" id="mineTab" hidden>My managers</button>
+  </div>
+  <section id="tab-find">
+    <div class="filters">
+      <input class="in" id="fq" placeholder="Search name, skills or industry" aria-label="Search">
+      <select class="in" id="find" aria-label="Industry"><option value="">Any industry</option></select>
+      <select class="in" id="fside" aria-label="Works for"><option value="">Works for anyone</option><option value="investor">Investors</option><option value="creator">Idea creators</option><option value="business">Businesses</option></select>
+      <select class="in" id="ffee" aria-label="Fee type"><option value="">Any fee type</option><option value="retainer">Monthly retainer</option><option value="hourly">Hourly</option><option value="success">Success fee</option></select>
+    </div>
+    <div class="grid g3" id="list"><div class="loading">Loading managers…</div></div>
+  </section>
+  <section id="tab-requests" hidden>
+    <div class="row between" style="margin-bottom:14px"><p class="sub small" style="margin:0">People looking for a manager. Managers can pitch with how they would help and their fees.</p><span id="postBtnWrap"></span></div>
+    <div class="stack" id="reqs"><div class="loading">Loading…</div></div>
+  </section>
+  <section id="tab-mine" hidden>
+    <div class="stack">
+      <div class="card pad"><div class="card-title">Your mandates</div><div id="myMandates"><div class="loading">Loading…</div></div></div>
+      <div class="card pad"><div class="card-title">Your requests and pitches <span id="postBtnWrap2"></span></div><div id="myReqs"><div class="loading">Loading…</div></div></div>
+    </div>
+  </section>
+</main>
+<script src="/mgr-common.js"></script>
+<script>
+(function () {
+  const { esc, money, api, toast, avatar, levelPill, statusPill, INDUSTRIES, me, token } = MG;
+  const signed = !!(token && me), isVM = signed && me.role === 'virtual_manager', isClient = signed && MG.isClientRole(me.role);
+  const $ = id => document.getElementById(id);
+  const tabParam = new URLSearchParams(location.search).get('tab');
+  let managers = [], requests = [];
+
+  $('find').innerHTML += INDUSTRIES.map(i => `<option>${esc(i)}</option>`).join('');
+  if (isClient) $('mineTab').hidden = false;
+  $('heroBtns').innerHTML = isVM ? `<a class="btn btn-vm" href="/workspace">Open my workspace →</a>`
+    : isClient ? `<button class="btn btn-gold" data-post>Post what you need</button>`
+    : signed ? '' : `<a class="btn btn-gold" href="/signup">Join free</a><a class="btn btn-ghost" href="/login?next=/managers">Sign in</a>`;
+  if (!isVM) $('vmBanner').innerHTML = `<div class="notice vm" style="margin-bottom:18px">Want to earn as a manager? Anyone can become one: switch your role to <b>Virtual Manager</b>, verify your ID and pass a short induction. <a href="/switch-role" style="color:var(--vm);font-weight:700">Become a manager →</a></div>`;
+  const postBtn = isClient ? `<button class="btn btn-gold btn-sm" data-post>Post what you need</button>` : '';
+  $('postBtnWrap').innerHTML = postBtn; $('postBtnWrap2').innerHTML = postBtn;
+
+  function setTab(t) {
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    ['find', 'requests', 'mine'].forEach(k => $('tab-' + k).hidden = k !== t);
+    const u = new URL(location); if (t === 'find') u.searchParams.delete('tab'); else u.searchParams.set('tab', t); history.replaceState(null, '', u);
+    if (t === 'requests') loadRequests(); if (t === 'mine') loadMine();
+  }
+
+  // ── Find ──
+  async function loadManagers() {
+    try { managers = await api('/api/managers'); } catch (e) { $('list').innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+    renderManagers();
+  }
+  function renderManagers() {
+    const q = $('fq').value.trim().toLowerCase(), ind = $('find').value, side = $('fside').value, fee = $('ffee').value;
+    const rows = managers.filter(m => (!q || `${m.name} ${m.headline} ${m.about} ${(m.industries || []).join(' ')}`.toLowerCase().includes(q))
+      && (!ind || (m.industries || []).includes(ind)) && (!side || !(m.sides || []).length || m.sides.includes(side)) && (!fee || (m.fee_models || []).includes(fee)));
+    $('list').innerHTML = rows.length ? rows.map(m => `
+      <article class="card mcard">
+        <div class="row" style="flex-wrap:nowrap">${avatar(m.avatar_url, m.name, 'lg')}<div style="min-width:0"><div class="name">${esc(m.name)}</div><div class="row" style="gap:6px;margin-top:4px">${levelPill(m.level)}${m.country ? `<span class="tiny muted">📍 ${esc(m.country)}</span>` : ''}</div></div></div>
+        <div class="head">${esc(m.headline || 'IdeaHub manager')}</div>
+        ${(m.industries || []).length ? `<div class="chips">${m.industries.map(i => `<span class="chip">${esc(i)}</span>`).join('')}</div>` : ''}
+        <div class="mstats"><div><b>${m.clients_served}</b><span>clients</span></div><div><b>${m.deals_closed}</b><span>deals closed</span></div><div><b>${m.rating != null ? '★ ' + m.rating : '—'}</b><span>${m.rating_count ? m.rating_count + ' review' + (m.rating_count === 1 ? '' : 's') : 'no reviews yet'}</span></div></div>
+        <div class="small sub">${esc(MG.feeText(m.retainer_from, m.hourly_rate, m.success_pct))}${(m.languages || []).length ? ` · ${esc(m.languages.join(', '))}` : ''}</div>
+        <div class="row" style="margin-top:auto"><a class="btn btn-ghost btn-sm" href="/public-profile?id=${m.id}">Profile</a>${!isVM && (m.id !== (me && me.id)) ? `<button class="btn btn-vm btn-sm" data-appoint="${m.id}">Appoint</button>` : ''}</div>
+      </article>`).join('')
+      : `<div class="card empty" style="grid-column:1/-1"><div class="big">🔎</div>No managers match yet.${isClient ? '<br><button class="btn btn-gold btn-sm" style="margin-top:10px" data-post>Post what you need and let managers pitch</button>' : ''}</div>`;
+  }
+  ['fq', 'find', 'fside', 'ffee'].forEach(id => $(id).addEventListener('input', renderManagers));
+
+  async function appoint(id) {
+    if (!signed) return MG.login();
+    if (!isClient) return toast('Managers work for idea creators, investors and businesses.');
+    const m = managers.find(x => x.id === id); if (!m) return;
+    const side = MG.sideOfRole(me.role);
+    const body = await MG.mandateForm({ side, chooseSide: true, intro: `Appointing <b>${esc(m.name)}</b>. ${esc(MG.feeText(m.retainer_from, m.hourly_rate, m.success_pct))} are their usual fees; agree your own below.`, defaults: { fee_retainer: m.retainer_from || 0, fee_hourly: m.hourly_rate || 0, fee_success_pct: m.success_pct || 0, focus_industry: (m.industries || [])[0] || '' } });
+    MG.dialog('Appoint ' + m.name, body, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="sendMandate">Send proposal</button>`);
+    const rebuild = async () => { const cur = MG.readMandateForm(); const html = await MG.mandateForm({ side: $('mfSide').value, chooseSide: true, defaults: { ...cur, scopes: [] } }); document.getElementById('mgDialogBody').innerHTML = `<div class="notice red err" id="mgErr"></div>` + html; $('mfSide').addEventListener('change', rebuild); };
+    $('mfSide').addEventListener('change', rebuild);
+    $('sendMandate').onclick = e => MG.busy(e.currentTarget, async () => {
+      const d = await api('/api/mandates', { method: 'POST', body: { ...MG.readMandateForm(), manager_id: id } });
+      location.href = '/mandate?id=' + d.id;
+    });
+  }
+
+  // ── Requests board ──
+  async function loadRequests() {
+    try { requests = await api('/api/manager-requests'); } catch (e) { $('reqs').innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+    let pitched = [];
+    if (isVM) try { pitched = (await api('/api/manager/workspace')).pitched || []; } catch (e) {}
+    const meta = await MG.meta();
+    $('reqs').innerHTML = requests.length ? requests.map(r => `
+      <article class="card pad req">
+        <div class="row between"><div class="row">${avatar(r.client.avatar_url, r.client.name, 'sm')}<span class="small sub">${esc(r.client.name)} · ${esc(meta.sides[r.client_side] || '')} · ${MG.ago(r.created_at)}</span></div><div class="row">${r.industry ? `<span class="pill">${esc(r.industry)}</span>` : ''}<span class="pill vm">${r.pitch_count} pitch${r.pitch_count === 1 ? '' : 'es'}</span></div></div>
+        <h3 style="margin:10px 0 0;font-family:'Cabinet Grotesk',sans-serif;font-size:18px">${esc(r.title)}</h3>
+        <div class="needs">${esc(r.needs)}</div>
+        <div class="chips">${(r.scopes || []).map(s => `<span class="chip">${esc((meta.scopes[s] || {}).label || s)}</span>`).join('')}${(r.fee_models || []).map(f => `<span class="chip">💵 ${esc({ retainer: 'Monthly', hourly: 'Hourly', success: 'Success fee' }[f] || f)}</span>`).join('')}${r.budget ? `<span class="chip">Budget: ${esc(r.budget)}</span>` : ''}</div>
+        ${isVM ? `<div class="row" style="margin-top:12px">${pitched.includes(r.id) ? '<span class="pill green">✓ You pitched</span>' : `<button class="btn btn-vm btn-sm" data-pitch="${r.id}">Pitch</button>`}</div>` : ''}
+      </article>`).join('') : `<div class="card empty"><div class="big">📭</div>No open requests right now.</div>`;
+  }
+  function pitch(id) {
+    const r = requests.find(x => x.id === id); if (!r) return;
+    MG.dialog('Pitch for: ' + r.title, `
+      <div class="field"><label for="pMsg">How would you help?</label><textarea class="in" id="pMsg" maxlength="2000" style="min-height:140px" placeholder="Your experience with this kind of work, your first steps, and what you'd deliver in the first month."></textarea></div>
+      <div class="field"><span class="lbl">Your fees (leave any at 0)</span><div class="fee-row">
+        <div><div class="tiny muted" style="margin-bottom:4px">Monthly retainer</div><div class="inline-prefix"><span>$</span><input class="in" id="pRet" type="number" min="0" value="0"></div></div>
+        <div><div class="tiny muted" style="margin-bottom:4px">Per hour</div><div class="inline-prefix"><span>$</span><input class="in" id="pHr" type="number" min="0" value="0"></div></div>
+        <div><div class="tiny muted" style="margin-bottom:4px">Success fee %</div><input class="in" id="pPct" type="number" min="0" max="50" step="0.5" value="0"></div></div></div>`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="sendPitch">Send pitch</button>`);
+    $('sendPitch').onclick = e => MG.busy(e.currentTarget, async () => {
+      await api(`/api/manager-requests/${id}/pitch`, { method: 'POST', body: { message: $('pMsg').value, fee_retainer: Number($('pRet').value), fee_hourly: Number($('pHr').value), fee_success_pct: Number($('pPct').value) } });
+      MG.close(); toast('Pitch sent'); loadRequests();
+    });
+  }
+  async function postRequest() {
+    if (!signed) return MG.login();
+    const meta = await MG.meta(); const side = MG.sideOfRole(me.role);
+    const scopes = Object.entries(meta.scopes).filter(([, v]) => v.sides.includes(side));
+    MG.dialog('Post what you need', `
+      <div class="field"><label for="rTitle">Title</label><input class="in" id="rTitle" maxlength="120" placeholder="e.g. Manager to find and buy an agri-tech idea and set up the company"></div>
+      <div class="field"><label for="rNeeds">What do you need?</label><textarea class="in" id="rNeeds" maxlength="3000" style="min-height:130px" placeholder="Your goals, budget, timing, and what a great manager would do in the first month."></textarea><div class="hint">Don't add phone numbers or emails. Managers reply through IdeaHub.</div></div>
+      <div class="grid g2"><div class="field"><label for="rInd">Industry</label><input class="in" id="rInd" list="rIndList" maxlength="60"><datalist id="rIndList">${INDUSTRIES.map(i => `<option value="${esc(i)}">`).join('')}</datalist></div><div class="field"><label for="rBudget">Budget for fees (optional)</label><input class="in" id="rBudget" maxlength="120" placeholder="e.g. up to $300/month"></div></div>
+      <div class="field"><span class="lbl">Tasks</span><div class="checks" id="rScopes">${scopes.map(([k, v]) => `<label class="check"><input type="checkbox" value="${k}"> <span>${esc(v.label)}</span></label>`).join('')}</div></div>
+      <div class="field"><span class="lbl">Fee types you prefer</span><div class="row" id="rFees">${[['retainer', 'Monthly retainer'], ['hourly', 'Hourly'], ['success', 'Success fee']].map(([k, l]) => `<label class="check" style="padding:7px 10px"><input type="checkbox" value="${k}"> ${l}</label>`).join('')}</div></div>`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" id="sendReq">Post request</button>`);
+    $('sendReq').onclick = e => MG.busy(e.currentTarget, async () => {
+      await api('/api/manager-requests', { method: 'POST', body: { title: $('rTitle').value, needs: $('rNeeds').value, industry: $('rInd').value, budget: $('rBudget').value, scopes: [...document.querySelectorAll('#rScopes input:checked')].map(i => i.value), fee_models: [...document.querySelectorAll('#rFees input:checked')].map(i => i.value) } });
+      MG.close(); toast('Posted. Managers can now pitch.'); setTab('mine');
+    });
+  }
+
+  // ── Mine (clients) ──
+  async function loadMine() {
+    if (!isClient) return;
+    try {
+      const [ms, rs] = await Promise.all([api('/api/mandates'), api('/api/manager-requests/mine')]);
+      const mine = ms.filter(m => m.as === 'client');
+      $('myMandates').innerHTML = mine.length ? mine.map(m => `
+        <a class="list-item" href="/mandate?id=${m.id}" style="text-decoration:none">${avatar(m.manager.avatar_url, m.manager.name)}<div class="grow"><div class="li-title">${esc(m.title)}</div><div class="li-sub">${esc(m.manager.name)} · ${esc(m.focus_industry || '')} · ${esc(MG.feeText(m.fee_retainer, m.fee_hourly, m.fee_success_pct))}</div></div>
+          <div class="row" style="justify-content:flex-end">${m.pending_approvals ? `<span class="pill gold">${m.pending_approvals} to approve</span>` : ''}${m.bills_due ? `<span class="pill gold">${m.bills_due} to pay</span>` : ''}${statusPill(m.status)}</div></a>`).join('')
+        : `<div class="empty"><div class="big">🤝</div>No managers yet. Appoint one from Find a manager, or post what you need.</div>`;
+      $('myReqs').innerHTML = rs.length ? rs.map(r => `
+        <div class="list-item"><div class="grow"><div class="row between"><div class="li-title">${esc(r.title)}</div><div class="row">${statusPill(r.status === 'open' ? 'proposed' : r.status === 'hired' ? 'active' : 'ended').replace('Waiting for an answer', 'Open').replace('Active', 'Manager chosen').replace('Ended', 'Closed')}${r.status === 'open' ? `<button class="btn btn-ghost btn-sm" data-closereq="${r.id}">Close</button>` : ''}</div></div>
+          ${(r.pitches || []).length ? r.pitches.map(p => `<div class="card" style="padding:12px 14px;margin-top:10px;background:var(--card2)"><div class="row between"><div class="row">${avatar(p.manager.avatar_url, p.manager.name, 'sm')}<b>${esc(p.manager.name)}</b>${MG.levelPill(p.manager.level)}</div><span class="small sub">${esc(MG.feeText(p.fee_retainer, p.fee_hourly, p.fee_success_pct))}</span></div><div class="small sub" style="margin:8px 0;white-space:pre-wrap">${esc(p.message)}</div><div class="row">${p.status === 'sent' && r.status === 'open' ? `<button class="btn btn-vm btn-sm" data-accept="${p.id}">Choose this manager</button><button class="btn btn-ghost btn-sm" data-decline="${p.id}">Decline</button>` : `<span class="pill">${p.status === 'accepted' ? 'Chosen' : p.status === 'declined' ? 'Declined' : 'Not chosen'}</span>`}<a class="btn btn-ghost btn-sm" href="/public-profile?id=${p.manager.id}">Profile</a></div></div>`).join('') : '<div class="li-sub">No pitches yet. Managers are notified of new requests on their board.</div>'}
+        </div></div>`).join('') : `<div class="empty">You haven't posted a request.</div>`;
+    } catch (e) { $('myMandates').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+  }
+
+  document.addEventListener('click', e => {
+    const t = e.target;
+    const tab = t.closest('.tab'); if (tab) return setTab(tab.dataset.tab);
+    const ap = t.closest('[data-appoint]'); if (ap) return appoint(Number(ap.dataset.appoint));
+    const pi = t.closest('[data-pitch]'); if (pi) return pitch(Number(pi.dataset.pitch));
+    if (t.closest('[data-post]')) return postRequest();
+    const ac = t.closest('[data-accept]'); if (ac) return MG.busy(ac, async () => { const d = await api(`/api/manager-pitches/${ac.dataset.accept}/accept`, { method: 'POST' }); location.href = '/mandate?id=' + d.mandate_id; });
+    const dc = t.closest('[data-decline]'); if (dc) return MG.busy(dc, async () => { await api(`/api/manager-pitches/${dc.dataset.decline}/decline`, { method: 'POST' }); loadMine(); });
+    const cr = t.closest('[data-closereq]'); if (cr) return MG.busy(cr, async () => { await api(`/api/manager-requests/${cr.dataset.closereq}/close`, { method: 'POST' }); loadMine(); });
+  });
+
+  loadManagers();
+  setTab(tabParam === 'requests' ? 'requests' : tabParam === 'mine' && isClient ? 'mine' : 'find');
+  const appointId = Number(new URLSearchParams(location.search).get('appoint'));
+  if (appointId) { const wait = setInterval(() => { if (managers.length) { clearInterval(wait); appoint(appointId); } }, 200); setTimeout(() => clearInterval(wait), 5000); }
+})();
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

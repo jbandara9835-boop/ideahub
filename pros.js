@@ -25,7 +25,8 @@ const KINDS = {
   ca_membership: { label: 'Accounting body membership', numberLabel: 'Membership number', bodies: ['CA Sri Lanka', 'ACCA', 'CIMA', 'ICAEW', 'ICAI (India)', 'CPA Australia', 'AICPA (US CPA)', 'Other'] },
   secretary: { label: 'Registered company secretary', numberLabel: 'Secretary registration number', bodies: ['Registrar of Companies, Sri Lanka', 'Other'] },
   secretarial_firm: { label: 'Registered secretarial / corporate services firm', numberLabel: 'Company registration number', bodies: ['Registrar of Companies, Sri Lanka', 'Other'] },
-  identity: { label: 'Government ID', numberLabel: 'Last 4 characters of the ID number', bodies: ['National Identity Card', 'Passport', 'Driving licence'] }
+  identity: { label: 'Government ID', numberLabel: 'Last 4 characters of the ID number', bodies: ['National Identity Card', 'Passport', 'Driving licence'] },
+  address: { label: 'Proof of address', numberLabel: 'Postcode', bodies: ['Utility bill (last 3 months)', 'Bank statement (last 3 months)', 'Grama Niladhari certificate', 'Other official letter'] }
 };
 // Which credential kinds verify each role (any one of them is enough)
 const REQUIRED = {
@@ -35,7 +36,7 @@ const REQUIRED = {
   virtual_manager: ['identity']
 };
 const PRO_ROLES = Object.keys(REQUIRED);
-const ROLE_KINDS = { chartered_accountant: ['ca_membership', 'identity'], corporate_services: ['secretary', 'secretarial_firm', 'identity'], virtual_manager: ['identity'], patent_attorney: ['identity'] };
+const ROLE_KINDS = { chartered_accountant: ['ca_membership', 'identity'], corporate_services: ['secretary', 'secretarial_firm', 'identity'], virtual_manager: ['identity', 'address'], patent_attorney: ['identity'] };
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
 const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
@@ -60,12 +61,18 @@ async function refreshVerified(supabase, userId) {
 async function canManage(supabase, userId, ownerId) {
   if (!userId || !ownerId || userId === ownerId) return userId === ownerId;
   const { data } = await supabase.from('delegations').select('id').eq('owner_id', ownerId).eq('delegate_id', userId).eq('status', 'active').limit(1);
-  return !!(data && data.length);
+  if (data && data.length) return true;
+  // A manager mandate that includes listing work (managers.js)
+  const { data: ms } = await supabase.from('mandates').select('id, scopes').eq('client_id', ownerId).eq('manager_id', userId).eq('status', 'active');
+  return (ms || []).some(m => (m.scopes || []).includes('listings'));
 }
 async function logDelegation(supabase, escrow, delegateId, ownerId, action, idea) {
-  const { data: d } = await supabase.from('delegations').select('id').eq('owner_id', ownerId).eq('delegate_id', delegateId).eq('status', 'active').single();
-  if (!d) return;
-  await supabase.from('delegation_log').insert([{ delegation_id: d.id, action, idea_id: idea?.id || null, detail: idea?.title || null }]);
+  const { data: d } = await supabase.from('delegations').select('id').eq('owner_id', ownerId).eq('delegate_id', delegateId).eq('status', 'active').maybeSingle();
+  const { data: ms } = await supabase.from('mandates').select('id, scopes').eq('client_id', ownerId).eq('manager_id', delegateId).eq('status', 'active');
+  const m = (ms || []).find(x => (x.scopes || []).includes('listings'));
+  if (!d && !m) return;
+  if (d) await supabase.from('delegation_log').insert([{ delegation_id: d.id, action, idea_id: idea?.id || null, detail: idea?.title || null }]);
+  if (m) await supabase.from('mandate_log').insert([{ mandate_id: m.id, actor_id: delegateId, action: 'listing_' + action, detail: `${action === 'create' ? 'Created' : 'Edited'} the listing "${idea?.title || ''}"` }]);
   const { data: vm } = await supabase.from('users').select('first_name, last_name').eq('id', delegateId).single();
   await escrow.notify(ownerId, { type: 'delegation_action', title: action === 'create' ? '📝 Your virtual manager added a listing' : '✏️ Your virtual manager edited a listing', message: `${fullName(vm)} ${action === 'create' ? 'created' : 'edited'} "${idea?.title || 'a listing'}" for you.`, link: idea?.id ? `/idea?id=${idea.id}` : '/dashboard' });
 }
@@ -78,7 +85,7 @@ async function badgeMap(supabase, userIds) {
   const { data: regs } = await supabase.from('patent_registrations').select('user_id, office').in('user_id', ids).eq('status', 'verified');
   (regs || []).forEach(r => add(r.user_id, `${r.office} registered`));
   const { data: creds } = await supabase.from('pro_credentials').select('user_id, kind, body').in('user_id', ids).eq('status', 'verified');
-  (creds || []).forEach(c => add(c.user_id, c.kind === 'identity' ? 'ID checked' : c.kind === 'ca_membership' ? `${c.body} member` : c.kind === 'secretary' ? 'Registered company secretary' : 'Registered secretarial firm'));
+  (creds || []).forEach(c => add(c.user_id, c.kind === 'identity' ? 'ID checked' : c.kind === 'address' ? 'Address checked' : c.kind === 'ca_membership' ? `${c.body} member` : c.kind === 'secretary' ? 'Registered company secretary' : 'Registered secretarial firm'));
   return out;
 }
 

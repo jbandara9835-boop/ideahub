@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mandate — IdeaHub</title>
+<meta name="robots" content="noindex" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+<link rel="stylesheet" href="/mgr.css" />
+<style>
+.parties { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.party { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.party .who { font-weight: 800; }
+.party .role { font-size: 12px; color: var(--muted); }
+.link-arrow { color: var(--muted); font-size: 20px; }
+.facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+.fact { background: var(--card2); border-radius: 12px; padding: 10px 12px; }
+.fact span { font-size: 11.5px; color: var(--muted); display: block; }
+.fact b { font-size: 14px; }
+.attn { border-left: 3px solid var(--gold); }
+.stage-col { background: var(--card2); border-radius: 12px; padding: 10px; min-width: 220px; flex: 1; }
+.stage-col h4 { margin: 0 0 8px; font-size: 13px; color: var(--sub); display: flex; justify-content: space-between; }
+.board { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.item { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 13.5px; }
+.item .t { font-weight: 700; overflow-wrap: anywhere; }
+.item .n { color: var(--sub); font-size: 12.5px; margin: 4px 0 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.item select { font-size: 12px; padding: 4px 6px; border-radius: 6px; background: var(--card2); color: var(--text); border: 1px solid var(--line2); }
+.ms { display: flex; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+.ms:first-child { border-top: none; }
+.ms .dot { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; background: var(--card2); color: var(--sub); flex-shrink: 0; }
+.ms .dot.done { background: var(--green-dim); color: var(--green); }
+.ms .dot.now { background: var(--vm-dim); color: var(--vm); }
+.logline { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+.logline:first-child { border-top: none; }
+.logline time { color: var(--muted); font-size: 12px; white-space: nowrap; min-width: 92px; }
+@media (max-width: 760px) { .facts { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header id="siteNav"></header><script src="/site-nav.js"></script>
+<main class="mg-wrap" id="root"><div class="loading">Loading…</div></main>
+<script src="/mgr-common.js"></script>
+<script src="/idea-terms.js"></script>
+<script src="/expansion-routes.js"></script>
+<script>
+(function () {
+  const { esc, money, api, toast, avatar, levelPill, statusPill, billPill, me, token } = MG;
+  if (!token) return MG.login();
+  const id = Number(new URLSearchParams(location.search).get('id'));
+  const $ = x => document.getElementById(x);
+  let D = null, META = null, tab = new URLSearchParams(location.search).get('tab') || 'overview';
+  const isC = () => D.viewer === 'client', isM = () => D.viewer === 'manager';
+  const lastNum = s => { const m = String(s || '').match(/(\d+)(?!.*\d)/); return m ? Number(m[1]) : null; };
+  const has = s => (D.scopes || []).includes(s);
+  const KIND_LINK = { idea: i => `/idea?id=${i}`, request: i => `/request/${i}`, business: i => `/business/${i}`, contact: i => `/public-profile?id=${i}` };
+  const STAGES = [['sourcing', 'Sourcing'], ['contacted', 'Contacted'], ['negotiating', 'Negotiating'], ['approval', 'Client approval'], ['closed', 'Closed'], ['dropped', 'Dropped']];
+  const ACT_STATUS = { pending: ['Waiting for approval', 'gold'], running: ['Running…', 'blue'], approved: ['Approved', 'green'], declined: ['Declined', 'red'], failed: ['Could not complete', 'red'], cancelled: ['Withdrawn', ''] };
+  const MS_STATUS = { proposed: ['Proposed', 'gold'], planned: ['Not started', ''], funded: ['In progress', 'blue'], submitted: ['Waiting for review', 'gold'], changes: ['Changes requested', 'red'], approved: ['Done', 'green'] };
+
+  async function load() {
+    try { [D, META] = await Promise.all([api('/api/mandates/' + id), MG.meta()]); }
+    catch (e) { $('root').innerHTML = `<div class="card empty"><div class="big">🔒</div>${esc(e.message)}<br><a class="btn btn-ghost btn-sm" style="margin-top:12px" href="/managers">Back to managers</a></div>`; return; }
+    document.title = D.title + ' — Mandate — IdeaHub';
+    render();
+  }
+  const other = () => isC() ? D.manager : D.client;
+  function counts() {
+    return {
+      approvals: D.actions.filter(a => a.status === 'pending').length,
+      bills: D.bills.filter(b => b.status === 'due').length,
+      hours: D.hours.filter(h => h.status === 'submitted').length,
+      venture: D.ventures.filter(v => v.status === 'planning').length + D.ventures.flatMap(v => v.milestones).filter(x => (isC() && ['submitted', 'proposed'].includes(x.status)) || (isM() && ['funded', 'changes'].includes(x.status))).length,
+      recos: D.items.filter(i => i.shared && !i.client_feedback).length
+    };
+  }
+
+  function header() {
+    const f = D.fee_retainer > 0 || D.fee_hourly > 0 || D.fee_success_pct > 0 ? MG.feeText(D.fee_retainer, D.fee_hourly, D.fee_success_pct) : 'No fees';
+    return `<div class="card pad">
+      <div class="row between"><div><div class="eyebrow">Mandate · ${esc(META.sides[D.client_side] || '')}</div><h1 style="font-family:'Cabinet Grotesk',sans-serif;font-size:27px;margin:0;line-height:1.2">${esc(D.title)}</h1></div>${statusPill(D.status)}</div>
+      <div class="parties" style="margin-top:16px">
+        <a class="party" href="/public-profile?id=${D.client.id}" style="text-decoration:none">${avatar(D.client.avatar_url, D.client.name)}<div><div class="who">${esc(D.client.name)}${isC() ? ' (you)' : ''}</div><div class="role">Client</div></div></a>
+        <span class="link-arrow" aria-hidden="true">⇄</span>
+        <a class="party" href="/public-profile?id=${D.manager.id}" style="text-decoration:none">${avatar(D.manager.avatar_url, D.manager.name)}<div><div class="who">${esc(D.manager.name)}${isM() ? ' (you)' : ''}</div><div class="role">Manager · ${levelPill(D.manager.level)}</div></div></a>
+        <div style="margin-left:auto" class="row">${D.viewer !== 'admin' ? `<a class="btn btn-ghost btn-sm" href="/messages?user=${other().id}">💬 Message ${esc(other().name.split(' ')[0])}</a>` : ''}${D.status === 'active' && D.viewer !== 'admin' ? `<button class="btn btn-danger btn-sm" data-end>End mandate</button>` : ''}</div>
+      </div>
+      <div class="facts">
+        <div class="fact"><span>Industry</span><b>${esc(D.focus_industry || '—')}</b></div>
+        <div class="fact"><span>Fees</span><b>${esc(f)}</b></div>
+        <div class="fact"><span>Spending limit per step</span><b>${D.budget_limit ? money(D.budget_limit) : 'None'}</b></div>
+        <div class="fact"><span>${D.status === 'active' ? 'Since' : D.status === 'ended' ? 'Ended' : 'Proposed'}</span><b>${MG.date(D.status === 'ended' ? D.ended_at : D.started_at || D.created_at)}${D.end_date && D.status === 'active' ? ` → ${MG.date(D.end_date)}` : ''}</b></div>
+      </div>
+    </div>`;
+  }
+  function termsBlock(full) {
+    return `<div class="card pad">
+      <div class="card-title">What the manager may do</div>
+      <div class="checks">${D.scope_labels.map(s => `<div class="check" style="cursor:default">✅ <span>${esc(s.label)}</span></div>`).join('')}</div>
+      ${D.goals ? `<div class="hr"></div><div class="lbl" style="margin-bottom:6px">Goals</div><div class="sub" style="white-space:pre-wrap;line-height:1.55">${esc(D.goals)}</div>` : ''}
+      <div class="hr"></div><div class="lbl" style="margin-bottom:6px">Mandate agreement (${esc(D.terms.version)})</div><div class="terms">${esc(D.terms.text)}</div>
+      ${full || ''}
+    </div>`;
+  }
+
+  function render() {
+    const root = $('root');
+    if (D.status === 'proposed') {
+      const mine = D.proposed_by === me.id;
+      root.innerHTML = header() + '<div style="height:16px"></div>' + termsBlock(`<div class="hr"></div>${D.can_accept
+        ? `<label class="check" style="margin-bottom:12px"><input type="checkbox" id="agree"> <span>I have read the mandate agreement and accept these terms.</span></label><div class="row"><button class="btn btn-vm" data-accept>Accept and start</button><button class="btn btn-ghost" data-decline>Decline</button></div>`
+        : mine ? `<div class="notice gold">Waiting for ${esc(other().name)} to accept. You'll be notified.</div><div class="row" style="margin-top:12px"><button class="btn btn-ghost btn-sm" data-decline>Withdraw proposal</button></div>` : ''}`);
+      return;
+    }
+    if (['declined', 'cancelled'].includes(D.status)) { root.innerHTML = header() + `<div class="card pad" style="margin-top:16px"><div class="notice red">This proposal was ${D.status === 'declined' ? 'declined' : 'withdrawn'}.${D.end_reason ? ' ' + esc(D.end_reason) : ''}</div></div>`; return; }
+    const n = counts();
+    const tabs = [['overview', 'Overview', 0], ['approvals', 'Approvals', isC() ? n.approvals : 0], ['pipeline', isC() ? 'Recommendations' : 'Pipeline', isC() ? n.recos : 0]];
+    if (has('venture') || D.ventures.length) tabs.push(['venture', 'Venture', n.venture]);
+    tabs.push(['fees', 'Fees & hours', isC() ? n.bills + n.hours : 0]);
+    if (isM()) tabs.push(['tasks', 'Tasks', D.tasks.filter(t => !t.done).length]);
+    tabs.push(['activity', 'Activity', 0], ['terms', 'Terms', 0]);
+    if (!tabs.some(t => t[0] === tab)) tab = 'overview';
+    root.innerHTML = header() + `<div class="tabs" style="margin-top:18px">${tabs.map(([k, l, c]) => `<button class="tab ${tab === k ? 'on' : ''}" data-tab="${k}">${l}${c ? `<span class="n">${c}</span>` : ''}</button>`).join('')}</div><div id="pane"></div>`;
+    renderPane();
+  }
+  function renderPane() {
+    const p = $('pane'); if (!p) return;
+    p.innerHTML = ({ overview, approvals, pipeline, venture, fees, tasks, activity, terms: () => termsBlock() }[tab] || overview)();
+  }
+
+  // ── Overview ──
+  function overview() {
+    const n = counts(), out = [];
+    if (D.status === 'ended') out.push(`<div class="notice">This mandate ended on ${MG.date(D.ended_at)}.${D.end_reason ? ' ' + esc(D.end_reason) : ''}</div>`);
+    if (isC() && D.status === 'ended' && !D.rating) out.push(`<div class="card pad attn"><div class="card-title">How was ${esc(D.manager.name)}?</div><div class="row">${[1, 2, 3, 4, 5].map(s => `<button class="btn btn-ghost btn-sm" data-rate="${s}">${'★'.repeat(s)}</button>`).join('')}</div></div>`);
+    const attn = [];
+    if (isC()) {
+      if (n.approvals) attn.push(`<b>${n.approvals}</b> step${n.approvals > 1 ? 's' : ''} waiting for your approval <button class="btn btn-gold btn-sm" data-tab="approvals">Review</button>`);
+      if (n.bills) attn.push(`<b>${n.bills}</b> fee${n.bills > 1 ? 's' : ''} to pay <button class="btn btn-gold btn-sm" data-tab="fees">Pay</button>`);
+      if (n.hours) attn.push(`<b>${n.hours}</b> logged hour entr${n.hours > 1 ? 'ies' : 'y'} to approve <button class="btn btn-gold btn-sm" data-tab="fees">Review</button>`);
+      if (n.recos) attn.push(`<b>${n.recos}</b> new recommendation${n.recos > 1 ? 's' : ''} <button class="btn btn-gold btn-sm" data-tab="pipeline">See</button>`);
+      if (n.venture) attn.push(`Your venture needs a decision <button class="btn btn-gold btn-sm" data-tab="venture">Open</button>`);
+    } else if (isM()) {
+      const due = D.tasks.filter(t => !t.done && t.due_date && new Date(t.due_date) <= new Date(Date.now() + 2 * 86400000));
+      if (due.length) attn.push(`<b>${due.length}</b> task${due.length > 1 ? 's' : ''} due soon <button class="btn btn-vm btn-sm" data-tab="tasks">Open</button>`);
+      if (n.venture) attn.push(`A milestone is ready for you to work on or resubmit <button class="btn btn-vm btn-sm" data-tab="venture">Open</button>`);
+      if (n.hours) attn.push(`<b>${n.hours}</b> hour entr${n.hours > 1 ? 'ies' : 'y'} not sent yet <button class="btn btn-vm btn-sm" data-tab="fees">Send</button>`);
+    }
+    if (attn.length) out.push(`<div class="card pad attn"><div class="card-title">Needs attention</div>${attn.map(a => `<div class="list-item" style="align-items:center"><div class="grow">${a.replace(/<button/, '</div><button')}</div>`).join('')}</div>`);
+    if (isM() && D.status === 'active') out.push(`<div class="card pad"><div class="card-title">Quick actions</div><div class="row">
+      ${Object.entries(META.actions).filter(([, v]) => has(v.scope)).length ? `<button class="btn btn-vm btn-sm" data-prepare>✋ Prepare a step for approval</button>` : ''}
+      <button class="btn btn-ghost btn-sm" data-additem>＋ Add to pipeline</button>
+      ${D.fee_hourly > 0 ? '<button class="btn btn-ghost btn-sm" data-loghours>⏱️ Log hours</button>' : ''}
+      ${has('listings') ? `<a class="btn btn-ghost btn-sm" href="/manage?owner=${D.client.id}">📝 Manage listings</a>` : ''}
+      ${has('messages') ? '<button class="btn btn-ghost btn-sm" data-msgfor>✉️ Message someone for the client</button>' : ''}
+      <button class="btn btn-ghost btn-sm" data-oneoff>🧾 Request a one-off fee</button></div></div>`);
+    const deals = D.deals.filter(d => d.status !== 'cancelled');
+    out.push(`<div class="grid g2">
+      <div class="card pad"><div class="card-title">Latest activity <button class="btn btn-ghost btn-sm" data-tab="activity">All</button></div>${D.log.slice(0, 6).map(logLine).join('') || '<div class="empty">Nothing yet.</div>'}</div>
+      <div class="card pad"><div class="card-title">Deals through this mandate</div>${deals.length ? deals.map(d => `<div class="list-item"><div class="grow"><div class="li-title">${esc({ purchase: 'Idea purchase', request: 'Idea Request', sale: 'Sale of an idea', expansion: 'Business Expansion', hire: 'Hired a professional' }[d.kind] || d.kind)} #${d.ref_id}</div><div class="li-sub">${d.value ? money(d.value) + ' · ' : ''}${d.status === 'completed' ? 'Completed' : d.status === 'recorded' ? 'Started' : 'In progress'}${d.referral_paid ? ' · referral reward paid' : ''}</div></div></div>`).join('') : '<div class="empty">Deals the manager prepares or recommends appear here.</div>'}</div>
+    </div>`);
+    return `<div class="stack">${out.join('')}</div>`;
+  }
+  const logLine = l => `<div class="logline"><time title="${esc(new Date(l.created_at).toLocaleString())}">${esc(MG.ago(l.created_at))}</time><div><b>${esc(l.actor)}</b> <span class="sub">${esc(l.detail || l.action)}</span></div></div>`;
+
+  // ── Approvals ──
+  function approvals() {
+    const list = D.actions;
+    const head = isM() && D.status === 'active' ? `<div class="row between" style="margin-bottom:14px"><p class="sub small" style="margin:0">Prepare a step; your client approves it and IdeaHub carries it out in their name, with their payment.</p><button class="btn btn-vm btn-sm" data-prepare>✋ Prepare a step</button></div>` : isC() ? `<p class="sub small" style="margin:0 0 14px">Your manager prepares these. Nothing happens until you approve. Payments come from you, through IdeaHub.</p>` : '';
+    return head + `<div class="card pad">${list.length ? list.map(a => {
+      const [lbl, cls] = ACT_STATUS[a.status] || [a.status, ''];
+      const pay = a.payload || {};
+      const link = a.kind === 'purchase' ? `/idea?id=${pay.idea_id}` : a.kind === 'select_proposal' || a.kind === 'proposal' ? `/request/${pay.request_id}` : a.kind === 'expansion_apply' ? `/business/${pay.listing_id}` : a.kind === 'hire' ? `/public-profile?id=${pay.support_id}` : null;
+      return `<div class="list-item"><div class="grow"><div class="li-title">${esc(a.summary)}</div><div class="li-sub">${esc((META.actions[a.kind] || {}).label || a.kind)} · prepared ${MG.ago(a.created_at)}${a.note ? ` · “${esc(a.note)}”` : ''}${a.result && a.result.error ? ` · ${esc(a.result.error)}` : ''}</div>
+        ${a.status === 'pending' && isC() ? `${a.kind === 'purchase' ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="agr-${a.id}"> <span>I accept the <a href="/idea?id=${pay.idea_id}" target="_blank" style="color:var(--gold)">Idea Transfer Agreement</a> for this purchase.</span></label>` : ''}
+          <div class="row" style="margin-top:10px"><button class="btn btn-gold btn-sm" data-approve="${a.id}" data-kind="${a.kind}">Approve${a.kind === 'purchase' ? ' and pay' : ''}</button><button class="btn btn-ghost btn-sm" data-declineact="${a.id}">Decline</button>${link ? `<a class="btn btn-ghost btn-sm" href="${link}" target="_blank">View</a>` : ''}</div>` : ''}
+        ${a.status === 'pending' && isM() ? `<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm" data-withdraw="${a.id}">Withdraw</button>${link ? `<a class="btn btn-ghost btn-sm" href="${link}" target="_blank">View</a>` : ''}</div>` : ''}
+        ${a.status === 'approved' && link ? `<div class="row" style="margin-top:8px"><a class="btn btn-ghost btn-sm" href="${a.kind === 'purchase' ? '/transactions' : a.kind === 'post_request' && a.ref_id ? '/request/' + a.ref_id : a.kind === 'expansion_apply' && a.ref_id ? '/expansion?id=' + a.ref_id : a.kind === 'hire' && a.ref_id ? '/hire?id=' + a.ref_id : link}">Open</a></div>` : ''}
+        </div><span class="pill ${cls}">${esc(lbl)}</span></div>`;
+    }).join('') : `<div class="empty"><div class="big">✋</div>No steps yet.</div>`}</div>`;
+  }
+  async function prepareDialog() {
+    const kinds = Object.entries(META.actions).filter(([, v]) => has(v.scope));
+    if (!kinds.length) return toast('This mandate has no tasks that need approvals.');
+    MG.dialog('Prepare a step for approval', `<div class="field"><label for="pk">What do you want to prepare?</label><select class="in" id="pk">${kinds.map(([k, v]) => `<option value="${k}">${esc(v.label)}</option>`).join('')}</select></div><div id="pf"></div><div class="field"><label for="pnote">Note to your client (why you recommend it)</label><textarea class="in" id="pnote" maxlength="1000" style="min-height:70px"></textarea></div>`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="psend">Send for approval</button>`);
+    const fields = async () => {
+      const k = $('pk').value, f = $('pf');
+      const inp = (id, label, ph, type, extra) => `<div class="field"><label for="${id}">${label}</label>${type === 'area' ? `<textarea class="in" id="${id}" placeholder="${esc(ph || '')}" ${extra || ''}></textarea>` : `<input class="in" id="${id}" type="${type || 'text'}" placeholder="${esc(ph || '')}" ${extra || ''}>`}</div>`;
+      if (k === 'purchase') f.innerHTML = inp('p_idea', 'Idea (link or number)', 'e.g. https://ideahub.it.com/idea?id=123') + `<div class="hint small muted" style="margin:-6px 0 12px">Your client sees the idea, accepts the Idea Transfer Agreement and pays when approving.</div>`;
+      else if (k === 'post_request') f.innerHTML = inp('p_t', 'Request title', 'e.g. Low-cost cold storage for vegetable sellers') + inp('p_pr', 'Problem to solve', 'What the investor wants and why', 'area') + `<div class="grid g2">${inp('p_ind', 'Industry', '')}${inp('p_dl', 'Deadline', '', 'date')}</div><div class="grid g2">${inp('p_bmin', 'Budget from ($)', '', 'number')}${inp('p_bmax', 'Budget up to ($)', '', 'number')}</div>` + inp('p_req', 'Requirements (optional)', '', 'area');
+      else if (k === 'select_proposal') {
+        f.innerHTML = '<div class="loading">Loading your client\'s requests…</div>';
+        try { const rs = await api(`/api/mandates/${id}/client-requests`); const opts = rs.flatMap(r => r.proposals.map(p => `<option value="${p.id}">${esc(r.title)} → ${esc(p.title)} by ${esc(p.creator)}${p.price ? ' (' + money(p.price) + ')' : ''}</option>`));
+          f.innerHTML = opts.length ? `<div class="field"><label for="p_prop">Proposal to choose</label><select class="in" id="p_prop">${opts.join('')}</select></div>` : '<div class="notice gold">Your client has no open requests with proposals yet.</div>'; } catch (e) { f.innerHTML = `<div class="notice red">${esc(e.message)}</div>`; }
+      } else if (k === 'proposal') f.innerHTML = inp('p_rq', 'Idea Request (link or number)', 'e.g. https://ideahub.it.com/request/45') + inp('p_t', 'Proposal title', '') + inp('p_sum', 'Summary', 'What your client\'s idea is and why it fits', 'area') + inp('p_app', 'Approach (optional)', '', 'area') + `<div class="grid g2">${inp('p_price', 'Price ($)', '', 'number')}${inp('p_days', 'Delivery days', '', 'number')}</div>`;
+      else if (k === 'expansion_apply') f.innerHTML = inp('p_lst', 'Business listing (link or number)', 'e.g. https://ideahub.it.com/business/12') + `<div class="field"><label for="p_type">Deal type</label><select class="in" id="p_type">${(window.Routes ? Routes.TYPES : []).map(t => `<option value="${t.key}">${esc(t.label)}</option>`).join('')}</select></div>` + inp('p_msg', 'Introduction', 'Who your client is and the plan', 'area') + `<div class="grid g2">${inp('p_cap', 'Investment capacity', 'e.g. $50k–$100k')}${inp('p_ter', 'Territory', 'e.g. Southern Province')}</div>`;
+      else if (k === 'hire') f.innerHTML = inp('p_sup', 'Professional (profile link or number)', 'An accountant, attorney or corporate services provider') + inp('p_t', 'Job title', 'e.g. Register the company and open a bank account') + inp('p_desc', 'What is needed', '', 'area');
+    };
+    $('pk').addEventListener('change', fields); fields();
+    $('psend').onclick = e => MG.busy(e.currentTarget, async () => {
+      const k = $('pk').value, v = x => ($(x) || {}).value || '';
+      const payload = k === 'purchase' ? { idea_id: lastNum(v('p_idea')) }
+        : k === 'post_request' ? { title: v('p_t'), problem: v('p_pr'), industry: v('p_ind'), deadline: v('p_dl') || null, budget_min: v('p_bmin') || null, budget_max: v('p_bmax') || null, requirements: v('p_req') }
+        : k === 'select_proposal' ? { proposal_id: Number(v('p_prop')) }
+        : k === 'proposal' ? { request_id: lastNum(v('p_rq')), title: v('p_t'), summary: v('p_sum'), approach: v('p_app'), proposed_price: v('p_price') || null, delivery_days: v('p_days') || null }
+        : k === 'expansion_apply' ? { listing_id: lastNum(v('p_lst')), expansion_type: v('p_type'), message: v('p_msg'), investment_capacity: v('p_cap'), territory: v('p_ter') }
+        : { support_id: lastNum(v('p_sup')), title: v('p_t'), description: v('p_desc') };
+      await api(`/api/mandates/${id}/actions`, { method: 'POST', body: { kind: k, payload, note: v('pnote') } });
+      MG.close(); toast('Sent to your client for approval'); tab = 'approvals'; await load();
+    });
+  }
+
+  // ── Pipeline / recommendations ──
+  function pipeline() {
+    if (isC()) {
+      const recos = D.items;
+      return `<div class="card pad">${recos.length ? recos.map(i => `<div class="list-item"><div class="grow"><div class="li-title">${esc(i.title)} <span class="pill" style="margin-left:6px">${esc(i.kind)}</span></div>${i.note ? `<div class="li-sub" style="white-space:pre-wrap">${esc(i.note)}</div>` : ''}
+        <div class="row" style="margin-top:10px">${i.ref_id && KIND_LINK[i.kind] ? `<a class="btn btn-ghost btn-sm" href="${KIND_LINK[i.kind](i.ref_id)}" target="_blank">View</a>` : ''}<button class="btn ${i.client_feedback === 'interested' ? 'btn-gold' : 'btn-ghost'} btn-sm" data-fb="interested" data-item="${i.id}">👍 Interested</button><button class="btn ${i.client_feedback === 'not_interested' ? 'btn-danger' : 'btn-ghost'} btn-sm" data-fb="not_interested" data-item="${i.id}">Not for me</button></div></div></div>`).join('')
+        : `<div class="empty"><div class="big">⭐</div>Your manager's recommendations will appear here.</div>`}</div>`;
+    }
+    return `<div class="row between" style="margin-bottom:12px"><p class="sub small" style="margin:0">Track everything you work on for this client. Tick “Show to client” to send it as a recommendation.</p>${D.status === 'active' ? '<button class="btn btn-vm btn-sm" data-additem>＋ Add</button>' : ''}</div>
+      <div class="board">${STAGES.map(([k, l]) => { const its = D.items.filter(i => i.stage === k); return `<div class="stage-col"><h4>${l}<span>${its.length}</span></h4>${its.map(i => `<div class="item"><div class="t">${i.ref_id && KIND_LINK[i.kind] ? `<a href="${KIND_LINK[i.kind](i.ref_id)}" target="_blank" style="text-decoration:none">${esc(i.title)} ↗</a>` : esc(i.title)}</div>${i.note ? `<div class="n">${esc(i.note)}</div>` : ''}
+        ${i.client_feedback ? `<div class="tiny" style="margin-bottom:6px;color:${i.client_feedback === 'interested' ? 'var(--green)' : 'var(--red)'}">Client: ${i.client_feedback === 'interested' ? 'interested' : 'not interested'}${i.client_note ? ' — ' + esc(i.client_note) : ''}</div>` : ''}
+        <div class="row" style="gap:6px"><select data-stage="${i.id}" aria-label="Stage">${STAGES.map(([sk, sl]) => `<option value="${sk}" ${sk === i.stage ? 'selected' : ''}>${sl}</option>`).join('')}</select>
+        <label class="tiny" style="display:flex;gap:4px;align-items:center;cursor:pointer"><input type="checkbox" data-share="${i.id}" ${i.shared ? 'checked' : ''} style="appearance:auto;accent-color:#a78bfa"> Show to client</label>
+        ${i.kind === 'contact' && i.ref_id && has('messages') ? `<a class="tiny" style="color:var(--vm)" href="/messages?user=${i.ref_id}&for=${D.client.id}">Message</a>` : ''}
+        <button class="tiny" data-delitem="${i.id}" style="background:none;border:none;color:var(--muted);cursor:pointer">Delete</button></div></div>`).join('')}</div>`; }).join('')}</div>`;
+  }
+  function addItemDialog() {
+    MG.dialog('Add to pipeline', `<div class="field"><label for="ik">Type</label><select class="in" id="ik"><option value="idea">Idea on IdeaHub</option><option value="request">Idea Request</option><option value="business">Business listing</option><option value="contact">Member to contact</option><option value="other">Other (note)</option></select></div>
+      <div class="field" id="irefw"><label for="iref">Link or number</label><input class="in" id="iref" placeholder="Paste the IdeaHub link"></div>
+      <div class="field"><label for="ititle">Title (optional for IdeaHub items)</label><input class="in" id="ititle" maxlength="150"></div>
+      <div class="field"><label for="inote">Notes</label><textarea class="in" id="inote" maxlength="1500" placeholder="Why it fits, price, next step…"></textarea></div>
+      <div class="grid g2"><div class="field"><label for="istage">Stage</label><select class="in" id="istage">${STAGES.map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></div><label class="check" style="align-self:end;margin-bottom:14px"><input type="checkbox" id="ishare"> <span>Show to my client as a recommendation</span></label></div>`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="isave">Add</button>`);
+    $('ik').onchange = () => { $('irefw').style.display = $('ik').value === 'other' ? 'none' : ''; };
+    $('isave').onclick = e => MG.busy(e.currentTarget, async () => {
+      await api(`/api/mandates/${id}/items`, { method: 'POST', body: { kind: $('ik').value, ref_id: lastNum($('iref').value), title: $('ititle').value, note: $('inote').value, stage: $('istage').value, shared: $('ishare').checked } });
+      MG.close(); toast('Added'); tab = 'pipeline'; await load();
+    });
+  }
+
+  // ── Venture ──
+  function venture() {
+    const vs = D.ventures;
+    if (!vs.length) return isM() && D.status === 'active' ? `<div class="card pad"><div class="card-title">Plan a managed venture</div><p class="sub small">Set out how you'll build the business for your client, as milestones. Your client approves the plan, then funds each milestone fee into escrow as you start it; it's paid to you when they approve your evidence.${D.manager.level === 'verified' || D.manager.level === 'senior' ? '' : ' <b>Ventures need the Verified level</b> (ID and proof of address checked).'}</p><button class="btn btn-vm" data-venture>Plan the venture</button></div>`
+      : `<div class="card empty"><div class="big">🚀</div>No venture yet. Your manager proposes a plan with milestones for you to approve.</div>`;
+    return vs.map(v => {
+      const total = v.milestones.reduce((s, x) => s + Number(x.fee || 0), 0);
+      const done = v.milestones.filter(x => x.status === 'approved').length;
+      return `<div class="card pad" style="margin-bottom:16px"><div class="row between"><div><div class="eyebrow">Managed venture</div><div class="card-title" style="margin:0">${esc(v.title)}</div></div><span class="pill ${v.status === 'active' ? 'blue' : v.status === 'completed' ? 'green' : 'gold'}">${{ planning: 'Plan waiting for approval', active: 'In progress', completed: 'Completed', cancelled: 'Cancelled' }[v.status] || v.status}</span></div>
+        <div class="sub" style="white-space:pre-wrap;line-height:1.55;margin:12px 0">${esc(v.plan)}</div>
+        <div class="small muted">${done} of ${v.milestones.length} milestones done · milestone fees ${money(total)} in total (plus 8%)</div>
+        ${v.status === 'planning' && isC() ? `<div class="row" style="margin-top:12px"><button class="btn btn-gold btn-sm" data-vapprove="${v.id}">Approve the plan</button><span class="tiny muted">You'll fund each milestone only when it starts.</span></div>` : ''}
+        ${v.status === 'planning' && isM() ? `<div class="notice gold small" style="margin-top:12px">Waiting for your client to approve the plan.</div>` : ''}
+        <div class="hr"></div>
+        ${v.milestones.map((x, i) => { const [l, c] = MS_STATUS[x.status] || [x.status, '']; return `<div class="ms"><span class="dot ${x.status === 'approved' ? 'done' : ['funded', 'submitted', 'changes'].includes(x.status) ? 'now' : ''}">${x.status === 'approved' ? '✓' : i + 1}</span><div class="grow" style="flex:1;min-width:0">
+          <div class="row between"><b>${esc(x.title)}</b><span class="pill ${c}">${esc(l)}</span></div>
+          <div class="li-sub">${x.fee > 0 ? money(x.fee) + ' fee' : 'No fee'}${x.due_date ? ' · due ' + MG.date(x.due_date) : ''}</div>
+          ${x.description ? `<div class="li-sub" style="white-space:pre-wrap">${esc(x.description)}</div>` : ''}
+          ${x.evidence ? `<div class="notice green small" style="margin-top:8px;white-space:pre-wrap"><b>Evidence:</b> ${esc(x.evidence)}</div>` : ''}
+          ${x.change_note && x.status === 'changes' ? `<div class="notice red small" style="margin-top:8px">Changes asked: ${esc(x.change_note)}</div>` : ''}
+          <div class="row" style="margin-top:8px">
+            ${isC() && v.status === 'active' && ['planned', 'proposed'].includes(x.status) ? `<button class="btn btn-gold btn-sm" data-fund="${x.id}">${x.fee > 0 ? `Start: pay ${money(x.fee)} into escrow` : 'Start this milestone'}</button>` : ''}
+            ${isC() && x.status === 'submitted' ? `<button class="btn btn-gold btn-sm" data-msok="${x.id}">Approve${x.fee > 0 ? ' and release ' + money(x.fee) : ''}</button><button class="btn btn-ghost btn-sm" data-mschg="${x.id}">Ask for changes</button>` : ''}
+            ${isM() && ['funded', 'changes'].includes(x.status) ? `<button class="btn btn-vm btn-sm" data-mssub="${x.id}">Submit evidence</button>` : ''}
+          </div></div></div>`; }).join('')}
+        ${isM() && v.status === 'active' ? `<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm" data-addms="${v.id}">＋ Propose another milestone</button></div>` : ''}
+      </div>`;
+    }).join('');
+  }
+  function ventureDialog() {
+    const row = (i) => `<div class="card" style="padding:12px;margin-bottom:10px;background:var(--card2)" data-msrow><div class="grid g2"><div class="field"><label>Milestone ${i}</label><input class="in" data-f="title" placeholder="e.g. Company registered"></div><div class="field"><label>Your fee for it ($)</label><input class="in" data-f="fee" type="number" min="0" value="0"></div></div><div class="grid g2"><div class="field"><label>Due date</label><input class="in" data-f="due_date" type="date"></div><div class="field"><label>What will be done</label><input class="in" data-f="description"></div></div></div>`;
+    MG.dialog('Plan the venture', `<div class="field"><label for="vt">Venture name</label><input class="in" id="vt" maxlength="150" placeholder="e.g. Solar cold box company"></div>
+      <div class="field"><label for="vp">The plan</label><textarea class="in" id="vp" maxlength="5000" style="min-height:130px" placeholder="What the business is, how you'll set it up, who you'll hire, what the client will own, and the timeline."></textarea><div class="hint">The company is always registered in your client's name. You coordinate; your client signs and pays suppliers through IdeaHub.</div></div>
+      <div id="msrows">${row(1)}${row(2)}</div><button class="btn btn-ghost btn-sm" id="msmore">＋ Another milestone</button>`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="vsave">Send plan to client</button>`, { width: '680px' });
+    $('msmore').onclick = () => $('msrows').insertAdjacentHTML('beforeend', row(document.querySelectorAll('[data-msrow]').length + 1));
+    $('vsave').onclick = e => MG.busy(e.currentTarget, async () => {
+      const milestones = [...document.querySelectorAll('[data-msrow]')].map(r => Object.fromEntries([...r.querySelectorAll('[data-f]')].map(i => [i.dataset.f, i.value]))).filter(x => x.title.trim());
+      await api(`/api/mandates/${id}/ventures`, { method: 'POST', body: { title: $('vt').value, plan: $('vp').value, milestones } });
+      MG.close(); toast('Plan sent to your client'); tab = 'venture'; await load();
+    });
+  }
+
+  // ── Fees & hours ──
+  function fees() {
+    const due = D.bills.filter(b => b.status === 'due');
+    const bills = `<div class="card pad"><div class="card-title">Fees <small>IdeaHub adds 8% to each payment</small>${isM() && ['active', 'ended'].includes(D.status) ? '<button class="btn btn-ghost btn-sm" data-oneoff>Request a one-off fee</button>' : ''}</div>
+      ${D.bills.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>What</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${D.bills.map(b => `<tr><td><b>${esc({ retainer: 'Retainer', hours: 'Hours', success: 'Success fee', oneoff: 'One-off fee', milestone: 'Milestone fee' }[b.kind] || b.kind)}</b><div class="tiny muted">${esc(b.description || '')}</div>${b.dispute_reason ? `<div class="tiny" style="color:var(--red)">Problem: ${esc(b.dispute_reason)}</div>` : ''}</td><td>${money(b.amount)}<div class="tiny muted">${money(b.total)} with fee</div></td><td>${billPill(b.status)}${b.status === 'paid' && b.kind === 'retainer' && b.period_end ? `<div class="tiny muted">released ${MG.date(b.period_end)}</div>` : ''}</td>
+        <td style="text-align:right">${isC() && b.status === 'due' ? `<button class="btn btn-gold btn-sm" data-pay="${b.id}">Pay ${money(b.total)}</button>${b.kind === 'oneoff' ? ` <button class="btn btn-ghost btn-sm" data-billcancel="${b.id}">Decline</button>` : ''}` : ''}
+          ${isC() && b.status === 'paid' && b.kind === 'retainer' ? `<button class="btn btn-ghost btn-sm" data-release="${b.id}">Release now</button> ` : ''}${isC() && b.status === 'paid' ? `<button class="btn btn-danger btn-sm" data-dispute="${b.id}">Report a problem</button>` : ''}
+          ${isM() && b.status === 'due' ? `<button class="btn btn-ghost btn-sm" data-billcancel="${b.id}">Withdraw</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No fees yet.</div>'}</div>`;
+    const sub = D.hours.filter(h => h.status === 'submitted');
+    const hours = D.fee_hourly > 0 ? `<div class="card pad" style="margin-top:16px"><div class="card-title">Hours <small>${money(D.fee_hourly)}/hour</small>${isM() && D.status === 'active' ? `<div class="row"><button class="btn btn-ghost btn-sm" data-loghours>Log hours</button>${sub.length ? '<button class="btn btn-vm btn-sm" data-sendhours>Send to client</button>' : ''}</div>` : ''}</div>
+      ${D.hours.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr>${isC() ? '<th></th>' : ''}<th>Date</th><th>Hours</th><th>Work</th><th>Status</th>${isM() ? '<th></th>' : ''}</tr></thead><tbody>${D.hours.map(h => `<tr>${isC() ? `<td>${h.status === 'submitted' ? `<input type="checkbox" data-h="${h.id}" checked style="appearance:auto;accent-color:#f5c842">` : ''}</td>` : ''}<td>${MG.date(h.work_date)}</td><td>${Number(h.hours)}</td><td>${esc(h.description)}</td><td><span class="pill ${h.status === 'approved' ? 'green' : h.status === 'rejected' ? 'red' : 'gold'}">${{ submitted: 'Waiting', approved: 'Approved', rejected: 'Not approved', billed: 'Billed' }[h.status] || h.status}</span></td>${isM() ? `<td>${h.status === 'submitted' ? `<button class="btn btn-ghost btn-sm" data-delh="${h.id}">Delete</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>
+        ${isC() && sub.length ? `<div class="row" style="margin-top:12px"><button class="btn btn-gold btn-sm" data-hok>Approve selected</button><button class="btn btn-ghost btn-sm" data-hno>Don't approve selected</button></div>` : ''}` : '<div class="empty">No hours logged yet.</div>'}</div>` : '';
+    return (isC() && due.length ? `<div class="notice gold" style="margin-bottom:14px">You have ${due.length} fee${due.length > 1 ? 's' : ''} to pay. Payments go through IdeaHub; retainers and milestone fees are held until the work is done.</div>` : '') + bills + hours;
+  }
+  function payDialog(b) {
+    MG.dialog('Pay manager fee', `<div class="stack"><div><b>${esc({ retainer: 'Retainer', hours: 'Hours', success: 'Success fee', oneoff: 'One-off fee', milestone: 'Milestone fee' }[b.kind])}</b><div class="sub small">${esc(b.description || '')}</div></div>
+      <table class="tbl"><tr><td>Fee to the manager</td><td style="text-align:right">${money(b.amount)}</td></tr><tr><td>IdeaHub service fee (8%)</td><td style="text-align:right">${money(b.fee)}</td></tr><tr><td><b>Total</b></td><td style="text-align:right"><b>${money(b.total)}</b></td></tr></table>
+      <div class="notice vm small">${b.kind === 'retainer' ? 'Held by IdeaHub and paid to the manager at the end of the period, unless you report a problem.' : b.kind === 'milestone' ? 'Held by IdeaHub until you approve the milestone.' : 'Paid to the manager straight away.'}</div></div>`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" id="paynow">Pay ${money(b.total)}</button>`, { width: '460px' });
+    $('paynow').onclick = e => MG.busy(e.currentTarget, async () => { await api(`/api/mandate-bills/${b.id}/pay`, { method: 'POST', body: { expected_total: b.total } }); MG.close(); toast('Paid'); await load(); });
+  }
+
+  // ── Tasks ──
+  function tasks() {
+    return `<div class="card pad"><form class="row" id="taskForm" style="margin-bottom:12px"><input class="in" id="tt" maxlength="200" placeholder="New task, e.g. Call 3 shortlisted creators" style="flex:1;min-width:200px"><input class="in" id="td" type="date" style="width:170px"><button class="btn btn-vm btn-sm">Add</button></form>
+      ${D.tasks.length ? D.tasks.map(t => `<div class="list-item" style="align-items:center"><input type="checkbox" data-task="${t.id}" ${t.done ? 'checked' : ''} style="appearance:auto;accent-color:#a78bfa;width:17px;height:17px"><div class="grow"><div class="li-title" style="${t.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${esc(t.title)}</div>${t.due_date ? `<div class="li-sub">Due ${MG.date(t.due_date)}</div>` : ''}</div><button class="btn btn-ghost btn-sm" data-deltask="${t.id}">Delete</button></div>`).join('') : '<div class="empty">No tasks. Only you see these.</div>'}</div>`;
+  }
+  function activity() { return `<div class="card pad">${D.log.map(logLine).join('') || '<div class="empty">Nothing yet.</div>'}</div>`; }
+
+  // ── Events ──
+  document.addEventListener('click', async e => {
+    const t = e.target, q = s => t.closest(s);
+    let b;
+    if ((b = q('[data-tab]')) && D) { tab = b.dataset.tab; const u = new URL(location); u.searchParams.set('tab', tab); history.replaceState(null, '', u); render(); window.scrollTo({ top: document.querySelector('.tabs') ? document.querySelector('.tabs').offsetTop - 90 : 0, behavior: 'smooth' }); return; }
+    if ((b = q('[data-accept]'))) { if (!$('agree').checked) return toast('Tick the box to accept the terms.'); return MG.busy(b, async () => { await api(`/api/mandates/${id}/accept`, { method: 'POST', body: { agree: true } }); toast('Mandate active'); await load(); }); }
+    if ((b = q('[data-decline]'))) { const note = prompt(D.proposed_by === me.id ? 'Withdraw this proposal? (optional reason)' : 'Decline this proposal? You can add a reason or suggest different terms.', ''); if (note === null) return; return MG.busy(b, async () => { await api(`/api/mandates/${id}/decline`, { method: 'POST', body: { note } }); await load(); }); }
+    if ((b = q('[data-end]'))) { const reason = prompt('End this mandate? Fees already earned stay due. Optional reason:', ''); if (reason === null) return; return MG.busy(b, async () => { await api(`/api/mandates/${id}/end`, { method: 'POST', body: { reason } }); toast('Mandate ended'); await load(); }); }
+    if ((b = q('[data-rate]'))) { const review = prompt('A few words about working with your manager (optional):', '') || ''; return MG.busy(b, async () => { await api(`/api/mandates/${id}/rate`, { method: 'POST', body: { stars: Number(b.dataset.rate), review } }); toast('Thank you for the review'); await load(); }); }
+    if (q('[data-prepare]')) return prepareDialog();
+    if (q('[data-additem]')) return addItemDialog();
+    if (q('[data-venture]')) return ventureDialog();
+    if ((b = q('[data-approve]'))) {
+      const body = { decision: 'approve' };
+      if (b.dataset.kind === 'purchase') { const c = $('agr-' + b.dataset.approve); if (!c || !c.checked) return toast('Tick the Idea Transfer Agreement box first.'); body.agreement = window.IdeaTerms ? IdeaTerms.VERSION : 'v1'; }
+      return MG.busy(b, async () => { const d = await api(`/api/mandate-actions/${b.dataset.approve}/decide`, { method: 'POST', body }); toast('Approved and done'); await load(); });
+    }
+    if ((b = q('[data-declineact]'))) { const note = prompt('Decline this step? Optional note to your manager:', ''); if (note === null) return; return MG.busy(b, async () => { await api(`/api/mandate-actions/${b.dataset.declineact}/decide`, { method: 'POST', body: { decision: 'decline', note } }); await load(); }); }
+    if ((b = q('[data-withdraw]'))) return MG.busy(b, async () => { await api(`/api/mandate-actions/${b.dataset.withdraw}/cancel`, { method: 'POST' }); await load(); });
+    if ((b = q('[data-fb]'))) { const note = b.dataset.fb === 'not_interested' ? (prompt('Optional: why not?', '') || '') : ''; return MG.busy(b, async () => { await api(`/api/mandate-items/${b.dataset.item}/feedback`, { method: 'POST', body: { feedback: b.dataset.fb, note } }); await load(); }); }
+    if ((b = q('[data-delitem]'))) { if (!confirm('Delete this item?')) return; return MG.busy(b, async () => { await api(`/api/mandate-items/${b.dataset.delitem}`, { method: 'DELETE' }); await load(); }); }
+    if ((b = q('[data-pay]'))) return payDialog(D.bills.find(x => x.id === Number(b.dataset.pay)));
+    if ((b = q('[data-release]'))) { if (!confirm('Release this retainer to your manager now?')) return; return MG.busy(b, async () => { await api(`/api/mandate-bills/${b.dataset.release}/release`, { method: 'POST' }); await load(); }); }
+    if ((b = q('[data-dispute]'))) { const reason = prompt('What went wrong? IdeaHub will review it and hold the payment meanwhile.', ''); if (!reason) return; return MG.busy(b, async () => { await api(`/api/mandate-bills/${b.dataset.dispute}/dispute`, { method: 'POST', body: { reason } }); toast('Reported. IdeaHub will review it.'); await load(); }); }
+    if ((b = q('[data-billcancel]'))) { if (!confirm(isC() ? 'Decline this fee?' : 'Withdraw this fee request?')) return; return MG.busy(b, async () => { await api(`/api/mandate-bills/${b.dataset.billcancel}/cancel`, { method: 'POST' }); await load(); }); }
+    if (q('[data-oneoff]')) {
+      MG.dialog('Request a one-off fee', `<div class="field"><label for="oa">Amount ($)</label><input class="in" id="oa" type="number" min="1"></div><div class="field"><label for="od">What is it for?</label><input class="in" id="od" maxlength="200" placeholder="e.g. Closing the franchise agreement with 3 franchisees"></div><div class="notice vm small">Your client can pay or decline it.</div>`, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="osend">Send</button>`, { width: '460px' });
+      $('osend').onclick = ev => MG.busy(ev.currentTarget, async () => { await api(`/api/mandates/${id}/bills`, { method: 'POST', body: { amount: Number($('oa').value), description: $('od').value } }); MG.close(); toast('Sent to your client'); tab = 'fees'; await load(); });
+      return;
+    }
+    if (q('[data-loghours]')) {
+      MG.dialog('Log hours', `<div class="grid g2"><div class="field"><label for="hd">Date</label><input class="in" id="hd" type="date" value="${new Date().toISOString().slice(0, 10)}"></div><div class="field"><label for="hh">Hours</label><input class="in" id="hh" type="number" min="0.25" max="24" step="0.25"></div></div><div class="field"><label for="hw">What did you do?</label><input class="in" id="hw" maxlength="500"></div>`, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="hsave">Save</button>`, { width: '480px' });
+      $('hsave').onclick = ev => MG.busy(ev.currentTarget, async () => { await api(`/api/mandates/${id}/hours`, { method: 'POST', body: { work_date: $('hd').value, hours: Number($('hh').value), description: $('hw').value } }); MG.close(); toast('Saved. Send your hours to the client when ready.'); tab = 'fees'; await load(); });
+      return;
+    }
+    if ((b = q('[data-sendhours]'))) return MG.busy(b, async () => { await api(`/api/mandates/${id}/hours/send`, { method: 'POST' }); toast('Your client was asked to approve'); });
+    if ((b = q('[data-delh]'))) return MG.busy(b, async () => { await api(`/api/mandate-hours/${b.dataset.delh}`, { method: 'DELETE' }); await load(); });
+    if ((b = q('[data-hok]')) || (b = q('[data-hno]'))) {
+      const ids = [...document.querySelectorAll('[data-h]:checked')].map(i => Number(i.dataset.h)); if (!ids.length) return toast('Select hours first.');
+      const ok = b.hasAttribute('data-hok'); const note = ok ? '' : (prompt('Optional note to your manager:', '') || '');
+      return MG.busy(b, async () => { await api(`/api/mandates/${id}/hours/${ok ? 'approve' : 'reject'}`, { method: 'POST', body: { ids, note } }); toast(ok ? 'Approved. A fee was added to pay.' : 'Sent back to your manager'); await load(); });
+    }
+    if ((b = q('[data-vapprove]'))) { if (!confirm('Approve this venture plan?')) return; return MG.busy(b, async () => { await api(`/api/ventures/${b.dataset.vapprove}/approve`, { method: 'POST' }); await load(); }); }
+    if ((b = q('[data-fund]'))) return MG.busy(b, async () => { const d = await api(`/api/milestones/${b.dataset.fund}/fund`, { method: 'POST' }); await load(); if (d.pay && d.bill) payDialog(d.bill); else toast('Milestone started'); });
+    if ((b = q('[data-mssub]'))) { const ev = prompt('Describe what was done and where the proof is (files in the deal room, links on IdeaHub, registration numbers…):', ''); if (!ev) return; return MG.busy(b, async () => { await api(`/api/milestones/${b.dataset.mssub}/submit`, { method: 'POST', body: { evidence: ev } }); toast('Submitted to your client'); await load(); }); }
+    if ((b = q('[data-msok]'))) { if (!confirm('Approve this milestone? Its fee is released to your manager.')) return; return MG.busy(b, async () => { await api(`/api/milestones/${b.dataset.msok}/approve`, { method: 'POST' }); await load(); }); }
+    if ((b = q('[data-mschg]'))) { const note = prompt('What needs to change?', ''); if (!note) return; return MG.busy(b, async () => { await api(`/api/milestones/${b.dataset.mschg}/changes`, { method: 'POST', body: { note } }); await load(); }); }
+    if ((b = q('[data-addms]'))) {
+      MG.dialog('Propose a milestone', `<div class="field"><label for="mt">Milestone</label><input class="in" id="mt" maxlength="120"></div><div class="grid g2"><div class="field"><label for="mf">Your fee ($)</label><input class="in" id="mf" type="number" min="0" value="0"></div><div class="field"><label for="mdd">Due date</label><input class="in" id="mdd" type="date"></div></div><div class="field"><label for="mdsc">What will be done</label><textarea class="in" id="mdsc" maxlength="1500"></textarea></div>`, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="msave">Propose</button>`, { width: '520px' });
+      $('msave').onclick = ev => MG.busy(ev.currentTarget, async () => { await api(`/api/ventures/${b.dataset.addms}/milestones`, { method: 'POST', body: { title: $('mt').value, fee: Number($('mf').value), due_date: $('mdd').value, description: $('mdsc').value } }); MG.close(); await load(); });
+      return;
+    }
+    if (q('[data-msgfor]')) {
+      MG.dialog('Message someone for your client', `<div class="field"><label for="mto">Who? (profile link or member number)</label><input class="in" id="mto" placeholder="e.g. https://ideahub.it.com/public-profile?id=42"></div><div class="notice vm small">Your messages are labelled “manager for ${esc(D.client.name)}”. You can't message someone you also manage.</div>`, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="mgo">Open chat</button>`, { width: '480px' });
+      $('mgo').onclick = () => { const to = lastNum($('mto').value); if (!to) return MG.err('Paste their profile link.'); location.href = `/messages?user=${to}&for=${D.client.id}`; };
+      return;
+    }
+    if ((b = q('[data-deltask]'))) return MG.busy(b, async () => { await api(`/api/mandate-tasks/${b.dataset.deltask}`, { method: 'DELETE' }); await load(); });
+  });
+  document.addEventListener('change', async e => {
+    const t = e.target;
+    try {
+      if (t.dataset.stage) { await api(`/api/mandate-items/${t.dataset.stage}`, { method: 'PUT', body: { stage: t.value } }); await load(); }
+      else if (t.dataset.share) { await api(`/api/mandate-items/${t.dataset.share}`, { method: 'PUT', body: { shared: t.checked } }); toast(t.checked ? 'Shared with your client' : 'Hidden from your client'); await load(); }
+      else if (t.dataset.task) { await api(`/api/mandate-tasks/${t.dataset.task}`, { method: 'PUT', body: { done: t.checked } }); await load(); }
+    } catch (err) { toast(err.message); }
+  });
+  document.addEventListener('submit', async e => {
+    if (e.target.id !== 'taskForm') return; e.preventDefault();
+    try { await api(`/api/mandates/${id}/tasks`, { method: 'POST', body: { title: $('tt').value, due_date: $('td').value || null } }); await load(); } catch (err) { toast(err.message); }
+  });
+  load();
+})();
+</script>
+<script src="/chat-widget.js" defer></script>
+</body>
+</html>

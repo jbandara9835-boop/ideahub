@@ -456,6 +456,9 @@
     }
     if (role === 'virtual_manager') {
       const m = del?.managing || [];
+      out += `<div class="section-card" style="border-color:rgba(167,139,250,0.35);background:rgba(167,139,250,0.06)"><div class="section-header"><div class="section-title">🧭 Manager workspace</div><a href="/workspace" class="sec-link">Open →</a></div>
+        <div style="font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">Your mandates, clients, pipeline, approvals and manager fees live in the workspace. Finish your ID check and the induction quiz there to be listed in Find a Manager.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn-gold" href="/workspace" style="text-decoration:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;background:#a78bfa;color:#160f2b">Open workspace</a><a href="/managers?tab=requests" style="text-decoration:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,0.15);color:inherit">Requests board</a></div></div>`;
       out += `<div class="section-card"><div class="section-header"><div class="section-title">🗂️ Clients whose listings you manage</div></div>
         ${m.length ? m.map(d => `<a class="job-row job-link" href="/manage?owner=${Number(d.user_id)}"><div class="job-top"><div class="job-title">${esc(d.name)}</div><span class="badge badge-in_progress">Manage listings →</span></div><div class="job-meta" style="font-size:12px;color:var(--muted)">Access since ${formatDate(d.since)}</div></a>`).join('')
           : '<div class="empty"><div class="empty-text">When a client gives you listing access from their hire page, they appear here.</div></div>'}</div>`;

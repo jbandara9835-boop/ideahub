@@ -66,7 +66,9 @@ function mount(app, { supabase, authMiddleware }) {
     if (error) return res.status(500).json({ error: error.message });
     const label = p => {
       const m = p.meta || {};
-      const what = m.hire_id ? { text: 'Hire', link: `/hire?id=${m.hire_id}` }
+      const what = m.mandate_bill_id ? { text: 'Manager fee', link: `/mandate?id=${m.mandate_id || ''}` }
+        : m.referral_tx ? { text: 'Referral reward', link: m.mandate_id ? `/mandate?id=${m.mandate_id}` : '/workspace' }
+        : m.hire_id ? { text: 'Hire', link: `/hire?id=${m.hire_id}` }
         : m.idea_request_id ? { text: 'Idea request', link: `/request/${m.idea_request_id}` }
         : m.deal_room_job_id ? { text: 'Adviser job', link: '/deal-room' }
         : m.patent_application_id || m.application_id ? { text: 'Patent application', link: `/patent-application?id=${m.patent_application_id || m.application_id}` }

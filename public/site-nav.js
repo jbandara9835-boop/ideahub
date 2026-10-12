@@ -92,6 +92,7 @@
             '<a href="' + dashUrl + '" role="menuitem">Dashboard</a>' +
             '<a href="/profile" role="menuitem">My Profile</a>' +
             '<a href="/messages" role="menuitem">Messages</a>' +
+            (user && user.role === 'virtual_manager' ? '<a href="/workspace" role="menuitem">Manager workspace</a>' : (user && ['idea_creator','patent_seller','investor','business_owner'].indexOf(user.role) >= 0 ? '<a href="/managers?tab=mine" role="menuitem">My managers</a>' : '')) +
             '<a href="/transactions" role="menuitem">Wallet</a>' +
             '<a href="/settings" role="menuitem">Settings</a>' +
             '<button type="button" class="sn-signout" id="snSignOut" role="menuitem">Sign Out</button>' +

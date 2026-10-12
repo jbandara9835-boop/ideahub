@@ -179,6 +179,7 @@ app.get('/robots.txt', (req, res) => {
   require('./market').mount(app, { supabase, authMiddleware, escrow }); // delivery files, wallet history
   require('./whatsapp').mount(app, { supabase, authMiddleware, escrow }); // WhatsApp: number verification + idea bot
   require('./wall').mount(app, { supabase, authMiddleware, escrow }); // IdeaWall: posts, reactions, comments, reports
+  const managers = require('./managers'); managers.mount(app, { supabase, authMiddleware, escrow }); // IdeaHub Managers: mandates, approvals, fees, ventures
   const quality = require('./public/listing-quality');
   const ideaTerms = require('./public/idea-terms');
   const engagementLevels = require('./public/engagements');
@@ -290,6 +291,9 @@ app.get('/robots.txt', (req, res) => {
   app.get('/business-dashboard', (req, res) => res.sendFile(__dirname + '/public/business-dashboard.html'));
   app.get('/expansion', (req, res) => res.sendFile(__dirname + '/public/expansion.html'));
   app.get('/wa-sim', (req, res) => res.sendFile(__dirname + '/public/wa-sim.html'));
+  app.get('/managers', (req, res) => res.sendFile(__dirname + '/public/managers.html'));
+  app.get('/mandate', (req, res) => res.sendFile(__dirname + '/public/mandate.html'));
+  app.get('/workspace', (req, res) => res.sendFile(__dirname + '/public/workspace.html'));
   app.get('/business-detail', (req, res) => res.redirect(301, req.query.id ? '/business/' + encodeURIComponent(req.query.id) : '/businesses'));
   app.get('/find-support', (req, res) => {
     res.sendFile(__dirname + '/public/find-support.html');
@@ -1389,15 +1393,25 @@ app.get('/robots.txt', (req, res) => {
     const { toId, text, ideaId } = req.body;
     if (!toId || !text) return res.status(400).json({ error: 'toId and text required' });
     if (String(text).length > 5000) return res.status(400).json({ error: 'Messages can be up to 5,000 characters.' });
+    // A manager writing for a client (managers.js): must have a "messages" mandate, and never to the other side
+    const onBehalf = parseInt(req.body.onBehalfOf, 10) || null;
+    let clientName = null;
+    if (onBehalf) {
+      const ok = await managers.canActFor(supabase, req.user.id, onBehalf, parseInt(toId));
+      if (!ok.ok) return res.status(403).json({ error: ok.error, code: ok.code });
+      const { data: cl } = await supabase.from('users').select('first_name, last_name').eq('id', onBehalf).single();
+      clientName = cl ? `${cl.first_name || ''} ${cl.last_name || ''}`.trim() : 'a client';
+      await supabase.from('mandate_log').insert([{ mandate_id: ok.mandate.id, actor_id: req.user.id, action: 'message', detail: `Messaged someone for the client: "${String(text).slice(0, 80)}"` }]);
+    }
     const { data, error } = await supabase
       .from('messages')
-      .insert([{ from_id: req.user.id, to_id: parseInt(toId), text, idea_id: ideaId || null }])
+      .insert([{ from_id: req.user.id, to_id: parseInt(toId), text, idea_id: ideaId || null, ...(onBehalf ? { on_behalf_of: onBehalf } : {}) }])
       .select().single();
     if (error) return res.status(500).json({ error: error.message });
 
     // Notify recipient
     const { data: sender } = await supabase.from('users').select('first_name, last_name').eq('id', req.user.id).single();
-    const senderName = sender ? `${sender.first_name} ${sender.last_name||''}`.trim() : 'Someone';
+    const senderName = (sender ? `${sender.first_name} ${sender.last_name||''}`.trim() : 'Someone') + (clientName ? ` (manager for ${clientName})` : '');
     await supabase.from('notifications').insert([{
       user_id: parseInt(toId),
       type: 'new_message',
