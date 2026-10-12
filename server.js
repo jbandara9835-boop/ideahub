@@ -178,6 +178,7 @@ app.get('/robots.txt', (req, res) => {
   require('./biz').mount(app, { supabase, authMiddleware, escrow }); // Business Expansion (overrides the older routes below)
   require('./market').mount(app, { supabase, authMiddleware, escrow }); // delivery files, wallet history
   require('./whatsapp').mount(app, { supabase, authMiddleware, escrow }); // WhatsApp: number verification + idea bot
+  require('./wall').mount(app, { supabase, authMiddleware, escrow }); // IdeaWall: posts, reactions, comments, reports
   const quality = require('./public/listing-quality');
   const ideaTerms = require('./public/idea-terms');
   const engagementLevels = require('./public/engagements');
@@ -316,16 +317,18 @@ app.get('/robots.txt', (req, res) => {
     if (Date.now() - sitemapCache.at < 3600000 && sitemapCache.xml) return res.send(sitemapCache.xml);
     try {
       const base = require('fs').readFileSync(__dirname + '/public/sitemap.xml', 'utf8');
-      const [{ data: ideas }, { data: hacks }] = await Promise.all([
+      const [{ data: ideas }, { data: hacks }, { data: wallPosts }] = await Promise.all([
         supabase.from('ideas').select('id, created_at').eq('status', 'live').or('visibility.is.null,visibility.eq.1').order('created_at', { ascending: false }).limit(5000),
-        supabase.from('wall_posts').select('id, created_at').eq('category', 'Life Hack').order('created_at', { ascending: false }).limit(5000)
+        supabase.from('wall_posts').select('id, created_at').eq('category', 'Life Hack').order('created_at', { ascending: false }).limit(5000),
+        supabase.from('wall_posts').select('id, created_at').neq('status', 'hidden').neq('category', 'Life Hack').order('created_at', { ascending: false }).limit(5000)
       ]);
       const day = d => (d ? new Date(d) : new Date()).toISOString().slice(0, 10);
       const urls = [
         `  <url>\n    <loc>https://ideahub.it.com/life-hacks</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>`,
         ...(base.includes('/patents</loc>') ? [] : [`  <url>\n    <loc>https://ideahub.it.com/patents</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`]),
         ...(ideas || []).map(i => `  <url>\n    <loc>https://ideahub.it.com/idea?id=${Number(i.id)}</loc>\n    <lastmod>${day(i.created_at)}</lastmod>\n    <priority>0.6</priority>\n  </url>`),
-        ...(hacks || []).map(h => `  <url>\n    <loc>https://ideahub.it.com/life-hacks?id=${Number(h.id)}</loc>\n    <lastmod>${day(h.created_at)}</lastmod>\n    <priority>0.5</priority>\n  </url>`)
+        ...(hacks || []).map(h => `  <url>\n    <loc>https://ideahub.it.com/life-hacks?id=${Number(h.id)}</loc>\n    <lastmod>${day(h.created_at)}</lastmod>\n    <priority>0.5</priority>\n  </url>`),
+        ...(wallPosts || []).map(w => `  <url>\n    <loc>https://ideahub.it.com/wall/post/${Number(w.id)}</loc>\n    <lastmod>${day(w.created_at)}</lastmod>\n    <priority>0.4</priority>\n  </url>`)
       ];
       const xml = base.includes('/life-hacks</loc>') ? base.replace('</urlset>', urls.slice(1).join('\n') + '\n</urlset>') : base.replace('</urlset>', urls.join('\n') + '\n</urlset>');
       sitemapCache = { at: Date.now(), xml };
@@ -779,6 +782,8 @@ app.get('/robots.txt', (req, res) => {
         category: 'Innovation',
         media_url: (req.body.images && req.body.images[0]) || null,
         media_type: 'image',
+        media: (req.body.images || []).filter(u => typeof u === 'string').slice(0, 6).map(url => ({ url, type: 'image' })),
+        status: 'visible',
         source_idea_id: idea.id,
         is_from_idea: true,
         likes_count: 0,
@@ -2530,146 +2535,7 @@ app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Ph
     res.json({ success: true });
   });
 
-  // ── IDEAWALL ──────────────────────────────────────────────────────────────────
-  const LIFE_HACK_TOPICS = ['Home', 'Food & Kitchen', 'Money', 'Health', 'Tech', 'Work & Study', 'Travel', 'Other'];
-
-  app.get('/api/wall', async (req, res) => {
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
-    const sort = req.query.sort || 'latest';
-    const category = req.query.category || null;
-
-    let query = supabase.from('wall_posts')
-      .select('*, users(id, first_name, last_name, role, avatar_url)')
-      .range(offset, Math.min(offset + Math.min(limit, 50), offset + 50) - 1);
-
-    if (category) query = query.eq('category', category);
-    // Life Hacks page filters: one post, one topic, one author, or a text search
-    const onlyId = parseInt(req.query.id, 10);
-    if (Number.isFinite(onlyId)) query = query.eq('id', onlyId);
-    if (req.query.topic) query = query.eq('hack_topic', String(req.query.topic).slice(0, 40));
-    const byUser = parseInt(req.query.user_id, 10);
-    if (Number.isFinite(byUser)) query = query.eq('user_id', byUser);
-    const search = String(req.query.search || '').replace(/[%,()*\\"'`]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
-    if (search) query = query.or(search.split(' ').filter(w => w.length >= 3).slice(0, 4)
-      .flatMap(w => [`title.ilike.%${w}%`, `description.ilike.%${w}%`]).join(',') || `title.ilike.%${search}%`);
-    if (sort === 'trending') query = query.order('likes_count', { ascending: false });
-    else query = query.order('created_at', { ascending: false });
-
-    const { data, error } = await query;
-    if (error) return res.status(500).json({ error: error.message });
-
-    const posts = (data || []).map(p => ({
-      ...p,
-      first_name: p.users?.first_name,
-      last_name: p.users?.last_name,
-      role: p.users?.role,
-      avatar_url: p.users?.avatar_url,
-    }));
-
-    // Get liked/saved for logged in user
-    const token = req.headers.authorization?.split(' ')[1];
-    let liked = [], saved = [];
-    if (token) {
-      try {
-        const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET);
-        const postIds = posts.map(p => p.id);
-        if (postIds.length) {
-          const [likesRes, savesRes] = await Promise.all([
-            supabase.from('wall_likes').select('post_id').eq('user_id', decoded.id).in('post_id', postIds),
-            supabase.from('wall_saves').select('post_id').eq('user_id', decoded.id).in('post_id', postIds),
-          ]);
-          liked = (likesRes.data || []).map(l => l.post_id);
-          saved = (savesRes.data || []).map(s => s.post_id);
-        }
-      } catch {}
-    }
-
-    res.json({ posts, liked, saved });
-  });
-
-  app.post('/api/wall', authMiddleware, async (req, res) => {
-    const { title, description, category, media_url, media_type, source_idea_id, is_from_idea } = req.body;
-    if (!title) return res.status(400).json({ error: 'Title is required' });
-    // Life hacks are public, searchable how-tos: hold them to a few basic rules
-    let hackTopic = null;
-    if (category === 'Life Hack') {
-      const tt = String(title).trim(), dd = String(description || '').trim();
-      if (tt.length < 10) return res.status(400).json({ error: 'Give your life hack a clear title (at least 10 characters).' });
-      if (dd.length < 40) return res.status(400).json({ error: 'Explain the hack in the description (at least 40 characters) so people can try it.' });
-      const contact = quality.hasContact(tt) || quality.hasContact(dd);
-      if (contact) return res.status(400).json({ error: `Please remove ${contact} from your life hack. Life hacks are shared freely on IdeaHub; people can message you through your profile.` });
-      hackTopic = LIFE_HACK_TOPICS.includes(req.body.hack_topic) ? req.body.hack_topic : 'Other';
-    }
-    const { data, error } = await supabase.from('wall_posts').insert([{
-      user_id: req.user.id, title, description: description || null, hack_topic: hackTopic,
-      category: category || null, media_url: media_url || null,
-      media_type: media_type || 'image', source_idea_id: source_idea_id || null,
-      is_from_idea: is_from_idea || false, likes_count: 0, comments_count: 0
-    }]).select().single();
-    if (error) return res.status(500).json({ error: error.message });
-    res.status(201).json(data);
-  });
-
-  app.delete('/api/wall/:id', authMiddleware, async (req, res) => {
-    const { error } = await supabase.from('wall_posts').delete().eq('id', req.params.id).eq('user_id', req.user.id);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-  });
-
-  app.post('/api/wall/:id/like', authMiddleware, async (req, res) => {
-    const postId = parseInt(req.params.id);
-    const reaction = req.body?.reaction || 'brilliant';
-    const { data: existing } = await supabase.from('wall_likes').select('id, reaction').eq('user_id', req.user.id).eq('post_id', postId).single();
-    if (existing) {
-      await supabase.from('wall_likes').delete().eq('user_id', req.user.id).eq('post_id', postId);
-      const { data: post } = await supabase.from('wall_posts').select('likes_count').eq('id', postId).single();
-      const newCount = Math.max(0, (post?.likes_count || 1) - 1);
-      await supabase.from('wall_posts').update({ likes_count: newCount }).eq('id', postId);
-      return res.json({ liked: false, likes_count: newCount });
-    }
-    await supabase.from('wall_likes').insert([{ user_id: req.user.id, post_id: postId, reaction }]);
-    const { data: post } = await supabase.from('wall_posts').select('likes_count').eq('id', postId).single();
-    const newCount = (post?.likes_count || 0) + 1;
-    await supabase.from('wall_posts').update({ likes_count: newCount }).eq('id', postId);
-    res.json({ liked: true, likes_count: newCount, reaction });
-  });
-
-  app.post('/api/wall/:id/save', authMiddleware, async (req, res) => {
-    const postId = parseInt(req.params.id);
-    const { data: existing } = await supabase.from('wall_saves').select('id').eq('user_id', req.user.id).eq('post_id', postId).single();
-    if (existing) {
-      await supabase.from('wall_saves').delete().eq('user_id', req.user.id).eq('post_id', postId);
-      return res.json({ saved: false });
-    }
-    await supabase.from('wall_saves').insert([{ user_id: req.user.id, post_id: postId }]);
-    res.json({ saved: true });
-  });
-
-  app.get('/api/wall/:id/comments', async (req, res) => {
-    const { data, error } = await supabase.from('wall_comments')
-      .select('*, users(first_name, last_name, avatar_url)')
-      .eq('post_id', req.params.id)
-      .order('created_at', { ascending: true });
-    if (error) return res.status(500).json({ error: error.message });
-    const comments = (data || []).map(c => ({
-      ...c, first_name: c.users?.first_name, last_name: c.users?.last_name, avatar_url: c.users?.avatar_url
-    }));
-    res.json(comments);
-  });
-
-  app.post('/api/wall/:id/comments', authMiddleware, async (req, res) => {
-    const { text } = req.body;
-    if (!text) return res.status(400).json({ error: 'Text required' });
-    const postId = parseInt(req.params.id);
-    const { data, error } = await supabase.from('wall_comments').insert([{
-      user_id: req.user.id, post_id: postId, text
-    }]).select().single();
-    if (error) return res.status(500).json({ error: error.message });
-    const { data: post } = await supabase.from('wall_posts').select('comments_count').eq('id', postId).single();
-    await supabase.from('wall_posts').update({ comments_count: (post?.comments_count || 0) + 1 }).eq('id', postId);
-    res.status(201).json(data);
-  });
+  // ── IDEAWALL ── all routes live in wall.js
 
   // Handle shareToWall on idea submit — patch into POST /api/ideas
   // (handled inline in the ideas route via shareToWall flag)

@@ -116,10 +116,13 @@
   Promise.all([
     fetch(`${API_URL}/api/users/${userId}/public`).then(r => { if (!r.ok) throw new Error('not found'); return r.json(); }),
     fetch(`${API_URL}/api/users/${userId}/reviews`).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${API_URL}/api/wall?category=Life%20Hack&user_id=${encodeURIComponent(userId)}&limit=6`).then(r => r.ok ? r.json() : null).catch(() => null)
+    fetch(`${API_URL}/api/wall?category=Life%20Hack&user_id=${encodeURIComponent(userId)}&limit=6`).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(`${API_URL}/api/wall?user_id=${encodeURIComponent(userId)}&limit=7`).then(r => r.ok ? r.json() : null).catch(() => null)
   ])
-    .then(([user, rv, hk]) => {
+    .then(([user, rv, hk, wp]) => {
       const hacks = hk ? (Array.isArray(hk) ? hk : (hk.posts || [])) : [];
+      const wallAll = wp ? (wp.posts || []).filter(p => p.category !== 'Life Hack') : [];
+      const wallPosts = wallAll.slice(0, 6);
       rv = rv || { profile_stars: 0, rating_count: 0, deals_completed: 0, reviews: [] };
       const initials = ((user.first_name?.[0] || '') + (user.last_name?.[0] || '')).toUpperCase() || '?';
       const joinYear = new Date(user.created_at).getFullYear();
@@ -187,6 +190,22 @@
                 <div style="color:var(--accent);font-size:12px;font-weight:600;">Free</div>
               </a>`).join('')}
           </div>
+        </div>` : ''}
+
+        ${wallPosts.length ? `
+        <div class="section">
+          <div class="section-title">🧱 On IdeaWall</div>
+          <div class="idea-list">
+            ${wallPosts.map(w => `
+              <a class="idea-item" href="/wall/post/${encodeURIComponent(w.id)}">
+                <div style="min-width:0">
+                  <div class="idea-item-title">${escHtml((w.title || (w.description || '').split('\n')[0] || 'Photo post').slice(0, 90))}</div>
+                  <div class="idea-item-meta">${escHtml(w.category || 'Post')} · ${Object.values(w.reaction_counts || {}).reduce((a, b) => a + (Number(b) || 0), 0) || Number(w.likes_count) || 0} reactions · 💬 ${Number(w.comments_count) || 0}</div>
+                </div>
+                ${(w.media || [])[0] && w.media[0].type !== 'video' ? `<img src="${escHtml(w.media[0].url)}" alt="" style="width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0">` : ''}
+              </a>`).join('')}
+          </div>
+          <a href="/wall?user=${encodeURIComponent(userId)}" style="display:inline-block;margin-top:.75rem;color:var(--accent);font-size:13px;font-weight:600;text-decoration:none">See all posts →</a>
         </div>` : ''}
 
         <div class="section">

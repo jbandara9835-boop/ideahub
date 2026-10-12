@@ -472,6 +472,11 @@
     }
 
     conversations = Object.values(convMap).sort((a, b) => new Date(b.lastMsg.created_at) - new Date(a.lastMsg.created_at));
+    // A chat started from a link (/messages?user=ID) with someone you haven't messaged yet
+    if (pendingConv) {
+      if (convMap[pendingConv.id]) { if (activeConv === pendingConv) activeConv = convMap[pendingConv.id]; pendingConv = null; }
+      else conversations.unshift(pendingConv);
+    }
     renderConvList();
   }
 
@@ -968,17 +973,30 @@
     }
   }
 
+  let pendingConv = null;
   async function restoreActiveConv() {
     const params = new URLSearchParams(window.location.search);
-    const userId = params.get('user');
+    const userId = params.get('user') || params.get('userId');
     const groupId = params.get('group');
-    console.log('Restoring:', { userId, groupId, conversations, myGroups });
     if (groupId) {
       const group = myGroups.find(g => g.id === parseInt(groupId));
       if (group) await openGroup(group.id);
     } else if (userId) {
-      const conv = conversations.find(c => c.id === parseInt(userId));
-      console.log('Found conv:', conv);
+      const uid = parseInt(userId, 10);
+      let conv = conversations.find(c => c.id === uid);
+      if (!conv && uid && uid !== myId) {
+        // No messages with this person yet: open an empty chat so the first message can be sent
+        try {
+          const r = await fetch(`${API_URL}/api/users/${uid}/public`, { headers: { Authorization: `Bearer ${token}` } });
+          if (r.ok) {
+            const u = await r.json();
+            pendingConv = { id: uid, name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member', messages: [], lastMsg: null };
+            conversations.unshift(pendingConv);
+            renderConvList();
+            conv = pendingConv;
+          }
+        } catch (e) { /* stay on the list */ }
+      }
       if (conv) openConv(conv.id);
     }
   }
