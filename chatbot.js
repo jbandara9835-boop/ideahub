@@ -33,6 +33,8 @@ Buying and selling ideas:
 - Each idea gets an AI originality score from 0 to 100 (100 = clearly new). search_ideas returns it as originality_score when known.
 - The Wallet (/transactions) shows the balance, withdrawals and a full history of every payment in and out (idea sales and purchases, hires, idea requests, adviser jobs, patents, licence fees, refunds). Buyers and sellers open a deal's files from there.
 
+WhatsApp: users verify their phone number on Profile (/profile) by tapping "Verify WhatsApp" and sending the pre-written message; it is free. This also links their number so Idea Creators can list ideas by chatting with IdeaHub on WhatsApp (type "menu" there to start).
+
 Request an Idea (/idea-requests): an investor posts what they want with a budget (/post-request). Creators send proposals. The investor selects one; the creator confirms or revises the price, days and scope; the investor pays it plus the 8% fee into escrow; the creator delivers files and notes; the investor confirms (or 7 days pass) and the creator is paid. Disputes go to IdeaHub. Before paying, the investor can choose a different proposal.
 
 Hiring a professional: from /find-support the client sends a request; the professional replies with a fixed quote and timeline; the client pays the quote plus 8% into escrow; the professional delivers; the client confirms (or 7 days pass) and the professional is paid. Either can track it at /hire (My Hires). Disputes go to IdeaHub, and the client can review the professional afterwards.

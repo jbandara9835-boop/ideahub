@@ -69,6 +69,21 @@
   .verify-verified { background:rgba(110,231,183,0.15); color:var(--success); border:1px solid rgba(110,231,183,0.3); }
 
   .form-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-bottom:20px; }
+  .wa-mini { font-size:13px; color:var(--muted); padding:0.6rem 0; }
+  .wa-mini a { color:var(--accent); }
+  .wa-row { display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap; }
+  .wa-steps { flex:1; min-width:240px; font-size:14px; line-height:1.6; }
+  .wa-steps p { margin:0 0 0.75rem; color:var(--muted); }
+  .wa-code { font-family:monospace; font-size:22px; letter-spacing:2px; font-weight:700; color:var(--text); background:rgba(255,255,255,0.05); border:1px dashed var(--border); border-radius:10px; padding:0.5rem 0.9rem; display:inline-block; margin:0.25rem 0 0.75rem; }
+  .wa-btn { display:inline-flex; align-items:center; gap:8px; background:#25d366; color:#06210f; border:none; border-radius:10px; padding:0.7rem 1.2rem; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; }
+  .wa-btn.ghost { background:none; color:var(--muted); border:1px solid var(--border); font-weight:500; }
+  .wa-qr { background:#fff; padding:10px; border-radius:12px; width:160px; height:160px; flex-shrink:0; }
+  .wa-qr-cap { font-size:11px; color:var(--muted); text-align:center; margin-top:6px; width:180px; }
+  .wa-ok { color:var(--success); font-weight:600; font-size:14px; }
+  .wa-note { font-size:12px; color:var(--muted); margin-top:0.75rem; line-height:1.5; }
+  .wa-alt { margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border); }
+  .wa-alt input { padding:0.55rem 0.75rem; font-size:14px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:8px; color:var(--text); outline:none; }
+  @media (max-width:600px) { .wa-qr-wrap { display:none; } }
   .form-section-title { font-family:'Cabinet Grotesk',sans-serif; font-size:15px; font-weight:700; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
   .field { margin-bottom:1.1rem; }
   label.lbl { display:block; font-size:12px; font-weight:500; color:var(--muted); margin-bottom:0.4rem; letter-spacing:0.4px; text-transform:uppercase; }
@@ -197,6 +212,7 @@
         <input type="hidden" id="addressLine1" />
         <input type="hidden" id="addressLine2" />
         <input type="hidden" id="city" />
+        <input type="hidden" id="phone" />
         <input type="hidden" id="postalCode" />
         <input type="hidden" id="expertArea" />
         <input type="hidden" id="qualification" />
@@ -225,17 +241,8 @@
           </div>
           <div class="row2">
             <div class="field">
-              <label class="lbl">Phone Number</label>
-              <input type="tel" id="phone" placeholder="+94 77 123 4567" />
-              <div class="tip" id="phoneVerifyStatus"></div>
-              <div id="phoneVerifySection" style="margin-top:8px;display:none;">
-                <div style="display:flex;gap:8px;margin-bottom:6px;">
-                  <input type="text" id="smsCode" placeholder="Enter 6-digit code" maxlength="6" style="flex:1;padding:0.5rem 0.75rem;font-size:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);outline:none;" />
-                  <button onclick="verifyCode()" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:8px;padding:0.5rem 1rem;font-size:13px;font-weight:600;cursor:pointer;">Verify</button>
-                </div>
-                <div id="smsMsg" style="font-size:12px;margin-top:4px;"></div>
-              </div>
-              <button id="sendCodeBtn" onclick="sendVerificationCode()" style="margin-top:6px;background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;font-size:12px;color:var(--muted);cursor:pointer;display:none;">📱 Verify Phone</button>
+              <label class="lbl">WhatsApp</label>
+              <div class="wa-mini">Loading…</div>
             </div>
             <div class="field">
               <label class="lbl">Email</label>
@@ -345,9 +352,8 @@
           </div>
           <div class="row2">
             <div class="field">
-              <label class="lbl">Phone Number</label>
-              <input type="tel" id="phone" placeholder="+94 77 123 4567" />
-              <div class="tip">📱 SMS verification coming soon</div>
+              <label class="lbl">WhatsApp</label>
+              <div class="wa-mini">Loading…</div>
             </div>
             <div class="field">
               <label class="lbl">Email</label>
@@ -361,6 +367,12 @@
             <div class="char-count" id="bioCount">0 / 500</div>
           </div>
         </div>
+      </div>
+
+      <!-- WHATSAPP — verify the number and link the IdeaHub bot (all roles) -->
+      <div class="form-card" id="waCard">
+        <div class="form-section-title">💬 WhatsApp</div>
+        <div id="waBody"><div class="tip">Loading…</div></div>
       </div>
 
       <!-- PROFESSIONAL — hidden for investors -->
@@ -717,16 +729,7 @@ function updateStates() {
       if (data.country) { updateStates(); document.getElementById('state').value = data.state||''; }
       document.getElementById('postalCode').value = data.postal_code||'';
       document.getElementById('phone').value = data.phone||'';
-      const tipEl = document.getElementById('phoneVerifyStatus');
-      const sendBtn = document.getElementById('sendCodeBtn');
-      if (data.phone_verified) {
-        tipEl.innerHTML = '✅ Phone verified';
-        tipEl.style.color = 'var(--success)';
-      } else {
-        tipEl.innerHTML = '📱 Phone not verified';
-        tipEl.style.color = 'var(--muted)';
-        if (sendBtn) sendBtn.style.display = 'inline-block';
-      }
+      loadWhatsApp();
       document.getElementById('email').value = data.email||'';
       document.getElementById('bio').value = data.bio||'';
       document.getElementById('expertArea').value = data.expert_area||'';
@@ -789,7 +792,7 @@ function updateStates() {
         address_line2:document.getElementById('addressLine2').value.trim(),
         city:document.getElementById('city').value.trim(), state:document.getElementById('state').value.trim(),
         country:document.getElementById('country').value, postal_code:document.getElementById('postalCode').value.trim(),
-        phone:document.getElementById('phone').value.trim(), bio:document.getElementById('bio').value.trim(),
+        bio:document.getElementById('bio').value.trim(),
         expert_area:document.getElementById('expertArea').value, qualification:document.getElementById('qualification').value,
         specializations:getSpecs(), profile_complete: pct>=80,
         profile_stars: pct>=80 && (currentProfile?.profile_stars||0)<1 ? 1 : (currentProfile?.profile_stars||0)
@@ -826,59 +829,87 @@ function updateStates() {
     other.classList.remove('show'); el.textContent=text; el.classList.add('show');
     setTimeout(()=>el.classList.remove('show'),5000);
   }
-async function sendVerificationCode() {
-    const phone = document.getElementById('phone').value.trim();
-    if (!phone) { alert('Please enter your phone number first.'); return; }
-    const btn = document.getElementById('sendCodeBtn');
-    btn.textContent = 'Sending...'; btn.disabled = true;
-    try {
-      const res = await fetch(`${API_URL}/api/sms/send-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ phone })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      document.getElementById('phoneVerifySection').style.display = 'block';
-      btn.textContent = '📱 Resend Code';
-      btn.disabled = false;
-      const msg = document.getElementById('smsMsg');
-      msg.textContent = `Code sent to ${phone}. Valid for 10 minutes.`;
-      msg.style.color = 'var(--success)';
-    } catch(err) {
-      alert(err.message);
-      btn.textContent = '📱 Verify Phone';
-      btn.disabled = false;
-    }
+// ── WhatsApp: verify the number (the user sends us a code — free) and link the IdeaHub bot ──
+  let waPoll = null, waState = null;
+  const waEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  async function waApi(path, method, body) {
+    const r = await fetch(`${API_URL}/api/whatsapp/${path}`, { method: method || 'GET', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: body ? JSON.stringify(body) : undefined });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Something went wrong');
+    return d;
   }
-
-  async function verifyCode() {
-    const code = document.getElementById('smsCode').value.trim();
-    if (!code || code.length !== 6) { alert('Please enter the 6-digit code.'); return; }
-    try {
-      const res = await fetch(`${API_URL}/api/sms/verify-code`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ code })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      document.getElementById('phoneVerifySection').style.display = 'none';
-      document.getElementById('sendCodeBtn').style.display = 'none';
-      const tip = document.getElementById('phoneVerifyStatus');
-      tip.innerHTML = '✅ Phone verified';
-      tip.style.color = 'var(--success)';
-      const u = JSON.parse(localStorage.getItem('ih_user') || '{}');
-      u.phone_verified = true;
-      localStorage.setItem('ih_user', JSON.stringify(u));
-    } catch(err) {
-      const msg = document.getElementById('smsMsg');
-      msg.textContent = err.message;
-      msg.style.color = 'var(--error)';
+  function waMini(st) {
+    document.querySelectorAll('.wa-mini').forEach(el => {
+      el.innerHTML = st && st.linked ? `<span class="wa-ok">✅ ${waEsc(st.number)}</span>` : st && st.phone_verified ? `✅ ${waEsc(st.phone || 'Verified')}` : `Not verified · <a href="#waCard">Verify on WhatsApp</a>`;
+    });
+  }
+  async function loadWhatsApp() {
+    try { waState = await waApi('status'); } catch (e) { document.getElementById('waBody').innerHTML = `<div class="tip">${waEsc(e.message)}</div>`; return; }
+    waMini(waState);
+    const u = JSON.parse(localStorage.getItem('ih_user') || '{}');
+    if (u.phone_verified !== waState.phone_verified) { u.phone_verified = waState.phone_verified; localStorage.setItem('ih_user', JSON.stringify(u)); }
+    const body = document.getElementById('waBody');
+    if (waState.linked) {
+      body.innerHTML = `<div class="wa-ok">✅ ${waEsc(waState.number)} is verified and linked</div>
+        <p class="wa-note">You can list ideas by sending a message to IdeaHub on WhatsApp${waState.bot_number ? ` (<a style="color:var(--accent)" href="https://wa.me/${waState.bot_number.replace(/\D/g, '')}?text=menu" target="_blank" rel="noopener">${waEsc(waState.bot_number)}</a>)` : ''}. Changed your number? Unlink, then verify the new one.</p>
+        <button class="wa-btn ghost" onclick="waUnlink()">Unlink WhatsApp</button>`;
+      return;
     }
+    body.innerHTML = `<p class="wa-note" style="margin-top:0">${waState.phone_verified ? `Your phone ${waEsc(waState.phone || '')} is verified. Link WhatsApp to list ideas from your phone.` : 'Verify your number on WhatsApp. It confirms your account, and lets you list ideas on IdeaHub by chatting on WhatsApp.'} It's free.</p>
+      <button class="wa-btn" onclick="waStart()">💬 Verify WhatsApp</button>
+      ${waState.can_send_code ? `<div style="margin-top:0.6rem"><a href="#" style="font-size:12px;color:var(--muted)" onclick="event.preventDefault();waShowAlt()">Can't send a message? Get a code instead</a></div>` : ''}
+      <div id="waAlt"></div>`;
+  }
+  async function waStart() {
+    let d;
+    try { d = await waApi('link-code', 'POST'); } catch (e) { alert(e.message); return; }
+    const body = document.getElementById('waBody');
+    const sim = d.mode !== 'live' || !d.wa_link;
+    body.innerHTML = `<div class="wa-row">
+        <div class="wa-steps">
+          ${sim ? `<p style="color:var(--accent)">WhatsApp isn't connected yet (simulator mode). An admin can test this in <a style="color:var(--accent)" href="/wa-sim" target="_blank">the WhatsApp simulator</a> by sending the message below.</p>` : `<p><strong style="color:var(--text)">1.</strong> Tap the button: WhatsApp opens with a message to IdeaHub already written.<br><strong style="color:var(--text)">2.</strong> Press <strong style="color:var(--text)">Send</strong>. That's it.</p>`}
+          <div class="wa-code">${waEsc(d.code)}</div>
+          <div>${sim ? '' : `<a class="wa-btn" href="${waEsc(d.wa_link)}" target="_blank" rel="noopener">Open WhatsApp</a>`}
+            <button class="wa-btn ghost" onclick="loadWhatsApp();waStop()">Cancel</button></div>
+          <p class="wa-note">Or send this to ${waEsc(d.bot_number || 'IdeaHub')} on WhatsApp yourself: <em>${waEsc(d.message)}</em><br>The code works for 15 minutes. This page updates by itself when we receive it.</p>
+        </div>
+        ${sim ? '' : `<div class="wa-qr-wrap"><div class="wa-qr" id="waQr"></div><div class="wa-qr-cap">On a computer? Scan with your phone camera.</div></div>`}
+      </div>`;
+    if (!sim && window.QRCode) new QRCode(document.getElementById('waQr'), { text: d.wa_link, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+    waStop();
+    const until = Date.now() + 15 * 60 * 1000;
+    waPoll = setInterval(async () => {
+      if (Date.now() > until) { waStop(); loadWhatsApp(); return; }
+      try { const st = await waApi('status'); if (st.linked) { waStop(); loadWhatsApp(); showMsg('success', '✅ WhatsApp verified and linked.'); } } catch (e) {}
+    }, 3000);
+  }
+  function waStop() { if (waPoll) clearInterval(waPoll); waPoll = null; }
+  function waShowAlt() {
+    document.getElementById('waAlt').innerHTML = `<div class="wa-alt">
+      <div class="wa-note" style="margin-top:0;margin-bottom:0.5rem">We'll send a 6-digit code to your WhatsApp.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="waPhone" type="tel" placeholder="+94 77 123 4567" style="flex:1;min-width:180px" />
+      <button class="wa-btn ghost" onclick="waSend()">Send code</button></div>
+      <div id="waCodeRow" style="display:none;margin-top:8px;gap:8px;flex-wrap:wrap"><input id="waCode" maxlength="6" inputmode="numeric" placeholder="6-digit code" style="width:140px" />
+      <button class="wa-btn" onclick="waVerify()">Verify</button></div>
+      <div id="waAltMsg" class="wa-note"></div></div>`;
+  }
+  async function waSend() {
+    const m = document.getElementById('waAltMsg');
+    try { const d = await waApi('send-code', 'POST', { phone: document.getElementById('waPhone').value }); m.textContent = `Code sent to ${d.number} on WhatsApp. It works for 10 minutes.`; m.style.color = 'var(--success)'; document.getElementById('waCodeRow').style.display = 'flex'; }
+    catch (e) { m.textContent = e.message; m.style.color = 'var(--error)'; }
+  }
+  async function waVerify() {
+    const m = document.getElementById('waAltMsg');
+    try { await waApi('verify-code', 'POST', { code: document.getElementById('waCode').value.trim() }); loadWhatsApp(); showMsg('success', '✅ WhatsApp verified and linked.'); }
+    catch (e) { m.textContent = e.message; m.style.color = 'var(--error)'; }
+  }
+  async function waUnlink() {
+    if (!confirm('Unlink WhatsApp? Your number stays verified, but you won\'t be able to use IdeaHub on WhatsApp until you link it again.')) return;
+    try { await waApi('unlink', 'POST'); loadWhatsApp(); } catch (e) { alert(e.message); }
   }
   initRoleUI();
   loadProfile();
 </script>
-<script src="/chat-widget.js" defer></script></body>
+<script src="/chat-widget.js" defer></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</body>
 </html>

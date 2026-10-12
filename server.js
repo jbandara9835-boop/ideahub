@@ -45,7 +45,8 @@ const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':
 
   const app = express();
   app.use(cors());
-  app.use(express.json());
+  // Keeps the raw body for the WhatsApp webhook signature check
+  app.use(express.json({ verify: (req, res, buf) => { if (req.originalUrl.startsWith('/api/whatsapp/webhook')) req.rawBody = buf; } }));
   app.use(session({
     secret: process.env.JWT_SECRET,
     resave: false,
@@ -176,6 +177,7 @@ app.get('/robots.txt', (req, res) => {
   require('./reqpay').mount(app, { supabase, authMiddleware, escrow });
   require('./biz').mount(app, { supabase, authMiddleware, escrow }); // Business Expansion (overrides the older routes below)
   require('./market').mount(app, { supabase, authMiddleware, escrow }); // delivery files, wallet history
+  require('./whatsapp').mount(app, { supabase, authMiddleware, escrow }); // WhatsApp: number verification + idea bot
   const quality = require('./public/listing-quality');
   const ideaTerms = require('./public/idea-terms');
   const engagementLevels = require('./public/engagements');
@@ -286,6 +288,7 @@ app.get('/robots.txt', (req, res) => {
   app.get('/business/:id', (req, res) => res.sendFile(__dirname + '/public/business-detail.html'));
   app.get('/business-dashboard', (req, res) => res.sendFile(__dirname + '/public/business-dashboard.html'));
   app.get('/expansion', (req, res) => res.sendFile(__dirname + '/public/expansion.html'));
+  app.get('/wa-sim', (req, res) => res.sendFile(__dirname + '/public/wa-sim.html'));
   app.get('/business-detail', (req, res) => res.redirect(301, req.query.id ? '/business/' + encodeURIComponent(req.query.id) : '/businesses'));
   app.get('/find-support', (req, res) => {
     res.sendFile(__dirname + '/public/find-support.html');
@@ -510,7 +513,7 @@ app.get('/robots.txt', (req, res) => {
     if (postal_code !== undefined) updateData.postal_code = postal_code;
     if (address_line1 !== undefined) updateData.address_line1 = address_line1;
     if (address_line2 !== undefined) updateData.address_line2 = address_line2;
-    if (phone !== undefined) updateData.phone = phone;
+    // The phone number is set only by verifying it on WhatsApp (whatsapp.js)
     if (expert_area !== undefined) updateData.expert_area = expert_area;
     if (qualification !== undefined) updateData.qualification = qualification;
     if (verification_status === 'pending') updateData.verification_status = 'pending';
@@ -2494,64 +2497,9 @@ app.get('/robots.txt', (req, res) => {
   });
 
   app.get('/google-role-select', (req, res) => res.sendFile(__dirname + '/public/google-role-select.html'));
-// ── SMS VERIFICATION ─────────────────────────────────────────────────────────
-
-const twilio = require('twilio');
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
-// SEND verification code
-app.post('/api/sms/send-code', authMiddleware, async (req, res) => {
-  const { phone } = req.body;
-  if (!phone) return res.status(400).json({ error: 'Phone number required' });
-
-  // Generate 6-digit code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
-
-  // Save code to DB
-  await supabase.from('sms_verifications').upsert([{
-    user_id: req.user.id,
-    phone,
-    code,
-    expires_at: expiresAt,
-    verified: false
-  }], { onConflict: 'user_id' });
-
-  try {
-    await twilioClient.messages.create({
-      body: `Your IdeaHub verification code is: ${code}. Valid for 10 minutes.`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone
-    });
-    res.json({ success: true });
-  } catch (err) {
-    console.error('Twilio error:', err.message);
-    res.status(500).json({ error: 'Failed to send SMS. Check phone number format (+1234567890).' });
-  }
-});
-
-// VERIFY code
-app.post('/api/sms/verify-code', authMiddleware, async (req, res) => {
-  const { code } = req.body;
-  if (!code) return res.status(400).json({ error: 'Code required' });
-
-  const { data: record } = await supabase
-    .from('sms_verifications')
-    .select('*')
-    .eq('user_id', req.user.id)
-    .eq('verified', false)
-    .single();
-
-  if (!record) return res.status(400).json({ error: 'No pending verification found' });
-  if (new Date(record.expires_at) < new Date()) return res.status(400).json({ error: 'Code expired. Please request a new one.' });
-  if (record.code !== code) return res.status(400).json({ error: 'Incorrect code. Please try again.' });
-
-  // Mark as verified
-  await supabase.from('sms_verifications').update({ verified: true }).eq('user_id', req.user.id);
-  await supabase.from('users').update({ phone: record.phone, phone_verified: true }).eq('id', req.user.id);
-
-  res.json({ success: true, message: 'Phone number verified!' });
-});
+// ── PHONE VERIFICATION ── now on WhatsApp (whatsapp.js). Old SMS links get a clear message.
+app.post('/api/sms/send-code', (req, res) => res.status(410).json({ error: 'Phone numbers are now verified on WhatsApp. Refresh the page and tap "Verify WhatsApp".' }));
+app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Phone numbers are now verified on WhatsApp. Refresh the page and tap "Verify WhatsApp".' }));
   // ── SETTINGS ──────────────────────────────────────────────────────────────────
 
   app.post('/api/auth/change-password', authMiddleware, async (req, res) => {

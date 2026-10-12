@@ -121,7 +121,7 @@ function profilePct(u) {
 }
 function verificationMissing(u) {
   const missing = [];
-  if (!u.phone_verified) missing.push('phone not verified');
+  if (!u.phone_verified) missing.push('WhatsApp number not verified');
   const pct = profilePct(u);
   if (pct < MIN_PROFILE_PCT) missing.push(`profile ${pct}% complete (needs ${MIN_PROFILE_PCT}%)`);
   const ageDays = (Date.now() - new Date(u.created_at).getTime()) / 86400000;
