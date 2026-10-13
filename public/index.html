@@ -6,17 +6,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>IdeaHub — Where Ideas Become Empires</title>
 <meta name="google-site-verification" content="Kk9fDthupWJaHE6IqkmH_1zx18BzS4KTK3r5v3BQM48" />
-<meta name="description" content="Buy, sell, and invest in breakthrough ideas. IdeaHub connects creators, investors, attorneys, and managers on one secure marketplace with escrow-protected deals." />
+<meta name="description" content="Buy, sell and invest in breakthrough ideas. IdeaHub connects creators, investors, businesses and verified professionals on one marketplace, with escrow-protected payments." />
 <link rel="canonical" href="https://ideahub.it.com/" />
 <meta property="og:type" content="website" />
+<meta property="og:site_name" content="IdeaHub" />
 <meta property="og:url" content="https://ideahub.it.com/" />
 <meta property="og:title" content="IdeaHub — Where Ideas Become Empires" />
-<meta property="og:description" content="Buy, sell, and invest in breakthrough ideas. Connect with attorneys, managers, and partners on one secure marketplace." />
+<meta property="og:description" content="Buy, sell and invest in breakthrough ideas. Creators, investors, businesses and verified professionals on one marketplace, with escrow-protected payments." />
+<meta property="og:image" content="https://ideahub.it.com/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="IdeaHub — Where ideas become empires" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="IdeaHub — Where Ideas Become Empires" />
-<meta name="twitter:description" content="Buy, sell, and invest in breakthrough ideas. Connect with attorneys, managers, and partners on one secure marketplace." />
+<meta name="twitter:description" content="Buy, sell and invest in breakthrough ideas. Creators, investors, businesses and verified professionals on one marketplace." />
+<meta name="twitter:image" content="https://ideahub.it.com/og-image.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://images.unsplash.com" />
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=70" media="(min-width: 769px)" />
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=900&q=65" media="(max-width: 768px)" />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/site.css" />
@@ -28,723 +37,375 @@
   --surface: #111114;
   --surface2: #1a1a1f;
   --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.18);
   --accent: #f5c842;
   --accent-dim: rgba(245,200,66,0.10);
   --accent2: #6ee7b7;
   --accent3: #60a5fa;
   --text: #f0ede8;
-  --muted: #6e6b65;
-  --error: #ff6b6b;
+  --muted: #8a867f;
+  --nav-h: 74px;
 }
 
 html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text);
-  overflow-x: hidden;
-}
+body { background: var(--bg); font-family: 'DM Sans', system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* ── NAV ── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1.25rem 3rem;
-  background: rgba(8,8,9,0.85);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-}
-.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.nav-logo-icon {
-  width: 34px; height: 34px; background: var(--accent);
-  border-radius: 8px; display: flex; align-items: center; justify-content: center;
-}
-.nav-logo-icon svg { width: 18px; height: 18px; fill: #080809; }
-.nav-logo-text { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: var(--text); }
-.nav-links { display: flex; align-items: center; gap: 2rem; }
-.nav-links a { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
-.nav-links a:hover { color: var(--text); }
-.nav-actions { display: flex; gap: 10px; align-items: center; }
-.btn-ghost { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1.1rem; color: var(--muted); font-size: 14px; cursor: pointer; text-decoration: none; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
-.btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
-.btn-primary { background: var(--accent); border: none; border-radius: 8px; padding: 0.5rem 1.25rem; color: #080809; font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; font-family: 'Cabinet Grotesk', sans-serif; }
-.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-
-/* NOTIFICATION BELL */
-.notif-bell { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:10px; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:all 0.15s; }
-.notif-bell:hover { border-color:var(--border-hover); }
-.notif-badge { position:absolute; top:-4px; right:-4px; background:var(--error); color:#fff; font-size:10px; font-weight:700; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px; }
-.notif-panel { position:absolute; top:54px; right:0; width:360px; max-height:440px; background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.5); z-index:300; display:none; flex-direction:column; overflow:hidden; }
-.notif-panel.show { display:flex; }
-.notif-panel-header { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.1rem; border-bottom:1px solid var(--border); }
-.notif-panel-title { font-family:'Cabinet Grotesk',sans-serif; font-size:14px; font-weight:700; }
-.notif-mark-all { background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer; }
-.notif-list { overflow-y:auto; flex:1; }
-.notif-item { display:flex; gap:10px; padding:0.85rem 1.1rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; text-align:left; }
-.notif-item:hover { background:rgba(255,255,255,0.03); }
-.notif-item:last-child { border-bottom:none; }
-.notif-item.unread { background:var(--accent-dim); }
-.notif-item-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
-.notif-item-title { font-size:13px; font-weight:600; margin-bottom:2px; }
-.notif-item-msg { font-size:12px; color:var(--muted); line-height:1.4; }
-.notif-item-time { font-size:11px; color:var(--muted); margin-top:4px; }
-.notif-empty { text-align:center; padding:2.5rem 1rem; color:var(--muted); font-size:13px; }
-
-@media (max-width: 768px) {
-  .notif-panel { width:calc(100vw - 2rem); right:-1rem; }
-}
-
-/* ── HERO ── */
+/* ── HERO ───────────────────────────────────────────────────────────────── */
 .hero {
-  min-height: 100vh;
-  height: auto;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  min-height: 100vh; min-height: 100svh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: calc(var(--nav-h) + 1.5rem) 2rem 3.5rem;
   text-align: center;
-  padding: 8rem 2rem 4rem;
-  position: relative;
-  overflow: hidden;
 }
-
-.hero-bg {
-  position: absolute; inset: 0; pointer-events: none;
+.hero-slides { position: absolute; inset: 0; z-index: 0; }
+.hero-slide {
+  position: absolute; inset: 0; opacity: 0;
+  transition: opacity 1s ease;
+  background-color: #0b0b0d;
+  background-size: cover; background-position: center;
 }
-.hero-bg-glow1 {
-  position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
-  width: 80vw; height: 80vw; max-width: 900px; max-height: 900px;
-  background: radial-gradient(circle, rgba(245,200,66,0.07) 0%, transparent 65%);
+.hero-slide.active { opacity: 1; }
+.hero-slide::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(8,8,9,0.35), rgba(8,8,9,0) 70%),
+    linear-gradient(180deg, rgba(8,8,9,0.78) 0%, rgba(8,8,9,0.55) 35%, rgba(8,8,9,0.7) 70%, #080809 100%);
 }
-.hero-bg-glow2 {
-  position: absolute; bottom: -10%; left: -10%;
-  width: 50vw; height: 50vw;
-  background: radial-gradient(circle, rgba(110,231,183,0.05) 0%, transparent 65%);
-}
-.hero-bg-glow3 {
-  position: absolute; top: 20%; right: -10%;
-  width: 40vw; height: 40vw;
-  background: radial-gradient(circle, rgba(96,165,250,0.05) 0%, transparent 65%);
-}
+/* colour wash shown until (or instead of) the photo */
+.hero-slide.s0 { background-image: radial-gradient(circle at 30% 20%, rgba(245,200,66,0.14), transparent 55%); }
+.hero-slide.s1 { background-image: radial-gradient(circle at 70% 25%, rgba(251,146,60,0.14), transparent 55%); }
+.hero-slide.s2 { background-image: radial-gradient(circle at 30% 30%, rgba(110,231,183,0.12), transparent 55%); }
+.hero-slide.s3 { background-image: radial-gradient(circle at 70% 30%, rgba(167,139,250,0.14), transparent 55%); }
 .hero-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
 }
 
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; padding: 6px 16px; font-size: 12px; color: var(--muted);
-  margin-bottom: 2rem;
+/* search (inside the hero so the photo runs behind it) */
+.hero-search { position: relative; z-index: 3; width: 100%; max-width: 640px; margin: 0 auto 1.25rem; }
+.search-wrap { display: flex; background: rgba(17,17,20,0.88); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3); transition: border-color .2s, box-shadow .2s; }
+.search-wrap:focus-within { border-color: rgba(245,200,66,0.5); box-shadow: 0 0 0 3px rgba(245,200,66,0.1); }
+.search-wrap select { background: var(--surface2); border: none; border-right: 1px solid var(--border); padding: 0 0.9rem; font-size: 13px; color: var(--muted); font-family: inherit; cursor: pointer; outline: none; min-width: 150px; }
+.search-wrap input { flex: 1; min-width: 0; background: none; border: none; padding: 0.8rem 1rem; font-size: 14px; font-family: inherit; color: var(--text); outline: none; }
+.search-wrap button { background: var(--accent); border: none; padding: 0 1.4rem; font-size: 13px; font-weight: 700; font-family: 'Cabinet Grotesk', sans-serif; color: #080809; cursor: pointer; white-space: nowrap; }
+.search-wrap button:hover { filter: brightness(1.06); }
+.search-popular { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; justify-content: center; font-size: 11.5px; color: var(--muted); }
+.search-popular a { color: var(--accent); text-decoration: none; }
+.search-popular a:hover { text-decoration: underline; }
+
+/* the slide stage: every panel sits in the same grid cell, so the stage is always
+   as tall as the tallest panel and nothing on the page moves when slides change */
+.hero-stage { position: relative; z-index: 2; display: grid; width: 100%; max-width: 1000px; flex: 1 0 auto; align-items: center; }
+.hero-panel {
+  grid-area: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; transform: translateY(14px);
+  transition: opacity .6s ease, transform .6s ease, visibility 0s linear .6s;
 }
+.hero-panel.active { opacity: 1; visibility: visible; transform: none; transition: opacity .7s ease .15s, transform .7s ease .15s, visibility 0s; }
+
+.hero-badge, .slide-tag {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 20px;
+  padding: 6px 16px; font-size: 12px; margin-bottom: 1.5rem; letter-spacing: .3px;
+}
+.hero-badge { background: rgba(17,17,20,0.8); border: 1px solid var(--border); color: #b9b5ad; }
 .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+.slide-tag { font-weight: 600; }
+.tag-1 { background: rgba(251,146,60,0.1); color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+.tag-2 { background: rgba(110,231,183,0.1); color: var(--accent2); border: 1px solid rgba(110,231,183,0.25); }
+.tag-3 { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
 
 .hero-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(64px, 12vw, 140px);
-  line-height: 0.92;
-  letter-spacing: 2px;
-  margin-bottom: 1.5rem;
+  font-family: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif; font-weight: 400;
+  font-size: clamp(50px, min(9.5vw, 11vh), 132px);
+  line-height: .92; letter-spacing: 2px; margin-bottom: 1.25rem; text-transform: uppercase;
 }
-.hero-title-line1 { display: block; color: var(--text); }
-.hero-title-line2 { display: block; color: var(--accent); }
-.hero-title-line3 { display: block; color: var(--text); opacity: 0.25; }
+.hero-title span { display: block; }
+.hero-title .gold { color: var(--accent); }
+.hero-title .soft { font-size: .55em; opacity: .65; margin-top: .15em; }
+.hero-sub { font-size: clamp(15px, 1.6vw, 19px); color: #a7a39b; max-width: 600px; line-height: 1.6; margin-bottom: 2rem; }
+.hero-sub b { color: var(--text); font-weight: 500; }
+.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero-btn-main, .hero-btn-sec { border-radius: 10px; padding: .9rem 1.8rem; font-size: 15px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all .2s; cursor: pointer; }
+.hero-btn-main { background: var(--accent); color: #080809; font-weight: 800; font-family: 'Cabinet Grotesk', sans-serif; }
+.hero-btn-main:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,200,66,0.3); }
+.hero-btn-sec { background: rgba(8,8,9,0.4); color: var(--text); border: 1px solid rgba(255,255,255,0.16); font-weight: 500; }
+.hero-btn-sec:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
 
-.hero-sub {
-  font-size: clamp(16px, 2vw, 20px);
-  color: var(--muted);
-  max-width: 560px;
-  line-height: 1.6;
-  margin-bottom: 2.5rem;
-}
-.hero-sub span { color: var(--text); }
-
-.hero-actions {
-  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-  margin-bottom: 3rem;
-}
-.hero-btn-main {
-  background: var(--accent); color: #080809; border: none; border-radius: 10px;
-  padding: 0.9rem 2rem; font-size: 15px; font-weight: 800;
-  font-family: 'Cabinet Grotesk', sans-serif;
-  cursor: pointer; text-decoration: none;
-  transition: all 0.2s;
-  display: flex; align-items: center; gap: 8px;
-}
-.hero-btn-main:hover { opacity: 0.88; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,200,66,0.3); }
-.hero-btn-sec {
-  background: none; color: var(--text); border: 1px solid var(--border);
-  border-radius: 10px; padding: 0.9rem 2rem; font-size: 15px; font-weight: 500;
-  cursor: pointer; text-decoration: none; transition: all 0.2s;
-  display: flex; align-items: center; gap: 8px;
-}
-.hero-btn-sec:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
-
-.hero-stats {
-  display: flex; gap: 3rem; justify-content: center;
-}
-.hero-stat-val { font-family: 'Cabinet Grotesk', sans-serif; font-size: 28px; font-weight: 900; color: var(--accent); }
+/* bottom of the hero: trust points (+ live numbers once they're meaningful), dots */
+.hero-foot { position: relative; z-index: 2; margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1.1rem; }
+.hero-trust { display: flex; gap: .6rem 1.6rem; flex-wrap: wrap; justify-content: center; font-size: 13px; color: #a7a39b; }
+.hero-trust span { display: inline-flex; align-items: center; gap: 6px; }
+.hero-stats { display: flex; gap: 2.5rem; justify-content: center; }
+.hero-stats[hidden] { display: none; }
+.hero-stat-val { font-family: 'Cabinet Grotesk', sans-serif; font-size: 26px; font-weight: 800; color: var(--accent); }
 .hero-stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ── HERO SLIDESHOW ── */
-.hero-slides { position: absolute; inset: 0; z-index: 0; height: 100%; }
-.hero-slide {
-  position: absolute; inset: 0;
-  opacity: 0; visibility: hidden;
-  transition: opacity 0.9s ease;
-  background-size: cover; background-position: center;
-}
-.hero-slide.active { opacity: 1; visibility: visible; }
-.hero-slide::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(8,8,9,0.55) 0%, rgba(8,8,9,0.88) 60%, rgba(8,8,9,0.98) 100%);
-}
-.hero-slide.slide-0 { background-image: linear-gradient(180deg, rgba(8,8,9,0.4), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=70'); }
-.hero-slide.slide-1 { background-image: linear-gradient(180deg, rgba(8,8,9,0.55), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1600&q=70'); }
-.hero-slide.slide-2 { background-image: linear-gradient(180deg, rgba(8,8,9,0.55), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1600&q=70'); }
-.hero-slide.slide-3 { background-image: linear-gradient(180deg, rgba(8,8,9,0.55), rgba(8,8,9,0.95)), url('https://images.unsplash.com/photo-1532012197267-da84d127e765?w=1600&q=70'); }
-
-.hero-content-panel { display: none; opacity: 1; position: relative; z-index: 10; }
-.hero-content-panel.active { display: flex; flex-direction: column; align-items: center; opacity: 1; animation: fadeUp 0.7s ease; position: relative; z-index: 10; }
-
-.hero-quote-mark { font-family: 'Bebas Neue', sans-serif; font-size: 90px; line-height: 0.6; color: var(--accent); opacity: 0.5; margin-bottom: 0.5rem; }
-.hero-quote-text {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(28px, 4.5vw, 48px);
-  font-weight: 800; line-height: 1.25; max-width: 780px;
-  margin-bottom: 1.5rem;
-}
-.hero-quote-author { font-size: 16px; color: var(--accent); font-weight: 600; margin-bottom: 2.5rem; }
-.hero-quote-author span { color: var(--muted); font-weight: 400; }
-
-.hero-nav-dots {
-  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 10px; z-index: 5;
-}
-.hero-dot {
-  width: 32px; height: 4px; border-radius: 4px;
-  background: rgba(255,255,255,0.18); border: none; cursor: pointer;
-  transition: background 0.3s; padding: 0; overflow: hidden; position: relative;
-}
-.hero-dot.active { background: rgba(255,255,255,0.3); }
-.hero-dot.active::after {
-  content: ''; position: absolute; inset: 0; background: var(--accent);
-  animation: dotFill 6s linear forwards;
-}
-@keyframes dotFill { from { width: 0%; } to { width: 100%; } }
-
+.hero-controls { display: flex; align-items: center; gap: 12px; }
+.hero-dots { display: flex; gap: 8px; }
+.hero-dot { width: 34px; height: 18px; background: none; border: none; padding: 7px 0; cursor: pointer; }
+.hero-dot i { display: block; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.2); position: relative; overflow: hidden; }
+.hero-dot.active i { background: rgba(255,255,255,0.32); }
+.hero-dot.active i::after { content: ''; position: absolute; inset: 0; background: var(--accent); transform-origin: left; animation: dotFill var(--slide-ms, 7000ms) linear forwards; }
+.hero.paused .hero-dot.active i::after { animation-play-state: paused; }
+.hero.still .hero-dot.active i::after { animation: none; transform: none; }
+@keyframes dotFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.hero-pause { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.18); background: rgba(8,8,9,0.5); color: #cfcac2; font-size: 10px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.hero-pause:hover { border-color: rgba(255,255,255,0.35); }
 .hero-arrow {
-  position: absolute; top: 50%; transform: translateY(-50%);
+  position: absolute; top: 55%; transform: translateY(-50%); z-index: 4;
   width: 44px; height: 44px; border-radius: 50%;
-  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  background: rgba(8,8,9,0.45); border: 1px solid rgba(255,255,255,0.14);
   color: var(--text); display: flex; align-items: center; justify-content: center;
-  cursor: pointer; z-index: 5; font-size: 18px; transition: all 0.2s;
+  cursor: pointer; font-size: 20px; transition: all .2s;
 }
-.hero-arrow:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); }
-.hero-arrow-left { left: 1.5rem; }
-.hero-arrow-right { right: 1.5rem; }
+.hero-arrow:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+.hero-arrow-left { left: 1.5rem; } .hero-arrow-right { right: 1.5rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.slide-tag {
-  display: inline-flex; align-items: center; gap: 8px;
-  border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 600;
-  margin-bottom: 1.75rem; letter-spacing: 0.3px;
-}
-.slide-tag.tag-0 { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(245,200,66,0.25); }
-.slide-tag.tag-1 { background: rgba(251,146,60,0.1); color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
-.slide-tag.tag-2 { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
-.slide-tag.tag-3 { background: rgba(110,231,183,0.1); color: var(--accent2); border: 1px solid rgba(110,231,183,0.25); }
+/* mobile fixed search bar (under the nav) */
+#mobileSearchBar { display: none; position: fixed; top: 62px; left: 0; right: 0; z-index: 95; background: rgba(8,8,9,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: .6rem 1rem; transition: transform .25s ease; }
+#mobileSearchBar form { display: flex; background: var(--surface); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; overflow: hidden; }
+#mobileSearchBar input { flex: 1; min-width: 0; background: none; border: none; padding: .6rem .85rem; font-size: 14px; font-family: inherit; color: var(--text); outline: none; }
+#mobileSearchBar button { background: var(--accent); border: none; padding: 0 1rem; font-size: 16px; color: #080809; cursor: pointer; }
 
-/* ── BOTTOM TAB BAR (mobile only) ── */
-.bottom-tabbar {
-  display: none;
-  position: fixed !important; top: auto !important; bottom: 0px !important; left: 0 !important; right: 0 !important; width: 100%; z-index: 9999;
-  height: 56px;
-  background: #080809;
-  border-top: 2px solid var(--accent);
-  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
-  box-sizing: border-box;
-}
-.tabbar-inner { display: flex; justify-content: space-around; align-items: center; }
-.tabbar-item {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  text-decoration: none; color: var(--muted); font-size: 10px;
-  padding: 4px 12px; transition: color 0.15s; flex: 1;
-}
-.tabbar-item.active { color: var(--accent); }
-.tabbar-icon { font-size: 19px; line-height: 1; }
-.tabbar-post-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--accent); color: #080809;
-  font-size: 20px; font-weight: 700; text-decoration: none;
-  margin-top: -14px; box-shadow: 0 4px 14px rgba(245,200,66,0.4);
-  flex-shrink: 0;
-}
-
-
-
-/* ── SECTION SHARED ── */
+/* ── SECTIONS ──────────────────────────────────────────────────────────── */
 section { padding: 6rem 2rem; position: relative; }
-.section-label {
-  font-size: 11px; font-weight: 600; color: var(--accent);
-  text-transform: uppercase; letter-spacing: 2px;
-  margin-bottom: 0.75rem;
-}
-.section-title {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(28px, 4vw, 44px);
-  font-weight: 900; line-height: 1.1;
-  margin-bottom: 1rem;
-}
-.section-sub { font-size: 16px; color: var(--muted); max-width: 520px; line-height: 1.6; }
 .container { max-width: 1200px; margin: 0 auto; }
+.section-label { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: .75rem; }
+.section-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: clamp(28px, 4vw, 44px); font-weight: 800; line-height: 1.1; margin-bottom: 1rem; }
+.section-sub { font-size: 16px; color: var(--muted); max-width: 560px; line-height: 1.6; }
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity: 1; transform: none; }
 
-/* ── TRENDING IDEAS ── */
-.trending-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
-}
-.ideas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-}
-.idea-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.25s;
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  position: relative;
-  overflow: hidden;
-}
-.idea-card::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(245,200,66,0.04), transparent);
-  opacity: 0; transition: opacity 0.25s;
-}
+/* trending */
+.trending-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.view-all-btn { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-size: 14px; font-weight: 600; text-decoration: none; transition: gap .2s; }
+.view-all-btn:hover { gap: 10px; }
+.ideas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; min-height: 200px; }
+.ideas-loading { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 14px; grid-column: 1 / -1; }
+.idea-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; display: block; transition: all .25s; }
 .idea-card:hover { border-color: rgba(245,200,66,0.25); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-.idea-card:hover::before { opacity: 1; }
-
-.idea-card { padding: 0; }
-.idea-card-banner {
-  height: 130px; width: 100%; background-size: cover; background-position: center;
-  display: flex; align-items: center; justify-content: center; position: relative;
-}
-.idea-card-banner-icon { font-size: 32px; opacity: 0.55; }
-.idea-card-body { padding: 1.5rem; }
-
-@media (max-width: 768px) {
-  nav { padding: 0.9rem 1rem; }
-  .nav-links { display: none; }
-  .nav-actions { gap: 6px; }
-  .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
-  .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
-
-  .hero { padding: 4.5rem 1rem 5rem; min-height: 100svh; }
-  .hero-title { font-size: clamp(40px, 14vw, 72px); }
-  .hero-sub { font-size: 14px; padding: 0 0.25rem; margin-bottom: 1.75rem; }
-  .hero-stats { gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
-  .hero-stat-val { font-size: 20px; }
-  .hero-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; text-align: center; }
-
-  .hero-arrow { width: 34px; height: 34px; font-size: 14px; }
-  .hero-arrow-left { left: 0.4rem; }
-  .hero-arrow-right { right: 0.4rem; }
-  .hero-nav-dots { bottom: 1.1rem; gap: 6px; }
-  .hero-dot { width: 22px; height: 3px; }
-
-  .slide-tag { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; }
-  .hero-quote-mark { font-size: 50px; margin-bottom: 0.25rem; }
-  .hero-quote-text { font-size: clamp(20px, 6.5vw, 28px); padding: 0 0.5rem; margin-bottom: 1.1rem; }
-  .hero-quote-author { font-size: 13px; margin-bottom: 1.75rem; }
-}
-.idea-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-.idea-category {
-  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-  padding: 4px 10px; border-radius: 20px;
-  background: var(--accent-dim); color: var(--accent);
-}
+.idea-card-banner { height: 130px; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; }
+.idea-card-banner-icon { font-size: 32px; opacity: .55; }
+.idea-card-body { padding: 1.4rem; }
+.idea-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 1rem; }
+.idea-category { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 4px 10px; border-radius: 20px; background: var(--accent-dim); color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .idea-price { font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent2); }
-.idea-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.3; }
+.idea-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: .5rem; line-height: 1.3; }
 .idea-summary { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .idea-card-foot { display: flex; align-items: center; justify-content: space-between; }
 .idea-creator { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
 .idea-creator-av { width: 24px; height: 24px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--accent); border: 1px solid var(--border); overflow: hidden; }
-.idea-creator-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.idea-meta { display: flex; gap: 10px; font-size: 11px; color: var(--muted); }
+.idea-creator-av img { width: 100%; height: 100%; object-fit: cover; }
+.idea-meta { font-size: 11px; color: var(--muted); }
 
-.view-all-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  color: var(--accent); font-size: 14px; font-weight: 600;
-  text-decoration: none; transition: gap 0.2s;
-}
-.view-all-btn:hover { gap: 10px; }
-
-.ideas-loading { text-align: center; padding: 4rem; color: var(--muted); font-size: 14px; }
-
-/* ── ROLE CARDS "WHO ARE YOU" ── */
-.who-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.roles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-top: 3rem;
-}
-.role-card {
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2rem 1.75rem;
-  cursor: pointer;
-  transition: all 0.25s;
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  position: relative;
-  overflow: hidden;
-  background: var(--bg);
-}
-.role-card:hover { transform: translateY(-4px); }
-.role-emoji-big { font-size: 36px; margin-bottom: 1rem; display: block; }
-.role-hook {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 20px; font-weight: 900; line-height: 1.2;
-  margin-bottom: 0.6rem;
-}
-.role-desc-text { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 1.25rem; }
-.role-cta {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600;
-  transition: gap 0.2s;
-}
-.role-cta:hover { gap: 10px; }
-
-/* Role accent colors */
-.role-card.creator { border-color: rgba(245,200,66,0.15); }
-.role-card.creator:hover { border-color: rgba(245,200,66,0.4); background: rgba(245,200,66,0.04); box-shadow: 0 12px 40px rgba(245,200,66,0.1); }
-.role-card.creator .role-cta { color: var(--accent); }
-
-.role-card.investor { border-color: rgba(110,231,183,0.15); }
-.role-card.investor:hover { border-color: rgba(110,231,183,0.4); background: rgba(110,231,183,0.04); box-shadow: 0 12px 40px rgba(110,231,183,0.1); }
-.role-card.investor .role-cta { color: var(--accent2); }
-
-.role-card.attorney { border-color: rgba(96,165,250,0.15); }
-.role-card.attorney:hover { border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.04); box-shadow: 0 12px 40px rgba(96,165,250,0.1); }
-.role-card.attorney .role-cta { color: var(--accent3); }
-
-.role-card.manager { border-color: rgba(167,139,250,0.15); }
-.role-card.manager:hover { border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.04); box-shadow: 0 12px 40px rgba(167,139,250,0.1); }
-.role-card.manager .role-cta { color: #a78bfa; }
-
-.role-card.patent { border-color: rgba(251,146,60,0.15); }
-.role-card.patent:hover { border-color: rgba(251,146,60,0.4); background: rgba(251,146,60,0.04); box-shadow: 0 12px 40px rgba(251,146,60,0.1); }
-.role-card.patent .role-cta { color: #fb923c; }
-
-.role-card.business { border-color: rgba(244,114,182,0.15); }
-.role-card.business:hover { border-color: rgba(244,114,182,0.4); background: rgba(244,114,182,0.04); box-shadow: 0 12px 40px rgba(244,114,182,0.1); }
-.role-card.business .role-cta { color: #f472b6; }
-
-.role-card.corporate { border-color: rgba(52,211,153,0.15); }
-.role-card.corporate:hover { border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.04); box-shadow: 0 12px 40px rgba(52,211,153,0.1); }
-.role-card.corporate .role-cta { color: #34d399; }
-
-/* ── CATEGORIES ── */
-.categories-grid {
-  display: flex; flex-wrap: wrap; gap: 12px;
-  margin-top: 2.5rem;
-}
-.cat-pill {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 0.65rem 1.1rem;
-  font-size: 13px; font-weight: 500;
-  cursor: pointer; text-decoration: none; color: var(--text);
-  transition: all 0.2s;
-}
+/* categories */
+.categories-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2rem; }
+.cat-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: .65rem 1.1rem; font-size: 13.5px; font-weight: 500; text-decoration: none; color: var(--text); transition: all .2s; }
 .cat-pill:hover { border-color: rgba(245,200,66,0.3); color: var(--accent); transform: translateY(-2px); }
-.cat-count { font-size: 11px; color: var(--muted); background: var(--surface2); padding: 2px 7px; border-radius: 20px; }
 
-/* ── HOW IT WORKS ── */
-.how-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 24px; margin-top: 3rem;
-  position: relative;
-}
-.how-grid::before {
-  content: '';
-  position: absolute; top: 40px; left: 10%; right: 10%; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent);
-}
-.how-step {
-  text-align: center; position: relative; padding: 0 1rem;
-}
-.how-number {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent);
-  margin: 0 auto 1.25rem;
-  position: relative; z-index: 1;
-}
-.how-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 17px; font-weight: 800; margin-bottom: 0.5rem; }
+/* who */
+.who-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.roles-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 3rem; }
+.role-card { --c: var(--accent); border: 1px solid color-mix(in srgb, var(--c) 18%, transparent); border-radius: 20px; padding: 1.75rem 1.5rem; text-decoration: none; color: inherit; display: flex; flex-direction: column; background: var(--bg); transition: all .25s; }
+.role-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--c) 45%, transparent); background: color-mix(in srgb, var(--c) 5%, var(--bg)); box-shadow: 0 12px 40px color-mix(in srgb, var(--c) 10%, transparent); }
+.role-emoji-big { font-size: 34px; margin-bottom: 1rem; display: block; }
+.role-hook { font-family: 'Cabinet Grotesk', sans-serif; font-size: 19px; font-weight: 800; line-height: 1.2; margin-bottom: .6rem; }
+.role-desc-text { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 1.25rem; flex: 1; }
+.role-cta { font-size: 13px; font-weight: 600; color: var(--c); }
+.r-creator { --c: #f5c842; } .r-investor { --c: #6ee7b7; } .r-attorney { --c: #60a5fa; } .r-manager { --c: #a78bfa; }
+.r-patent { --c: #fb923c; } .r-business { --c: #f472b6; } .r-corporate { --c: #34d399; } .r-accountant { --c: #38bdf8; }
+
+/* more ways */
+.ways-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 2.5rem; }
+.way { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.5rem; text-decoration: none; color: inherit; transition: all .2s; display: flex; flex-direction: column; }
+.way:hover { border-color: rgba(245,200,66,0.3); transform: translateY(-3px); }
+.way .ic { font-size: 28px; margin-bottom: .8rem; }
+.way b { font-family: 'Cabinet Grotesk', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: .45rem; }
+.way p { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; margin-bottom: 1rem; }
+.way span { font-size: 13px; font-weight: 600; color: var(--accent); }
+
+/* how */
+.how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 3rem; position: relative; }
+.how-grid::before { content: ''; position: absolute; top: 32px; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent); }
+.how-step { text-align: center; position: relative; padding: 0 .75rem; }
+.how-number { width: 64px; height: 64px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); margin: 0 auto 1.25rem; position: relative; z-index: 1; }
+.how-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 17px; font-weight: 800; margin-bottom: .5rem; }
 .how-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-/* ── FINAL CTA ── */
-.final-cta {
-  text-align: center;
-  background: linear-gradient(135deg, rgba(245,200,66,0.08), rgba(110,231,183,0.05), rgba(96,165,250,0.05));
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-.final-cta-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(48px, 8vw, 100px);
-  line-height: 0.95; letter-spacing: 2px;
-  margin-bottom: 1.5rem;
-}
+/* final cta */
+.final-cta { text-align: center; background: linear-gradient(135deg, rgba(245,200,66,0.08), rgba(110,231,183,0.05), rgba(96,165,250,0.05)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.final-cta-title { font-family: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif; font-size: clamp(48px, 8vw, 100px); line-height: .95; letter-spacing: 2px; margin-bottom: 1.5rem; text-transform: uppercase; }
 .final-cta-title span { color: var(--accent); }
-.final-cta-sub { font-size: 17px; color: var(--muted); margin-bottom: 2.5rem; }
+.final-cta-sub { font-size: 17px; color: var(--muted); margin: 0 auto 2.5rem; max-width: 560px; line-height: 1.6; }
 
-/* ── FOOTER ── */
-footer {
-  padding: 2rem 3rem;
-  border-top: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 1rem;
-  font-size: 13px; color: var(--muted);
-}
-footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+/* footer */
+footer { padding: 2.5rem 3rem; border-top: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 2rem; font-size: 13px; color: var(--muted); }
+footer a { color: var(--muted); text-decoration: none; transition: color .2s; }
 footer a:hover { color: var(--text); }
-.footer-links { display: flex; gap: 1.5rem; }
+.foot-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.foot-logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.foot-logo-icon svg { width: 18px; height: 18px; fill: #080809; }
+.foot-logo b { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: var(--text); }
+.footer-links { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; justify-content: center; }
+.foot-legal { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.foot-legal div { display: flex; gap: 1rem; font-size: 12px; }
 
-/* ── SCROLL ANIMATIONS ── */
-.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+/* mobile bottom tab bar */
+.bottom-tabbar { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9990; height: 56px; background: #080809; border-top: 2px solid var(--accent); padding: 6px 0 max(6px, env(safe-area-inset-bottom)); }
+.tabbar-inner { display: flex; justify-content: space-around; align-items: center; }
+.tabbar-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--muted); font-size: 10px; padding: 4px 8px; flex: 1; }
+.tabbar-item.active { color: var(--accent); }
+.tabbar-icon { font-size: 19px; line-height: 1; }
+.tabbar-post-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #080809; font-size: 22px; font-weight: 700; text-decoration: none; margin-top: -14px; box-shadow: 0 4px 14px rgba(245,200,66,0.4); flex-shrink: 0; }
 
+@media (max-width: 1100px) { .roles-grid, .ways-grid { grid-template-columns: repeat(2, 1fr); } }
+/* laptops and short screens: keep the whole hero on one screen */
+@media (min-width: 769px) and (max-height: 860px) {
+  .hero { padding-top: calc(var(--nav-h) + .9rem); padding-bottom: 1.6rem; }
+  .hero-search { margin-bottom: .6rem; }
+  .search-wrap input { padding: .65rem 1rem; }
+  .hero-badge, .slide-tag { margin-bottom: 1rem; }
+  .hero-title { margin-bottom: .9rem; }
+  .hero-sub { margin-bottom: 1.4rem; font-size: 16.5px; }
+  .hero-btn-main, .hero-btn-sec { padding: .75rem 1.6rem; }
+  .hero-foot { margin-top: 1.2rem; gap: .8rem; }
+}
 @media (max-width: 768px) {
-  .bottom-tabbar { display: block; }
+  :root { --nav-h: 62px; }
   body { padding-bottom: 56px; }
-  #mobileSearchBar { display: block !important; }
-  #desktopSearchBar { display: none !important; }
-
-  nav { padding: 0.9rem 1rem; }
-  .nav-links { display: none; }
-  .nav-actions { gap: 6px; }
-  .btn-ghost { padding: 0.45rem 0.8rem; font-size: 13px; }
-  .btn-primary { padding: 0.45rem 0.9rem; font-size: 13px; }
-
-  .hero { padding: 4.5rem 1rem 5rem; min-height: 100svh; }
-  .hero-title { font-size: clamp(40px, 14vw, 72px); }
-  .hero-sub { font-size: 14px; padding: 0 0.25rem; margin-bottom: 1.75rem; }
-  .hero-stats { gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+  .bottom-tabbar { display: block; }
+  #mobileSearchBar { display: block; }
+  .hero-search { display: none; }
+  .hero { min-height: calc(100svh - 56px); padding: calc(var(--nav-h) + 4.4rem) 1rem 74px; }
+  .hero-arrow { display: none; }
+  .hero-title { font-size: clamp(42px, 14vw, 72px); }
+  .hero-sub { font-size: 14.5px; margin-bottom: 1.5rem; padding: 0 .25rem; }
+  .hero-badge, .slide-tag { font-size: 11px; padding: 5px 12px; margin-bottom: 1.1rem; }
+  .hero-actions { flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+  .hero-btn-main, .hero-btn-sec { width: 100%; max-width: 320px; }
+  .hero-foot { margin-top: 1.5rem; gap: .9rem; }
+  .hero-trust { font-size: 12px; gap: .4rem 1rem; }
+  .hero-stats { gap: 1.5rem; }
   .hero-stat-val { font-size: 20px; }
-  .hero-badge { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; text-align: center; }
-
-  .hero-arrow { width: 34px; height: 34px; font-size: 14px; }
-  .hero-arrow-left { left: 0.4rem; }
-  .hero-arrow-right { right: 0.4rem; }
-  .hero-nav-dots { bottom: 1.1rem; gap: 6px; }
-  .hero-dot { width: 22px; height: 3px; }
-
-  .slide-tag { font-size: 11px; padding: 5px 12px; margin-bottom: 1.25rem; }
-  .hero-quote-mark { font-size: 50px; margin-bottom: 0.25rem; }
-  .hero-quote-text { font-size: clamp(20px, 6.5vw, 28px); padding: 0 0.5rem; margin-bottom: 1.1rem; }
-  .hero-quote-author { font-size: 13px; margin-bottom: 1.75rem; }
-
-  #searchWrap { flex-direction: column; border-radius: 12px; }
-  #searchWrap select { border-right: none; border-bottom: 1px solid var(--border); border-radius: 0; min-width: unset; width: 100%; padding: 0.7rem 1rem; }
-  #searchWrap input { padding: 0.7rem 1rem; font-size: 14px; }
-  #searchWrap button { width: 100%; padding: 0.8rem; border-radius: 0 0 12px 12px; }
-
-  .hero-actions { flex-direction: column; align-items: center; gap: 10px; }
-  .hero-btn-main, .hero-btn-sec { width: 100%; max-width: 320px; justify-content: center; }
-
-  section { padding: 3rem 1rem; }
-  .trending-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  section { padding: 3.25rem 1rem; }
+  .trending-header { flex-direction: column; align-items: flex-start; gap: .5rem; }
   .ideas-grid { grid-template-columns: 1fr; }
-  .roles-grid { grid-template-columns: 1fr; }
+  .roles-grid, .ways-grid { grid-template-columns: 1fr; }
   .categories-grid { gap: 8px; }
-  .how-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .how-grid { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
   .how-grid::before { display: none; }
-
-  .final-cta-title { font-size: clamp(36px, 12vw, 60px); }
-  .final-cta-sub { font-size: 14px; }
-
-  footer { flex-direction: column; text-align: center; padding: 1.5rem 1rem; gap: 1rem; }
-  .footer-links { flex-wrap: wrap; justify-content: center; gap: 0.75rem; font-size: 12px; }
+  .final-cta-title { font-size: clamp(38px, 12vw, 60px); }
+  .final-cta-sub { font-size: 14.5px; }
+  footer { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 2rem 1rem; gap: 1.25rem; }
+  .foot-legal { align-items: center; text-align: center; }
+  .footer-links { gap: .6rem 1rem; font-size: 12.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide, .hero-panel, .hero-panel.active, .reveal { transition: none !important; transform: none !important; }
+  .reveal { opacity: 1; }
+  .hero-badge-dot { animation: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <header id="siteNav" data-overlay></header><script src="/site-nav.js"></script>
 
-<!-- MOBILE-ONLY: compact fixed search bar under nav -->
-<div id="mobileSearchBar" style="display:none;position:fixed;top:60px;left:0;right:0;z-index:95;background:rgba(8,8,9,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0.6rem 1rem;transition:transform 0.25s ease;">
-  <div style="display:flex;background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;">
-    <input
-      type="text" id="mobileSearchInput"
-      placeholder="Search ideas, industries..."
-      style="flex:1;background:none;border:none;padding:0.6rem 0.85rem;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
-      onkeydown="if(event.key==='Enter') doMobileSearch()"
-    />
-    <button onclick="doMobileSearch()" style="background:var(--accent);border:none;padding:0 1rem;font-size:16px;color:#080809;cursor:pointer;">🔍</button>
-  </div>
+<!-- Phones: compact search under the nav -->
+<div id="mobileSearchBar">
+  <form role="search" onsubmit="event.preventDefault(); doSearch(this.q.value)">
+    <input type="search" name="q" placeholder="Search ideas, industries..." aria-label="Search ideas" />
+    <button type="submit" aria-label="Search">🔍</button>
+  </form>
 </div>
 
-<!-- PERSISTENT SEARCH BAR (desktop, scrolls normally) -->
-<div id="desktopSearchBar" style="position:relative;z-index:20;display:flex;justify-content:center;padding:6.5rem 2rem 0;">
-  <div style="width:100%;max-width:640px;">
-    <div style="display:flex;background:rgba(17,17,20,0.92);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.12);border-radius:14px;overflow:hidden;transition:border-color 0.2s;box-shadow:0 8px 30px rgba(0,0,0,0.3);" id="searchWrap">
-      <select id="searchCategory" style="background:var(--surface2);border:none;border-right:1px solid var(--border);padding:0 1rem;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;min-width:120px;">
-        <option value="">All Areas</option>
-        <option value="FinTech">FinTech</option>
-        <option value="HealthTech">HealthTech</option>
-        <option value="AgriTech">AgriTech</option>
-        <option value="EdTech">EdTech</option>
-        <option value="AI">AI & ML</option>
-        <option value="CleanTech">CleanTech</option>
-        <option value="Robotics">Robotics</option>
-        <option value="SaaS">SaaS</option>
-        <option value="E-Commerce">E-Commerce</option>
-        <option value="Logistics">Logistics</option>
-        <option value="Real Estate">Real Estate</option>
+<!-- HERO -->
+<section class="hero" id="heroSection" aria-roledescription="carousel" aria-label="IdeaHub highlights">
+  <div class="hero-slides" aria-hidden="true">
+    <div class="hero-slide s0 active"></div>
+    <div class="hero-slide s1"></div>
+    <div class="hero-slide s2"></div>
+    <div class="hero-slide s3"></div>
+  </div>
+  <div class="hero-grid" aria-hidden="true"></div>
+
+  <div class="hero-search">
+    <form class="search-wrap" role="search" onsubmit="event.preventDefault(); doSearch(this.q.value, this.cat.value)">
+      <select name="cat" aria-label="Industry">
+        <option value="">All industries</option>
       </select>
-      <input
-        type="text" id="searchInput"
-        placeholder="Search ideas, industries, keywords..."
-        style="flex:1;background:none;border:none;padding:0.8rem 1rem;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;"
-        onkeydown="if(event.key==='Enter') doSearch()"
-      />
-      <button onclick="doSearch()" style="background:var(--accent);border:none;padding:0 1.4rem;font-size:13px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;color:#080809;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
-        Search →
-      </button>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
-      <span style="font-size:11px;color:var(--muted);">Popular:</span>
-      <a onclick="quickSearch('FinTech')" style="font-size:11px;color:var(--accent);cursor:pointer;text-decoration:none;">FinTech</a>
-      <a onclick="quickSearch('AI')" style="font-size:11px;color:var(--accent);cursor:pointer;">AI & ML</a>
-      <a onclick="quickSearch('HealthTech')" style="font-size:11px;color:var(--accent);cursor:pointer;">HealthTech</a>
-      <a onclick="quickSearch('SaaS')" style="font-size:11px;color:var(--accent);cursor:pointer;">SaaS</a>
-    </div>
+      <input type="search" name="q" placeholder="Search ideas, industries, keywords..." aria-label="Search ideas" />
+      <button type="submit">Search →</button>
+    </form>
+    <div class="search-popular" id="popularLinks"><span>Popular:</span></div>
   </div>
-</div>
 
-<!-- HERO SLIDESHOW -->
-<section class="hero" id="heroSection" style="padding-top:1rem;">
-  <div class="hero-slides">
-    <div class="hero-slide slide-0 active"></div>
-    <div class="hero-slide slide-1"></div>
-    <div class="hero-slide slide-2"></div>
-    <div class="hero-slide slide-3"></div>
-  </div>
-  <div class="hero-grid"></div>
+  <button class="hero-arrow hero-arrow-left" type="button" aria-label="Previous slide" data-step="-1">‹</button>
+  <button class="hero-arrow hero-arrow-right" type="button" aria-label="Next slide" data-step="1">›</button>
 
-  <button class="hero-arrow hero-arrow-left" onclick="changeSlide(-1)">‹</button>
-  <button class="hero-arrow hero-arrow-right" onclick="changeSlide(1)">›</button>
-
-  <!-- SLIDE 0 — General marketplace -->
-  <div class="hero-content-panel active" data-slide="0">
-    <div class="hero-badge">
-      <span class="hero-badge-dot"></span>
-      The marketplace for ideas, innovation & investment
+  <div class="hero-stage" id="heroStage" aria-live="off">
+    <div class="hero-panel active" role="group" aria-roledescription="slide" aria-label="1 of 4">
+      <div class="hero-badge"><span class="hero-badge-dot"></span>The marketplace for ideas, innovation &amp; investment</div>
+      <h1 class="hero-title"><span>Where ideas</span><span class="gold">become</span><span>empires</span></h1>
+      <p class="hero-sub">Buy, sell and invest in <b>breakthrough ideas</b>. Work with verified attorneys, accountants and managers. <b>One platform, every step.</b></p>
+      <div class="hero-actions">
+        <a class="hero-btn-main" href="/browse">🔍 Browse ideas</a>
+        <a class="hero-btn-sec" href="/signup">✦ Join free</a>
+      </div>
     </div>
-    <h1 class="hero-title">
-      <span class="hero-title-line1">WHERE IDEAS</span>
-      <span class="hero-title-line2">BECOME</span>
-      <span class="hero-title-line1">EMPIRES</span>
-    </h1>
-    <p class="hero-sub">
-      Buy, sell, and invest in <span>breakthrough ideas</span>. Connect with attorneys, managers, and partners.
-      <span>One platform. Infinite possibilities.</span>
-    </p>
-    <div class="hero-actions">
-      <a class="hero-btn-main" href="/browse">🔍 Browse All Ideas</a>
-      <a class="hero-btn-sec" href="/signup">✦ Join Free — It's Quick</a>
+
+    <div class="hero-panel" role="group" aria-roledescription="slide" aria-label="2 of 4">
+      <div class="slide-tag tag-1">💡 For creators &amp; inventors</div>
+      <h2 class="hero-title"><span>Got an idea?</span><span class="gold">Got a patent?</span><span class="soft">Turn it into capital</span></h2>
+      <p class="hero-sub">List your idea or patent and reach <b>investors who are looking</b>. Set your price, keep the full details private until payment is held in escrow, and get paid securely.</p>
+      <div class="hero-actions">
+        <a class="hero-btn-main" href="/signup?role=idea_creator">💡 List your idea</a>
+        <a class="hero-btn-sec" href="/signup?role=patent_seller">📋 List a patent</a>
+      </div>
+    </div>
+
+    <div class="hero-panel" role="group" aria-roledescription="slide" aria-label="3 of 4">
+      <div class="slide-tag tag-2">💼 For investors &amp; businesses</div>
+      <h2 class="hero-title"><span>Find it.</span><span class="gold">Fund it.</span><span>Build it.</span></h2>
+      <p class="hero-sub">Browse original ideas, post an <b>Idea Request</b> for exactly what you need, or appoint a <b>Virtual Manager</b> to build the business for you. Every payment goes through escrow.</p>
+      <div class="hero-actions">
+        <a class="hero-btn-main" href="/idea-requests">📣 Request an idea</a>
+        <a class="hero-btn-sec" href="/managers">🤝 Find a manager</a>
+      </div>
+    </div>
+
+    <div class="hero-panel" role="group" aria-roledescription="slide" aria-label="4 of 4">
+      <div class="slide-tag tag-3">🤝 For professionals</div>
+      <h2 class="hero-title"><span>Attorneys.</span><span class="gold">Accountants.</span><span>Managers.</span></h2>
+      <p class="hero-sub">Patent attorneys, chartered accountants, corporate services firms and Virtual Managers: get verified and meet <b>creators and investors who need you</b>.</p>
+      <div class="hero-actions">
+        <a class="hero-btn-main" href="/signup">⚖️ Join as a professional</a>
+        <a class="hero-btn-sec" href="/signup?role=virtual_manager">🧭 Become a manager</a>
+      </div>
     </div>
   </div>
 
-  <!-- SLIDE 1 — Idea creators & patent owners -->
-  <div class="hero-content-panel" data-slide="1">
-    <div class="slide-tag tag-1">💡 For Creators & Inventors</div>
-    <h1 class="hero-title">
-      <span class="hero-title-line1">GOT AN IDEA?</span>
-      <span class="hero-title-line2">GOT A PATENT?</span>
-      <span class="hero-title-line1" style="font-size:0.55em;opacity:0.6;">TURN IT INTO CAPITAL</span>
-    </h1>
-    <p class="hero-sub">
-      List your idea or patent on IdeaHub and reach <span>investors actively searching</span> for the next breakthrough. Set your price, stay in control, get paid securely through escrow.
-    </p>
-    <div class="hero-actions">
-      <a class="hero-btn-main" href="/signup?role=idea_creator">💡 List Your Idea</a>
-      <a class="hero-btn-sec" href="/signup?role=patent_seller">📋 List a Patent</a>
+  <div class="hero-foot">
+    <div class="hero-trust">
+      <span>🔒 Escrow-protected payments</span>
+      <span>✓ Verified professionals</span>
+      <span>🛡️ Ideas protected until paid</span>
     </div>
-  </div>
-
-  <!-- SLIDE 2 — Service providers -->
-  <div class="hero-content-panel" data-slide="2">
-    <div class="slide-tag tag-2">🤝 For Professionals</div>
-    <h1 class="hero-title">
-      <span class="hero-title-line1">LAWYERS.</span>
-      <span class="hero-title-line2">MANAGERS.</span>
-      <span class="hero-title-line1">YOUR NEXT CLIENT IS HERE.</span>
-    </h1>
-    <p class="hero-sub">
-      Patent attorneys, virtual managers, and corporate service providers — join IdeaHub to find <span>creators and investors who need your expertise</span>, every single day.
-    </p>
-    <div class="hero-actions">
-      <a class="hero-btn-main" href="/signup?role=patent_attorney">⚖️ Join as Attorney</a>
-      <a class="hero-btn-sec" href="/signup?role=virtual_manager">🧑‍💼 Become a Manager</a>
+    <div class="hero-stats" id="heroStats" hidden></div>
+    <div class="hero-controls">
+      <div class="hero-dots" id="heroDots" role="group" aria-label="Choose a slide">
+        <button class="hero-dot active" type="button" aria-label="Slide 1" aria-current="true"><i></i></button>
+        <button class="hero-dot" type="button" aria-label="Slide 2"><i></i></button>
+        <button class="hero-dot" type="button" aria-label="Slide 3"><i></i></button>
+        <button class="hero-dot" type="button" aria-label="Slide 4"><i></i></button>
+      </div>
+      <button class="hero-pause" id="heroPause" type="button" aria-label="Pause the slideshow">❚❚</button>
     </div>
-  </div>
-
-  <!-- SLIDE 3 — Inspirational quote -->
-  <div class="hero-content-panel" data-slide="3">
-    <div class="slide-tag tag-3">✦ Why Ideas Matter</div>
-    <div class="hero-quote-mark">"</div>
-    <p class="hero-quote-text">Innovation distinguishes between a leader and a follower.</p>
-    <div class="hero-quote-author">Steve Jobs <span>— Co-founder, Apple</span></div>
-    <div class="hero-actions">
-      <a class="hero-btn-main" href="/browse">🔍 Explore Ideas</a>
-      <a class="hero-btn-sec" href="/signup">✦ Start Your Journey</a>
-    </div>
-  </div>
-
-  <div class="hero-stats" style="position:relative;z-index:2;margin-top:1rem;">
-    <div>
-      <div class="hero-stat-val" id="statIdeas">—</div>
-      <div class="hero-stat-label">Ideas Listed</div>
-    </div>
-    <div>
-      <div class="hero-stat-val" id="statUsers">—</div>
-      <div class="hero-stat-label">Members</div>
-    </div>
-    <div>
-      <div class="hero-stat-val" id="statDeals">—</div>
-      <div class="hero-stat-label">Deals Closed</div>
-    </div>
-  </div>
-
-  <div class="hero-nav-dots" id="heroDots">
-    <button class="hero-dot active" onclick="goToSlide(0)"></button>
-    <button class="hero-dot" onclick="goToSlide(1)"></button>
-    <button class="hero-dot" onclick="goToSlide(2)"></button>
-    <button class="hero-dot" onclick="goToSlide(3)"></button>
   </div>
 </section>
 
@@ -753,132 +414,74 @@ footer a:hover { color: var(--text); }
   <div class="container">
     <div class="trending-header reveal">
       <div>
-        <div class="section-label">🔥 Hot Right Now</div>
-        <div class="section-title">Trending Ideas</div>
-        <div class="section-sub">Fresh ideas from creators around the world, ready to be discovered.</div>
+        <div class="section-label">🔥 Hot right now</div>
+        <h2 class="section-title">Trending ideas</h2>
+        <div class="section-sub">Fresh ideas from creators, ready to be discovered.</div>
       </div>
       <a class="view-all-btn" href="/browse">Browse all ideas →</a>
     </div>
-    <div class="ideas-grid" id="ideasGrid">
-      <div class="ideas-loading">✦ Loading trending ideas...</div>
-    </div>
+    <div class="ideas-grid" id="ideasGrid"><div class="ideas-loading">✦ Loading trending ideas…</div></div>
   </div>
 </section>
 
-<!-- CATEGORIES -->
+<!-- INDUSTRIES -->
 <section style="padding-top:0;">
   <div class="container reveal">
-    <div class="section-label">Explore by area</div>
-    <div class="section-title">What's your domain?</div>
-    <div class="categories-grid">
-      <a class="cat-pill" href="/browse?category=FinTech">FinTech</a>
-      <a class="cat-pill" href="/browse?category=HealthTech">HealthTech</a>
-      <a class="cat-pill" href="/browse?category=AgriTech">AgriTech</a>
-      <a class="cat-pill" href="/browse?category=EdTech">EdTech</a>
-      <a class="cat-pill" href="/browse?category=AI">AI & Machine Learning</a>
-      <a class="cat-pill" href="/browse?category=CleanTech">CleanTech</a>
-      <a class="cat-pill" href="/browse?category=Robotics">Robotics</a>
-      <a class="cat-pill" href="/browse?category=SaaS">SaaS</a>
-      <a class="cat-pill" href="/browse?category=E-Commerce">E-Commerce</a>
-      <a class="cat-pill" href="/browse?category=Logistics">Logistics</a>
-      <a class="cat-pill" href="/browse?category=Real Estate">Real Estate</a>
-      <a class="cat-pill" href="/browse?category=Other">Other</a>
+    <div class="section-label">Explore by industry</div>
+    <h2 class="section-title">What's your domain?</h2>
+    <div class="categories-grid" id="catGrid"></div>
+  </div>
+</section>
+
+<!-- WHO -->
+<section class="who-section">
+  <div class="container">
+    <div class="reveal" style="text-align:center;max-width:620px;margin:0 auto 1rem;">
+      <div class="section-label">There's a place for you here</div>
+      <h2 class="section-title">Who brings you to IdeaHub?</h2>
+      <div class="section-sub" style="margin:0 auto;">Everyone has a role. Every role has power. Find yours.</div>
+    </div>
+    <div class="roles-grid">
+      <a class="role-card r-creator" href="/signup?role=idea_creator"><span class="role-emoji-big">💡</span><div class="role-hook">Got a brilliant idea gathering dust?</div><div class="role-desc-text">Turn it into income. List your idea, set your price and connect with investors who believe in it.</div><div class="role-cta">Sell your idea →</div></a>
+      <a class="role-card r-investor" href="/signup?role=investor"><span class="role-emoji-big">🔍</span><div class="role-hook">Looking for your next investment?</div><div class="role-desc-text">Browse ideas across every industry, each with an originality check, or post a request and let creators come to you.</div><div class="role-cta">Start investing →</div></a>
+      <a class="role-card r-business" href="/signup?role=business_owner"><span class="role-emoji-big">🏭</span><div class="role-hook">Want to expand your business?</div><div class="role-desc-text">List your business for franchising, partnerships or investment, and meet the people who can take it further.</div><div class="role-cta">Expand now →</div></a>
+      <a class="role-card r-patent" href="/signup?role=patent_seller"><span class="role-emoji-big">📋</span><div class="role-hook">Own a patent? Turn it into cash.</div><div class="role-desc-text">Don't let it sit unused. License or sell it to businesses and investors ready to bring it to life.</div><div class="role-cta">List your patent →</div></a>
+      <a class="role-card r-manager" href="/signup?role=virtual_manager"><span class="role-emoji-big">🧭</span><div class="role-hook">Ready to run deals for others?</div><div class="role-desc-text">Become a Virtual Manager. Act for creators, investors or businesses under a clear mandate: find deals, negotiate and build ventures, and earn fees through IdeaHub.</div><div class="role-cta">Become a manager →</div></a>
+      <a class="role-card r-attorney" href="/signup?role=patent_attorney"><span class="role-emoji-big">⚖️</span><div class="role-hook">Patent attorney or agent?</div><div class="role-desc-text">File patents for creators, review deals and protect intellectual property, with clients who find you here.</div><div class="role-cta">Join as an attorney →</div></a>
+      <a class="role-card r-accountant" href="/signup?role=chartered_accountant"><span class="role-emoji-big">🧮</span><div class="role-hook">Chartered accountant?</div><div class="role-desc-text">Help creators and investors with valuations, tax, company setup and due diligence. Get verified and get hired.</div><div class="role-cta">Offer your services →</div></a>
+      <a class="role-card r-corporate" href="/signup?role=corporate_services"><span class="role-emoji-big">🏢</span><div class="role-hook">Company secretary or corporate services firm?</div><div class="role-desc-text">Register companies and keep them compliant: incorporation, secretarial work and annual filings.</div><div class="role-cta">Offer your services →</div></a>
     </div>
   </div>
 </section>
 
-<!-- WHO ARE YOU SECTION -->
-<section class="who-section">
+<!-- MORE WAYS -->
+<section>
   <div class="container">
-    <div class="reveal" style="text-align:center;max-width:600px;margin:0 auto 1rem;">
-      <div class="section-label">There's a place for you here</div>
-      <div class="section-title">Who brings you to IdeaHub?</div>
-      <div class="section-sub" style="margin:0 auto;">Everyone has a role. Every role has power. Find yours.</div>
+    <div class="reveal" style="text-align:center;max-width:620px;margin:0 auto;">
+      <div class="section-label">More than a marketplace</div>
+      <h2 class="section-title">More ways to use IdeaHub</h2>
     </div>
-
-    <div class="roles-grid">
-
-      <a class="role-card creator" href="/signup?role=idea_creator">
-        <span class="role-emoji-big">💡</span>
-        <div class="role-hook">Got a brilliant idea gathering dust?</div>
-        <div class="role-desc-text">Turn your imagination into income. Post your idea, set your price, and connect with investors who believe in your vision.</div>
-        <div class="role-cta">Sell your idea →</div>
-      </a>
-
-      <a class="role-card investor" href="/signup?role=investor">
-        <span class="role-emoji-big">🔍</span>
-        <div class="role-hook">Looking for your next big investment?</div>
-        <div class="role-desc-text">Browse hundreds of vetted ideas across every industry. Find the one that changes everything — before anyone else does.</div>
-        <div class="role-cta">Start investing →</div>
-      </a>
-
-      <a class="role-card attorney" href="/signup?role=patent_attorney">
-        <span class="role-emoji-big">⚖️</span>
-        <div class="role-hook">Want to protect the next big idea legally?</div>
-        <div class="role-desc-text">Join as a Patent Attorney. Review deals, protect intellectual property, and build a thriving practice with innovators who need you.</div>
-        <div class="role-cta">Join as Attorney →</div>
-      </a>
-
-      <a class="role-card manager" href="/signup?role=virtual_manager">
-        <span class="role-emoji-big">🧑‍💼</span>
-        <div class="role-hook">Ready to manage the next unicorn?</div>
-        <div class="role-desc-text">Become a Virtual Manager. Guide creators from raw idea to market reality. Your expertise is the missing link they've been searching for.</div>
-        <div class="role-cta">Become a VM →</div>
-      </a>
-
-      <a class="role-card patent" href="/signup?role=patent_seller">
-        <span class="role-emoji-big">📋</span>
-        <div class="role-hook">Own a patent? Turn it into cash.</div>
-        <div class="role-desc-text">Don't let your patents sit unused. List them on IdeaHub and connect with businesses and investors ready to bring them to life.</div>
-        <div class="role-cta">List your patent →</div>
-      </a>
-
-      <a class="role-card business" href="/signup?role=business_owner">
-        <span class="role-emoji-big">🏭</span>
-        <div class="role-hook">Want to expand your business globally?</div>
-        <div class="role-desc-text">List your business, attract strategic investors, and schedule expansion meetings with partners who share your ambition.</div>
-        <div class="role-cta">Expand now →</div>
-      </a>
-
-      <a class="role-card corporate" href="/signup?role=corporate_services">
-        <span class="role-emoji-big">🏢</span>
-        <div class="role-hook">Company secretary or corporate services firm?</div>
-        <div class="role-desc-text">Help creators register companies and stay compliant: incorporation, company secretarial work and annual filings. Get verified and receive clients through IdeaHub.</div>
-        <div class="role-cta">Offer your services →</div>
-      </a>
-
+    <div class="ways-grid">
+      <a class="way" href="/idea-requests"><div class="ic">📣</div><b>Request an Idea</b><p>Investors post what they need; creators send proposals. Pay only for the one you choose.</p><span>See requests →</span></a>
+      <a class="way" href="/businesses"><div class="ic">🌍</div><b>Business Expansion</b><p>Franchises, partnerships and investment in growing businesses, with meetings booked on IdeaHub.</p><span>Explore businesses →</span></a>
+      <a class="way" href="/managers"><div class="ic">🧭</div><b>Find a Manager</b><p>Appoint a checked Virtual Manager to find deals and build a business for you. You approve every binding step.</p><span>Find a manager →</span></a>
+      <a class="way" href="/wall"><div class="ic">📌</div><b>IdeaWall</b><p>Share social work, innovations and life hacks with the community, free.</p><span>Open IdeaWall →</span></a>
     </div>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
-<section>
+<section style="padding-top:0;">
   <div class="container">
     <div class="reveal" style="text-align:center;max-width:500px;margin:0 auto 1rem;">
-      <div class="section-label">Simple as 1-2-3</div>
-      <div class="section-title">How IdeaHub Works</div>
+      <div class="section-label">Simple as 1-2-3-4</div>
+      <h2 class="section-title">How IdeaHub works</h2>
     </div>
     <div class="how-grid reveal">
-      <div class="how-step">
-        <div class="how-number">1</div>
-        <div class="how-title">Create your account</div>
-        <div class="how-desc">Sign up free in under 2 minutes. Choose your role and set up your profile to get discovered.</div>
-      </div>
-      <div class="how-step">
-        <div class="how-number">2</div>
-        <div class="how-title">Post or browse</div>
-        <div class="how-desc">Creators list ideas with full details and pricing. Investors browse, shortlist, and message creators directly.</div>
-      </div>
-      <div class="how-step">
-        <div class="how-number">3</div>
-        <div class="how-title">Deal via escrow</div>
-        <div class="how-desc">Funds are held safely in escrow until both parties confirm. No risk, full transparency, real results.</div>
-      </div>
-      <div class="how-step">
-        <div class="how-number">4</div>
-        <div class="how-title">Grow together</div>
-        <div class="how-desc">Bring in attorneys, managers, and corporate partners to take your idea from concept to empire.</div>
-      </div>
+      <div class="how-step"><div class="how-number">1</div><div class="how-title">Create your account</div><div class="how-desc">Sign up free in a couple of minutes. Choose your role and set up your profile.</div></div>
+      <div class="how-step"><div class="how-number">2</div><div class="how-title">List or browse</div><div class="how-desc">Creators list ideas with a summary and price. Investors browse, shortlist and message creators.</div></div>
+      <div class="how-step"><div class="how-number">3</div><div class="how-title">Deal through escrow</div><div class="how-desc">Payment is held safely until the deal is done. The buyer gets the full details once it's held.</div></div>
+      <div class="how-step"><div class="how-number">4</div><div class="how-title">Grow together</div><div class="how-desc">Bring in attorneys, accountants, managers and corporate services to take it from concept to company.</div></div>
     </div>
   </div>
 </section>
@@ -886,374 +489,189 @@ footer a:hover { color: var(--text); }
 <!-- FINAL CTA -->
 <section class="final-cta">
   <div class="container reveal">
-    <div class="final-cta-title">YOUR IDEA<br /><span>STARTS HERE</span></div>
-    <div class="final-cta-sub">Join thousands of creators, investors, and innovators already on IdeaHub.</div>
+    <h2 class="final-cta-title">Your idea<br /><span>starts here</span></h2>
+    <p class="final-cta-sub">Join the creators, investors, businesses and professionals building on IdeaHub. It's free to join.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <a class="hero-btn-main" href="/signup">✦ Create Free Account</a>
-      <a class="hero-btn-sec" href="/browse">Browse Ideas First</a>
+      <a class="hero-btn-main" href="/signup">✦ Create a free account</a>
+      <a class="hero-btn-sec" href="/browse">Browse ideas first</a>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
-  <a class="nav-logo" href="/">
-    <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="nav-logo-text">IdeaHub</span>
+  <a class="foot-logo" href="/" aria-label="IdeaHub home">
+    <span class="foot-logo-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></span>
+    <b>IdeaHub</b>
   </a>
-  <div class="footer-links">
+  <nav class="footer-links" aria-label="Footer">
     <a href="/browse">Marketplace</a>
-    <a href="/businesses">Business Expansion</a>
     <a href="/idea-requests">Request an Idea</a>
-    <a href="/find-support">Services</a>
+    <a href="/businesses">Business Expansion</a>
+    <a href="/managers">Find a Manager</a>
+    <a href="/find-support">Professionals</a>
+    <a href="/wall">IdeaWall</a>
+    <a href="/life-hacks">Life Hacks</a>
+    <a href="/how-it-works">How It Works</a>
     <a href="/about">About</a>
     <a href="/contact">Contact</a>
-    <a href="/login">Sign In</a>
-    <a href="/signup">Join Free</a>
-  </div>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;">
-    <div>© 2026 <a href="https://picela.co" target="_blank" style="color:var(--muted);text-decoration:none;">Picela</a>. All rights reserved.</div>
-    <div style="display:flex;gap:1rem;">
-      <a href="/terms" style="color:var(--muted);text-decoration:none;font-size:12px;">Terms</a>
-      <a href="/privacy" style="color:var(--muted);text-decoration:none;font-size:12px;">Privacy</a>
-      <a href="/cookies" style="color:var(--muted);text-decoration:none;font-size:12px;">Cookies</a>
-      <a href="/refunds" style="color:var(--muted);text-decoration:none;font-size:12px;">Refunds</a>
-    </div>
+  </nav>
+  <div class="foot-legal">
+    <span>© <span id="yr">2026</span> <a href="https://picela.co" target="_blank" rel="noopener">Picela (Pvt) Ltd</a>. All rights reserved.</span>
+    <div><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/refunds">Refunds</a></div>
   </div>
 </footer>
 
-<!-- BOTTOM TAB BAR (mobile only) -->
-<nav class="bottom-tabbar" id="bottomTabbar">
+<!-- Phones: bottom tab bar -->
+<nav class="bottom-tabbar" aria-label="Quick links">
   <div class="tabbar-inner">
-    <a class="tabbar-item active" href="/" data-tab="home">
-      <span class="tabbar-icon">🏠</span><span>Home</span>
-    </a>
-    <a class="tabbar-item" href="/browse" data-tab="marketplace">
-      <span class="tabbar-icon">🔍</span><span>Marketplace</span>
-    </a>
-    <a class="tabbar-post-btn" href="/submit" id="tabPostBtn">+</a>
-    <a class="tabbar-item" href="/messages" data-tab="messages">
-      <span class="tabbar-icon">💬</span><span>Messages</span>
-    </a>
-    <a class="tabbar-item" href="/wall" data-tab="wall">
-      <span class="tabbar-icon">📌</span><span>IdeaWall</span>
-    </a>
+    <a class="tabbar-item active" href="/" aria-current="page"><span class="tabbar-icon">🏠</span><span>Home</span></a>
+    <a class="tabbar-item" href="/browse"><span class="tabbar-icon">🔍</span><span>Marketplace</span></a>
+    <a class="tabbar-post-btn" href="/signup" id="tabPostBtn" aria-label="Join free">+</a>
+    <a class="tabbar-item" href="/messages"><span class="tabbar-icon">💬</span><span>Messages</span></a>
+    <a class="tabbar-item" href="/wall"><span class="tabbar-icon">📌</span><span>IdeaWall</span></a>
   </div>
 </nav>
 
 <script>
-  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let user = null; try { user = JSON.parse(localStorage.getItem('ih_user') || 'null'); } catch (e) {}
+  $('yr').textContent = new Date().getFullYear();
 
-  // ── BOTTOM TAB BAR: point Dashboard tab to correct role dashboard ──
-  (function setupTabbar() {
-    const tUser = JSON.parse(localStorage.getItem('ih_user') || 'null');
-    const dashMap = {
-      idea_creator: '/dashboard', patent_seller: '/dashboard',
-      investor: '/buyer-dashboard', corporate_services: '/support-dashboard',
-      virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/support-dashboard',
-      business_owner: '/business-dashboard', admin: '/admin'
-    };
-    const postBtn = document.getElementById('tabPostBtn');
-    if (postBtn) {
-      postBtn.href = tUser ? '/submit' : '/login';
-    }
-    // Highlight active tab based on current path
-    const path = window.location.pathname;
-    document.querySelectorAll('.tabbar-item').forEach(item => {
-      const tab = item.dataset.tab;
-      const isActive =
-        (tab === 'home' && path === '/') ||
-        (tab === 'marketplace' && path === '/browse') ||
-        (tab === 'messages' && path === '/messages') ||
-        (tab === 'wall' && path === '/wall');
-      item.classList.toggle('active', isActive);
-    });
-  })();
+  // ── Industries: the same list creators choose from when listing an idea ──
+  const INDUSTRIES = [['Technology', '💻'], ['Health & Wellness', '🏥'], ['Education', '📚'], ['Finance', '💰'], ['Food & Beverage', '🍔'], ['E-commerce', '🛒'], ['Entertainment', '🎬'], ['Real Estate', '🏢'], ['Travel', '✈️'], ['Environment', '🌿'], ['Agriculture', '🌾'], ['Other', '✦']];
+  const browseUrl = (q, cat) => { const p = new URLSearchParams(); if (q) p.set('search', q); if (cat) p.set('category', cat); const s = p.toString(); return '/browse' + (s ? '?' + s : ''); };
+  window.doSearch = (q, cat) => { location.href = browseUrl(String(q || '').trim(), cat || ''); };
+  document.querySelector('.search-wrap select').insertAdjacentHTML('beforeend', INDUSTRIES.map(([n]) => `<option value="${esc(n)}">${esc(n)}</option>`).join(''));
+  $('popularLinks').insertAdjacentHTML('beforeend', ['Technology', 'Agriculture', 'Food & Beverage', 'Health & Wellness'].map(n => `<a href="${browseUrl('', n)}">${esc(n)}</a>`).join(''));
+  $('catGrid').innerHTML = INDUSTRIES.map(([n, ic]) => `<a class="cat-pill" href="${browseUrl('', n)}"><span aria-hidden="true">${ic}</span>${esc(n)}</a>`).join('');
 
-  // ── AUTO-HIDE SEARCH BAR ON SCROLL (mobile) ──
-  (function setupScrollHideSearch() {
-    let lastScrollY = window.scrollY;
-    const bar = document.getElementById('mobileSearchBar');
-    if (!bar) return;
-    window.addEventListener('scroll', () => {
-      const currentY = window.scrollY;
-      if (currentY > lastScrollY && currentY > 80) {
-        bar.style.transform = 'translateY(-100%)';
-      } else {
-        bar.style.transform = 'translateY(0)';
-      }
-      lastScrollY = currentY;
-    }, { passive: true });
+  // ── Bottom tab bar "+" goes where this person can actually post ──
+  const POST = { idea_creator: ['/submit', 'List an idea'], patent_seller: ['/submit', 'List an idea or patent'], investor: ['/post-request', 'Post an Idea Request'], business_owner: ['/list-business', 'List your business'] };
+  const pb = $('tabPostBtn');
+  if (user) { const [href, label] = POST[user.role] || ['/wall', 'Post on IdeaWall']; pb.href = href; pb.setAttribute('aria-label', label); }
+
+  // Phones: hide the fixed search bar while scrolling down
+  (function () {
+    const bar = $('mobileSearchBar'); let last = scrollY;
+    addEventListener('scroll', () => { const y = scrollY; bar.style.transform = y > last && y > 80 ? 'translateY(-110%)' : ''; last = y; }, { passive: true });
   })();
 
   // ── HERO SLIDESHOW ──
-  let currentSlide = 0;
-  const totalSlides = 4;
-  let slideInterval = null;
-
-  function showSlide(idx) {
-    document.querySelectorAll('.hero-slide').forEach((el, i) => el.classList.toggle('active', i === idx));
-    document.querySelectorAll('.hero-content-panel').forEach((el) => el.classList.toggle('active', parseInt(el.dataset.slide) === idx));
-    document.querySelectorAll('.hero-dot').forEach((el, i) => el.classList.toggle('active', i === idx));
-    currentSlide = idx;
+  const hero = $('heroSection');
+  const slides = [...document.querySelectorAll('.hero-slide')];
+  const panels = [...document.querySelectorAll('.hero-panel')];
+  const dots = [...document.querySelectorAll('.hero-dot')];
+  const pauseBtn = $('heroPause');
+  const SLIDE_MS = 7000;
+  hero.style.setProperty('--slide-ms', SLIDE_MS + 'ms');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const PHOTOS = ['photo-1519389950473-47ba0277781c', 'photo-1517245386807-bb43f82c33c4', 'photo-1521791136064-7986c2920216', 'photo-1532012197267-da84d127e765'];
+  const photoUrl = i => `https://images.unsplash.com/${PHOTOS[i]}?${innerWidth <= 768 ? 'w=900&q=65' : 'w=1600&q=70'}`;
+  const loaded = [];
+  function loadPhoto(i) {
+    if (loaded[i]) return loaded[i];
+    return (loaded[i] = new Promise(res => {
+      const img = new Image();
+      img.onload = () => { slides[i].style.backgroundImage = `url("${img.src}")`; res(true); };
+      img.onerror = () => res(false); // keep the colour wash
+      img.src = photoUrl(i);
+    }));
   }
+  loadPhoto(0);
+  addEventListener('load', () => setTimeout(() => [1, 2, 3].forEach(loadPhoto), 300));
 
-  function changeSlide(dir) {
-    showSlide((currentSlide + dir + totalSlides) % totalSlides);
-    resetAutoplay();
+  let cur = 0, timer = null, userPaused = reduced, hoverPause = false;
+  function show(i, fromUser) {
+    i = (i + panels.length) % panels.length;
+    if (i === cur) return;
+    loadPhoto(i);
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    panels.forEach((p, k) => { const on = k === i; p.classList.toggle('active', on); p.setAttribute('aria-hidden', on ? 'false' : 'true'); p.inert = !on; });
+    dots.forEach((d, k) => { d.classList.toggle('active', k === i); if (k === i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+    // restart the progress bar
+    const bar = dots[i].querySelector('i'); bar.style.display = 'none'; void bar.offsetWidth; bar.style.display = '';
+    cur = i;
+    $('heroStage').setAttribute('aria-live', fromUser ? 'polite' : 'off');
+    schedule();
   }
-
-  function goToSlide(idx) {
-    showSlide(idx);
-    resetAutoplay();
+  function running() { return !userPaused && !hoverPause && !document.hidden; }
+  function schedule() {
+    clearTimeout(timer);
+    hero.classList.toggle('paused', !running());
+    hero.classList.toggle('still', userPaused);
+    if (running()) timer = setTimeout(() => show(cur + 1), SLIDE_MS);
   }
+  panels.forEach((p, k) => { if (k) { p.setAttribute('aria-hidden', 'true'); p.inert = true; } });
+  dots.forEach((d, k) => d.addEventListener('click', () => show(k, true)));
+  document.querySelectorAll('.hero-arrow').forEach(b => b.addEventListener('click', () => show(cur + Number(b.dataset.step), true)));
+  function setPaused(v) { userPaused = v; pauseBtn.textContent = v ? '▶' : '❚❚'; pauseBtn.setAttribute('aria-label', v ? 'Play the slideshow' : 'Pause the slideshow'); schedule(); }
+  pauseBtn.addEventListener('click', () => setPaused(!userPaused));
+  // Pause while someone is reading or using it
+  const stage = $('heroStage');
+  stage.addEventListener('mouseenter', () => { hoverPause = true; schedule(); });
+  stage.addEventListener('mouseleave', () => { hoverPause = false; schedule(); });
+  hero.addEventListener('focusin', e => { if (!e.target.closest('.hero-search')) { hoverPause = true; schedule(); } });
+  hero.addEventListener('focusout', () => { hoverPause = false; schedule(); });
+  document.addEventListener('visibilitychange', schedule);
+  hero.addEventListener('keydown', e => { if (e.target.closest('.hero-search')) return; if (e.key === 'ArrowRight') show(cur + 1, true); if (e.key === 'ArrowLeft') show(cur - 1, true); });
+  // Swipe on phones
+  let sx = null, sy = null;
+  stage.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  stage.addEventListener('touchend', e => {
+    if (sx == null) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) show(cur + (dx < 0 ? 1 : -1), true);
+  }, { passive: true });
+  if (reduced) setPaused(true); else schedule();
 
-  function startAutoplay() {
-    slideInterval = setInterval(() => {
-      showSlide((currentSlide + 1) % totalSlides);
-    }, 6000);
-  }
+  // ── Live numbers: only shown once they're meaningful ──
+  fetch('/api/stats/public').then(r => r.ok ? r.json() : null).then(d => {
+    if (!d) return;
+    const items = [[d.ideas, 25, 'Ideas listed'], [d.users, 100, 'Members'], [d.deals, 10, 'Deals closed']].filter(([v, min]) => Number(v) >= min);
+    if (!items.length) return;
+    $('heroStats').innerHTML = items.map(([v, , l]) => `<div><div class="hero-stat-val">${Number(v).toLocaleString()}</div><div class="hero-stat-label">${l}</div></div>`).join('');
+    $('heroStats').hidden = false;
+  }).catch(() => {});
 
-  function resetAutoplay() {
-    clearInterval(slideInterval);
-    startAutoplay();
-  }
-
-  startAutoplay();
-
-  // Redirect logged-in users to their dashboard
-  const token = localStorage.getItem('ih_token');
-  const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
-  if (token && user) {
-    const dashMap = {
-      idea_creator: '/dashboard', patent_seller: '/dashboard',
-      investor: '/buyer-dashboard', corporate_services: '/support-dashboard',
-      virtual_manager: '/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney: '/support-dashboard',
-      business_owner: '/business-dashboard'
-    };
-    // Update nav for logged in users
-    const navActions = document.querySelector('.nav-actions');
-    if (navActions) {
-      navActions.innerHTML = `
-        <a class="btn-primary" href="${dashMap[user.role] || '/dashboard'}">${user.first_name || 'My Account'} →</a>
-      `;
-    }
-    const notifBell = document.getElementById('notifBell');
-    if (notifBell) {
-      notifBell.style.display = 'flex';
-      loadUnreadCount();
-      setInterval(loadUnreadCount, 30000);
-    }
-  }
-
-  // Load platform stats
-  async function loadStats() {
-    try {
-      const res = await fetch(`${API_URL}/api/stats/public`);
-      if (res.ok) {
-        const data = await res.json();
-        document.getElementById('statIdeas').textContent = (data.ideas || 0) + '+';
-        document.getElementById('statUsers').textContent = (data.users || 0) + '+';
-        document.getElementById('statDeals').textContent = (data.deals || 0) + '+';
-      } else {
-        // Fallback display numbers
-        document.getElementById('statIdeas').textContent = '50+';
-        document.getElementById('statUsers').textContent = '200+';
-        document.getElementById('statDeals').textContent = '10+';
-      }
-    } catch {
-      document.getElementById('statIdeas').textContent = '50+';
-      document.getElementById('statUsers').textContent = '200+';
-      document.getElementById('statDeals').textContent = '10+';
-    }
-  }
-
-  // Load trending ideas (public)
-  async function loadTrendingIdeas() {
-    try {
-      const res = await fetch(`${API_URL}/api/ideas/public?limit=6&sort=trending`);
-      const data = res.ok ? await res.json() : [];
-      const ideas = Array.isArray(data) ? data : (data.ideas || []);
-
-      const grid = document.getElementById('ideasGrid');
-      if (!ideas.length) {
-        grid.innerHTML = `<div class="ideas-loading" style="grid-column:1/-1;">No ideas listed yet — <a href="/signup" style="color:var(--accent);">be the first!</a></div>`;
-        return;
-      }
-
-      const bannerIcons = { FinTech:'💳', HealthTech:'🏥', AgriTech:'🌾', EdTech:'📚', AI:'🤖', CleanTech:'♻️', Robotics:'🦾', SaaS:'☁️', 'E-Commerce':'🛒', Logistics:'🚚', 'Real Estate':'🏢', Technology:'💻', Finance:'💰', Health:'🏥', Education:'📚', Food:'🍔', Environment:'🌿', Entertainment:'🎮', Other:'✦' };
-      const bannerGradients = [
-        'linear-gradient(135deg,#1a2a4a,#2d3f6b)',
-        'linear-gradient(135deg,#2a1a3a,#4a2d6b)',
-        'linear-gradient(135deg,#1a3a2e,#2d6b4f)',
-        'linear-gradient(135deg,#3a2a1a,#6b4f2d)',
-        'linear-gradient(135deg,#3a1a2a,#6b2d4f)'
-      ];
-      function gradientFor(str) {
-        let hash = 0;
-        for (let i = 0; i < (str||'').length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return bannerGradients[Math.abs(hash) % bannerGradients.length];
-      }
-
-      const escX = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-      grid.innerHTML = ideas.map(idea => {
-        const initials = idea.creator_first_name
-          ? escX((idea.creator_first_name[0] + (idea.creator_last_name?.[0] || '')).toUpperCase())
-          : '?';
-        const avatarHtml = idea.creator_avatar
-          ? `<img src="${escX(idea.creator_avatar)}" />`
-          : initials;
-        const industry = idea.industry || idea.category || 'Other';
-        const hasImage = idea.images && idea.images.length > 0;
-        const bannerHtml = hasImage
-          ? `<div class="idea-card-banner" style="background-image:url('${escX(encodeURI(idea.images[0]))}');"></div>`
-          : `<div class="idea-card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="idea-card-banner-icon">${bannerIcons[industry] || '✦'}</span></div>`;
-        return `
-          <a class="idea-card" href="/idea?id=${encodeURIComponent(idea.id)}">
-            ${bannerHtml}
-            <div class="idea-card-body">
-              <div class="idea-card-top">
-                <span class="idea-category">${escX(industry)}</span>
-                <span class="idea-price">$${Number(idea.price || 0).toLocaleString()}</span>
-              </div>
-              <div class="idea-title">${escX(idea.title || 'Untitled Idea')}</div>
-              <div class="idea-summary">${escX(idea.summary || '')}</div>
-              ${idea.originality_rating ? `<div style="margin-top:8px;font-size:11.5px;font-weight:600;color:${idea.originality_rating.band === 'original' ? '#6ee7b7' : idea.originality_rating.band === 'similar' ? '#f5c842' : '#ff8a8a'};">${idea.originality_rating.band === 'original' ? '✦ Original' : idea.originality_rating.band === 'similar' ? '≈ Similar ideas exist' : '≈ Very similar'} · ${Number(idea.originality_rating.score)}/100</div>` : ''}
-              <div class="idea-card-foot">
-                <div class="idea-creator">
-                  <div class="idea-creator-av">${avatarHtml}</div>
-                  <div>
-                    <div>${idea.creator_first_name ? escX(`${idea.creator_first_name} ${idea.creator_last_name || ''}`) : 'Anonymous'}</div>
-                    <div style="color:var(--accent);font-size:11px;margin-top:2px;">${idea.creator_stars > 0 ? '★'.repeat(Math.round(idea.creator_stars)) + '☆'.repeat(5-Math.round(idea.creator_stars)) : '<span style="color:var(--muted);">No ratings yet</span>'}</div>
-                  </div>
-                </div>
-                <div class="idea-meta">
-                  👁 ${idea.views || 0}
-                </div>
-              </div>
-            </div>
-          </a>
-        `;
-      }).join('');
-    } catch {
-      document.getElementById('ideasGrid').innerHTML = `
-        <div class="ideas-loading" style="grid-column:1/-1;">
-          <a href="/browse" style="color:var(--accent);">Browse all ideas →</a>
-        </div>`;
-    }
-  }
-
-  // Scroll reveal
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-  // Search functions
-  function doSearch() {
-    const query = document.getElementById('searchInput').value.trim();
-    const category = document.getElementById('searchCategory').value;
-    let url = '/browse?';
-    if (query) url += `search=${encodeURIComponent(query)}&`;
-    if (category) url += `category=${encodeURIComponent(category)}`;
-    window.location.href = url.replace(/[&?]$/, '');
-  }
-
-  function quickSearch(category) {
-    window.location.href = `/browse?category=${encodeURIComponent(category)}`;
-  }
-
-  // ── NOTIFICATIONS ──
-  function formatNotifTime(d) {
-    const date = new Date(d);
-    const now = new Date();
-    const diff = now - date;
-    if (diff < 60000) return 'just now';
-    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
-    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-    if (diff < 7*86400000) return Math.floor(diff/86400000) + 'd ago';
-    return date.toLocaleDateString([], { month:'short', day:'numeric' });
-  }
-
-  function toggleNotifPanel() {
-    const panel = document.getElementById('notifPanel');
-    panel.classList.toggle('show');
-    if (panel.classList.contains('show')) loadNotifications();
-  }
-
-  document.addEventListener('click', (e) => {
-    const bell = document.getElementById('notifBell');
-    const panel = document.getElementById('notifPanel');
-    if (panel && bell && !bell.contains(e.target)) panel.classList.remove('show');
-  });
-
-  async function loadUnreadCount() {
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_URL}/api/notifications/unread-count`, { headers:{ Authorization:`Bearer ${token}` } });
-      if (!res.ok) return;
-      const data = await res.json();
-      const badge = document.getElementById('notifBadge');
-      const count = data.count || 0;
-      if (count > 0) { badge.style.display = 'flex'; badge.textContent = count > 99 ? '99+' : count; }
-      else { badge.style.display = 'none'; }
-    } catch(e) {}
-  }
-
-  async function loadNotifications() {
-    try {
-      const res = await fetch(`${API_URL}/api/notifications`, { headers:{ Authorization:`Bearer ${token}` } });
-      if (!res.ok) return;
-      const notifs = await res.json();
-      const el = document.getElementById('notifList');
-      if (!notifs.length) { el.innerHTML = `<div class="notif-empty">📭 No notifications yet</div>`; return; }
-      el.innerHTML = notifs.map(n => `
-        <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="handleNotifClick(event, ${n.id}, '${n.link||''}')">
-          <div class="notif-item-icon">${(n.title||'').match(/^\S+/)?.[0] || '🔔'}</div>
-          <div>
-            <div class="notif-item-title">${(n.title||'').replace(/^\S+\s/, '')}</div>
-            <div class="notif-item-msg">${n.message||''}</div>
-            <div class="notif-item-time">${formatNotifTime(n.created_at)}</div>
+  // ── Trending ideas ──
+  const ICONS = Object.fromEntries(INDUSTRIES);
+  const GRADS = ['linear-gradient(135deg,#1a2a4a,#2d3f6b)', 'linear-gradient(135deg,#2a1a3a,#4a2d6b)', 'linear-gradient(135deg,#1a3a2e,#2d6b4f)', 'linear-gradient(135deg,#3a2a1a,#6b4f2d)', 'linear-gradient(135deg,#3a1a2a,#6b2d4f)'];
+  const grad = s => { let h = 0; for (const ch of String(s || '')) h = ch.charCodeAt(0) + ((h << 5) - h); return GRADS[Math.abs(h) % GRADS.length]; };
+  fetch('/api/ideas/public?limit=6').then(r => r.ok ? r.json() : []).then(data => {
+    const ideas = Array.isArray(data) ? data : (data.ideas || []);
+    const grid = $('ideasGrid');
+    if (!ideas.length) { grid.innerHTML = `<div class="ideas-loading">No ideas listed yet. <a href="/signup?role=idea_creator" style="color:var(--accent)">Be the first to list one →</a></div>`; return; }
+    grid.innerHTML = ideas.map(idea => {
+      const ind = idea.industry || idea.category || 'Other';
+      const name = `${idea.creator_first_name || ''} ${idea.creator_last_name || ''}`.trim();
+      const ini = name ? name.split(/\s+/).map(x => x[0]).join('').slice(0, 2).toUpperCase() : '?';
+      const r = idea.originality_rating;
+      const stars = Math.round(Number(idea.creator_stars) || 0);
+      return `<a class="idea-card" href="/idea?id=${encodeURIComponent(idea.id)}">
+        <div class="idea-card-banner" style="background:${grad(idea.title || ind)}"><span class="idea-card-banner-icon" aria-hidden="true">${ICONS[ind] || '✦'}</span></div>
+        <div class="idea-card-body">
+          <div class="idea-card-top"><span class="idea-category">${esc(ind)}</span><span class="idea-price">$${Number(idea.price || 0).toLocaleString()}</span></div>
+          <div class="idea-title">${esc(idea.title || 'Untitled idea')}</div>
+          <div class="idea-summary">${esc(idea.summary || '')}</div>
+          ${r ? `<div style="margin:-4px 0 12px;font-size:11.5px;font-weight:600;color:${r.band === 'original' ? '#6ee7b7' : r.band === 'similar' ? '#f5c842' : '#ff8a8a'}">${r.band === 'original' ? '✦ Original' : r.band === 'similar' ? '≈ Similar ideas exist' : '≈ Very similar'} · ${Number(r.score)}/100</div>` : ''}
+          <div class="idea-card-foot">
+            <div class="idea-creator"><div class="idea-creator-av">${idea.creator_avatar ? `<img src="${esc(idea.creator_avatar)}" alt="">` : esc(ini)}</div>
+              <div><div>${esc(name || 'IdeaHub creator')}</div><div style="color:var(--accent);font-size:11px;margin-top:2px">${stars ? '★'.repeat(stars) + '☆'.repeat(5 - stars) : '<span style="color:var(--muted)">New creator</span>'}</div></div></div>
+            <div class="idea-meta">👁 ${Number(idea.views || 0).toLocaleString()}</div>
           </div>
-        </div>
-      `).join('');
-    } catch(e) {}
-  }
+        </div></a>`;
+    }).join('');
+  }).catch(() => { $('ideasGrid').innerHTML = `<div class="ideas-loading"><a href="/browse" style="color:var(--accent)">Browse all ideas →</a></div>`; });
 
-  async function handleNotifClick(e, id, link) {
-    try {
-      await fetch(`${API_URL}/api/notifications/${id}/read`, { method:'PUT', headers:{ Authorization:`Bearer ${token}` } });
-    } catch(err) {}
-    if (link) window.location.href = link;
-    else { loadNotifications(); loadUnreadCount(); }
-  }
-
-  async function markAllNotifsRead(e) {
-    e.stopPropagation();
-    try {
-      await fetch(`${API_URL}/api/notifications/read-all`, { method:'PUT', headers:{ Authorization:`Bearer ${token}` } });
-      loadNotifications();
-      loadUnreadCount();
-    } catch(err) {}
-  }
-
-  function doMobileSearch() {
-    const query = document.getElementById('mobileSearchInput').value.trim();
-    window.location.href = query ? `/browse?search=${encodeURIComponent(query)}` : '/browse';
-  }
-
-  // Focus glow effect
-  document.getElementById('searchInput')?.addEventListener('focus', () => {
-    document.getElementById('searchWrap').style.borderColor = 'rgba(245,200,66,0.5)';
-    document.getElementById('searchWrap').style.boxShadow = '0 0 0 3px rgba(245,200,66,0.1)';
-  });
-  document.getElementById('searchInput')?.addEventListener('blur', () => {
-    document.getElementById('searchWrap').style.borderColor = 'rgba(255,255,255,0.12)';
-    document.getElementById('searchWrap').style.boxShadow = 'none';
-  });
-
-  loadStats();
-  loadTrendingIdeas();
+  // ── Reveal on scroll ──
+  if ('IntersectionObserver' in window && !reduced) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }), { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  } else document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+})();
 </script>
-<script src="/chat-widget.js" defer></script></body>
+<script src="/chat-widget.js" defer></script>
+</body>
 </html>

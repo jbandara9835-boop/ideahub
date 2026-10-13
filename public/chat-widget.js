@@ -15,6 +15,8 @@
   const css = `
   .ihc-btn{position:fixed;right:24px;bottom:24px;z-index:9998;background:#f5c842;color:#080809;border:none;border-radius:999px;padding:12px 20px;font:600 14px 'DM Sans',system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.45);transition:transform .15s}
   .ihc-btn:hover{transform:translateY(-2px)}
+  .ihc-btn .ihc-ic{display:none}
+  @media (max-width:768px){.ihc-btn .ihc-ic{display:inline}}
   .ihc-panel{position:fixed;right:24px;bottom:84px;z-index:9999;width:380px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 120px);background:#0d0d0f;border:1px solid rgba(245,200,66,.18);border-radius:16px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.6);font-family:'DM Sans',system-ui,sans-serif;color:#f0ede8}
   .ihc-panel.open{display:flex}
   .ihc-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
@@ -45,7 +47,8 @@
   .ihc-send:disabled{opacity:.5;cursor:default}
   .ihc-foot{font-size:11px;color:#5e5b56;text-align:center;padding:0 12px 10px}
   @media (max-width:768px){
-    .ihc-btn{right:16px;bottom:84px}
+    .ihc-btn{right:14px;bottom:72px;width:50px;height:50px;padding:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+    .ihc-btn .ihc-tx{display:none}
     .ihc-panel{right:8px;left:8px;width:auto;max-width:none;bottom:76px;height:calc(100vh - 150px)}
   }`;
   const style = document.createElement('style');
@@ -53,7 +56,8 @@
   document.head.appendChild(style);
 
   // ── Markup ──────────────────────────────────────────────────────────────────
-  const btn = el('button', 'ihc-btn', 'Ask IdeaHub');
+  const btn = el('button', 'ihc-btn');
+  btn.innerHTML = '<span class="ihc-ic" aria-hidden="true">💬</span><span class="ihc-tx">Ask IdeaHub</span>';
   btn.setAttribute('aria-label', 'Open IdeaHub assistant');
 
   const panel = el('div', 'ihc-panel');

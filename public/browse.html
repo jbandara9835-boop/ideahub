@@ -826,6 +826,23 @@
   });
 
   initNav();
+  // Links from the home page and elsewhere: /browse?search=…&category=…
+  (function readUrlFilters() {
+    const qs = new URLSearchParams(location.search);
+    const q = (qs.get('search') || qs.get('q') || '').slice(0, 100);
+    const cat = (qs.get('category') || qs.get('industry') || '').slice(0, 60);
+    if (q) { document.getElementById('searchInput').value = q; const m = document.getElementById('mobileSearchInput'); if (m) m.value = q; }
+    if (cat) {
+      const chip = [...document.querySelectorAll('#catChips .chip[data-cat]')].find(b => b.dataset.cat.toLowerCase() === cat.toLowerCase());
+      if (chip) {
+        document.querySelectorAll('#catChips .chip').forEach(b => b.classList.remove('active'));
+        chip.classList.add('active'); activeCategory = chip.dataset.cat;
+        chip.parentElement.scrollLeft = Math.max(0, chip.offsetLeft - 40);
+      } else if (!q) {
+        document.getElementById('searchInput').value = cat;
+      }
+    }
+  })();
   loadIdeas();
 </script>
 <script src="/chat-widget.js" defer></script></body>
