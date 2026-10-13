@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Manage Listings — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -44,7 +44,7 @@
   async function main() {
     if (!owner) return clients();
     const r = await fetch(`/api/delegations/owner/${owner}/ideas`, { headers: H() });
-    if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>You don't have access to manage this person's listings. They may have removed it.<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/manage">Your clients</a></div>`; return; }
+    if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>You don't have access to manage this person's listings. They may have removed it.<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/manage">Your clients</a></div>`; return; }
     const d = await r.json();
     const del = await fetch('/api/delegations', { headers: H() }).then(x => x.ok ? x.json() : { managing: [] }).catch(() => ({ managing: [] }));
     const mine = (del.managing || []).find(m => m.user_id === owner);
@@ -59,10 +59,10 @@
         ${d.ideas.length ? d.ideas.map(i => `<div class="app-row"><div><h3><a href="/idea?id=${Number(i.id)}">${esc(i.title)}</a></h3>
           <div class="app-meta"><span>${esc(STATUS[i.status] || i.status || '')}</span>${i.price ? `<span>${money(i.price)}</span>` : ''}<span>${Number(i.views || 0)} views</span><span>Added ${day(i.created_at)}</span></div></div>
           <a class="btn btn-ghost btn-sm" href="/submit?edit=${Number(i.id)}&for=${owner}">Edit</a></div>`).join('')
-          : '<div class="empty"><div class="icon">💡</div>No listings yet. Create the first one.</div>'}
+          : '<div class="empty"><div class="icon"></div>No listings yet. Create the first one.</div>'}
       </div>
       <aside><div class="panel"><div class="panel-title">Your changes</div><div class="log">
-        ${log.length ? log.slice(0, 15).map(x => `<div>${x.action === 'create' ? '📝 Added' : '✏️ Edited'} ${esc(x.detail || 'a listing')}<br><span class="muted">${when(x.created_at)}</span></div>`).join('') : '<div class="muted" style="border:0">Nothing yet.</div>'}
+        ${log.length ? log.slice(0, 15).map(x => `<div>${x.action === 'create' ? 'Added' : 'Edited'} ${esc(x.detail || 'a listing')}<br><span class="muted">${when(x.created_at)}</span></div>`).join('') : '<div class="muted" style="border:0">Nothing yet.</div>'}
       </div></div>
       <div class="note" style="font-size:12.5px">Listings are published under your client's name and go through the same quality and originality checks.</div></aside></div>`;
   }
@@ -72,7 +72,7 @@
     const m = d.managing || [];
     $('root').innerHTML = `<div class="top"><div><div class="kicker">Virtual manager</div><h1>Clients whose listings you manage</h1></div></div>
       ${m.length ? m.map(c => `<div class="app-row"><div><h3>${esc(c.name)}</h3><div class="app-meta"><span>Access since ${day(c.since)}</span></div></div><a class="btn btn-gold btn-sm" href="/manage?owner=${Number(c.user_id)}">Open →</a></div>`).join('')
-        : '<div class="empty"><div class="icon">🗂️</div>No clients yet. When a client hires you, they can give you listing access from the hire page.</div>'}`;
+        : '<div class="empty"><div class="icon"></div>No clients yet. When a client hires you, they can give you listing access from the hire page.</div>'}`;
   }
 
   main().catch(() => { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; });

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Idea — IdeaHub</title>
 <meta name="description" id="metaDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
@@ -216,32 +216,7 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav" id="sidebarNav"></nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Guest</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <main class="main">
   <div class="topbar">
@@ -468,13 +443,13 @@
     const off = window.Engagements ? Engagements.offered(idea.engagements) : [];
     if (!off.length) return '';
     return `<div class="section-card">
-      <div class="section-title">🤝 Work with the creator</div>
+      <div class="section-title">Work with the creator</div>
       <div class="eng-list">
         ${off.map(o => `<div class="eng-item">
           <span class="eng-ic">${o.icon}</span>
           <div class="eng-body"><div class="eng-title">${escI(o.label)}</div>
             <div class="eng-sub">${escI(o.note || o.help)}</div>
-            ${o.warning ? `<div class="eng-warn">⚠️ ${escI(o.warning)}</div>` : ''}
+            ${o.warning ? `<div class="eng-warn">${escI(o.warning)}</div>` : ''}
             ${o.pricing === 'quote' && !isOwner ? `<button class="eng-ask" onclick="askAbout('${o.key}')">Ask the creator for a price →</button>` : ''}
           </div>
           <span class="eng-price ${o.pricing}">${escI(Engagements.priceLabel(o))}</span>
@@ -517,16 +492,16 @@
     const d = idea.patent_details || {};
     const item = (l, v) => `<div class="meta-item"><div class="meta-label">${l}</div><div class="meta-value">${v}</div></div>`;
     return `<div class="section-card">
-      <div class="section-title">📋 Patent details</div>
+      <div class="section-title">Patent details</div>
       <div class="meta-grid">
-        ${item('Status', d.status === 'granted' ? '✅ Granted' : '⏳ Pending')}
+        ${item('Status', d.status === 'granted' ? 'Granted' : 'Pending')}
         ${item('Office', escI(idea.patent_jurisdiction || '—'))}
         ${item('Number', escI(idea.patent_number || '—'))}
         ${item('Filed', fd(d.filing_date))}
         ${item('Granted', fd(d.grant_date))}
         ${item('Expires', fd(d.expiry_date))}
         ${item('Fees paid until', fd(d.fees_paid_until))}
-        ${item('Verified by IdeaHub', idea.patent_verified ? '✅ Documents checked' : '—')}
+        ${item('Verified by IdeaHub', idea.patent_verified ? 'Documents checked' : '—')}
       </div>
       ${d.family ? `<div style="font-size:13px;margin-top:.9rem;color:var(--muted)">Also filed as: <span style="color:var(--text)">${escI(d.family)}</span></div>` : ''}
       ${d.co_owners ? `<div style="font-size:13px;margin-top:.5rem;color:var(--muted)">Co-owners: <span style="color:var(--text)">${escI(d.co_owners)}</span></div>` : ''}
@@ -545,9 +520,9 @@
       ${o.licence_notes ? `<div style="font-size:13px;color:var(--muted);margin-bottom:.8rem;line-height:1.55">${escI(o.licence_notes)}</div>` : ''}
       ${isOwner ? `<button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your patent</button><a href="/patents#licences" style="display:block;text-align:center;margin:-0.25rem 0 1rem;color:var(--accent);font-size:13px;text-decoration:none;">See licence requests →</a>`
         : idea.status !== 'live' ? `<button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Not available</button>` : `
-        ${o.licence ? `<button class="buy-btn" onclick="openLic()">📜 Request a licence</button>` : ''}
-        ${o.sale ? `<button class="contact-btn" onclick="enquirePatent()">💬 Enquire about buying the patent</button>` : `<button class="contact-btn" onclick="openModal()">💬 Message the owner</button>`}
-        <button class="contact-btn" onclick="openRoom()">🤝 Open a deal room with your advisers</button>`}
+        ${o.licence ? `<button class="buy-btn" onclick="openLic()">Request a licence</button>` : ''}
+        ${o.sale ? `<button class="contact-btn" onclick="enquirePatent()">Enquire about buying the patent</button>` : `<button class="contact-btn" onclick="openModal()">Message the owner</button>`}
+        <button class="contact-btn" onclick="openRoom()">Open a deal room with your advisers</button>`}
       ${!isOwner ? `<div class="pt-guide"><b>How buying a patent works</b>
         <ol><li>Message the owner and agree a price.</li>
         <li>Hire a <a href="/find-support?type=patent_attorney">patent attorney</a> to check ownership, status, fees and existing licences, and to prepare the assignment.</li>
@@ -610,7 +585,7 @@
 
   function escI(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
   function originalityPanel(r, isOwner) {
-    if (!r) return `<div class="orig-panel"><div class="orig-kicker">🛡 AI originality check</div><div class="orig-facts">This idea hasn't been rated yet. Ratings usually appear within an hour of listing.</div></div>`;
+    if (!r) return `<div class="orig-panel"><div class="orig-kicker">AI originality check</div><div class="orig-facts">This idea hasn't been rated yet. Ratings usually appear within an hour of listing.</div></div>`;
     const col = r.band === 'original' ? '#6ee7b7' : r.band === 'similar' ? '#f5c842' : '#ff8a8a';
     const facts = [];
     facts.push(r.similar_listings
@@ -622,7 +597,7 @@
     return `<div class="orig-panel">
       <div class="orig-panel-head">
         <div class="orig-ring" style="--p:${Number(r.score)};--c:${col}"><span>${Number(r.score)}<small>/ 100</small></span></div>
-        <div><div class="orig-kicker">🛡 AI originality check</div><div class="orig-label" style="color:${col}">${escI(r.label)}</div></div>
+        <div><div class="orig-kicker">AI originality check</div><div class="orig-label" style="color:${col}">${escI(r.label)}</div></div>
       </div>
       <div class="orig-facts">${facts.join('')}</div>
       <div class="orig-note">Compared with every IdeaHub listing and products our AI knows of${r.checked_at ? ', ' + new Date(r.checked_at).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' }) : ''}. An estimate to help you decide, not a legal patent search.${isOwner ? ' <a href="/submit?edit=' + encodeURIComponent(currentIdea.id) + '" style="color:var(--accent);">See your full report →</a>' : ''}</div>
@@ -636,7 +611,7 @@
         document.getElementById('breadcrumbTitle').textContent = 'Members only';
         document.getElementById('pageContent').innerHTML = `
           <div style="text-align:center;padding:4rem;color:var(--muted);">
-            <div style="font-size:48px;margin-bottom:1rem;">🔒</div>
+            <div style="font-size:48px;margin-bottom:1rem;"></div>
             <div style="font-size:16px;color:var(--text);margin-bottom:0.5rem;">This idea is only visible to verified members.</div>
             <div style="font-size:14px;">${token ? 'Complete your profile and verify your phone to get verified.' : 'Sign in with a verified account to view it.'}</div>
             <a href="${token ? '/profile' : loginUrl()}" style="color:var(--accent);font-size:14px;margin-top:1rem;display:inline-block;">${token ? 'Go to my profile →' : 'Sign in →'}</a>
@@ -671,18 +646,18 @@
           <!-- LEFT -->
           <div>
             <div class="idea-header">
-              <span class="idea-icon-lg">${escI(idea.icon || '💡')}</span>
+              <span class="idea-icon-lg">${escI(idea.icon || '')}</span>
               <div class="idea-title">${escI(idea.title)}</div>
               <div class="idea-tags">
                 <span class="badge badge-industry">${escI(idea.industry || 'General')}</span>
                 <span class="badge ${lvl.cls}">${lvl.label}</span>
                 ${idea.idea_type ? `<span class="badge badge-type">${escI(idea.idea_type)}</span>` : ''}
-                ${idea.has_patent ? '<span class="badge badge-patent">📋 Patented</span>' : ''}
+                ${idea.has_patent ? '<span class="badge badge-patent">Patented</span>' : ''}
               </div>
               ${idea.summary ? `<div class="idea-summary">${escI(idea.summary)}</div>` : ''}
             ${idea.images && idea.images.length > 0 ? `
             <div style="margin-top:1.25rem;">
-              <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.5px;">📸 Product Images</div>
+              <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.5px;">Product Images</div>
               <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
                 ${idea.images.map(url => `
                   <div style="border-radius:10px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1;cursor:pointer;" onclick="window.open(this.dataset.u,'_blank')" data-u="${escI(url)}">
@@ -695,18 +670,18 @@
 
             ${idea.description ? `
             <div class="section-card">
-              <div class="section-title">📄 Full Description</div>
+              <div class="section-title">Full Description</div>
               <div class="idea-description" style="white-space:pre-wrap;">${escI(idea.description)}</div>
             </div>` : idea.description_locked ? `
             <div class="section-card">
-              <div class="section-title">🔒 Full Description</div>
+              <div class="section-title">Full Description</div>
               <div style="font-size:14px;color:var(--muted);line-height:1.7;">The full description is shared with the buyer once payment is held in escrow, so the creator's idea stays protected. Have questions first? <a href="#" onclick="event.preventDefault();openModal()" style="color:var(--accent);">Message the creator</a>.</div>
             </div>` : ''}
 
             ${engagementSection(idea, isOwner)}
 
             <div class="section-card">
-              <div class="section-title">📊 Idea Details</div>
+              <div class="section-title">Idea Details</div>
               <div class="meta-grid">
                 <div class="meta-item">
                   <div class="meta-label">Industry</div>
@@ -722,11 +697,11 @@
                 </div>
                 <div class="meta-item">
                   <div class="meta-label">Views</div>
-                  <div class="meta-value">👁 ${idea.views || 0}</div>
+                  <div class="meta-value">${idea.views || 0}</div>
                 </div>
                 <div class="meta-item">
                   <div class="meta-label">Patent</div>
-                  <div class="meta-value">${idea.has_patent ? '✅ Yes' : '❌ No'}</div>
+                  <div class="meta-value">${idea.has_patent ? 'Yes' : 'No'}</div>
                 </div>
                 <div class="meta-item">
                   <div class="meta-label">Status</div>
@@ -738,7 +713,7 @@
             ${idea.has_patent ? patentSection(idea) : ''}
 
             <div class="section-card">
-              <div class="section-title">👤 About the Creator</div>
+              <div class="section-title">About the Creator</div>
               <div class="creator-card" onclick="window.location.href='/public-profile?id=${encodeURIComponent(idea.creator_id)}'" style="cursor:pointer;">
                 <div class="creator-avatar">${idea.creator?.avatar_url ? `<img src="${escI(idea.creator.avatar_url)}" />` : escI(creatorInitials)}</div>
                 <div class="creator-info">
@@ -750,7 +725,7 @@
                     return (n && avg ? `${'★'.repeat(k)}${'☆'.repeat(5 - k)} <span style="color:var(--muted);font-size:12px">${avg.toFixed(1)} from ${n} review${n === 1 ? '' : 's'}</span>` : '<span style="color:var(--muted);font-size:12px">No reviews yet</span>')
                       + (deals ? ` <span style="color:var(--muted);font-size:12px">· ${deals} completed deal${deals === 1 ? '' : 's'}</span>` : ''); })()}</div>
                 </div>
-                ${!isOwner ? `<button class="msg-creator-btn" onclick="event.stopPropagation();openModal()">💬 Message</button>` : '<span style="font-size:12px;color:var(--accent)">Your idea</span>'}
+                ${!isOwner ? `<button class="msg-creator-btn" onclick="event.stopPropagation();openModal()">Message</button>` : '<span style="font-size:12px;color:var(--accent)">Your idea</span>'}
               </div>
             </div>
           </div>
@@ -776,17 +751,17 @@
                   ${idea.seller_terms_version ? `<div style="font-size:12px;color:#4ade80;margin-top:6px">✓ The seller has accepted this agreement for this listing.</div>` : ''}
                 </div>
                 <button class="buy-btn" onclick="handleBuy()">
-                  🛒 Purchase Idea
+                  Purchase Idea
                 </button>
                 <button class="contact-btn" onclick="openModal()">
-                  💬 Contact Creator First
+                  Contact Creator First
                 </button>
                 <button class="contact-btn" onclick="openRoom()" style="margin-top:-0.25rem">
-                  🤝 Open a deal room with your advisers
+                  Open a deal room with your advisers
                 </button>
               ` : isOwner ? `
                 <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">Your own idea</button>
-                <a href="/patent-apply?idea=${encodeURIComponent(idea.id)}" style="display:block;text-align:center;margin:-0.25rem 0 1rem;color:var(--accent);font-size:13px;text-decoration:none;">📜 Patent this idea with a verified attorney →</a>
+                <a href="/patent-apply?idea=${encodeURIComponent(idea.id)}" style="display:block;text-align:center;margin:-0.25rem 0 1rem;color:var(--accent);font-size:13px;text-decoration:none;">Patent this idea with a verified attorney →</a>
               ` : `
                 <button class="buy-btn" style="opacity:0.4;cursor:not-allowed">${escI(idea.status === 'escrow' ? 'Under offer' : idea.status === 'sold' ? 'Sold' : 'Not available')}</button>
               `}
@@ -798,10 +773,10 @@
               ` : ''}
 
               <div class="buy-notes">
-                <p>🔒 Secure escrow payment</p>
-                <p>✅ Full ownership transfer</p>
-                <p>💬 Direct creator contact</p>
-                <p>↩️ Dispute resolution available</p>
+                <p>Secure escrow payment</p>
+                <p>Full ownership transfer</p>
+                <p>Direct creator contact</p>
+                <p>Dispute resolution available</p>
               </div>
               ${originalityPanel(idea.originality_rating, isOwner)}
             </div>`}
@@ -812,7 +787,7 @@
     } catch (err) {
       document.getElementById('pageContent').innerHTML = `
         <div style="text-align:center;padding:4rem;color:var(--muted);">
-          <div style="font-size:48px;margin-bottom:1rem;">😕</div>
+          <div style="font-size:48px;margin-bottom:1rem;"></div>
           <div style="font-size:16px;">Idea not found or no longer available.</div>
           <a href="/browse" style="color:var(--accent);font-size:14px;margin-top:1rem;display:inline-block;">← Back to Browse</a>
         </div>`;

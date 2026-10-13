@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Business — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -125,33 +125,7 @@
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav">
-    <a class="nav-item" href="/dashboard" id="dashLink"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item active" href="/businesses"><span class="nav-icon">🏭</span><span>Businesses</span></a>
-    <a class="nav-item" href="/idea-requests"><span class="nav-icon">🎯</span><span>Idea Requests</span></a>
-    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-  </nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <button class="logout-btn" onclick="logout()">✕</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <main class="main">
   <div class="topbar">
@@ -175,23 +149,23 @@
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon"></span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon"></span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon"></span><span>Marketplace</span></a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon"></span><span>Request an Idea</span></a>
       <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
-    <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
-    <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
-    <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
-    <a class="nav-item" href="/expansion"><span class="nav-icon">🏢</span><span>Expansion Deals</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
+      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon"></span><span>Find an Attorney</span></a>
+      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon"></span><span>Virtual Manager</span></a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon"></span><span>Find an Accountant</span></a>
+    <a class="nav-item" href="/patents"><span class="nav-icon"></span><span>Patent Applications</span></a>
+    <a class="nav-item" href="/deal-room"><span class="nav-icon"></span><span>Deal Rooms</span></a>
+    <a class="nav-item" href="/hire"><span class="nav-icon"></span><span>My Hires</span></a>
+    <a class="nav-item" href="/expansion"><span class="nav-icon"></span><span>Expansion Deals</span></a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon"></span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon"></span><span>Messages</span></a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon"></span><span>Wallet</span></a>
     `;
   }
   const token = localStorage.getItem('ih_token');
@@ -202,11 +176,11 @@
   const money = n => '$' + (Number(n) || 0).toLocaleString();
 
   const typeConfig = {
-    franchise: { label:'Franchise', emoji:'📦', cls:'type-franchise' },
-    license: { label:'License', emoji:'📜', cls:'type-license' },
-    joint_venture: { label:'Joint Venture', emoji:'🤝', cls:'type-joint_venture' },
-    distribution: { label:'Distribution', emoji:'🌍', cls:'type-distribution' },
-    white_label: { label:'White Label', emoji:'💻', cls:'type-white_label' }
+    franchise: { label:'Franchise', emoji:'', cls:'type-franchise' },
+    license: { label:'License', emoji:'', cls:'type-license' },
+    joint_venture: { label:'Joint Venture', emoji:'', cls:'type-joint_venture' },
+    distribution: { label:'Distribution', emoji:'', cls:'type-distribution' },
+    white_label: { label:'White Label', emoji:'', cls:'type-white_label' }
   };
 
   const creatorRoles = ['idea_creator','patent_seller'];
@@ -306,7 +280,7 @@
       const title = b.title || b.business_name || 'Business';
       const types = (b.expansion_types || []);
       const d = b.details || {};
-      const initials = b.masked ? '🔒' : escB(String(title).split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
+      const initials = b.masked ? '' : escB(String(title).split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
       document.title = `${title} — IdeaHub`;
       const detailRows = Object.keys(d).map(k => { const f = Routes.fieldLabel(b.route, dir, k); return f ? `<div class="meta-item"><div class="meta-label">${escB(f.label)}</div><div class="meta-value" style="white-space:pre-wrap">${escB(Routes.formatDetail(f, d[k]))}</div></div>` : ''; }).join('');
       const money = n => '$' + (Number(n) || 0).toLocaleString();
@@ -316,7 +290,7 @@
       let action = '';
       if (isOwner) action = `
         <div class="card" style="text-align:center;">
-          <div style="font-size:32px;margin-bottom:1rem;">🏢</div>
+          <div style="font-size:32px;margin-bottom:1rem;"></div>
           <div style="font-size:14px;margin-bottom:.4rem;">This is your listing</div>
           <div style="font-size:12.5px;color:var(--muted);margin-bottom:1rem;">Status: <b style="color:var(--text)">${escB(b.status_label || b.status)}</b>${b.status === 'rejected' && b.review_note ? '<br>' + escB(b.review_note) : ''}</div>
           <a href="/business-dashboard" style="display:block;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.75rem;font-weight:700;text-decoration:none;text-align:center;margin-bottom:8px">Manage responses →</a>
@@ -329,9 +303,9 @@
           <a href="/expansion?id=${Number(myApplication.id)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.8rem;font-weight:700;text-decoration:none;">Open the conversation →</a></div>`;
       else if (b.masked) {
         const st = b.my_nda?.status;
-        action = `<div class="card"><div class="card-title">🔒 Get the full details</div>${
+        action = `<div class="card"><div class="card-title">Get the full details</div>${
           !token ? `<p style="font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:1rem">This is a confidential listing. Sign in to sign the confidentiality agreement and ask the owner for access.</p><a href="/login?next=${encodeURIComponent(location.pathname)}" class="btn-primary" style="text-decoration:none">Sign in to continue</a>`
-          : st === 'requested' ? `<p style="font-size:13.5px;line-height:1.6">✍️ You signed the confidentiality agreement. The owner decides whether to share the full details, and you'll be notified.</p>`
+          : st === 'requested' ? `<p style="font-size:13.5px;line-height:1.6">You signed the confidentiality agreement. The owner decides whether to share the full details, and you'll be notified.</p>`
           : st === 'declined' ? `<p style="font-size:13.5px;color:var(--muted);line-height:1.6">The owner didn't approve access to this listing.</p>`
           : `<p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:.8rem">The owner shares the business name and full details only with people who sign this agreement and whom they approve.</p>
             <div style="background:var(--surface2);border-radius:10px;padding:.85rem;font-size:12.5px;line-height:1.6;max-height:180px;overflow:auto;margin-bottom:1rem">${escB(b.nda_text || '')}</div>
@@ -353,12 +327,12 @@
         <div class="detail-grid">
           <div>
             <div class="card">
-              <div style="font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">${dir === 'seek' ? '🔎 Looking for a partner' : '📣 Opportunity'} · ${g.icon || ''} ${escB(g.label || '')}</div>
+              <div style="font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">${dir === 'seek' ? 'Looking for a partner' : 'Opportunity'} · ${g.icon || ''} ${escB(g.label || '')}</div>
               <div class="biz-header">
                 <div class="biz-logo-lg">${initials}</div>
                 <div>
                   <div class="biz-name-lg">${escB(title)}</div>
-                  <div style="font-size:12.5px;margin:2px 0 6px;color:${b.is_verified ? 'var(--success)' : 'var(--muted)'}">${b.is_verified ? '✅ Verified business · registration checked by IdeaHub' : 'Registration not verified yet'}${b.confidential ? ' · <span style="color:#c4b5fd">🔒 Confidential</span>' : ''}</div>
+                  <div style="font-size:12.5px;margin:2px 0 6px;color:${b.is_verified ? 'var(--success)' : 'var(--muted)'}">${b.is_verified ? 'Verified business · registration checked by IdeaHub' : 'Registration not verified yet'}${b.confidential ? ' · <span style="color:#c4b5fd">Confidential</span>' : ''}</div>
                   ${b.tagline ? `<div class="biz-tagline-lg">${escB(b.tagline)}</div>` : ''}
                   <div>${types.map(t => `<span class="type-pill">${escB(Routes.typeLabel(t, dir))}</span>`).join('')}</div>
                 </div>
@@ -372,19 +346,19 @@
                 <div class="meta-item"><div class="meta-label">Locations</div><div class="meta-value">${escB(b.locations || 1)}</div></div>`}
               </div>
               ${b.masked ? `<div class="biz-description" style="white-space:pre-wrap">${escB(b.teaser || '')}</div><div style="font-size:12.5px;color:#c4b5fd;margin-top:.8rem">The business name and full details are shared after you sign the confidentiality agreement and the owner approves.</div>`
-                : `<div class="biz-description" style="white-space:pre-wrap">${escB(b.description || '')}</div>${b.confidential && !isOwner && !isAdmin ? '<div style="font-size:12.5px;color:#c4b5fd;margin-top:.8rem">🔒 Shared with you under the confidentiality agreement you signed. Don\'t pass it on.</div>' : ''}`}
+                : `<div class="biz-description" style="white-space:pre-wrap">${escB(b.description || '')}</div>${b.confidential && !isOwner && !isAdmin ? '<div style="font-size:12.5px;color:#c4b5fd;margin-top:.8rem">Shared with you under the confidentiality agreement you signed. Don\'t pass it on.</div>' : ''}`}
             </div>
-            ${detailRows ? `<div class="card"><div class="card-title">📋 Details</div><div class="meta-grid">${detailRows}</div></div>` : ''}
-            ${b.requirements ? `<div class="card"><div class="card-title">${dir === 'seek' ? '🎯 What they are looking for' : '📋 Partner requirements'}</div><div class="requirements-box" style="white-space:pre-wrap">${escB(b.requirements)}</div></div>` : ''}
-            ${b.territories?.length ? `<div class="card"><div class="card-title">🌍 Territories</div><div style="display:flex;gap:8px;flex-wrap:wrap;">${b.territories.map(t => `<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;">${escB(t)}</span>`).join('')}</div></div>` : ''}
-            ${isOwner && b.confidential ? '<div class="card" id="access"><div class="card-title">🔒 Access requests</div><div id="ndaList" style="font-size:13px;color:var(--muted)">Loading…</div></div>' : ''}
-            ${(isOwner || isAdmin) && b.status === 'active' ? '<div class="card" id="matches"><div class="card-title">🎯 Businesses that fit</div><div id="matchList" style="font-size:13px;color:var(--muted)">Loading…</div></div>' : ''}
+            ${detailRows ? `<div class="card"><div class="card-title">Details</div><div class="meta-grid">${detailRows}</div></div>` : ''}
+            ${b.requirements ? `<div class="card"><div class="card-title">${dir === 'seek' ? 'What they are looking for' : 'Partner requirements'}</div><div class="requirements-box" style="white-space:pre-wrap">${escB(b.requirements)}</div></div>` : ''}
+            ${b.territories?.length ? `<div class="card"><div class="card-title">Territories</div><div style="display:flex;gap:8px;flex-wrap:wrap;">${b.territories.map(t => `<span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;">${escB(t)}</span>`).join('')}</div></div>` : ''}
+            ${isOwner && b.confidential ? '<div class="card" id="access"><div class="card-title">Access requests</div><div id="ndaList" style="font-size:13px;color:var(--muted)">Loading…</div></div>' : ''}
+            ${(isOwner || isAdmin) && b.status === 'active' ? '<div class="card" id="matches"><div class="card-title">Businesses that fit</div><div id="matchList" style="font-size:13px;color:var(--muted)">Loading…</div></div>' : ''}
           </div>
           <div>
             <div class="card">
-              <div class="card-title">💰 ${dir === 'seek' ? 'Budget' : 'Investment range'}</div>
+              <div class="card-title">${dir === 'seek' ? 'Budget' : 'Investment range'}</div>
               <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;">${inv}</div>
-              <div style="font-size:13px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:0.75rem;margin-top:.6rem">📋 ${Number(b.application_count) || 0} response${Number(b.application_count) === 1 ? '' : 's'} · 👁 ${Number(b.view_count) || 0} views</div>
+              <div style="font-size:13px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:0.75rem;margin-top:.6rem">${Number(b.application_count) || 0} response${Number(b.application_count) === 1 ? '' : 's'} · ${Number(b.view_count) || 0} views</div>
             </div>
             ${action}
           </div>
@@ -393,7 +367,7 @@
       if ((isOwner || isAdmin) && b.status === 'active') loadMatches();
       if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth' }), 300);
     } catch (err) {
-      document.getElementById('pageContent').innerHTML = `<div style="text-align:center;padding:4rem;color:var(--muted);"><div style="font-size:48px;margin-bottom:1rem;">😕</div><div>Business not found.</div><a href="/businesses" style="color:var(--accent);margin-top:1rem;display:inline-block;">← Back to Businesses</a></div>`;
+      document.getElementById('pageContent').innerHTML = `<div style="text-align:center;padding:4rem;color:var(--muted);"><div style="font-size:48px;margin-bottom:1rem;"></div><div>Business not found.</div><a href="/businesses" style="color:var(--accent);margin-top:1rem;display:inline-block;">← Back to Businesses</a></div>`;
     }
   }
 
@@ -416,7 +390,7 @@
       if (!list.length) { el.textContent = 'Nobody has asked for access yet. People who sign the confidentiality agreement appear here.'; return; }
       el.innerHTML = list.map(n => `<div style="border-bottom:1px solid var(--border);padding:.75rem 0">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
-          <div><b style="color:var(--text)">${escB(n.name)}</b>${n.verified ? ' ✅' : ''} <span>· ${escB((n.role || '').replace(/_/g, ' '))}${n.country ? ' · ' + escB(n.country) : ''}</span><div style="font-size:11.5px">Signed as "${escB(n.signed_name)}" on ${new Date(n.signed_at).toLocaleDateString()}</div></div>
+          <div><b style="color:var(--text)">${escB(n.name)}</b>${n.verified ? '' : ''} <span>· ${escB((n.role || '').replace(/_/g, ' '))}${n.country ? ' · ' + escB(n.country) : ''}</span><div style="font-size:11.5px">Signed as "${escB(n.signed_name)}" on ${new Date(n.signed_at).toLocaleDateString()}</div></div>
           ${n.status === 'requested' ? `<div style="display:flex;gap:6px"><button class="btn-view" onclick="decideNda(${Number(n.id)},'approve')" style="background:var(--accent);color:#0d0d0f;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer">Approve</button><button onclick="decideNda(${Number(n.id)},'decline')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer">Decline</button></div>`
             : `<span style="font-size:12px;color:${n.status === 'approved' ? 'var(--success)' : 'var(--muted)'}">${n.status === 'approved' ? '✓ Has access' : 'Declined'}</span>`}
         </div>${n.intro ? `<div style="font-size:12.5px;margin-top:6px;color:var(--text);white-space:pre-wrap">${escB(n.intro)}</div>` : ''}</div>`).join('');
@@ -434,7 +408,7 @@
       const list = await fetch(`${API_URL}/api/businesses/${bizId}/matches`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
       if (!Array.isArray(list) || !list.length) { el.textContent = 'No fitting listings yet. You will be notified when one joins.'; return; }
       el.innerHTML = list.map(m => `<a href="/business/${Number(m.id)}" style="display:flex;justify-content:space-between;gap:12px;padding:.7rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--text)">
-        <div><b>${escB(m.title || 'Business')}</b>${m.masked ? ' <span style="color:#c4b5fd">🔒</span>' : ''}<div style="font-size:12px;color:var(--muted)">${m.direction === 'seek' ? 'Looking for' : 'Offering'}: ${escB((m.expansion_types || []).map(t => Routes.BY_KEY[t]?.label || t).join(', '))} · ${escB(m.country || '')}</div></div>
+        <div><b>${escB(m.title || 'Business')}</b>${m.masked ? ' <span style="color:#c4b5fd"></span>' : ''}<div style="font-size:12px;color:var(--muted)">${m.direction === 'seek' ? 'Looking for' : 'Offering'}: ${escB((m.expansion_types || []).map(t => Routes.BY_KEY[t]?.label || t).join(', '))} · ${escB(m.country || '')}</div></div>
         <span style="font-size:12px;color:var(--accent);white-space:nowrap;font-weight:700">${Number(m.match)}% fit</span></a>`).join('');
     } catch (e) { el.textContent = 'Could not load matches.'; }
   }

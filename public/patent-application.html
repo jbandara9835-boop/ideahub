@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Patent application — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -187,7 +187,7 @@ a.cstage:hover { border-color: var(--border-hover); }
       <div class="row2" style="margin-top:1rem"><div class="field"><label for="fNo">${esc(refLabel)}</label><input class="input" id="fNo" maxlength="60" placeholder="${isFiling(a) ? 'From the patent office' : ''}" /></div>
       <div class="field"><label for="fDate">${isFiling(a) ? 'Filing date' : a.stage === 'grant' ? 'Grant date' : 'Date'}</label><input class="input" id="fDate" type="date" max="${new Date().toISOString().slice(0, 10)}" /></div></div>
       ${isFiling(a) ? `<div class="field"><label for="fOffice">Patent office</label><input class="input" id="fOffice" maxlength="80" value="${esc(a.jurisdiction || '')}" /></div>` : ''}
-      <div class="field"><label>Proof: ${esc(proofWord(a))}</label>${hasProof ? '<div class="verified">✓ Uploaded</div>' : `<label class="btn btn-ghost btn-sm" for="receiptIn">📎 Upload (PDF or image)</label><input type="file" id="receiptIn" class="hidden" accept=".pdf,image/*" />`}</div>
+      <div class="field"><label>Proof: ${esc(proofWord(a))}</label>${hasProof ? '<div class="verified">✓ Uploaded</div>' : `<label class="btn btn-ghost btn-sm" for="receiptIn">Upload (PDF or image)</label><input type="file" id="receiptIn" class="hidden" accept=".pdf,image/*" />`}</div>
       <div class="btns"><button class="btn btn-gold" data-act="filed">Mark as ${esc(doneWord(a).toLowerCase())}</button></div></div>`;
     }
     if (s === 'in_progress' && v === 'creator') return `<div class="panel action"><h2>Your practitioner is working on it</h2><p>${money(a.total)} is held safely in escrow. ${esc(atty)} expects to finish <b>${esc(a.stage_label)}</b> by <b>${esc(due)}</b>. Share anything else they need below.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="dispute">Report a problem</button></div></div>`;
@@ -199,7 +199,7 @@ a.cstage:hover { border-color: var(--border-hover); }
       <div class="btns"><button class="btn btn-gold" data-act="confirm">Confirm and release fee</button><button class="btn btn-danger" data-act="dispute">Open a dispute</button></div></div>`;
     if (s === 'filed' && v === 'attorney') return `<div class="panel action"><h2>Waiting for the creator to confirm</h2><p>${summary} Your fee of ${money(a.amount)} is released when the creator confirms, or automatically on <b>${day(a.confirm_by)}</b>.</p></div>`;
     if (s === 'disputed') return `<div class="panel action"><h2>Under review by IdeaHub</h2><p>A dispute was opened on ${day(a.disputed_at)}: <i>${esc(a.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while IdeaHub reviews the messages and files here. Both of you will be notified of the decision.</p></div>`;
-    if (s === 'completed') return `<div class="panel action"><h2>✅ Completed</h2><p>${summary} ${v === 'creator' ? 'Keep the documents safe. The case deadlines below show what comes next.' : 'The fee was added to your wallet.'}</p></div>`;
+    if (s === 'completed') return `<div class="panel action"><h2>Completed</h2><p>${summary} ${v === 'creator' ? 'Keep the documents safe. The case deadlines below show what comes next.' : 'The fee was added to your wallet.'}</p></div>`;
     if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>IdeaHub refunded ${money(a.total)} to the creator.${a.resolution_note ? ' Note: ' + esc(a.resolution_note) : ''}</p></div>`;
     if (s === 'declined') return `<div class="panel action"><h2>Declined</h2><p>${esc(atty)} declined: <i>${esc(a.decline_reason)}</i></p>${v === 'creator' ? `<div class="btns">${a.case_id ? '<a class="btn btn-gold" href="#case">Choose another practitioner below</a>' : `<a class="btn btn-gold" href="/patent-apply?from=${a.id}">Send to another practitioner</a>`}</div>` : ''}</div>`;
     if (s === 'cancelled') return `<div class="panel action"><h2>Cancelled</h2><p>This request was cancelled before payment.</p>${v === 'creator' && !a.case_id ? `<div class="btns"><a class="btn btn-ghost" href="/patent-apply?from=${a.id}">Start again from this request</a></div>` : ''}</div>`;
@@ -259,7 +259,7 @@ a.cstage:hover { border-color: var(--border-hover); }
   function render(a) {
     const v = a.viewer;
     const open = ['requested', 'quoted', 'in_progress', 'filed', 'disputed', 'completed'].includes(a.status) && v !== 'admin';
-    const files = a.attachments.length ? a.attachments.map(f => `<div class="frow"><span class="nm">📄 ${esc(f.name)}${f.kind === 'receipt' ? `<span class="tagr">${f.inherited ? 'Earlier stage' : 'Proof'}</span>` : f.inherited ? '<span class="tagr" style="color:var(--muted);background:var(--surface)">Earlier stage</span>' : ''}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files yet.</div>';
+    const files = a.attachments.length ? a.attachments.map(f => `<div class="frow"><span class="nm">${esc(f.name)}${f.kind === 'receipt' ? `<span class="tagr">${f.inherited ? 'Earlier stage' : 'Proof'}</span>` : f.inherited ? '<span class="tagr" style="color:var(--muted);background:var(--surface)">Earlier stage</span>' : ''}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files yet.</div>';
     const msgs = a.messages.map(m => m.system ? `<div class="sys">${esc(m.text)} · ${when(m.created_at)}</div>`
       : `<div class="msg ${m.from_id === me?.id ? 'me' : ''}">${esc(m.text)}<small>${m.from_id === a.creator?.id ? esc(a.creator.name) : esc(a.attorney?.name || '')} · ${when(m.created_at)}</small></div>`).join('');
     const inv = Array.isArray(a.inventors_list) && a.inventors_list.length ? a.inventors_list.map(p => `${p.name} (${[p.city, p.country].filter(Boolean).join(', ')})`).join('\n') : a.inventors;
@@ -271,7 +271,7 @@ a.cstage:hover { border-color: var(--border-hover); }
       <div class="top">
         <a href="/patents" class="muted" style="font-size:13px;text-decoration:none">← Patent applications</a>
         <h1>${esc(a.title)}</h1>
-        <div class="meta"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span><b style="color:var(--text)">${esc(a.stage_label)}</b><span>${esc(a.jurisdiction)}</span><span>Started ${day(a.created_at)}</span>${a.idea ? `<a href="/idea?id=${Number(a.idea.id)}">💡 ${esc(a.idea.title)}</a>` : ''}</div>
+        <div class="meta"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span><b style="color:var(--text)">${esc(a.stage_label)}</b><span>${esc(a.jurisdiction)}</span><span>Started ${day(a.created_at)}</span>${a.idea ? `<a href="/idea?id=${Number(a.idea.id)}">${esc(a.idea.title)}</a>` : ''}</div>
       </div>
       ${track(a)}
       <div class="grid">
@@ -279,7 +279,7 @@ a.cstage:hover { border-color: var(--border-hover); }
           ${actionPanel(a)}
           ${casePanel(a)}
           ${aiPanel(a)}
-          <div class="panel"><div class="panel-title">Invention <span style="text-transform:none;letter-spacing:0;font-weight:500">🔒 Confidential</span></div>
+          <div class="panel"><div class="panel-title">Invention <span style="text-transform:none;letter-spacing:0;font-weight:500">Confidential</span></div>
             <dl class="details">
               ${a.field ? `<dt>Field</dt><dd>${esc(a.field)}</dd>` : ''}
               <dt>Problem</dt><dd>${esc(a.problem)}</dd>
@@ -292,7 +292,7 @@ a.cstage:hover { border-color: var(--border-hover); }
               ${Array.isArray(a.markets) && a.markets.length ? `<dt>Markets</dt><dd>${esc(a.markets.join(', '))}${a.route ? ` · suggested route: ${esc(a.route)}` : ''}</dd>` : ''}
               ${ent ? `<dt>US fees</dt><dd>${esc(ent)}</dd>` : ''}
             </dl></div>
-          <div class="panel"><div class="panel-title">Files ${open ? `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">📎 Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.txt,image/*" />` : ''}</div><div class="flist">${files}</div></div>
+          <div class="panel"><div class="panel-title">Files ${open ? `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.txt,image/*" />` : ''}</div><div class="flist">${files}</div></div>
           <div class="panel"><div class="panel-title">Messages</div>
             <div class="thread" id="thread">${msgs || '<div class="sys">No messages yet.</div>'}</div>
             ${open ? `<div class="compose"><textarea class="textarea" id="msgIn" placeholder="Write a message…" maxlength="4000"></textarea><button class="btn btn-gold" id="sendBtn">Send</button></div>` : ''}
@@ -301,7 +301,7 @@ a.cstage:hover { border-color: var(--border-hover); }
         <aside class="side">
           <div class="panel">${person(a.creator, 'Creator')}${person(a.attorney, a.attorney_registrations?.some(r => r.kind === 'attorney') || !a.attorney_registrations?.length ? 'Patent attorney' : 'Patent agent')}
             ${regs ? `<div class="regs" style="margin-top:10px">${regs}</div>` : ''}
-            ${v !== 'admin' && !['declined', 'cancelled', 'refunded'].includes(a.status) ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=patent&id=${a.id}" target="_blank" rel="noopener">📹 Start a video call</a><div class="muted" style="font-size:11.5px;text-align:center;margin-top:6px">Private, in the browser. ${v === 'creator' ? 'Your practitioner' : 'The creator'} gets a notification to join.</div>` : ''}
+            ${v !== 'admin' && !['declined', 'cancelled', 'refunded'].includes(a.status) ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=patent&id=${a.id}" target="_blank" rel="noopener">Start a video call</a><div class="muted" style="font-size:11.5px;text-align:center;margin-top:6px">Private, in the browser. ${v === 'creator' ? 'Your practitioner' : 'The creator'} gets a notification to join.</div>` : ''}
           </div>
           <div class="panel"><div class="panel-title">Payment</div>
             <div class="kv"><span>Quote</span><span>${a.quote_amount ? money(a.quote_amount) : '—'}</span></div>
@@ -336,7 +336,7 @@ a.cstage:hover { border-color: var(--border-hover); }
       const r = await fetch(`/api/patent-applications/${id}`, { headers: H() });
       if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
       const d = await r.json();
-      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/patents">Back to patent applications</a></div>`; return; }
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/patents">Back to patent applications</a></div>`; return; }
       // Keep anything typed in forms across refreshes
       const keep = {}; ['fNo', 'fDate', 'fOffice', 'qProf', 'qOff', 'qDays', 'qScope', 'qStage', 'msgIn', 'nsNote', 'dlTitle', 'dlDate'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
       A = d; document.title = `${d.title} — Patent application — IdeaHub`; render(d);
@@ -422,7 +422,7 @@ a.cstage:hover { border-color: var(--border-hover); }
     } catch (err) { toast(err.message); await load(); }
   });
 
-  if (!id) $('root').innerHTML = '<div class="empty">Application not found.</div>';
+  if (!id) location.replace('/patents');
   else {
     load();
     if (params.get('sent')) history.replaceState(null, '', location.pathname + '?id=' + id);

@@ -133,3 +133,30 @@ h1, h2, h3 { font-family: var(--ih-display); }
   .sn .sn-logo-text { font-size: 18px; }
   .sn .sn-btn-ghost { display: none; }
 }
+
+/* ── Shared footer (site-nav.js) ── */
+footer.ih-foot { display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 2rem; padding: 2.5rem 3rem; margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.07); font-size: 13px; color: #8a867f; font-family: 'DM Sans', system-ui, sans-serif; }
+footer.ih-foot a { color: #8a867f; text-decoration: none; transition: color .2s; }
+footer.ih-foot a:hover { color: #f0ede8; }
+.ih-foot-logo { display: flex; align-items: center; gap: 10px; }
+.ih-foot-logo b { font-family: 'Cabinet Grotesk', 'DM Sans', sans-serif; font-size: 19px; font-weight: 800; color: #f0ede8; }
+.ih-foot-links { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; justify-content: center; }
+.ih-foot-legal { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.ih-foot-legal-links { display: flex; gap: 1rem; font-size: 12px; }
+@media (max-width: 768px) {
+  footer.ih-foot { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 2rem 1rem; gap: 1.25rem; }
+  .ih-foot-legal { align-items: center; text-align: center; }
+  .ih-foot-links { gap: .6rem 1rem; font-size: 12.5px; }
+}
+/* ── Shared phone tab bar ── */
+.ih-tabbar { display: none; }
+@media (max-width: 768px) {
+  .ih-tabbar { display: flex; justify-content: space-around; align-items: center; position: fixed; left: 0; right: 0; bottom: 0; z-index: 9990; height: 58px; padding: 4px 0 max(4px, env(safe-area-inset-bottom)); background: #080809; border-top: 1px solid rgba(245,200,66,0.35); font-family: 'DM Sans', system-ui, sans-serif; }
+  .ih-tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; color: #8a867f; text-decoration: none; font-size: 10.5px; }
+  .ih-tabbar a.on { color: #f5c842; }
+  .ih-tabbar .ih-tab-post { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 50%; background: #f5c842; color: #080809; justify-content: center; margin-top: -16px; box-shadow: 0 4px 14px rgba(245,200,66,0.35); }
+  body.ih-has-tabbar { padding-bottom: 58px; }
+}
+
+/* Decorative icon slots left empty after removing emojis: hide them */
+[class*="icon"]:empty, [class*="emoji"]:empty, .ico:empty, .big:empty, .e:empty, .ic:empty { display: none !important; }

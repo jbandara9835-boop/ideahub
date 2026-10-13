@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Investor Requests — IdeaHub</title>
+  <title>Idea Requests — IdeaHub</title>
   <meta name="description" content="Investors post problems they need solved — idea creators submit proposals and pitch their solutions for funding. Find your next opportunity on IdeaHub." />
   <link rel="canonical" href="https://ideahub.it.com/idea-requests" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://ideahub.it.com/idea-requests" />
-  <meta property="og:title" content="Investor Requests — IdeaHub" />
+  <meta property="og:title" content="Idea Requests — IdeaHub" />
   <meta property="og:description" content="Investors post problems they need solved — idea creators submit proposals and pitch their solutions for funding." />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Investor Requests — IdeaHub" />
+  <meta name="twitter:title" content="Idea Requests — IdeaHub" />
   <meta name="twitter:description" content="Investors post problems they need solved — idea creators submit proposals and pitch their solutions for funding." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -190,7 +190,7 @@
 <header id="siteNav" data-extra="post-request"></header><script src="/site-nav.js"></script>
 
 <section class="hero">
-  <h1>Investor <span>Requests</span></h1>
+  <h1>Idea <span>Requests</span></h1>
   <p>Investors post problems — idea creators submit solutions & pitch for funding</p>
   <div class="search-row">
     <input type="text" id="searchInput" placeholder="Search by title, problem or industry…" />
@@ -198,7 +198,7 @@
   </div>
   <div class="adv-toggle-row">
     <button class="adv-toggle-btn" id="advToggleBtn" onclick="toggleAdvanced()">
-      <span>⚙️ Advanced Filters</span><span class="arrow">▼</span>
+      <span>Advanced Filters</span><span class="arrow">▼</span>
     </button>
     <span class="adv-count" id="advCount">0</span>
   </div>
@@ -208,14 +208,14 @@
         <div class="filter-group-label">Category</div>
         <div class="chips-wrap" id="catChips">
           <button class="chip active" data-cat="all">All</button>
-          <button class="chip" data-cat="Technology">💻 Tech</button>
-          <button class="chip" data-cat="Finance">💰 Finance</button>
-          <button class="chip" data-cat="Health & Wellness">🏥 Health</button>
-          <button class="chip" data-cat="Education">📚 Education</button>
-          <button class="chip" data-cat="E-commerce">🛒 E-commerce</button>
-          <button class="chip" data-cat="Environment">🌿 Environment</button>
-          <button class="chip" data-cat="Food">🍔 Food</button>
-          <button class="chip" data-cat="Entertainment">🎮 Entertainment</button>
+          <button class="chip" data-cat="Technology">Tech</button>
+          <button class="chip" data-cat="Finance">Finance</button>
+          <button class="chip" data-cat="Health & Wellness">Health</button>
+          <button class="chip" data-cat="Education">Education</button>
+          <button class="chip" data-cat="E-commerce">E-commerce</button>
+          <button class="chip" data-cat="Environment">Environment</button>
+          <button class="chip" data-cat="Food">Food</button>
+          <button class="chip" data-cat="Entertainment">Entertainment</button>
         </div>
       </div>
       <div>
@@ -230,9 +230,9 @@
         <div class="filter-group-label">Deadline</div>
         <div class="chips-wrap" id="deadlineChips">
           <button class="chip active" data-dl="all">Any time</button>
-          <button class="chip" data-dl="3">🔥 ≤ 3 days</button>
-          <button class="chip" data-dl="7">⏰ ≤ 1 week</button>
-          <button class="chip" data-dl="30">📅 ≤ 1 month</button>
+          <button class="chip" data-dl="3">≤ 3 days</button>
+          <button class="chip" data-dl="7">≤ 1 week</button>
+          <button class="chip" data-dl="30">≤ 1 month</button>
         </div>
       </div>
       <div class="adv-footer">
@@ -258,7 +258,7 @@
       <button class="status-tab" data-status="open">Open</button>
       <button class="status-tab" data-status="proposals_received">Proposals In</button>
       <button class="status-tab" data-status="shortlisting">Shortlisting</button>
-      <button class="status-tab" data-status="matched" id="matchedTab" style="display:none;">🎯 Matched to you</button>
+      <button class="status-tab" data-status="matched" id="matchedTab" style="display:none;">Matched to you</button>
     </div>
     <select class="sort-select" id="sortSelect" onchange="applyFilters()">
       <option value="newest">Newest first</option>
@@ -284,11 +284,9 @@
   <div class="pagination" id="pagination"></div>
 </main>
 
-<footer class="footer">
-  © 2026 <a href="https://picela.co" target="_blank">Picela</a>. All rights reserved. IdeaHub is a product by <a href="https://picela.co" target="_blank">Picela</a>.
-</footer>
-
 <script>
+const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
   let allRequests = [], filteredRequests = [];
@@ -313,7 +311,7 @@
     if (avatarUrl) avatarEl.innerHTML = `<img src="${avatarUrl}" alt="">`;
     else avatarEl.textContent = (user.name || user.first_name || user.email || 'U')[0].toUpperCase();
     if (isCreator) {
-      document.getElementById('postBanner').innerHTML = `<div><strong>Looking for a request to solve?</strong><p>Browse open requests below and click any card to submit your proposal.</p></div><span style="font-size:2rem;">💡</span>`;
+      document.getElementById('postBanner').innerHTML = `<div><strong>Looking for a request to solve?</strong><p>Browse open requests below and click any card to submit your proposal.</p></div><span style="font-size:2rem;"></span>`;
     }
   }
 
@@ -336,7 +334,7 @@
     const bar = document.getElementById('activeBar');
     if (!tags.length) { bar.classList.remove('visible'); return; }
     bar.classList.add('visible');
-    bar.innerHTML = tags.map(t => `<span class="active-tag">${t.label} <button onclick="removeTag('${t.key}')">✕</button></span>`).join('') +
+    bar.innerHTML = tags.map(t => `<span class="active-tag">${ihEsc(t.label)} <button data-k="${ihEsc(t.key)}" onclick="removeTag(this.dataset.k)" aria-label="Remove filter">✕</button></span>`).join('') +
       `<button class="clear-all-btn" onclick="clearFilters()">Clear all</button>`;
   }
 
@@ -462,10 +460,10 @@
   function deadlineHTML(d) {
     if (!d) return '';
     const days = Math.ceil((new Date(d)-new Date())/86400000);
-    if (days<0) return `<span class="deadline-pass">⏰ Deadline passed</span>`;
-    if (days<=3) return `<span class="deadline-warn">🔥 ${days}d left</span>`;
-    if (days<=7) return `<span style="color:var(--orange)">⏰ ${days} days left</span>`;
-    return `<span>⏰ ${days} days left</span>`;
+    if (days<0) return `<span class="deadline-pass">Deadline passed</span>`;
+    if (days<=3) return `<span class="deadline-warn">${days}d left</span>`;
+    if (days<=7) return `<span style="color:var(--orange)">${days} days left</span>`;
+    return `<span>${days} days left</span>`;
   }
 
   function timeAgo(d) {
@@ -490,8 +488,8 @@
         <div class="req-top">
           <div class="req-title">${escQ(r.title||'Untitled Request')}</div>
           <div class="req-badges">
-            ${matchedIds.has(r.id)?`<span class="featured-badge" style="background:rgba(110,231,183,0.12);color:#6ee7b7;border-color:rgba(110,231,183,0.35);">${matchedIds.get(r.id)?'✉️ Invited':'🎯 Matched to you'}</span>`:''}
-            ${r.featured?`<span class="featured-badge">⭐ Featured</span>`:''}
+            ${matchedIds.has(r.id)?`<span class="featured-badge" style="background:rgba(110,231,183,0.12);color:#6ee7b7;border-color:rgba(110,231,183,0.35);">${matchedIds.get(r.id)?'Invited':'Matched to you'}</span>`:''}
+            ${r.featured?`<span class="featured-badge">★ Featured</span>`:''}
             <span class="status-badge s-${r.status||'open'}">${statusMap[r.status]||'Open'}</span>
           </div>
         </div>
@@ -502,8 +500,8 @@
         </div>
         <div class="req-meta">
           ${deadlineHTML(r.deadline)}
-          <span>🕐 ${timeAgo(r.created_at)}</span>
-          ${r.location?`<span>📍 ${escQ(r.location)}</span>`:''}
+          <span>${timeAgo(r.created_at)}</span>
+          ${r.location?`<span>${escQ(r.location)}</span>`:''}
         </div>
         <div class="req-footer">
           <div class="req-investor">
@@ -512,7 +510,7 @@
           </div>
           <div class="req-right">
             <div class="budget">${formatBudget(r.budget_min, r.budget_max)}</div>
-            <div class="bids-count">📝 ${r.proposal_count||0} bids</div>
+            <div class="bids-count">${r.proposal_count||0} bids</div>
             ${bidButtonHTML(r)}
           </div>
         </div>

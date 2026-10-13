@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Buyer Dashboard — IdeaHub</title>
+<title>Investor Dashboard — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -188,49 +188,25 @@
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="logo">
-    <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
-      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-      <span class="logo-text">IdeaHub</span>
-    </a>
-  </div>
-  <nav class="nav" id="sidebarNav"></nav>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()">
-    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-      <div id="sidebarStars" style="font-size:11px;margin-top:2px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
+
 
 <main class="main">
   <div class="topbar">
     <div class="topbar-left">
-      <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
+      <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu"></button>
       <a class="topbar-logo" href="/">
         <div class="topbar-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
         <span class="topbar-logo-text">IdeaHub</span>
       </a>
       <div class="topbar-search">
-        <span style="color:var(--muted);font-size:14px;">🔍</span>
+        <span style="color:var(--muted);font-size:14px;"></span>
         <input type="text" id="searchInput" placeholder="Search marketplace..." style="font-size:13px;">
       </div>
     </div>
     <div class="topbar-right">
-      <div class="notif-bell" id="notifBell" onclick="toggleNotifPanel()">
-        🔔
+      <div class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" aria-label="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
         <div class="notif-panel" id="notifPanel">
           <div class="notif-panel-header">
@@ -247,7 +223,7 @@
   </div>
   <div id="roleBadge"></div>
   <div style="margin-bottom:1.75rem;">
-    <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+    <div class="page-title" id="welcomeTitle">Welcome back</div>
     <div class="page-subtitle" style="color:var(--muted);font-size:14px;margin-top:4px;">Track your purchases, deals and messages</div>
   </div>
   <div class="stats-grid">
@@ -257,11 +233,11 @@
     <div class="stat-card"><div class="stat-label">Messages</div><div class="stat-value" id="statMessages">—</div><div class="stat-sub">conversations</div></div>
   </div>
   <div class="actions-grid">
-    <a class="action-card" href="/browse"><span class="action-icon">🔍</span><div class="action-label">Browse Ideas</div><div class="action-sub">Discover new ideas</div></a>
-    <a class="action-card" href="/post-request"><span class="action-icon">🎯</span><div class="action-label">Post a Request</div><div class="action-sub">Get ideas from creators</div></a>
-    <a class="action-card" href="/messages"><span class="action-icon">💬</span><div class="action-label">Messages</div><div class="action-sub">Chat with creators</div></a>
-    <a class="action-card" href="/transactions"><span class="action-icon">💸</span><div class="action-label">Transactions</div><div class="action-sub">View purchases</div></a>
-    <a class="action-card" href="/profile"><span class="action-icon">👤</span><div class="action-label">My Profile</div><div class="action-sub">Edit your info</div></a>
+    <a class="action-card" href="/browse"><span class="action-icon"></span><div class="action-label">Browse Ideas</div><div class="action-sub">Discover new ideas</div></a>
+    <a class="action-card" href="/post-request"><span class="action-icon"></span><div class="action-label">Post a Request</div><div class="action-sub">Get ideas from creators</div></a>
+    <a class="action-card" href="/messages"><span class="action-icon"></span><div class="action-label">Messages</div><div class="action-sub">Chat with creators</div></a>
+    <a class="action-card" href="/transactions"><span class="action-icon"></span><div class="action-label">Transactions</div><div class="action-sub">View purchases</div></a>
+    <a class="action-card" href="/profile"><span class="action-icon"></span><div class="action-label">My Profile</div><div class="action-sub">Edit your info</div></a>
   </div>
   <div class="two-col">
     <div class="section-card">
@@ -274,30 +250,21 @@
     </div>
   </div>
   <div class="section-card" id="escrowSection" style="display:none;margin-bottom:20px;">
-    <div class="section-header"><div class="section-title">⏳ Awaiting Your Confirmation</div><a class="section-link" href="/transactions">Manage →</a></div>
+    <div class="section-header"><div class="section-title">Awaiting Your Confirmation</div><a class="section-link" href="/transactions">Manage →</a></div>
     <div id="escrowList"></div>
   </div>
 </main>
 
-<!-- BOTTOM TAB BAR (mobile only) -->
-<nav class="bottom-tabbar" id="bottomTabbar">
-  <div class="tabbar-inner">
-    <a class="tabbar-item" href="/" data-tab="home"><span class="tabbar-icon">🏠</span><span>Home</span></a>
-    <a class="tabbar-item" href="/browse" data-tab="marketplace"><span class="tabbar-icon">🔍</span><span>Marketplace</span></a>
-    <a class="tabbar-post-btn" href="/browse" id="tabPostBtn">+</a>
-    <a class="tabbar-item" href="/messages" data-tab="messages"><span class="tabbar-icon">💬</span><span>Messages</span></a>
-    <a class="tabbar-item" href="/wall" data-tab="wall"><span class="tabbar-icon">📌</span><span>IdeaWall</span></a>
-  </div>
-</nav>
-
 <script>
+const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
   if (!token || !user) window.location.href = '/login';
 
   const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
-  const roleEmoji = { investor:'💼', corporate_services:'🏢' };
+  const roleEmoji = { investor:'', corporate_services:'' };
 
   function renderSidebar() {
     const path = window.location.pathname;
@@ -357,12 +324,12 @@
       const stars = user.profile_stars || 0;
       starEl.innerHTML = [1,2,3,4,5].map(i => `<span style="color:${i<=stars?'#f5c842':'#3a3a3a'}">★</span>`).join('');
     }
-    (document.getElementById('welcomeTitle')||{}).textContent = `Welcome back, ${user.first_name||'there'} 👋`;
+    (document.getElementById('welcomeTitle')||{}).textContent = `Welcome back, ${user.first_name||'there'}`;
     const role = user.role || 'investor';
-    document.getElementById('roleBadge').innerHTML = `<div class="role-badge ${role}" style="margin-bottom:1.5rem;">${roleEmoji[role]||'👤'} ${roleMap[role]||role}</div>`;
+    document.getElementById('roleBadge').innerHTML = `<div class="role-badge ${role}" style="margin-bottom:1.5rem;">${roleEmoji[role]||''} ${roleMap[role]||role}</div>`;
   }
 
-  function formatDate(d) { return new Date(d).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}); }
+  function formatDate(d) { if (!d || isNaN(new Date(d))) return '—'; return new Date(d).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}); }
   function formatTime(d) {
     const date = new Date(d + (d.endsWith('Z') ? '' : 'Z'));
     const diff = Date.now() - date;
@@ -396,12 +363,12 @@
       const purchasesList = document.getElementById('purchasesList');
       const recentPurchases = purchases.slice(0, 5);
       purchasesList.innerHTML = !recentPurchases.length
-        ? `<div class="empty"><div class="empty-icon">🛒</div><div>No purchases yet</div><a class="empty-link" href="/browse">Browse ideas →</a></div>`
+        ? `<div class="empty"><div class="empty-icon"></div><div>No purchases yet</div><a class="empty-link" href="/browse">Browse ideas →</a></div>`
         : recentPurchases.map(tx => `
           <div class="purchase-row">
-            <div class="purchase-icon">💡</div>
+            <div class="purchase-icon"></div>
             <div class="purchase-info">
-              <div class="purchase-title">${tx.idea_title||'Unknown idea'}</div>
+              <div class="purchase-title">${ihEsc(tx.idea_title||'Unknown idea')}</div>
               <div class="purchase-meta">${formatDate(tx.created_at)} · <span class="badge ${tx.status==='completed'?'badge-completed':'badge-escrow'}">${tx.status}</span></div>
             </div>
             <div class="purchase-amount">-$${(tx.amount||0).toLocaleString()}</div>
@@ -417,12 +384,12 @@
       const convs = Object.values(convMap).sort((a,b) => new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
       const messagesList = document.getElementById('messagesList');
       messagesList.innerHTML = !convs.length
-        ? `<div class="empty"><div class="empty-icon">💬</div><div>No messages yet</div></div>`
+        ? `<div class="empty"><div class="empty-icon"></div><div>No messages yet</div></div>`
         : convs.map(conv => {
           const initials = conv.otherName.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
           return `<div class="msg-row" onclick="window.location.href='/messages'">
-            <div class="msg-avatar">${initials}</div>
-            <div class="msg-info"><div class="msg-name">${conv.otherName}</div><div class="msg-preview">${conv.text||'—'}</div></div>
+            <div class="msg-avatar">${ihEsc(initials)}</div>
+            <div class="msg-info"><div class="msg-name">${ihEsc(conv.otherName)}</div><div class="msg-preview">${ihEsc(conv.text||'—')}</div></div>
             <div class="msg-time">${formatTime(conv.created_at)}</div>
           </div>`;
         }).join('');
@@ -431,8 +398,8 @@
         document.getElementById('escrowSection').style.display = 'block';
         document.getElementById('escrowList').innerHTML = escrow.map(tx => `
           <div class="purchase-row">
-            <div class="purchase-icon">⏳</div>
-            <div class="purchase-info"><div class="purchase-title">${tx.idea_title||'Unknown idea'}</div><div class="purchase-meta">Purchased ${formatDate(tx.created_at)} · Awaiting confirmation</div></div>
+            <div class="purchase-icon"></div>
+            <div class="purchase-info"><div class="purchase-title">${ihEsc(tx.idea_title||'Unknown idea')}</div><div class="purchase-meta">Purchased ${formatDate(tx.created_at)} · Awaiting confirmation</div></div>
             <button onclick="confirmTx('${tx.id}')" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;">Confirm</button>
           </div>`).join('');
       }
@@ -489,17 +456,19 @@
       if (!res.ok) return;
       const notifs = await res.json();
       const el = document.getElementById('notifList');
-      if (!notifs.length) { el.innerHTML = `<div class="notif-empty">📭 No notifications yet</div>`; return; }
-      el.innerHTML = notifs.map(n => `
-        <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="handleNotifClick(event, ${n.id}, '${n.link||''}')">
-          <div class="notif-item-icon">${(n.title||'').match(/^\S+/)?.[0] || '🔔'}</div>
+      if (!notifs.length) { el.innerHTML = `<div class="notif-empty">No notifications yet</div>`; return; }
+      el.innerHTML = notifs.map(n => {
+        const t = String(n.title || '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
+        const link = /^\/(?!\/)[^\s"'<>]*$/.test(n.link || '') ? n.link : '';
+        return `<div class="notif-item ${!n.read ? 'unread' : ''}" data-nid="${Number(n.id)}" data-link="${ihEsc(link)}" onclick="handleNotifClick(event, Number(this.dataset.nid), this.dataset.link)">
+          <div class="notif-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
           <div>
-            <div class="notif-item-title">${(n.title||'').replace(/^\S+\s/, '')}</div>
-            <div class="notif-item-msg">${n.message||''}</div>
+            <div class="notif-item-title">${ihEsc(t)}</div>
+            <div class="notif-item-msg">${ihEsc(n.message || '')}</div>
             <div class="notif-item-time">${formatNotifTime(n.created_at)}</div>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     } catch(e) {}
   }
 

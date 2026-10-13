@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Manager workspace — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -54,7 +54,7 @@
     try { [P, META] = await Promise.all([api('/api/manager/profile'), MG.meta()]); }
     catch (e) { $('root').innerHTML = `<div class="card empty">${esc(e.message)}</div>`; return; }
     if (!P.is_manager) {
-      $('root').innerHTML = `<div class="card pad" style="max-width:640px;margin:30px auto;text-align:center"><div style="font-size:40px">🧭</div><h1 style="font-family:'Cabinet Grotesk',sans-serif">The manager workspace</h1><p class="sub">This is where Virtual Managers run their clients, pipeline and fees. To become a manager, switch your role to Virtual Manager.</p><div class="row" style="justify-content:center"><a class="btn btn-vm" href="/switch-role">Become a manager</a><a class="btn btn-ghost" href="/managers">Find a manager</a></div></div>`;
+      $('root').innerHTML = `<div class="card pad" style="max-width:640px;margin:30px auto;text-align:center"><div style="font-size:40px"></div><h1 style="font-family:'Cabinet Grotesk',sans-serif">The manager workspace</h1><p class="sub">This is where Virtual Managers run their clients, pipeline and fees. To become a manager, switch your role to Virtual Manager.</p><div class="row" style="justify-content:center"><a class="btn btn-vm" href="/switch-role">Become a manager</a><a class="btn btn-ghost" href="/managers">Find a manager</a></div></div>`;
       return;
     }
     try { W = await api('/api/manager/workspace'); } catch (e) { $('root').innerHTML = `<div class="card empty">${esc(e.message)}</div>`; return; }
@@ -70,7 +70,7 @@
     if (!tabs.some(t => t[0] === tab)) tab = 'clients';
     $('root').innerHTML = `
       <div class="mg-hero"><div><div class="eyebrow">Virtual Manager</div><h1>Your workspace</h1><p>Your clients, what you're working on for them, and what you've earned. ${levelPill(P.level)}</p></div>
-        <div class="row"><a class="btn btn-ghost" href="/managers?tab=requests">🙋 Requests board</a><button class="btn btn-vm" data-propose ${P.level === 'new' ? 'disabled title="Finish your level checks first"' : ''}>＋ Propose a mandate</button></div></div>
+        <div class="row"><a class="btn btn-ghost" href="/managers?tab=requests">Requests board</a><button class="btn btn-vm" data-propose ${P.level === 'new' ? 'disabled title="Finish your level checks first"' : ''}>＋ Propose a mandate</button></div></div>
       ${P.level === 'new' ? `<div class="notice gold" style="margin-bottom:16px">You're not listed yet. Finish the ID check and the induction quiz to appear in Find a Manager. <button class="btn btn-gold btn-sm" data-tab="profile" style="margin-left:8px">Finish now</button></div>` : ''}
       <div class="grid g4" style="margin-bottom:18px">
         <div class="card stat"><b>${money(W.earnings.released + W.earnings.referral)}</b><span>Earned${W.earnings.referral ? ` (incl. ${money(W.earnings.referral)} referral)` : ''}</span></div>
@@ -87,23 +87,23 @@
     const acts = W.actions.filter(a => a.mandate_id === m.id && a.status === 'pending').length;
     const due = W.bills.filter(b => b.mandate_id === m.id && b.status === 'due').length;
     return `<a class="list-item" href="/mandate?id=${m.id}" style="text-decoration:none">${avatar(m.client.avatar_url, m.client.name)}<div class="grow"><div class="li-title">${esc(m.title)}</div><div class="li-sub">${esc(m.client.name)} · ${esc(META.sides[m.client_side] || '')} · ${esc(m.focus_industry || '')} · ${esc(MG.feeText(m.fee_retainer, m.fee_hourly, m.fee_success_pct))}</div>
-      <div class="chips" style="margin-top:6px">${acts ? `<span class="chip">✋ ${acts} waiting for approval</span>` : ''}${due ? `<span class="chip">🧾 ${due} fee${due > 1 ? 's' : ''} unpaid</span>` : ''}${m.status === 'proposed' ? `<span class="chip">${m.screen_client || m.screen_manager ? '🧾 Hiring process' + (m.screen_client && !m.client_cleared_at ? ': the client is screening you' : '') : m.proposed_by === MG.me.id ? 'Waiting for the client' : 'The client proposed this: review it'}</span>` : ''}</div></div>${statusPill(m.status)}</a>`;
+      <div class="chips" style="margin-top:6px">${acts ? `<span class="chip">${acts} waiting for approval</span>` : ''}${due ? `<span class="chip">${due} fee${due > 1 ? 's' : ''} unpaid</span>` : ''}${m.status === 'proposed' ? `<span class="chip">${m.screen_client || m.screen_manager ? 'Hiring process' + (m.screen_client && !m.client_cleared_at ? ': the client is screening you' : '') : m.proposed_by === MG.me.id ? 'Waiting for the client' : 'The client proposed this: review it'}</span>` : ''}</div></div>${statusPill(m.status)}</a>`;
   }
   function clients() {
     const groups = [['Proposals', W.mandates.filter(m => m.status === 'proposed')], ['Active', W.mandates.filter(m => m.status === 'active')], ['Past', W.mandates.filter(m => !['proposed', 'active'].includes(m.status))]];
-    if (!W.mandates.length) return `<div class="card empty"><div class="big">🤝</div>No clients yet.<br>Pitch on the <a href="/managers?tab=requests" style="color:var(--vm)">Requests board</a>, or propose a mandate to someone you know on IdeaHub.<br><span class="tiny">Clients can also find you in Find a Manager once your level checks are done.</span></div>`;
+    if (!W.mandates.length) return `<div class="card empty"><div class="big"></div>No clients yet.<br>Pitch on the <a href="/managers?tab=requests" style="color:var(--vm)">Requests board</a>, or propose a mandate to someone you know on IdeaHub.<br><span class="tiny">Clients can also find you in Find a Manager once your level checks are done.</span></div>`;
     return `<div class="stack">${groups.filter(g => g[1].length).map(([l, ms]) => `<div class="card pad"><div class="card-title">${l} <small>${ms.length}</small></div>${ms.map(mandateRow).join('')}</div>`).join('')}
       <div class="notice vm small">You work for one side only, and for one client per industry at a time. IdeaHub blocks anything that would put you on both sides of a deal.</div></div>`;
   }
   function pipeline() {
     const byM = Object.fromEntries(W.mandates.map(m => [m.id, m]));
     const items = W.items.filter(i => i.stage !== 'dropped' && byM[i.mandate_id] && byM[i.mandate_id].status === 'active');
-    if (!items.length) return `<div class="card empty"><div class="big">🗂️</div>Your pipeline across all clients shows here. Add items from a client's mandate page.</div>`;
-    return `<div class="board">${STAGES.map(([k, l]) => { const its = items.filter(i => i.stage === k); return `<div class="stage-col"><h4>${l}<span>${its.length}</span></h4>${its.map(i => `<a class="item" href="/mandate?id=${i.mandate_id}&tab=pipeline"><div class="t">${esc(i.title)}</div><div class="tiny muted" style="margin-top:4px">for ${esc(byM[i.mandate_id].client.name)}${i.shared ? ' · shown to client' : ''}${i.client_feedback ? ` · client ${i.client_feedback === 'interested' ? '👍' : '👎'}` : ''}</div></a>`).join('')}</div>`; }).join('')}</div>`;
+    if (!items.length) return `<div class="card empty"><div class="big"></div>Your pipeline across all clients shows here. Add items from a client's mandate page.</div>`;
+    return `<div class="board">${STAGES.map(([k, l]) => { const its = items.filter(i => i.stage === k); return `<div class="stage-col"><h4>${l}<span>${its.length}</span></h4>${its.map(i => `<a class="item" href="/mandate?id=${i.mandate_id}&tab=pipeline"><div class="t">${esc(i.title)}</div><div class="tiny muted" style="margin-top:4px">for ${esc(byM[i.mandate_id].client.name)}${i.shared ? ' · shown to client' : ''}${i.client_feedback ? ` · client ${i.client_feedback === 'interested' ? '' : ''}` : ''}</div></a>`).join('')}</div>`; }).join('')}</div>`;
   }
   function tasks() {
     const byM = Object.fromEntries(W.mandates.map(m => [m.id, m]));
-    if (!W.tasks.length) return `<div class="card empty"><div class="big">✅</div>No open tasks. Add tasks on each client's mandate page.</div>`;
+    if (!W.tasks.length) return `<div class="card empty"><div class="big"></div>No open tasks. Add tasks on each client's mandate page.</div>`;
     return `<div class="card pad">${W.tasks.map(t => { const late = t.due_date && new Date(t.due_date) < new Date(new Date().toISOString().slice(0, 10)); return `<div class="list-item" style="align-items:center"><input type="checkbox" data-task="${t.id}" style="appearance:auto;accent-color:#a78bfa;width:17px;height:17px"><div class="grow"><div class="li-title">${esc(t.title)}</div><div class="li-sub"><a href="/mandate?id=${t.mandate_id}&tab=tasks" style="color:var(--vm)">${esc((byM[t.mandate_id] || {}).client ? byM[t.mandate_id].client.name : 'Mandate')}</a>${t.due_date ? ` · <span style="${late ? 'color:var(--red)' : ''}">due ${MG.date(t.due_date)}</span>` : ''}</div></div></div>`; }).join('')}</div>`;
   }
   function earnings() {
@@ -139,7 +139,7 @@
         <div class="field"><label for="pfExp">Work history</label><textarea class="in" id="pfExp" maxlength="4000" style="min-height:120px" placeholder="2019–2024 · Business Development Manager, ABC Foods (Colombo): opened 12 franchise outlets…\n2016–2019 · …">${esc(p.experience || '')}</textarea><div class="hint">Shown on your Background card in Find a Manager.</div></div>
         <div class="field"><label for="pfRef">References</label><textarea class="in" id="pfRef" maxlength="1500" style="min-height:70px" placeholder="Name, role, company, and how they know you. Ask them first. Shared only with clients who are hiring you with screening.">${esc(p.references_text || '')}</textarea></div>
         <div class="grid g2"><div class="field"><label for="pfLi">LinkedIn profile (optional)</label><input class="in" id="pfLi" maxlength="200" value="${esc(p.linkedin_url || '')}" placeholder="https://www.linkedin.com/in/…"></div>
-          <div class="field"><span class="lbl">CV (PDF, up to 5 MB)</span><div class="row" style="min-height:44px">${p.cv_path ? `<span class="pill green">📄 ${esc(p.cv_name || 'CV')}</span><button class="btn btn-ghost btn-sm" type="button" data-cvview>View</button><button class="btn btn-ghost btn-sm" type="button" data-cvdel>Remove</button>` : '<span class="tiny muted">No CV yet</span>'}<label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.cv_path ? 'Replace' : 'Upload CV'}<input type="file" id="cvFile" accept="application/pdf" style="display:none"></label></div><div class="hint">Only clients who are considering you (screening, or after your pitch) and IdeaHub can open it.</div></div></div>
+          <div class="field"><span class="lbl">CV (PDF, up to 5 MB)</span><div class="row" style="min-height:44px">${p.cv_path ? `<span class="pill green">${esc(p.cv_name || 'CV')}</span><button class="btn btn-ghost btn-sm" type="button" data-cvview>View</button><button class="btn btn-ghost btn-sm" type="button" data-cvdel>Remove</button>` : '<span class="tiny muted">No CV yet</span>'}<label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.cv_path ? 'Replace' : 'Upload CV'}<input type="file" id="cvFile" accept="application/pdf" style="display:none"></label></div><div class="hint">Only clients who are considering you (screening, or after your pitch) and IdeaHub can open it.</div></div></div>
         <div class="grid g2"><div class="field"><label for="pfInd">Industries (comma separated)</label><input class="in" id="pfInd" value="${esc((p.industries || []).join(', '))}" placeholder="Agriculture, Food & Beverage"></div><div class="field"><label for="pfCty">Countries you cover</label><input class="in" id="pfCty" value="${esc((p.countries || []).join(', '))}" placeholder="Sri Lanka, Maldives"></div></div>
         <div class="field"><span class="lbl">I work for</span><div class="row">${Object.entries(META.sides).map(([k, v]) => `<label class="check"><input type="checkbox" data-side value="${k}" ${sides.includes(k) ? 'checked' : ''}> <span>${esc({ creator: 'Idea creators', investor: 'Investors', business: 'Businesses' }[k] || v)}</span></label>`).join('')}</div></div>
         <div class="field"><span class="lbl">Fee models I offer</span><div class="row">${[['retainer', 'Monthly retainer'], ['hourly', 'Hourly'], ['success', 'Success fee']].map(([k, v]) => `<label class="check"><input type="checkbox" data-fee value="${k}" ${fees.includes(k) ? 'checked' : ''}> <span>${v}</span></label>`).join('')}</div></div>

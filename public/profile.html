@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>My Profile — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -147,29 +147,7 @@
 </style>
 </head>
 <body>
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <a href="/" style="text-decoration:none;color:inherit;"><span style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;">IdeaHub</span></a>
-  </div>
-  <nav class="nav" id="sidebarNav"></nav>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <main class="main">
   <div class="topbar">
@@ -184,7 +162,7 @@
           <div class="avatar-lg" id="avatarDisplay" onclick="document.getElementById('avatarInput').click()">
             <span id="avatarInitials">?</span>
           </div>
-          <div class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()">📷</div>
+          <div class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()"></div>
           <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="handleAvatarUpload(event)" />
         </div>
         <div class="profile-name" id="cardName">Your Name</div>
@@ -197,14 +175,14 @@
           <div class="completion-label"><span>Profile completion</span><span id="completionPct">0%</span></div>
           <div class="completion-bar"><div class="completion-fill" id="completionFill" style="width:0%"></div></div>
         </div>
-        <div class="verify-badge verify-unverified" id="verifyBadge">⚪ Not Verified</div>
+        <div class="verify-badge verify-unverified" id="verifyBadge">Not Verified</div>
       </div>
     </div>
 
     <div>
       <!-- PERSONAL — shown to all roles -->
       <div class="form-card">
-        <div class="form-section-title">👤 Personal Information</div>
+        <div class="form-section-title">Personal Information</div>
 
         <!-- Hidden fields still needed for save payload for non-investor roles -->
         <input type="hidden" id="tagline" />
@@ -247,7 +225,7 @@
             <div class="field">
               <label class="lbl">Email</label>
               <input type="email" id="email" readonly />
-              <div class="tip">📧 Email verification coming soon</div>
+              <div class="tip">Email verification coming soon</div>
             </div>
           </div>
           <!-- INVESTOR IDENTITY -->
@@ -255,12 +233,12 @@
             <label class="lbl">Investor Type</label>
             <div style="display:flex;gap:12px;margin-top:6px;">
               <label style="flex:1;border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;text-align:center;transition:all 0.2s;" id="typeIndividualCard" onclick="selectInvestorType('individual')">
-                <div style="font-size:24px;margin-bottom:6px;">👤</div>
+                <div style="font-size:24px;margin-bottom:6px;"></div>
                 <div style="font-size:13px;font-weight:600;">Individual</div>
                 <div style="font-size:11px;color:var(--muted);">Personal investor</div>
               </label>
               <label style="flex:1;border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;text-align:center;transition:all 0.2s;" id="typeCorporateCard" onclick="selectInvestorType('corporate')">
-                <div style="font-size:24px;margin-bottom:6px;">🏢</div>
+                <div style="font-size:24px;margin-bottom:6px;"></div>
                 <div style="font-size:13px;font-weight:600;">Corporate</div>
                 <div style="font-size:11px;color:var(--muted);">Company investor</div>
               </label>
@@ -358,7 +336,7 @@
             <div class="field">
               <label class="lbl">Email</label>
               <input type="email" id="email" readonly />
-              <div class="tip">📧 Email verification coming soon</div>
+              <div class="tip">Email verification coming soon</div>
             </div>
           </div>
           <div class="field">
@@ -371,13 +349,13 @@
 
       <!-- WHATSAPP — verify the number and link the IdeaHub bot (all roles) -->
       <div class="form-card" id="waCard">
-        <div class="form-section-title">💬 WhatsApp</div>
+        <div class="form-section-title">WhatsApp</div>
         <div id="waBody"><div class="tip">Loading…</div></div>
       </div>
 
       <!-- PROFESSIONAL — hidden for investors -->
       <div class="form-card" id="professionalCard">
-        <div class="form-section-title">🎓 Professional Details</div>
+        <div class="form-section-title">Professional Details</div>
         <div class="row2">
           <div class="field">
             <label class="lbl">Expert Area</label>
@@ -417,7 +395,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
           <div>
             <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Save your profile</div>
-            <div style="font-size:12px;color:var(--muted);">Complete your profile to earn your first ⭐ star rating</div>
+            <div style="font-size:12px;color:var(--muted);">Complete your profile to earn your first ★ star rating</div>
           </div>
           <button class="save-btn" id="saveBtn" onclick="saveProfile()">
             <div class="spinner" id="saveSpinner"></div>
@@ -429,7 +407,7 @@
         <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Profile Verification</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;">Submit your profile for admin verification. Requires at least 60% profile completion.</div>
-          <button class="verify-btn" id="verifyBtn" onclick="submitVerification()">✅ Submit for Verification</button>
+          <button class="verify-btn" id="verifyBtn" onclick="submitVerification()">Submit for Verification</button>
         </div>
       </div>
     </div>
@@ -479,8 +457,8 @@
 
   const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
   const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard' };
-  const navLinks = { idea_creator:[['⚡','Dashboard','/dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['➕','Submit','/submit'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], investor:[['⚡','Dashboard','/buyer-dashboard'],['💡','Browse','/browse'],['🎯','Requests','/idea-requests'],['🏭','Businesses','/businesses'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']], business_owner:[['⚡','Dashboard','/business-dashboard'],['🏭','Businesses','/businesses'],['➕','List Business','/list-business'],['👤','Profile','/profile'],['💬','Messages','/messages']] };
-  const defaultNav = [['⚡','Dashboard','/dashboard'],['🤝','Find Support','/find-support'],['👤','Profile','/profile'],['💬','Messages','/messages'],['💸','Transactions','/transactions']];
+  const navLinks = { idea_creator:[['','Dashboard','/dashboard'],['','Browse','/browse'],['','Requests','/idea-requests'],['','Submit','/submit'],['','Profile','/profile'],['','Messages','/messages'],['','Transactions','/transactions']], investor:[['','Dashboard','/buyer-dashboard'],['','Browse','/browse'],['','Requests','/idea-requests'],['','Businesses','/businesses'],['','Profile','/profile'],['','Messages','/messages'],['','Transactions','/transactions']], business_owner:[['','Dashboard','/business-dashboard'],['','Businesses','/businesses'],['','List Business','/list-business'],['','Profile','/profile'],['','Messages','/messages']] };
+  const defaultNav = [['','Dashboard','/dashboard'],['','Find Support','/find-support'],['','Profile','/profile'],['','Messages','/messages'],['','Transactions','/transactions']];
 
   document.getElementById('backBtn').href = dashMap[user?.role] || '/dashboard';
 
@@ -637,9 +615,9 @@ function updateStates() {
   function updateVerifyBadge(status) {
     const badge = document.getElementById('verifyBadge');
     const btn = document.getElementById('verifyBtn');
-    if (status==='verified') { badge.className='verify-badge verify-verified'; badge.textContent='✅ Verified'; btn.disabled=true; btn.textContent='✅ Already Verified'; }
-    else if (status==='pending') { badge.className='verify-badge verify-pending'; badge.textContent='⏳ Pending Review'; btn.disabled=true; btn.textContent='⏳ Verification Pending'; }
-    else { badge.className='verify-badge verify-unverified'; badge.textContent='⚪ Not Verified'; btn.disabled=false; btn.textContent='✅ Submit for Verification'; }
+    if (status==='verified') { badge.className='verify-badge verify-verified'; badge.textContent='Verified'; btn.disabled=true; btn.textContent='Already Verified'; }
+    else if (status==='pending') { badge.className='verify-badge verify-pending'; badge.textContent='Pending Review'; btn.disabled=true; btn.textContent='Verification Pending'; }
+    else { badge.className='verify-badge verify-unverified'; badge.textContent='Not Verified'; btn.disabled=false; btn.textContent='Submit for Verification'; }
   }
 
   function addSpecRow(subject='', how='') {
@@ -802,8 +780,8 @@ function updateStates() {
       if (!res.ok) throw new Error(data.error||'Failed');
       if (pct>=80 && (currentProfile?.profile_stars||0)<1) {
         updateStars(1);
-        showMsg('success','✅ Profile saved! You earned your first ⭐ star!');
-      } else { showMsg('success','✅ Profile saved successfully!'); }
+        showMsg('success','Profile saved! You earned your first ★ star!');
+      } else { showMsg('success','Profile saved successfully!'); }
       const u=JSON.parse(localStorage.getItem('ih_user')||'{}');
       u.firstName=fn; u.lastName=ln;
       u.first_name=fn; u.last_name=ln;
@@ -819,7 +797,7 @@ function updateStates() {
     try {
       await fetch(`${API_URL}/api/auth/me`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({verification_status:'pending',verification_submitted_at:new Date().toISOString()})});
       updateVerifyBadge('pending');
-      showMsg('success','⏳ Submitted! Admin will review your profile.');
+      showMsg('success','Submitted! Admin will review your profile.');
     } catch(e) { showMsg('error','Failed to submit.'); }
   }
 
@@ -840,7 +818,7 @@ function updateStates() {
   }
   function waMini(st) {
     document.querySelectorAll('.wa-mini').forEach(el => {
-      el.innerHTML = st && st.linked ? `<span class="wa-ok">✅ ${waEsc(st.number)}</span>` : st && st.phone_verified ? `✅ ${waEsc(st.phone || 'Verified')}` : `Not verified · <a href="#waCard">Verify on WhatsApp</a>`;
+      el.innerHTML = st && st.linked ? `<span class="wa-ok">✓ ${waEsc(st.number)}</span>` : st && st.phone_verified ? `✓ ${waEsc(st.phone || 'Verified')}` : `Not verified · <a href="#waCard">Verify on WhatsApp</a>`;
     });
   }
   async function loadWhatsApp() {
@@ -850,13 +828,13 @@ function updateStates() {
     if (u.phone_verified !== waState.phone_verified) { u.phone_verified = waState.phone_verified; localStorage.setItem('ih_user', JSON.stringify(u)); }
     const body = document.getElementById('waBody');
     if (waState.linked) {
-      body.innerHTML = `<div class="wa-ok">✅ ${waEsc(waState.number)} is verified and linked</div>
+      body.innerHTML = `<div class="wa-ok">✓ ${waEsc(waState.number)} is verified and linked</div>
         <p class="wa-note">You can list ideas by sending a message to IdeaHub on WhatsApp${waState.bot_number ? ` (<a style="color:var(--accent)" href="https://wa.me/${waState.bot_number.replace(/\D/g, '')}?text=menu" target="_blank" rel="noopener">${waEsc(waState.bot_number)}</a>)` : ''}. Changed your number? Unlink, then verify the new one.</p>
         <button class="wa-btn ghost" onclick="waUnlink()">Unlink WhatsApp</button>`;
       return;
     }
     body.innerHTML = `<p class="wa-note" style="margin-top:0">${waState.phone_verified ? `Your phone ${waEsc(waState.phone || '')} is verified. Link WhatsApp to list ideas from your phone.` : 'Verify your number on WhatsApp. It confirms your account, and lets you list ideas on IdeaHub by chatting on WhatsApp.'} It's free.</p>
-      <button class="wa-btn" onclick="waStart()">💬 Verify WhatsApp</button>
+      <button class="wa-btn" onclick="waStart()">Verify WhatsApp</button>
       ${waState.can_send_code ? `<div style="margin-top:0.6rem"><a href="#" style="font-size:12px;color:var(--muted)" onclick="event.preventDefault();waShowAlt()">Can't send a message? Get a code instead</a></div>` : ''}
       <div id="waAlt"></div>`;
   }
@@ -880,7 +858,7 @@ function updateStates() {
     const until = Date.now() + 15 * 60 * 1000;
     waPoll = setInterval(async () => {
       if (Date.now() > until) { waStop(); loadWhatsApp(); return; }
-      try { const st = await waApi('status'); if (st.linked) { waStop(); loadWhatsApp(); showMsg('success', '✅ WhatsApp verified and linked.'); } } catch (e) {}
+      try { const st = await waApi('status'); if (st.linked) { waStop(); loadWhatsApp(); showMsg('success', 'WhatsApp verified and linked.'); } } catch (e) {}
     }, 3000);
   }
   function waStop() { if (waPoll) clearInterval(waPoll); waPoll = null; }
@@ -900,7 +878,7 @@ function updateStates() {
   }
   async function waVerify() {
     const m = document.getElementById('waAltMsg');
-    try { await waApi('verify-code', 'POST', { code: document.getElementById('waCode').value.trim() }); loadWhatsApp(); showMsg('success', '✅ WhatsApp verified and linked.'); }
+    try { await waApi('verify-code', 'POST', { code: document.getElementById('waCode').value.trim() }); loadWhatsApp(); showMsg('success', 'WhatsApp verified and linked.'); }
     catch (e) { m.textContent = e.message; m.style.color = 'var(--error)'; }
   }
   async function waUnlink() {

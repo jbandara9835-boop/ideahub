@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>IdeaWall — IdeaHub</title>
 <meta name="description" content="IdeaWall: the IdeaHub community feed. Share new ideas, social work, events and life hacks, and react, comment and connect with innovators." />
@@ -291,7 +291,7 @@ a { color: inherit; }
     <div id="composerBox"></div>
     <div class="toolbar" id="toolbar">
       <form class="search" id="searchForm" role="search">
-        <span aria-hidden="true">🔎</span>
+        <span aria-hidden="true"></span>
         <label class="sr" for="searchInput">Search IdeaWall</label>
         <input id="searchInput" type="search" placeholder="Search IdeaWall" maxlength="60" autocomplete="off" />
         <button type="button" id="searchClear" aria-label="Clear search" style="display:none">✕</button>
@@ -307,7 +307,7 @@ a { color: inherit; }
   <!-- RIGHT -->
   <aside class="side right" aria-label="Trending and guidelines">
     <div class="box box-pad">
-      <div class="box-title">🔥 Trending this week</div>
+      <div class="box-title">Trending this week</div>
       <div id="trending"><div class="trend-sub">Loading…</div></div>
     </div>
     <div class="box box-pad">
@@ -340,7 +340,7 @@ a { color: inherit; }
       <textarea class="field-area" id="cmpText" maxlength="5000" placeholder="Share an idea, a project or the social work you did…"></textarea>
       <div class="counter" id="cmpCount">0 / 5000</div>
       <div class="thumbs" id="cmpThumbs"></div>
-      <div class="add-media"><span id="mediaHint">Add up to 6 photos or 1 video</span><button type="button" id="cmpAddMedia">📷 Photo / Video</button></div>
+      <div class="add-media"><span id="mediaHint">Add up to 6 photos or 1 video</span><button type="button" id="cmpAddMedia">Photo / Video</button></div>
       <input type="file" id="cmpFile" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple hidden />
       <div class="hint">Keep it about ideas, innovation or social good. Don't add phone numbers, emails or links: people reach you through IdeaHub messages.</div>
     </div>
@@ -385,13 +385,13 @@ a { color: inherit; }
   const H = (json) => Object.assign(json ? { 'Content-Type': 'application/json' } : {}, token ? { Authorization: 'Bearer ' + token } : {});
 
   const CATS = [
-    { key: 'Social Work', emoji: '🤝', label: 'Social Work' },
-    { key: 'Innovation', emoji: '💡', label: 'Innovation' },
-    { key: 'Life Hack', emoji: '🛠️', label: 'Life Hacks' },
-    { key: 'Event', emoji: '📅', label: 'Events' },
-    { key: 'Collaborators', emoji: '👥', label: 'Looking for Collaborators' },
-    { key: 'Success Story', emoji: '🏆', label: 'Success Stories' },
-    { key: 'Other', emoji: '✦', label: 'Other' }
+    { key: 'Social Work', emoji: '', label: 'Social Work' },
+    { key: 'Innovation', emoji: '', label: 'Innovation' },
+    { key: 'Life Hack', emoji: '', label: 'Life Hacks' },
+    { key: 'Event', emoji: '', label: 'Events' },
+    { key: 'Collaborators', emoji: '', label: 'Looking for Collaborators' },
+    { key: 'Success Story', emoji: '', label: 'Success Stories' },
+    { key: 'Other', emoji: '', label: 'Other' }
   ];
   const CAT = Object.fromEntries(CATS.map(c => [c.key, c]));
   const LEGACY = { Social: 'Social Work', Technology: 'Innovation', Environment: 'Innovation', Business: 'Innovation', Health: 'Innovation', Education: 'Innovation', Art: 'Other' };
@@ -467,17 +467,17 @@ a { color: inherit; }
     $('meBox').innerHTML = signedIn
       ? `<a class="me" href="/public-profile?id=${encodeURIComponent(me.id)}">${avatar(me.avatar_url || me.avatarUrl, me.first_name, me.last_name, 'lg')}<div><div class="me-name">${esc(`${me.first_name || ''} ${me.last_name || ''}`.trim() || 'My profile')}</div><div class="me-role">${esc(ROLE[me.role] || 'Member')}</div></div></a>`
       : `<div class="join-card"><div class="box-title" style="margin:0">Join the community</div><p>Share ideas and social work, react and comment, and connect with innovators. It's free.</p><a class="btn btn-gold btn-block" href="/signup">Join free</a><a class="btn btn-ghost btn-block" style="margin-top:8px" href="/login?next=/wall">Sign in</a></div>`;
-    const tabs = [['latest', '🏠', 'Feed'], ['trending', '🔥', 'Trending this week']].concat(signedIn ? [['saved', '🔖', 'Saved'], ['mine', '👤', 'My posts']] : []);
+    const tabs = [['latest', '', 'Feed'], ['trending', '', 'Trending this week']].concat(signedIn ? [['saved', '', 'Saved'], ['mine', '', 'My posts']] : []);
     $('leftNav').innerHTML = tabs.map(([k, i, l]) => `<button type="button" data-tab="${k}" class="${state.tab === k && !state.user ? 'on' : ''}"><span class="ico">${i}</span>${l}</button>`).join('') +
-      `<hr><a href="/life-hacks"><span class="ico">🛠️</span>Life Hacks page</a><a href="/browse"><span class="ico">🛒</span>Marketplace</a>`;
-    $('leftCats').innerHTML = [`<button type="button" data-cat="" class="${!state.cat ? 'on' : ''}"><span class="ico">✨</span>All categories</button>`]
+      `<hr><a href="/life-hacks"><span class="ico"></span>Life Hacks page</a><a href="/browse"><span class="ico"></span>Marketplace</a>`;
+    $('leftCats').innerHTML = [`<button type="button" data-cat="" class="${!state.cat ? 'on' : ''}"><span class="ico"></span>All categories</button>`]
       .concat(CATS.map(c => `<button type="button" data-cat="${esc(c.key)}" class="${state.cat === c.key ? 'on' : ''}"><span class="ico">${c.emoji}</span>${esc(c.label)}</button>`)).join('');
     $('tabChips').innerHTML = tabs.map(([k, i, l]) => `<button type="button" role="tab" class="chip ${state.tab === k && !state.user ? 'on' : ''}" data-tab="${k}" aria-selected="${state.tab === k}">${i} ${k === 'trending' ? 'Trending' : l}</button>`).join('');
     $('catChips').innerHTML = [`<button type="button" class="chip ${!state.cat ? 'on' : ''}" data-cat="">All</button>`]
       .concat(CATS.map(c => `<button type="button" class="chip ${state.cat === c.key ? 'on' : ''}" data-cat="${esc(c.key)}">${c.emoji} ${esc(c.key === 'Collaborators' ? 'Collaborators' : c.label)}</button>`)).join('');
     $('composerBox').innerHTML = single ? '' : signedIn
       ? `<div class="box composer"><div class="composer-top">${avatar(me.avatar_url || me.avatarUrl, me.first_name, me.last_name)}<button type="button" class="composer-fake" data-compose="">What's new, ${esc(me.first_name || 'friend')}? Share an idea or social work…</button></div>
-         <div class="composer-quick"><button type="button" data-compose="media">📷 <span>Photo / Video</span></button><button type="button" data-compose="Social Work">🤝 <span>Social work</span></button><button type="button" data-compose="Life Hack">🛠️ <span>Life hack</span></button></div></div>`
+         <div class="composer-quick"><button type="button" data-compose="media"><span>Photo / Video</span></button><button type="button" data-compose="Social Work"><span>Social work</span></button><button type="button" data-compose="Life Hack"><span>Life hack</span></button></div></div>`
       : `<div class="box composer guest-cta" style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap"><div><b>Share your ideas and social work</b><div style="color:var(--sub);font-size:13.5px;margin-top:2px">Join IdeaHub to post, react and comment. It's free.</div></div><div style="display:flex;gap:8px"><a class="btn btn-gold" href="/signup">Join free</a><a class="btn btn-ghost" href="/login?next=/wall">Sign in</a></div></div>`;
     $('searchInput').value = state.q; $('searchClear').style.display = state.q ? '' : 'none';
     $('toolbar').style.display = single ? 'none' : '';
@@ -546,21 +546,21 @@ a { color: inherit; }
       state.more = !single && !!d.has_more;
       if (state.user && fresh[0] && $('feedUserName')) $('feedUserName').textContent = nameOf(fresh[0]);
       if (!posts.size) $('feed').innerHTML = emptyState();
-      $('sentinel').textContent = !state.more && posts.size > 3 ? "You're all caught up ✨" : '';
+      $('sentinel').textContent = !state.more && posts.size > 3 ? "You're all caught up" : '';
       if (single && posts.size) { const p = posts.get(Number(single)); if (p) { document.title = `${(p.title || (p.description || '').split('\n')[0] || 'Post').slice(0, 70)} — IdeaWall`; openComments(p.id, false); } }
     } catch (e) {
       if (gen !== state.gen) return;
-      if (!posts.size) $('feed').innerHTML = `<div class="box empty"><div class="big">😕</div><h3>Couldn't load IdeaWall</h3><p>${esc(e.message)}</p><button class="btn btn-ghost" type="button" data-retry>Try again</button></div>`;
+      if (!posts.size) $('feed').innerHTML = `<div class="box empty"><div class="big"></div><h3>Couldn't load IdeaWall</h3><p>${esc(e.message)}</p><button class="btn btn-ghost" type="button" data-retry>Try again</button></div>`;
       else $('sentinel').innerHTML = `<button class="btn btn-ghost" type="button" data-retry-more>Couldn't load more. Try again</button>`;
     } finally { if (gen === state.gen) state.loading = false; }
   }
   function emptyState() {
-    if (single) return `<div class="box empty"><div class="big">🔍</div><h3>This post isn't available</h3><p>It may have been deleted or is being reviewed.</p><a class="btn btn-gold" href="/wall">Go to IdeaWall</a></div>`;
-    if (state.tab === 'saved') return `<div class="box empty"><div class="big">🔖</div><h3>No saved posts yet</h3><p>Tap Save on any post to keep it here.</p></div>`;
-    if (state.tab === 'mine') return `<div class="box empty"><div class="big">✍️</div><h3>You haven't posted yet</h3><p>Share an idea, an event or the social work you did.</p><button class="btn btn-gold" type="button" data-compose="">Create a post</button></div>`;
-    if (state.q) return `<div class="box empty"><div class="big">🔎</div><h3>No posts match “${esc(state.q)}”</h3><p>Try other words, or clear the search.</p></div>`;
-    if (state.tab === 'trending') return `<div class="box empty"><div class="big">🔥</div><h3>Nothing trending yet this week</h3><p>React and comment on posts you like to lift them up.</p></div>`;
-    return `<div class="box empty"><div class="big">🌱</div><h3>No posts here yet</h3><p>Be the first to share something.</p>${signedIn ? `<button class="btn btn-gold" type="button" data-compose="${esc(state.cat)}">Create a post</button>` : `<a class="btn btn-gold" href="/signup">Join to post</a>`}</div>`;
+    if (single) return `<div class="box empty"><div class="big"></div><h3>This post isn't available</h3><p>It may have been deleted or is being reviewed.</p><a class="btn btn-gold" href="/wall">Go to IdeaWall</a></div>`;
+    if (state.tab === 'saved') return `<div class="box empty"><div class="big"></div><h3>No saved posts yet</h3><p>Tap Save on any post to keep it here.</p></div>`;
+    if (state.tab === 'mine') return `<div class="box empty"><div class="big"></div><h3>You haven't posted yet</h3><p>Share an idea, an event or the social work you did.</p><button class="btn btn-gold" type="button" data-compose="">Create a post</button></div>`;
+    if (state.q) return `<div class="box empty"><div class="big"></div><h3>No posts match “${esc(state.q)}”</h3><p>Try other words, or clear the search.</p></div>`;
+    if (state.tab === 'trending') return `<div class="box empty"><div class="big"></div><h3>Nothing trending yet this week</h3><p>React and comment on posts you like to lift them up.</p></div>`;
+    return `<div class="box empty"><div class="big"></div><h3>No posts here yet</h3><p>Be the first to share something.</p>${signedIn ? `<button class="btn btn-gold" type="button" data-compose="${esc(state.cat)}">Create a post</button>` : `<a class="btn btn-gold" href="/signup">Join to post</a>`}</div>`;
   }
 
   // ── POST CARD ──────────────────────────────────────────────────────────────
@@ -624,14 +624,14 @@ a { color: inherit; }
       </div>
       ${p.status === 'hidden' ? `<div class="notice">${own ? 'This post is hidden while IdeaHub reviews reports about it. Only you can see it.' : `Hidden after ${Number(p.report_count) || 0} reports. Review it in Admin → IdeaWall.`}</div>` : ''}
       ${p.title || p.description ? `<div class="post-body">${p.title ? `<h3 class="post-title">${esc(p.title)}</h3>` : ''}${textHtml(p)}</div>` : ''}
-      ${p.is_from_idea && p.source_idea_id ? `<a class="idea-link" href="/idea?id=${encodeURIComponent(p.source_idea_id)}"><span style="font-size:22px">💡</span><div><b>Listed on the Marketplace</b><br><span>View the idea, its price and the creator's terms →</span></div></a>` : ''}
+      ${p.is_from_idea && p.source_idea_id ? `<a class="idea-link" href="/idea?id=${encodeURIComponent(p.source_idea_id)}"><span style="font-size:22px"></span><div><b>Listed on the Marketplace</b><br><span>View the idea, its price and the creator's terms →</span></div></a>` : ''}
       ${mediaHtml(p)}
       <div id="st-${p.id}">${statsHtml(p)}</div>
       <div class="actions">
         <div class="react-wrap">${rxButton(p)}<div class="picker" role="menu" aria-label="Reactions">${RX.map(r => `<button type="button" role="menuitem" data-act="rx" data-id="${p.id}" data-rx="${r.key}" class="${myRx[p.id] === r.key ? 'sel' : ''}" title="${esc(r.l)}${myRx[p.id] === r.key ? ' (tap again to remove)' : ''}"><span class="e">${r.e}</span><small>${esc(r.l)}</small></button>`).join('')}</div></div>
-        <button type="button" class="act" data-act="comment" data-id="${p.id}" aria-label="Comment"><span class="e">💬</span><span class="l">Comment</span></button>
+        <button type="button" class="act" data-act="comment" data-id="${p.id}" aria-label="Comment"><span class="e"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg></span><span class="l">Comment</span></button>
         <button type="button" class="act" data-act="share" data-id="${p.id}" aria-haspopup="true" aria-label="Share"><span class="e">↗</span><span class="l">Share</span></button>
-        <button type="button" class="act ${saved.has(p.id) ? 'on' : ''}" data-act="save" data-id="${p.id}" aria-pressed="${saved.has(p.id)}" aria-label="${saved.has(p.id) ? 'Saved' : 'Save'}"><span class="e">🔖</span><span class="l">${saved.has(p.id) ? 'Saved' : 'Save'}</span></button>
+        <button type="button" class="act ${saved.has(p.id) ? 'on' : ''}" data-act="save" data-id="${p.id}" aria-pressed="${saved.has(p.id)}" aria-label="${saved.has(p.id) ? 'Saved' : 'Save'}"><span class="e"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span><span class="l">${saved.has(p.id) ? 'Saved' : 'Save'}</span></button>
       </div>
       ${commentsHtml(p)}
     </article>`;
@@ -744,22 +744,22 @@ a { color: inherit; }
   function postMenu(btn, id) {
     const p = posts.get(id); if (!p) return;
     const own = viewer.id && p.user_id === viewer.id;
-    const items = [`<button type="button" data-m="copy" data-id="${id}">🔗 Copy link</button>`, single ? '' : `<a href="/wall/post/${id}">🗨️ Open post</a>`];
-    if (signedIn && !own) items.push(`<a href="/messages?user=${encodeURIComponent(p.user_id)}">✉️ Message ${esc(p.first_name || 'author')}</a>`);
-    items.push(`<a href="/wall?user=${encodeURIComponent(p.user_id)}">👤 More from ${esc(p.first_name || 'this member')}</a>`);
-    if (own) items.push('<hr>', `<button type="button" data-m="edit" data-id="${id}">✏️ Edit post</button>`, `<button type="button" class="danger" data-m="delete" data-id="${id}">🗑️ Delete post</button>`);
-    else if (signedIn) items.push('<hr>', `<button type="button" data-m="report" data-id="${id}">🚩 Report post</button>`);
-    if (viewer.is_admin && !own) items.push(`<button type="button" class="danger" data-m="delete" data-id="${id}">⛔ Remove post (admin)</button>`);
+    const items = [`<button type="button" data-m="copy" data-id="${id}">Copy link</button>`, single ? '' : `<a href="/wall/post/${id}">Open post</a>`];
+    if (signedIn && !own) items.push(`<a href="/messages?user=${encodeURIComponent(p.user_id)}">Message ${esc(p.first_name || 'author')}</a>`);
+    items.push(`<a href="/wall?user=${encodeURIComponent(p.user_id)}">More from ${esc(p.first_name || 'this member')}</a>`);
+    if (own) items.push('<hr>', `<button type="button" data-m="edit" data-id="${id}">Edit post</button>`, `<button type="button" class="danger" data-m="delete" data-id="${id}">Delete post</button>`);
+    else if (signedIn) items.push('<hr>', `<button type="button" data-m="report" data-id="${id}">Report post</button>`);
+    if (viewer.is_admin && !own) items.push(`<button type="button" class="danger" data-m="delete" data-id="${id}">Remove post (admin)</button>`);
     showMenu(btn, items.filter(Boolean).join(''));
   }
   function shareMenu(btn, id) {
     const p = posts.get(id), url = postUrl(id);
     const text = (p && (p.title || (p.description || '').split('\n')[0]) || 'A post on IdeaWall').slice(0, 100);
     if (navigator.share && matchMedia('(pointer: coarse)').matches) { navigator.share({ title: text, text, url }).catch(() => {}); return; }
-    showMenu(btn, `<button type="button" data-m="copy" data-id="${id}">🔗 Copy link</button>
-      <a href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener">🟢 Share on WhatsApp</a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener">🔵 Share on Facebook</a>
-      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}" target="_blank" rel="noopener">💼 Share on LinkedIn</a>`);
+    showMenu(btn, `<button type="button" data-m="copy" data-id="${id}">Copy link</button>
+      <a href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener">Share on WhatsApp</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener">Share on Facebook</a>
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}" target="_blank" rel="noopener">Share on LinkedIn</a>`);
   }
 
   // ── LIGHTBOX ───────────────────────────────────────────────────────────────

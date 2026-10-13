@@ -2,7 +2,7 @@
   <html lang="en">
   <head>
     <meta charset="UTF-8" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Business Expansion — IdeaHub</title>
     <meta name="description" content="Browse franchise, license, joint venture, and distribution opportunities from established businesses worldwide. Find your next expansion partner on IdeaHub." />
@@ -190,7 +190,7 @@
     <div class="search-row">
       <input type="text" id="searchInput" placeholder="Search by business name or category…" />
       <select id="countryFilter" class="country-select">
-        <option value="">🌍 All Countries</option>
+        <option value="">All Countries</option>
         <option>Sri Lanka</option>
         <option>United States</option>
         <option>United Kingdom</option>
@@ -210,7 +210,7 @@
     <!-- Advanced Filters Toggle -->
     <div class="adv-toggle-row">
       <button class="adv-toggle-btn" id="advToggleBtn" onclick="toggleAdvanced()">
-        <span>⚙️ Advanced Filters</span>
+        <span>Advanced Filters</span>
         <i class="arrow">▼</i>
       </button>
       <span class="active-filters-count" id="activeFiltersCount">0</span>
@@ -224,17 +224,17 @@
           <div class="filter-group-label">Business Category</div>
           <div class="chips-wrap" id="catChips">
             <button class="chip active" data-cat="all">All</button>
-            <button class="chip" data-cat="Food & Beverage">🍔 Food &amp; Beverage</button>
-            <button class="chip" data-cat="Retail">🛒 Retail</button>
-            <button class="chip" data-cat="Technology">💻 Technology</button>
-            <button class="chip" data-cat="Health & Wellness">💊 Health &amp; Wellness</button>
-            <button class="chip" data-cat="Education">📚 Education</button>
-            <button class="chip" data-cat="Finance">🏦 Finance</button>
-            <button class="chip" data-cat="Real Estate">🏗️ Real Estate</button>
-            <button class="chip" data-cat="Entertainment">🎭 Entertainment</button>
-            <button class="chip" data-cat="Logistics">🚚 Logistics</button>
-            <button class="chip" data-cat="Manufacturing">🏭 Manufacturing</button>
-            <button class="chip" data-cat="Other">🏢 Other</button>
+            <button class="chip" data-cat="Food & Beverage">Food &amp; Beverage</button>
+            <button class="chip" data-cat="Retail">Retail</button>
+            <button class="chip" data-cat="Technology">Technology</button>
+            <button class="chip" data-cat="Health & Wellness">Health &amp; Wellness</button>
+            <button class="chip" data-cat="Education">Education</button>
+            <button class="chip" data-cat="Finance">Finance</button>
+            <button class="chip" data-cat="Real Estate">Real Estate</button>
+            <button class="chip" data-cat="Entertainment">Entertainment</button>
+            <button class="chip" data-cat="Logistics">Logistics</button>
+            <button class="chip" data-cat="Manufacturing">Manufacturing</button>
+            <button class="chip" data-cat="Other">Other</button>
           </div>
         </div>
         <!-- Expansion Type -->
@@ -242,11 +242,11 @@
           <div class="filter-group-label">Expansion Route</div>
           <div class="chips-wrap" id="typeChips">
             <button class="chip active" data-type="all">All routes</button>
-            <button class="chip" data-type="markets">🌍 New markets</button>
-            <button class="chip" data-type="horizontal">🤝 Horizontal</button>
-            <button class="chip" data-type="backward">🏭 Towards supply</button>
-            <button class="chip" data-type="forward">🚚 Towards customers</button>
-            <button class="chip" data-type="brand">🏷️ Brand extension</button>
+            <button class="chip" data-type="markets">New markets</button>
+            <button class="chip" data-type="horizontal">Horizontal</button>
+            <button class="chip" data-type="backward">Towards supply</button>
+            <button class="chip" data-type="forward">Towards customers</button>
+            <button class="chip" data-type="brand">Brand extension</button>
           </div>
         </div>
         <div class="adv-panel-footer">
@@ -265,7 +265,7 @@
 
   <!-- Active filters summary bar -->
   <div class="route-bar">
-    <div class="dir-tabs" id="dirTabs"><button class="dt on" data-d="all">All</button><button class="dt" data-d="offer">📣 Opportunities offered</button><button class="dt" data-d="seek">🔎 Businesses looking for partners</button></div>
+    <div class="dir-tabs" id="dirTabs"><button class="dt on" data-d="all">All</button><button class="dt" data-d="offer">Opportunities offered</button><button class="dt" data-d="seek">Businesses looking for partners</button></div>
     <div class="route-row" id="routeRow"></div>
   </div>
   <div class="active-bar" id="activeBar"></div>
@@ -277,10 +277,6 @@
     </div>
   </main>
 
-  <footer class="footer">
-    © 2026 <a href="https://picela.co" target="_blank">Picela</a>. All rights reserved. IdeaHub is a product by <a href="https://picela.co" target="_blank">Picela</a>.
-  </footer>
-
   <script src="/expansion-routes.js"></script>
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
@@ -289,14 +285,14 @@
     let advOpen = false;
 
     const typeConfig = {
-      franchise:     { label:'Franchise',     emoji:'📦', cls:'pill-franchise' },
-      license:       { label:'License',       emoji:'📜', cls:'pill-license' },
-      joint_venture: { label:'Joint Venture', emoji:'🤝', cls:'pill-joint_venture' },
-      distribution:  { label:'Distribution',  emoji:'🌍', cls:'pill-distribution' },
-      white_label:   { label:'White Label',   emoji:'💻', cls:'pill-white_label' },
+      franchise:     { label:'Franchise',     emoji:'', cls:'pill-franchise' },
+      license:       { label:'License',       emoji:'', cls:'pill-license' },
+      joint_venture: { label:'Joint Venture', emoji:'', cls:'pill-joint_venture' },
+      distribution:  { label:'Distribution',  emoji:'', cls:'pill-distribution' },
+      white_label:   { label:'White Label',   emoji:'', cls:'pill-white_label' },
     };
     const catEmoji = {
-'Food & Beverage':'🍔', 'Retail':'🛒', 'Technology':'💻', 'Health & Wellness':'💊', 'Education':'📚', 'Finance':'🏦', 'Real Estate':'🏗️', 'Entertainment':'🎭', 'Logistics':'🚚', 'Manufacturing':'🏭', 'Other':'🏢'
+'Food & Beverage':'', 'Retail':'', 'Technology':'', 'Health & Wellness':'', 'Education':'', 'Finance':'', 'Real Estate':'', 'Entertainment':'', 'Logistics':'', 'Manufacturing':'', 'Other':''
     };
 
     function toggleAdvanced() {
@@ -321,7 +317,7 @@
       const country = document.getElementById('countryFilter').value;
       if (activeCategory !== 'all') tags.push({ label: catEmoji[activeCategory] + ' ' + activeCategory, clear: () => { activeCategory='all'; document.querySelectorAll('#catChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#catChips .chip[data-cat="all"]').classList.add('active'); } });
       if (activeType !== 'all') tags.push({ label: (Routes.GROUP[activeType]?.icon || '') + ' ' + (Routes.GROUP[activeType]?.short || activeType), clear: () => { activeType='all'; document.querySelectorAll('#typeChips .chip').forEach(b=>b.classList.remove('active')); document.querySelector('#typeChips .chip[data-type="all"]').classList.add('active'); } });
-      if (country) tags.push({ label: '📍 ' + country, clear: () => { document.getElementById('countryFilter').value = ''; } });
+      if (country) tags.push({ label: country, clear: () => { document.getElementById('countryFilter').value = ''; } });
 
       const bar = document.getElementById('activeBar');
       const countEl = document.getElementById('activeFiltersCount');
@@ -336,7 +332,7 @@
       countEl.classList.add('visible');
       bar.classList.add('visible');
       bar.innerHTML = tags.map((t, i) =>
-        `<span class="active-tag">${t.label} <button onclick="clearTag(${i})">✕</button></span>`
+        `<span class="active-tag">${escB(t.label)} <button onclick="clearTag(${i})" aria-label="Remove filter">✕</button></span>`
       ).join('') + `<button class="clear-all" onclick="clearAdvanced(); document.getElementById('countryFilter').value=''; applyFilters();">Clear all</button>`;
 
       // store clearers
@@ -428,16 +424,16 @@
     function cardHTML(b) {
       const title = b.title || b.business_name || 'Business';
       const g = Routes.GROUP[b.route] || {};
-      const logoContent = b.masked ? '🔒' : (catEmoji[b.industry] || escB(String(title).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)));
+      const logoContent = b.masked ? '' : (catEmoji[b.industry] || escB(String(title).split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)));
       const types = (b.expansion_types||[]).slice(0,3);
       const d = b.details || {};
-      const facts = [d.revenue_range ? `💰 Revenue ${d.revenue_range}` : '', d.profit_range ? `📈 Profit ${d.profit_range}` : '', d.stake_pct ? `🧩 ${d.stake_pct}% stake` : '',
-        d.royalty_pct ? `🔁 ${d.royalty_pct}% royalty` : '', d.exclusivity || '', d.capacity ? `🏭 ${d.capacity}` : '', d.min_order ? `📦 MOQ ${d.min_order}` : ''].filter(Boolean).slice(0, 3);
+      const facts = [d.revenue_range ? `Revenue ${d.revenue_range}` : '', d.profit_range ? `Profit ${d.profit_range}` : '', d.stake_pct ? `${d.stake_pct}% stake` : '',
+        d.royalty_pct ? `${d.royalty_pct}% royalty` : '', d.exclusivity || '', d.capacity ? `${d.capacity}` : '', d.min_order ? `MOQ ${d.min_order}` : ''].filter(Boolean).slice(0, 3);
       const blurb = b.masked ? b.teaser : (b.description || b.tagline || d.products || d.products_wanted || d.criteria || d.inputs_needed || '');
       return `
         <a class="biz-card" href="/business/${encodeURIComponent(b.id)}">
           <div class="card-top">
-            <div class="dir-label">${b.direction === 'seek' ? '🔎 Looking for a partner' : '📣 Opportunity'} · ${escB(g.short || '')}</div>
+            <div class="dir-label">${b.direction === 'seek' ? 'Looking for a partner' : 'Opportunity'} · ${escB(g.short || '')}</div>
             <div class="card-header">
               <div class="biz-logo">${logoContent}</div>
               <div style="flex:1;min-width:0">
@@ -447,16 +443,16 @@
             </div>
             <div class="biz-desc">${escB(blurb)}</div>
             <div class="type-pills">
-              ${b.masked ? `<span class="cat-badge conf-badge" title="Full details after you sign a confidentiality agreement">🔒 Confidential</span>` : ''}
-              ${b.is_verified ? `<span class="cat-badge" style="color:#6ee7b7;border-color:rgba(110,231,183,0.35);background:rgba(110,231,183,0.08)" title="Company registration checked by IdeaHub">✅ Verified</span>` : ''}
-              ${b.industry ? `<span class="cat-badge">${catEmoji[b.industry]||'🏢'} ${escB(b.industry)}</span>` : ''}
+              ${b.masked ? `<span class="cat-badge conf-badge" title="Full details after you sign a confidentiality agreement">Confidential</span>` : ''}
+              ${b.is_verified ? `<span class="cat-badge" style="color:#6ee7b7;border-color:rgba(110,231,183,0.35);background:rgba(110,231,183,0.08)" title="Company registration checked by IdeaHub">Verified</span>` : ''}
+              ${b.industry ? `<span class="cat-badge">${catEmoji[b.industry]||''} ${escB(b.industry)}</span>` : ''}
               ${types.map(t => `<span class="type-pill">${escB(Routes.typeLabel(t, b.direction))}</span>`).join('')}
             </div>
             <div class="biz-meta-row">${facts.map(f => `<span>${escB(f)}</span>`).join('')}</div>
           </div>
           <div class="card-footer">
             <div class="investment">${(b.investment_min || b.investment_max) ? (b.direction === 'seek' ? 'Budget ' : '') + escB(formatInvestment(b.investment_min, b.investment_max)) : (b.direction === 'seek' ? 'Budget open' : 'Terms negotiable')}</div>
-            <div class="apps-count">📋 ${Number(b.application_count)||0} response${Number(b.application_count) === 1 ? '' : 's'}</div>
+            <div class="apps-count">${Number(b.application_count)||0} response${Number(b.application_count) === 1 ? '' : 's'}</div>
             <span class="btn-view">View →</span>
           </div>
         </a>`;

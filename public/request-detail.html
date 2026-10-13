@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Request — IdeaHub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -192,10 +192,6 @@
   </div>
 </main>
 
-<footer class="footer">
-  © 2026 <a href="https://picela.co" target="_blank">Picela</a>. All rights reserved. IdeaHub is a product by <a href="https://picela.co" target="_blank">Picela</a>.
-</footer>
-
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -232,7 +228,7 @@
       const ideasEl = document.getElementById('matchIdeas');
       if (ideasEl && m.ideas && m.ideas.length) {
         ideasEl.innerHTML = `<div class="card">
-          <div class="card-title">💡 Ideas already for sale that fit</div>
+          <div class="card-title">Ideas already for sale that fit</div>
           ${m.ideas.map(i => `<a class="m-idea" href="/idea?id=${encodeURIComponent(i.id)}">
             <div><div class="m-title">${escR(i.title)}</div><div class="m-sub">${escR(i.summary || '')}</div></div>
             <div class="m-right"><div class="m-price">$${Number(i.price || 0).toLocaleString()}</div><div class="m-fit">${Number(i.match)}% fit${i.originality_score != null ? ' · originality ' + Number(i.originality_score) : ''}</div></div>
@@ -243,18 +239,18 @@
       const crEl = document.getElementById('matchCreators');
       if (crEl && m.creators) {
         crEl.innerHTML = `<div class="card">
-          <div class="card-title">🎯 Creators who could help <span style="font-size:0.72rem;text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;">${m.creators.filter(c => c.alerted).length} alerted automatically</span></div>
+          <div class="card-title">Creators who could help <span style="font-size:0.72rem;text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;">${m.creators.filter(c => c.alerted).length} alerted automatically</span></div>
           ${m.creators.length ? m.creators.map(c => `<div class="m-creator">
             <div class="m-av">${c.avatar_url ? `<img src="${escR(c.avatar_url)}" alt="">` : escR((c.name || '?')[0].toUpperCase())}</div>
             <div style="min-width:0;"><a href="/public-profile?id=${encodeURIComponent(c.id)}" style="color:var(--text);font-weight:600;font-size:0.88rem;text-decoration:none;">${escR(c.name)}</a>${c.stars ? ` <span style="color:var(--gold);font-size:0.72rem;">${'★'.repeat(Math.round(c.stars))}</span>` : ''}
               <div class="m-reasons">${c.reasons.map(escR).join(' · ')}</div></div>
-            <button class="btn-sm m-invite" ${c.invited ? 'disabled' : ''} onclick="inviteCreator(${Number(c.id)}, this)">${c.invited ? '✓ Invited' : '✉️ Invite to pitch'}</button>
+            <button class="btn-sm m-invite" ${c.invited ? 'disabled' : ''} onclick="inviteCreator(${Number(c.id)}, this)">${c.invited ? '✓ Invited' : 'Invite to pitch'}</button>
           </div>`).join('') : '<div class="m-sub">No close matches yet. Creators are still alerted, and new ideas that fit will be sent to you.</div>'}
         </div>`;
       }
       const meEl = document.getElementById('matchMe');
       if (meEl && m.me) {
-        meEl.innerHTML = `<div class="info-box info-gold">✨ <strong>${m.me.invited ? 'The investor invited you to pitch.' : "You're a strong match for this request."}</strong>${m.me.reasons && m.me.reasons.length ? '<br>' + m.me.reasons.map(escR).join(' · ') : ''}</div>`;
+        meEl.innerHTML = `<div class="info-box info-gold"><strong>${m.me.invited ? 'The investor invited you to pitch.' : "You're a strong match for this request."}</strong>${m.me.reasons && m.me.reasons.length ? '<br>' + m.me.reasons.map(escR).join(' · ') : ''}</div>`;
       }
     } catch (e) {}
   }
@@ -265,10 +261,10 @@
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || 'Invite failed');
       btn.textContent = '✓ Invited';
-    } catch (e) { alert(e.message); btn.disabled = false; btn.textContent = '✉️ Invite to pitch'; }
+    } catch (e) { alert(e.message); btn.disabled = false; btn.textContent = 'Invite to pitch'; }
   }
 
-  function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
+  function formatDate(d) { if (!d || isNaN(new Date(d))) return '—'; return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
   function timeAgo(d) {
     const diff = Date.now()-new Date(d);
     if (diff<3600000) return Math.floor(diff/60000)+'m ago';
@@ -282,7 +278,7 @@
     return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   }
 
-  const statusMap = { open:'Open', proposals_received:'Proposals In', shortlisting:'Shortlisting', pitching:'Pitching', agreed:'Agreed', in_escrow:'In Escrow 🔒', delivered:'Delivered', completed:'Completed ✅', disputed:'Under review ⚠️', refunded:'Refunded', closed:'Closed' };
+  const statusMap = { open:'Open', proposals_received:'Proposals In', shortlisting:'Shortlisting', pitching:'Pitching', agreed:'Agreed', in_escrow:'In Escrow', delivered:'Delivered', completed:'Completed', disputed:'Under review', refunded:'Refunded', closed:'Closed' };
 
   async function updateProposalStatus(proposalId, status) {
     const msgs = { shortlisted:'Shortlist this proposal?', invited_to_pitch:'Invite to pitch?', selected:'Select this creator?', rejected:'Reject this proposal?' };
@@ -303,7 +299,7 @@
   function filesList(r, canRemove) {
     const f = r.files || [];
     if (!f.length) return '<div class="deal-p" style="margin-bottom:0">No files yet.</div>';
-    return f.map(x => `<div class="file-row">📎 <button onclick="openFile(${Number(x.id)})">${escR(x.file_name)}</button><span style="color:var(--muted);font-size:0.75rem">${x.size ? Math.max(1, Math.round(x.size / 1024)) + ' KB' : ''}</span>${canRemove ? `<button class="rm" title="Remove" onclick="removeFile(${Number(x.id)})">✕</button>` : ''}</div>`).join('');
+    return f.map(x => `<div class="file-row"><button onclick="openFile(${Number(x.id)})">${escR(x.file_name)}</button><span style="color:var(--muted);font-size:0.75rem">${x.size ? Math.max(1, Math.round(x.size / 1024)) + ' KB' : ''}</span>${canRemove ? `<button class="rm" title="Remove" onclick="removeFile(${Number(x.id)})">✕</button>` : ''}</div>`).join('');
   }
   function dealPanel(r) {
     const v = r.viewer, s = r.status;
@@ -333,20 +329,20 @@
       <div class="lbl" style="margin-top:6px">Your files</div>${filesList(r, true)}
       <div class="field" style="margin-top:10px"><input type="file" id="dFile" style="font-size:0.8rem;color:var(--muted)" onchange="uploadFile()" /></div>
       <div class="field"><label class="lbl" for="dNote">Delivery note</label><textarea id="dNote" placeholder="What you delivered and how to use it"></textarea></div>
-      <button class="btn-primary" onclick="dealAct('deliver')">📦 Mark as delivered</button>`;
+      <button class="btn-primary" onclick="dealAct('deliver')">Mark as delivered</button>`;
     else if (s === 'in_escrow' && v === 'investor') body = `
       <div class="deal-p">${money(r.total)} is held safely in escrow. The creator should deliver by <b style="color:var(--text)">${dday(new Date(new Date(r.paid_at).getTime() + Number(r.agreed_days || 7) * 86400000))}</b>.</div>${scope}
       <button class="btn-secondary" style="color:var(--error);border-color:rgba(255,107,107,0.4)" onclick="dealAct('dispute')">Report a problem</button>`;
     else if (s === 'delivered' && v === 'investor') body = `
       <div class="deal-p">The creator delivered on ${dday(r.delivered_at)}. Check the work, then confirm to release ${money(r.escrow_amount)}. If you do nothing, it's released automatically on <b style="color:var(--text)">${dday(r.confirm_by)}</b>.</div>
       ${r.delivery_note ? `<div class="deal-scope">${escR(r.delivery_note)}</div>` : ''}<div class="lbl">Files</div>${filesList(r, false)}
-      <button class="btn-primary" style="margin-top:12px;background:var(--green)" onclick="dealAct('confirm')">✅ Confirm and release payment</button>
+      <button class="btn-primary" style="margin-top:12px;background:var(--green)" onclick="dealAct('confirm')">Confirm and release payment</button>
       <button class="btn-secondary" style="color:var(--error);border-color:rgba(255,107,107,0.4)" onclick="dealAct('dispute')">Report a problem</button>`;
     else if (s === 'delivered' && v === 'creator') body = `<div class="deal-p">Waiting for the investor to confirm. Your ${money(r.escrow_amount)} is released when they do, or automatically on <b style="color:var(--text)">${dday(r.confirm_by)}</b>.</div><div class="lbl">Files</div>${filesList(r, false)}`;
     else if (s === 'disputed') body = `<div class="deal-p">A problem was reported: <i>${escR(r.dispute_reason || '')}</i><br>The money stays in escrow while IdeaHub reviews the messages and files.</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, v === 'creator') : ''}`;
-    else if (s === 'completed') body = `<div class="deal-p">✅ Completed${r.paid_at ? `: ${money(r.escrow_amount)} was released to the creator` : ''}.${r.resolution_note ? ' Note from IdeaHub: ' + escR(r.resolution_note) : ''}</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, false) : ''}`;
-    else if (s === 'refunded') body = `<div class="deal-p">↩️ IdeaHub refunded ${money(r.total)} to the investor.${r.resolution_note ? ' Note: ' + escR(r.resolution_note) : ''}</div>`;
-    return `<div class="card"><div class="card-title">🤝 The deal</div>${steps}${body}</div>`;
+    else if (s === 'completed') body = `<div class="deal-p">Completed${r.paid_at ? `: ${money(r.escrow_amount)} was released to the creator` : ''}.${r.resolution_note ? ' Note from IdeaHub: ' + escR(r.resolution_note) : ''}</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, false) : ''}`;
+    else if (s === 'refunded') body = `<div class="deal-p">IdeaHub refunded ${money(r.total)} to the investor.${r.resolution_note ? ' Note: ' + escR(r.resolution_note) : ''}</div>`;
+    return `<div class="card"><div class="card-title">The deal</div>${steps}${body}</div>`;
   }
   async function dealAct(act) {
     if (dealBusy) return;
@@ -397,7 +393,7 @@
   async function openChat(creatorId, creatorName) {
     activeChatCreatorId = creatorId;
     document.getElementById('chatSection').style.display = 'block';
-    document.getElementById('chatHeading').textContent = `💬 Pitch Chat with ${creatorName}`;
+    document.getElementById('chatHeading').textContent = `Pitch Chat with ${creatorName}`;
     loadChat();
     setTimeout(() => document.getElementById('chatSection').scrollIntoView({behavior:'smooth'}), 100);
   }
@@ -443,7 +439,7 @@
       const res = await fetch(`${API_URL}/api/requests/${requestId}/proposals`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({title,summary,approach,proposed_price,delivery_days})});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error||'Failed');
-      alert('Proposal submitted! 🎉');
+      alert('Proposal submitted!');
       loadPage();
     } catch(err) { alert(err.message||'Something went wrong.'); btn.disabled=false; btn.textContent='Submit Proposal'; }
   }
@@ -482,14 +478,14 @@
                 <span class="status-badge s-${r.status||'open'}">${statusMap[r.status]||'Open'}</span>
               </div>
               <div class="meta-pills">
-                ${r.industry?`<span class="meta-pill">🏭 ${escR(r.industry)}</span>`:''}
-                <span class="meta-pill">👤 ${escR(r.investor_name||'Anonymous')}</span>
-                <span class="meta-pill">🕐 ${timeAgo(r.created_at)}</span>
-                ${r.deadline?`<span class="meta-pill">📅 Deadline: ${formatDate(r.deadline)}</span>`:''}
-                <span class="meta-pill">📝 ${r.proposal_count||0} proposals</span>
+                ${r.industry?`<span class="meta-pill">${escR(r.industry)}</span>`:''}
+                <span class="meta-pill">${escR(r.investor_name||'Anonymous')}</span>
+                <span class="meta-pill">${timeAgo(r.created_at)}</span>
+                ${r.deadline?`<span class="meta-pill">Deadline: ${formatDate(r.deadline)}</span>`:''}
+                <span class="meta-pill">${r.proposal_count||0} proposals</span>
               </div>
               <div class="req-problem" style="white-space:pre-wrap;">${escR(r.problem)}</div>
-              ${r.requirements?`<div class="req-requirements"><strong style="color:var(--gold);font-size:0.75rem;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">📋 Requirements</strong><span style="white-space:pre-wrap;">${escR(r.requirements)}</span></div>`:''}
+              ${r.requirements?`<div class="req-requirements"><strong style="color:var(--gold);font-size:0.75rem;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">Requirements</strong><span style="white-space:pre-wrap;">${escR(r.requirements)}</span></div>`:''}
             </div>
 
             <div id="matchIdeas"></div>
@@ -500,7 +496,7 @@
             <!-- PROPOSALS (investor view) -->
             ${isOwner&&proposals.length>0?`
             <div class="card">
-              <div class="card-title">📝 Proposals <span style="background:var(--gold);color:#000;border-radius:20px;padding:2px 8px;font-size:0.72rem;font-weight:700;">${proposals.length}</span></div>
+              <div class="card-title">Proposals <span style="background:var(--gold);color:#000;border-radius:20px;padding:2px 8px;font-size:0.72rem;font-weight:700;">${proposals.length}</span></div>
               ${proposals.map(p=>{
                 const name = `${p.creator?.first_name||''} ${p.creator?.last_name||''}`.trim()||p.creator_name||'Creator';
                 const init = name[0]?.toUpperCase()||'?';
@@ -516,14 +512,14 @@
                   ${p.approach?`<div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;line-height:1.6;">${escR(p.approach)}</div>`:''}
                   <div class="prop-footer">
                     ${p.proposed_price?`<span class="prop-price">$${p.proposed_price.toLocaleString()}</span>`:''}
-                    ${p.delivery_days?`<span class="prop-days">⏱ ${p.delivery_days}d delivery</span>`:''}
+                    ${p.delivery_days?`<span class="prop-days">${p.delivery_days}d delivery</span>`:''}
                     <div class="prop-actions">
-                      ${p.status==='pending'?`<button class="btn-sm btn-shortlist" onclick="updateProposalStatus(${p.id},'shortlisted')">⭐ Shortlist</button>`:''}
-                      ${['pending','shortlisted'].includes(p.status)?`<button class="btn-sm btn-invite" onclick="updateProposalStatus(${p.id},'invited_to_pitch')">🎤 Invite to Pitch</button>`:''}
-                      ${['shortlisted','invited_to_pitch'].includes(p.status)?`<button class="btn-sm btn-select" onclick="updateProposalStatus(${p.id},'selected')">🏆 Select</button>`:''}
+                      ${p.status==='pending'?`<button class="btn-sm btn-shortlist" onclick="updateProposalStatus(${p.id},'shortlisted')">★ Shortlist</button>`:''}
+                      ${['pending','shortlisted'].includes(p.status)?`<button class="btn-sm btn-invite" onclick="updateProposalStatus(${p.id},'invited_to_pitch')">Invite to Pitch</button>`:''}
+                      ${['shortlisted','invited_to_pitch'].includes(p.status)?`<button class="btn-sm btn-select" onclick="updateProposalStatus(${p.id},'selected')">Select</button>`:''}
                       ${p.status==='selected'&&r.status==='agreed'?`<span style="font-size:0.75rem;color:var(--muted);">Selected · see the deal above</span>`:''}
                       ${!['rejected','selected'].includes(p.status)?`<button class="btn-sm btn-reject" onclick="updateProposalStatus(${p.id},'rejected')">✕ Reject</button>`:''}
-                      <button class="btn-sm btn-chat" onclick="openChat(${Number(p.creator_id)}, this.dataset.n)" data-n="${escR(name)}">💬 Chat</button>
+                      <button class="btn-sm btn-chat" onclick="openChat(${Number(p.creator_id)}, this.dataset.n)" data-n="${escR(name)}">Chat</button>
                     </div>
                   </div>
                 </div>`;
@@ -532,18 +528,18 @@
 
             ${isOwner&&proposals.length===0?`
             <div class="card" style="text-align:center;padding:3rem;">
-              <div style="font-size:2.5rem;margin-bottom:12px;">📭</div>
+              <div style="font-size:2.5rem;margin-bottom:12px;"></div>
               <div style="color:var(--muted);font-size:0.875rem;">No proposals yet. The best-matched creators have been alerted, and you can invite more below.</div>
             </div>`:''}
 
             <!-- CHAT -->
             <div class="card" id="chatSection" style="display:none;">
-              <div class="card-title" id="chatHeading">💬 Pitch Chat</div>
+              <div class="card-title" id="chatHeading">Pitch Chat</div>
               <div class="chat-area">
                 <div class="chat-msgs" id="chatMsgs"></div>
                 <div class="chat-input-row">
                   <input class="chat-input" id="chatInputField" placeholder="Type your message…" onkeydown="handleChatKey(event)" />
-                  <button class="chat-send" onclick="sendChat()">➤</button>
+                  <button class="chat-send" onclick="sendChat()" aria-label="Send"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
                 </div>
               </div>
             </div>
@@ -554,7 +550,7 @@
             <div id="matchMe"></div>
             <!-- BUDGET -->
             <div class="card">
-              <div class="card-title">💰 Budget</div>
+              <div class="card-title">Budget</div>
               <div class="budget-display">${budget}</div>
               <div class="budget-sub">Offered by investor</div>
             </div>
@@ -572,8 +568,8 @@
                     ${myProposal.proposed_price?`<span style="font-weight:700;color:var(--gold);">$${myProposal.proposed_price.toLocaleString()}</span>`:''}
                   </div>
                 </div>
-                ${myProposal.status==='invited_to_pitch'?`<div class="info-box info-blue">🎤 You've been invited to pitch! Send a message to the investor.</div><button class="btn-primary" onclick="openChat(${r.investor_id},'Investor')">💬 Start Pitch Chat</button>`:''}
-                ${myProposal.status==='selected'?`<div class="info-box info-green">🏆 Your proposal was selected! ${r.status==='agreed'?'Confirm your final price in the deal panel so the investor can pay into escrow.':''}</div><button class="btn-primary" onclick="openChat(${Number(r.investor_id)},'Investor')">💬 Message the investor</button>`:''}
+                ${myProposal.status==='invited_to_pitch'?`<div class="info-box info-blue">You've been invited to pitch! Send a message to the investor.</div><button class="btn-primary" onclick="openChat(${r.investor_id},'Investor')">Start Pitch Chat</button>`:''}
+                ${myProposal.status==='selected'?`<div class="info-box info-green">Your proposal was selected! ${r.status==='agreed'?'Confirm your final price in the deal panel so the investor can pay into escrow.':''}</div><button class="btn-primary" onclick="openChat(${Number(r.investor_id)},'Investor')">Message the investor</button>`:''}
               `:`
                 <div class="card-title">Submit a Proposal</div>
                 ${['open','proposals_received'].includes(r.status)?`
@@ -592,7 +588,7 @@
             <!-- NOT LOGGED IN -->
             ${!user?`
             <div class="card" style="text-align:center;">
-              <div style="font-size:2.5rem;margin-bottom:12px;">💡</div>
+              <div style="font-size:2.5rem;margin-bottom:12px;"></div>
               <div style="font-size:0.875rem;margin-bottom:14px;color:var(--muted);">Sign in to submit a proposal for this request.</div>
               <a href="/login" class="btn-primary" style="text-align:center;display:block;text-decoration:none;">Sign In →</a>
               <a href="/signup" style="display:block;margin-top:8px;text-align:center;color:var(--muted);font-size:0.82rem;">Don't have an account? Join free</a>
@@ -606,7 +602,7 @@
     } catch(err) {
       document.getElementById('pageContent').innerHTML = `
         <div style="text-align:center;padding:4rem;color:var(--muted);">
-          <div style="font-size:3rem;margin-bottom:12px;">😕</div>
+          <div style="font-size:3rem;margin-bottom:12px;"></div>
           <div style="font-size:1rem;margin-bottom:16px;">Request not found.</div>
           <a href="/idea-requests" style="color:var(--gold);">← Back to Requests</a>
         </div>`;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Wallet — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -65,8 +65,8 @@
   .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
   /* FILTER TABS */
-  .filter-bar { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .filter-tab { background: none; border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap;  overflow-x: auto; scrollbar-width: none; }
+  .filter-tab { background: none; border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
   .filter-tab:hover { color: var(--text); border-color: var(--border-hover); }
   .filter-tab.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
@@ -163,39 +163,14 @@
     .tx-row { grid-template-columns: 1fr auto; gap: 8px; }
     .tx-row > *:nth-child(2), .tx-row > *:nth-child(3),
     .tx-row > *:nth-child(4) { display: none; }
-    .filter-bar { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+    .filter-bar { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none;  overflow-x: auto; scrollbar-width: none; }
     .filter-bar::-webkit-scrollbar { display: none; }
   }
 </style>
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav" id="sidebarNav"></nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <main class="main">
   <div class="topbar">
@@ -210,7 +185,7 @@
       <div style="font-family:'Cabinet Grotesk',sans-serif;font-size:36px;font-weight:800;color:var(--accent);" id="walletBalance">—</div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="walletSub">From completed sales</div>
     </div>
-    <button onclick="openWithdraw()" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">💳 Withdraw Funds</button>
+    <button onclick="openWithdraw()" style="background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:0.75rem 1.5rem;font-size:14px;font-weight:700;font-family:'Cabinet Grotesk',sans-serif;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Withdraw Funds</button>
   </div>
 
   <div id="investorWalletHero" style="display:none;background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(96,165,250,0.05));border:1px solid rgba(96,165,250,0.3);border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
@@ -304,7 +279,7 @@
     </div>
   </div>
   <div class="hist-card">
-    <div class="hist-title">💳 All money in and out</div>
+    <div class="hist-title">All money in and out</div>
     <div class="hist-sub">Every payment on IdeaHub: idea sales, hires, idea requests, adviser jobs, patents, licences, refunds and withdrawals.</div>
     <div id="histBody"><div class="loading"><div class="spin"></div> Loading…</div></div>
   </div>
@@ -330,7 +305,7 @@
     <input class="wd-input" type="number" id="wdAmount" min="10" step="0.01" />
     <label class="wd-label">Send to</label>
     <div style="display:flex;gap:8px;margin-bottom:0.75rem;">
-      <button type="button" class="ghost-btn wd-method on" data-m="bank" onclick="setWdMethod('bank')">🏦 Bank transfer</button>
+      <button type="button" class="ghost-btn wd-method on" data-m="bank" onclick="setWdMethod('bank')">Bank transfer</button>
       <button type="button" class="ghost-btn wd-method" data-m="paypal" onclick="setWdMethod('paypal')">PayPal</button>
     </div>
     <div id="wdBank">
@@ -445,7 +420,7 @@
     if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
   });
 
-  function formatDate(d) {
+  function formatDate(d) { if (!d || isNaN(new Date(d))) return '—';
     return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
@@ -473,7 +448,7 @@
     const body = document.getElementById('txBody');
 
     if (filtered.length === 0) {
-      body.innerHTML = `<div class="empty"><div class="empty-icon">💸</div><div class="empty-text">No transactions found</div></div>`;
+      body.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No transactions found</div></div>`;
       return;
     }
 
@@ -489,7 +464,7 @@
         if (tx.status === 'escrow' && !delivered) actions = `<span class="tx-note">Waiting for delivery</span><button class="ghost-btn danger" onclick="openDispute('${tx.id}')">Dispute</button>`;
         else if (delivered) actions = `<button class="confirm-btn" onclick="confirmTx('${tx.id}')">Confirm</button><button class="ghost-btn danger" onclick="openDispute('${tx.id}')">Dispute</button><span class="tx-note">Auto-releases ${releaseDate}</span>`;
         else if (tx.status === 'disputed') actions = `<span class="tx-note">Under review by IdeaHub</span>`;
-        else if (tx.status === 'completed' && !tx.rated) actions = `<button class="confirm-btn" onclick="openRate('${tx.id}')">⭐ Rate</button>`;
+        else if (tx.status === 'completed' && !tx.rated) actions = `<button class="confirm-btn" onclick="openRate('${tx.id}')">★ Rate</button>`;
         else if (tx.status === 'completed') actions = `<span class="tx-note">Rated, thank you</span>`;
       } else {
         if (tx.status === 'escrow' && !delivered) actions = `<button class="confirm-btn" onclick="openDeliver('${tx.id}')">Mark delivered</button>`;
@@ -497,11 +472,11 @@
         else if (tx.status === 'disputed') actions = `<span class="tx-note">Payment on hold: buyer opened a dispute</span>`;
       }
 
-      if (['escrow', 'disputed', 'completed', 'refunded'].includes(tx.status)) actions += `<button class="ghost-btn" onclick="openFiles('${txEsc(tx.id)}')">📎 Files</button>`;
+      if (['escrow', 'disputed', 'completed', 'refunded'].includes(tx.status)) actions += `<button class="ghost-btn" onclick="openFiles('${txEsc(tx.id)}')">Files</button>`;
       return `
         <div class="tx-row">
           <div class="tx-idea">
-            <div class="tx-icon-circle ${isSale ? 'sale' : 'purchase'}">${isSale ? '💰' : '🛒'}</div>
+            <div class="tx-icon-circle ${isSale ? 'sale' : 'purchase'}">${isSale ? '' : ''}</div>
             <div>
               <div class="tx-title">${txEsc(tx.idea_title || 'Unnamed idea')}</div>
               <div class="tx-date">${formatDate(tx.created_at)}</div>
@@ -569,9 +544,9 @@
       const r = await fetch(`${API_URL}/api/transactions/${filesTx}/files`, { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Could not load files.');
       document.getElementById('filesSub').textContent = d.can_upload ? 'Add the files the buyer paid for, then mark the deal delivered.' : 'Files the seller delivered for this deal.';
-      el.innerHTML = d.files.length ? d.files.map(f => `<div class="file-row">📎 <button class="link" onclick="openFile(${Number(f.id)})">${txEsc(f.file_name)}</button><span style="color:var(--muted);font-size:12px">${kb(f.size)}</span>${d.can_upload ? `<button class="ghost-btn danger" onclick="removeFile(${Number(f.id)})">Remove</button>` : ''}</div>`).join('') : '<div style="font-size:13px;color:var(--muted);padding:.4rem 0">No files yet.</div>';
+      el.innerHTML = d.files.length ? d.files.map(f => `<div class="file-row"><button class="link" onclick="openFile(${Number(f.id)})">${txEsc(f.file_name)}</button><span style="color:var(--muted);font-size:12px">${kb(f.size)}</span>${d.can_upload ? `<button class="ghost-btn danger" onclick="removeFile(${Number(f.id)})">Remove</button>` : ''}</div>`).join('') : '<div style="font-size:13px;color:var(--muted);padding:.4rem 0">No files yet.</div>';
       document.getElementById('filesUpload').style.display = d.can_upload ? 'block' : 'none';
-      document.getElementById('filesAgree').innerHTML = d.agreement && d.agreement.version ? `📄 Idea Transfer Agreement ${txEsc(d.agreement.version)}, accepted ${new Date(d.agreement.accepted_at).toLocaleDateString()} · <a href="#" onclick="event.preventDefault();showAgreement()" style="color:var(--accent)">Read it</a><pre id="agreeFull" style="display:none;white-space:pre-wrap;font-family:inherit;font-size:12px;color:var(--muted);max-height:220px;overflow:auto;margin-top:.5rem">${txEsc(d.agreement.text || '')}</pre>` : '';
+      document.getElementById('filesAgree').innerHTML = d.agreement && d.agreement.version ? `Idea Transfer Agreement ${txEsc(d.agreement.version)}, accepted ${new Date(d.agreement.accepted_at).toLocaleDateString()} · <a href="#" onclick="event.preventDefault();showAgreement()" style="color:var(--accent)">Read it</a><pre id="agreeFull" style="display:none;white-space:pre-wrap;font-family:inherit;font-size:12px;color:var(--muted);max-height:220px;overflow:auto;margin-top:.5rem">${txEsc(d.agreement.text || '')}</pre>` : '';
     } catch (e) { el.innerHTML = `<div style="color:var(--error);font-size:13px">${txEsc(e.message)}</div>`; }
   }
   function showAgreement() { const p = document.getElementById('agreeFull'); if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none'; }
@@ -622,7 +597,7 @@
 
   function openDeliver(id) {
     openModalFor('deliver', id, 'Mark as delivered',
-      'Upload the idea materials with 📎 Files first, so the buyer gets them and there is a record if anything is disputed. The buyer then has 7 days to confirm or dispute before the payment is released automatically.',
+      'Upload the idea materials with Files first, so the buyer gets them and there is a record if anything is disputed. The buyer then has 7 days to confirm or dispute before the payment is released automatically.',
       'Message to the buyer, e.g. what you delivered and how to use it (at least 20 characters if you upload no files)', 'Mark delivered', false);
   }
   function openDispute(id) {
@@ -733,7 +708,7 @@
       const card = document.getElementById('withdrawalsCard');
       if (myWithdrawals.length) {
         card.style.display = 'block';
-        const label = { requested: '⏳ Processing', paid: '✅ Sent', rejected: '❌ Not processed' };
+        const label = { requested: 'Processing', paid: 'Sent', rejected: 'Not processed' };
         document.getElementById('withdrawalsList').innerHTML = myWithdrawals.map(w => `
           <div class="wd-row">
             <div><strong>$${Number(w.amount).toLocaleString()}</strong> <span style="color:var(--muted);">· ${w.method === 'paypal' ? 'PayPal' : 'Bank transfer'} · ${formatDate(w.requested_at)}</span>

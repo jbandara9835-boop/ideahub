@@ -47,6 +47,18 @@ const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':
   app.use(cors());
   // Keeps the raw body for the WhatsApp webhook signature check
   app.use(express.json({ verify: (req, res, buf) => { if (req.originalUrl.startsWith('/api/whatsapp/webhook')) req.rawBody = buf; } }));
+  // Names and titles are shown all over the site: never let them carry HTML (< or >)
+  const PLAIN_KEYS = new Set(['first_name', 'last_name', 'middle_name', 'name', 'full_name', 'display_name', 'title', 'summary', 'tagline', 'headline',
+    'business_name', 'teaser_title', 'company', 'company_name', 'city', 'state', 'country', 'qualification', 'expert_area', 'investor_name', 'creator_name', 'owner_name', 'group_name', 'label']);
+  const plain = v => typeof v === 'string' ? v.replace(/[<>]/g, '') : v;
+  function stripTags(o, depth) {
+    if (!o || typeof o !== 'object' || depth > 4) return;
+    for (const k of Object.keys(o)) {
+      if (PLAIN_KEYS.has(k) && typeof o[k] === 'string') o[k] = plain(o[k]);
+      else if (o[k] && typeof o[k] === 'object') stripTags(o[k], depth + 1);
+    }
+  }
+  app.use((req, res, next) => { if (req.body && typeof req.body === 'object' && !req.originalUrl.startsWith('/api/whatsapp/webhook')) stripTags(req.body, 0); next(); });
   app.use(session({
     secret: process.env.JWT_SECRET,
     resave: false,
@@ -69,8 +81,8 @@ const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       const email = profile.emails[0].value;
-      const firstName = profile.name.givenName;
-      const lastName = profile.name.familyName || '';
+      const firstName = String(profile.name.givenName || '').replace(/[<>]/g, '');
+      const lastName = String(profile.name.familyName || '').replace(/[<>]/g, '');
       const avatar = profile.photos[0]?.value || null;
 
       // Check if user exists
@@ -142,9 +154,20 @@ app.get('/robots.txt', (req, res) => {
       .eq('status', 'live')
       .or('visibility.is.null,visibility.eq.1');
 
+    // Professionals: their service details and checked credentials
+    let pro = null;
+    if (pros.PRO_ROLES.includes(user.role)) {
+      const [{ data: sp }, badges, verified] = await Promise.all([
+        supabase.from('support_profiles').select('tagline, hourly_rate, availability, experience_years, languages, home_country, completed_jobs, avg_rating').eq('user_id', user.id).maybeSingle(),
+        pros.badgeMap(supabase, [user.id]),
+        pros.isVerified(supabase, user.id, user.role)
+      ]);
+      pro = { ...(sp || {}), credentials: badges[user.id] || [], verified: !!verified };
+    }
     res.json({
       ...user,
-      is_verified: user.verification_status === 'verified',
+      is_verified: pro ? pro.verified : user.verification_status === 'verified',
+      pro,
       specializations: specializations || [],
       ideas: ideas || []
     });
@@ -217,9 +240,7 @@ app.get('/robots.txt', (req, res) => {
   }
   const qualityFields = r => ({ quality_score: r.score, quality_issues: r.items.filter(i => i.level !== 'ok').map(({ id, level, message }) => ({ id, level, message })) });
   // ── SERVE FRONTEND ───────────────────────────────────────────────────────────
-  app.get('/discover', (req, res) => {
-    res.sendFile(__dirname + '/public/discover.html');
-  });
+  app.get('/discover', (req, res) => res.redirect(301, '/'));
   app.get('/about', (req, res) => {
     res.sendFile(__dirname + '/public/about.html');
   });
@@ -248,10 +269,6 @@ app.get('/robots.txt', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'browse.html'));
   });
 
-  app.get('/public-profile', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'public-profile.html'));
-  });
-
   app.get('/profile', (req, res) => {
     res.sendFile(__dirname + '/public/profile.html');
   });
@@ -260,9 +277,6 @@ app.get('/robots.txt', (req, res) => {
   });
   app.get('/transactions', (req, res) => {
     res.sendFile(__dirname + '/public/transactions.html');
-  });
-  app.get('/browse', (req, res) => {
-    res.sendFile(__dirname + '/public/browse.html');
   });
   app.get('/idea/:id', (req, res) => {
     res.sendFile(__dirname + '/public/idea.html');
@@ -354,9 +368,6 @@ app.get('/robots.txt', (req, res) => {
   app.get('/privacy', (req, res) => res.sendFile(__dirname + '/public/privacy.html'));
   app.get('/cookies', (req, res) => res.sendFile(__dirname + '/public/cookies.html'));
   app.get('/refunds', (req, res) => res.sendFile(__dirname + '/public/refunds.html'));
-  app.get('/contact', (req, res) => {
-    res.redirect('/about#contact');
-  });
   app.get('/contact', (req, res) => {
     res.redirect('/about#contact');
   });
@@ -873,29 +884,6 @@ app.get('/robots.txt', (req, res) => {
   });
 
   // GET public user profile
-  app.get('/api/users/:id/public', async (req, res) => {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id, first_name, last_name, role, tagline, avatar_url, city, country, created_at, is_verified')
-      .eq('id', req.params.id)
-      .single();
-
-    if (error || !user) return res.status(404).json({ error: 'User not found' });
-
-    const { data: specializations } = await supabase
-      .from('user_specializations')
-      .select('*')
-      .eq('user_id', req.params.id);
-
-    const { data: ideas } = await supabase
-      .from('ideas')
-      .select('id, title, price, views, status')
-      .eq('creator_id', req.params.id)
-      .eq('status', 'live')
-      .or('visibility.is.null,visibility.eq.1');
-
-    res.json({ ...user, specializations: specializations || [], ideas: ideas || [] });
-  });
 
   // ADMIN approve patent
   app.put('/api/admin/ideas/:id/approve-patent', authMiddleware, async (req, res) => {

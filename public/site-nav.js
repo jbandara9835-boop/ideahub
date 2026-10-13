@@ -17,8 +17,8 @@
   var LINKS = [
     ['/browse', 'Marketplace'],
     ['/businesses', 'Business Expansion'],
-    ['/idea-requests', 'Request an Idea'],
-    ['/find-support', 'Support Services'],
+    ['/idea-requests', 'Idea Requests'],
+    ['/find-support', 'Professionals'],
     ['/how-it-works', 'How It Works'],
     ['/wall', 'IdeaWall'],
     ['/life-hacks', 'Life Hacks'],
@@ -37,6 +37,9 @@
   };
   var LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>';
 
+  var MENU = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+  var CLOSE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  var BELL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   var path = location.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
@@ -77,7 +80,7 @@
         (extra === 'list-business' ? '<a class="sn-btn-ghost" id="listBizBtn" href="/list-business">+ List Business</a>' : '') +
         '<a id="backToDashBtn" href="' + dashUrl + '" aria-hidden="true" tabindex="-1"></a>' +
         '<div class="sn-bell-wrap">' +
-          '<button type="button" class="sn-bell" id="snBell" title="Notifications" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">🔔<span class="sn-bell-badge" id="snBellBadge"></span></button>' +
+          '<button type="button" class="sn-bell" id="snBell" title="Notifications" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">' + BELL + '<span class="sn-bell-badge" id="snBellBadge"></span></button>' +
           '<div class="sn-notif" id="snNotif" role="dialog" aria-label="Notifications">' +
             '<div class="sn-notif-head"><span class="sn-notif-title">Notifications</span><button type="button" class="sn-notif-all" id="snNotifAll">Mark all as read</button></div>' +
             '<div class="sn-notif-tabs"><button type="button" class="on" data-f="all">All</button><button type="button" data-f="unread">Unread</button></div>' +
@@ -99,7 +102,7 @@
           '</div>' +
         '</div>' +
       '</div>' +
-      '<button type="button" class="sn-burger" id="snBurger" aria-label="Menu" aria-expanded="false">☰</button>' +
+      '<button type="button" class="sn-burger" id="snBurger" aria-label="Menu" aria-expanded="false">' + MENU + '</button>' +
     '</div>';
 
   var drawer = document.createElement('div');
@@ -119,7 +122,7 @@
     e.stopPropagation();
     var open = drawer.classList.toggle('open');
     burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    burger.textContent = open ? '✕' : '☰';
+    burger.innerHTML = open ? CLOSE : MENU;
   });
 
   var menu = document.getElementById('snMenu');
@@ -131,7 +134,7 @@
   document.addEventListener('click', function (e) {
     if (!menu.contains(e.target)) menu.classList.remove('open');
     if (!drawer.contains(e.target) && e.target !== burger) {
-      drawer.classList.remove('open'); burger.textContent = '☰'; burger.setAttribute('aria-expanded', 'false');
+      drawer.classList.remove('open'); burger.innerHTML = MENU; burger.setAttribute('aria-expanded', 'false');
     }
   });
   document.getElementById('snSignOut').addEventListener('click', function () {
@@ -167,17 +170,17 @@
     var render = function () {
       var rows = filter === 'unread' ? notifs.filter(function (n) { return !n.read; }) : notifs;
       if (!rows.length) {
-        list.innerHTML = '<div class="sn-notif-empty">' + (filter === 'unread' ? 'You\'re all caught up 🎉' : '📭 No notifications yet') + '</div>';
+        list.innerHTML = '<div class="sn-notif-empty">' + (filter === 'unread' ? 'You\'re all caught up.' : 'No notifications yet.') + '</div>';
         return;
       }
       list.innerHTML = rows.slice(0, 30).map(function (n) {
-        var title = String(n.title || '');
-        var icon = (title.match(/^\S+/) || ['🔔'])[0];
-        var hasIcon = /[^\w\s]/.test(icon) && icon.length <= 4;
-        return '<button type="button" class="sn-notif-item' + (n.read ? '' : ' unread') + '" data-id="' + esc(n.id) + '" data-link="' + esc(n.link || '') + '">' +
-          '<span class="sn-notif-icon">' + (hasIcon ? esc(icon) : '🔔') + '</span>' +
+        var raw = String(n.title || '');
+        var title = raw.replace(/^[^A-Za-z0-9]+/, '').trim() || raw;
+        var safeLink = /^\/(?!\/)[^\s"'<>]*$/.test(n.link || '') ? n.link : '';
+        return '<button type="button" class="sn-notif-item' + (n.read ? '' : ' unread') + '" data-id="' + esc(n.id) + '" data-link="' + esc(safeLink) + '">' +
+          '<span class="sn-notif-icon">' + BELL + '</span>' +
           '<span class="sn-notif-body">' +
-            '<span class="sn-notif-item-title">' + esc(hasIcon ? title.replace(/^\S+\s*/, '') : title) + '</span>' +
+            '<span class="sn-notif-item-title">' + esc(title) + '</span>' +
             '<span class="sn-notif-msg">' + esc(n.message || '') + '</span>' +
             '<span class="sn-notif-time">' + esc(ago(n.created_at)) + '</span>' +
           '</span>' +
@@ -224,4 +227,44 @@
     loadCount();
     setInterval(loadCount, 60000);
   }
+
+  // ── One footer and one phone tab bar for every page that uses this nav ──
+  var POST = { idea_creator: ['/submit', 'List an idea'], patent_seller: ['/submit', 'List an idea or patent'], investor: ['/post-request', 'Post an Idea Request'], business_owner: ['/list-business', 'List your business'] };
+  var ICON = {
+    home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+    market: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/>',
+    wall: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
+  };
+  var svg = function (k) { return '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[k] + '</svg>'; };
+  window.IH_TABBAR = function () {
+    if (document.querySelector('.ih-tabbar')) return;
+    var p = location.pathname.replace(/\/$/, '') || '/';
+    var post = signedIn ? (POST[user.role] || ['/wall', 'Post on IdeaWall']) : ['/signup', 'Join free'];
+    var tab = function (href, label, k) { var on = href === p; return '<a href="' + href + '"' + (on ? ' class="on" aria-current="page"' : '') + '>' + svg(k) + '<span>' + label + '</span></a>'; };
+    var bar = document.createElement('nav');
+    bar.className = 'ih-tabbar'; bar.setAttribute('aria-label', 'Quick links');
+    bar.innerHTML = tab('/', 'Home', 'home') + tab('/browse', 'Marketplace', 'market') +
+      '<a class="ih-tab-post" href="' + post[0] + '" aria-label="' + esc(post[1]) + '"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>' +
+      tab('/messages', 'Messages', 'chat') + tab('/wall', 'IdeaWall', 'wall');
+    document.body.appendChild(bar);
+    document.body.classList.add('ih-has-tabbar');
+  };
+  var addFooter = function () {
+    if (host.hasAttribute('data-nofooter') || document.querySelector('footer.ih-foot')) return;
+    var y = new Date().getFullYear();
+    var ft = document.createElement('footer');
+    ft.className = 'ih-foot';
+    ft.innerHTML =
+      '<a class="ih-foot-logo" href="/" aria-label="IdeaHub home"><span class="sn-logo-icon">' + LOGO + '</span><b>IdeaHub</b></a>' +
+      '<nav class="ih-foot-links" aria-label="Footer">' +
+        [['/browse', 'Marketplace'], ['/idea-requests', 'Idea Requests'], ['/businesses', 'Business Expansion'], ['/managers', 'Find a Manager'], ['/find-support', 'Professionals'], ['/wall', 'IdeaWall'], ['/life-hacks', 'Life Hacks'], ['/how-it-works', 'How It Works'], ['/about', 'About & Contact']]
+          .map(function (l) { return '<a href="' + l[0] + '">' + l[1] + '</a>'; }).join('') +
+      '</nav>' +
+      '<div class="ih-foot-legal"><span>© ' + y + ' <a href="https://picela.co" target="_blank" rel="noopener">Picela (Pvt) Ltd</a>. All rights reserved.</span>' +
+        '<span class="ih-foot-legal-links"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/refunds">Refunds</a></span></div>';
+    document.body.appendChild(ft);
+  };
+  var finish = function () { addFooter(); window.IH_TABBAR(); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', finish); else finish();
 })();

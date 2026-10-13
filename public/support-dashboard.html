@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Support Dashboard — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -231,49 +231,25 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
-      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-      <span class="logo-text">IdeaHub</span>
-    </a>
-  </div>
-  <nav class="nav" id="sidebarNav"></nav>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()">
-    <div class="avatar-sm" id="sidebarAvatar"><span id="sidebarAvatarText">?</span></div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-      <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
+
 
 <main class="main">
   <div class="topbar">
     <div class="topbar-left">
-      <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu">☰</button>
+      <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu"></button>
       <a class="topbar-logo" href="/">
         <div class="topbar-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
         <span class="topbar-logo-text">IdeaHub</span>
       </a>
       <div class="topbar-search">
-        <span style="color:var(--muted);font-size:14px;">🔍</span>
+        <span style="color:var(--muted);font-size:14px;"></span>
         <input type="text" id="searchInput" placeholder="Search marketplace..." style="font-size:13px;">
       </div>
     </div>
     <div class="topbar-right">
-      <div class="notif-bell" id="notifBell" onclick="toggleNotifPanel()">
-        🔔
+      <div class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" aria-label="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
         <div class="notif-panel" id="notifPanel">
           <div class="notif-panel-header">
@@ -290,7 +266,7 @@
   <div id="roleBanner"></div>
   <div id="verifyCard"></div>
   <div style="margin-bottom:1.75rem;">
-    <div class="page-title" id="welcomeTitle">Welcome back 👋</div>
+    <div class="page-title" id="welcomeTitle">Welcome back</div>
     <div class="page-subtitle" style="color:var(--muted);font-size:14px;margin-top:4px;">Your clients, requests and earnings in one place</div>
   </div>
   <div class="stats-grid">
@@ -300,34 +276,25 @@
     <div class="stat-card"><div class="stat-label">Avg rating</div><div class="stat-value yellow" id="statRating">—</div><div class="stat-sub" id="statRatingSub">from clients</div></div>
   </div>
   <div class="section-card">
-    <div class="section-header"><div class="section-title">📬 New requests: send a quote</div><a href="/hire" class="sec-link">All hires →</a></div>
+    <div class="section-header"><div class="section-title">New requests: send a quote</div><a href="/hire" class="sec-link">All hires →</a></div>
     <div id="pendingList"><div class="loading"><div class="spin"></div> Loading...</div></div>
   </div>
   <div class="two-col">
     <div class="section-card" style="margin-bottom:0;">
-      <div class="section-header"><div class="section-title">⚡ Active jobs</div></div>
+      <div class="section-header"><div class="section-title">Active jobs</div></div>
       <div id="activeList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
     <div class="section-card" style="margin-bottom:0;">
-      <div class="section-header"><div class="section-title">✅ Completed</div></div>
+      <div class="section-header"><div class="section-title">Completed</div></div>
       <div id="completedList"><div class="loading"><div class="spin"></div> Loading...</div></div>
     </div>
   </div>
   <div id="extraPanels" style="margin-top:1.5rem"></div>
 </main>
 
-<!-- BOTTOM TAB BAR (mobile only) -->
-<nav class="bottom-tabbar" id="bottomTabbar">
-  <div class="tabbar-inner">
-    <a class="tabbar-item" href="/" data-tab="home"><span class="tabbar-icon">🏠</span><span>Home</span></a>
-    <a class="tabbar-item" href="/browse" data-tab="marketplace"><span class="tabbar-icon">🔍</span><span>Marketplace</span></a>
-    <a class="tabbar-post-btn" href="/submit" id="tabPostBtn">+</a>
-    <a class="tabbar-item" href="/messages" data-tab="messages"><span class="tabbar-icon">💬</span><span>Messages</span></a>
-    <a class="tabbar-item" href="/wall" data-tab="wall"><span class="tabbar-icon">📌</span><span>IdeaWall</span></a>
-  </div>
-</nav>
-
 <script>
+const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
@@ -336,7 +303,7 @@
 
   const SUPPORT_ROLES = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
   const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney / Agent', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
+  const roleEmoji = { virtual_manager:'', patent_attorney:'', chartered_accountant:'', corporate_services:'' };
   const roleDesc = { virtual_manager:'Manage ideas, coordinate with buyers and sellers', patent_attorney:'Handle patent filings and legal services', corporate_services:'Company registration, company secretarial and compliance services for creators', chartered_accountant:'Audit, tax, company setup and financial advice for creators and investors' };
 
   if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/dashboard';
@@ -382,7 +349,7 @@
   else document.getElementById('sidebarAvatarText').textContent = (user?.first_name?.[0]||'?');
   document.getElementById('sidebarName').textContent = `${user?.first_name||''} ${user?.last_name||''}`.trim();
   document.getElementById('sidebarRole').textContent = roleMap[user?.role]||'—';
-  (document.getElementById('welcomeTitle')||{}).textContent = `Welcome back, ${user?.first_name||'there'} 👋`;
+  (document.getElementById('welcomeTitle')||{}).textContent = `Welcome back, ${user?.first_name||'there'}`;
   const starEl = document.getElementById('sidebarStars');
   if (starEl) {
     const stars = user?.profile_stars || 0;
@@ -400,7 +367,7 @@
     if (menu && card && !card.contains(e.target)) menu.style.display = 'none';
   });
 
-  function formatDate(d) { return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  function formatDate(d) { if (!d || isNaN(new Date(d))) return '—'; return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
   function formatTime(d) {
     const diff = Date.now()-new Date(d);
     if (diff<60000) return 'just now';
@@ -426,7 +393,7 @@
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <div class="client-info"><div class="client-avatar">${ci}</div><span class="client-name">by ${esc(cn)}</span></div>
             ${price ? `<span class="budget-pill">${money(price)}${h.quote_amount ? '' : ' budget'}</span>` : ''}
-            ${h.deadline ? `<span style="font-size:11px;color:var(--muted);">📅 ${formatDate(h.deadline + 'T00:00:00')}</span>` : ''}
+            ${h.deadline ? `<span style="font-size:11px;color:var(--muted);">Due ${formatDate(h.deadline + 'T00:00:00')}</span>` : ''}
           </div>
         </div>
       </a>`;
@@ -438,10 +405,10 @@
     const rejected = (v.credentials || []).filter(c => c.status === 'rejected');
     const need = (v.required || []).map(r => esc(r.label)).join(' or ');
     const isAtt = (v.required || []).some(r => r.manage);
-    let body = `To appear in Find Support and receive requests, add your <b>${need}</b> with a copy of the certificate. IdeaHub checks it and gives you the ✅ Verified badge.`;
+    let body = `To appear in Professionals and receive requests, add your <b>${need}</b> with a copy of the certificate. IdeaHub checks it and gives you the Verified badge.`;
     if (pending.length) body = `Thanks. Your ${esc(pending[0].kind_label.toLowerCase())} is being checked. You'll be notified when it's approved.`;
     else if (rejected.length) body = `Your ${esc(rejected[0].kind_label.toLowerCase())} couldn't be verified${rejected[0].review_note ? ': ' + esc(rejected[0].review_note) : '.'} Please upload it again.`;
-    return `<div class="verify-card ${pending.length ? 'wait' : ''}"><div><b>${pending.length ? '⏳ Verification in progress' : '🪪 Get verified to receive clients'}</b><p>${body}</p></div>
+    return `<div class="verify-card ${pending.length ? 'wait' : ''}"><div><b>${pending.length ? 'Verification in progress' : 'Get verified to receive clients'}</b><p>${body}</p></div>
       ${pending.length ? '' : `<a class="btn-verify" href="${isAtt ? '/patents#regSection' : '/support-profile#verify'}">${rejected.length ? 'Upload again' : 'Add credential'} →</a>`}</div>`;
   }
 
@@ -450,21 +417,21 @@
     if (role === 'patent_attorney') {
       const cl = (apps?.clients || []).filter(a => !['completed', 'cancelled', 'rejected', 'refunded'].includes(a.status));
       const dl = (apps?.deadlines || []).slice(0, 5);
-      out += `<div class="section-card"><div class="section-header"><div class="section-title">📜 Patent work</div><a href="/patents" class="sec-link">Open patents →</a></div>
+      out += `<div class="section-card"><div class="section-header"><div class="section-title">Patent work</div><a href="/patents" class="sec-link">Open patents →</a></div>
         ${cl.length ? cl.slice(0, 6).map(a => `<a class="job-row job-link" href="/patent-application?id=${Number(a.id)}"><div class="job-top"><div class="job-title">${esc(a.title)}</div><span class="badge">${esc(a.status_label || a.status)}</span></div><div class="job-meta" style="font-size:12px;color:var(--muted)">${esc(a.stage_label || '')} · ${esc(a.other?.name || '')}</div></a>`).join('') : '<div class="empty"><div class="empty-text">No open patent cases.</div></div>'}
         ${dl.length ? `<div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Upcoming deadlines</div>${dl.map(d => `<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)"><span>${esc(d.title)} <span style="color:var(--muted)">· ${esc(d.case_title)}</span></span><span>${formatDate(d.due_date + 'T00:00:00')}</span></div>`).join('')}` : ''}</div>`;
     }
     if (role === 'virtual_manager') {
       const m = del?.managing || [];
-      out += `<div class="section-card" style="border-color:rgba(167,139,250,0.35);background:rgba(167,139,250,0.06)"><div class="section-header"><div class="section-title">🧭 Manager workspace</div><a href="/workspace" class="sec-link">Open →</a></div>
+      out += `<div class="section-card" style="border-color:rgba(167,139,250,0.35);background:rgba(167,139,250,0.06)"><div class="section-header"><div class="section-title">Manager workspace</div><a href="/workspace" class="sec-link">Open →</a></div>
         <div style="font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">Your mandates, clients, pipeline, approvals and manager fees live in the workspace. Finish your ID check and the induction quiz there to be listed in Find a Manager.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn-gold" href="/workspace" style="text-decoration:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;background:#a78bfa;color:#160f2b">Open workspace</a><a href="/managers?tab=requests" style="text-decoration:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,0.15);color:inherit">Requests board</a></div></div>`;
-      out += `<div class="section-card"><div class="section-header"><div class="section-title">🗂️ Clients whose listings you manage</div></div>
+      out += `<div class="section-card"><div class="section-header"><div class="section-title">Clients whose listings you manage</div></div>
         ${m.length ? m.map(d => `<a class="job-row job-link" href="/manage?owner=${Number(d.user_id)}"><div class="job-top"><div class="job-title">${esc(d.name)}</div><span class="badge badge-in_progress">Manage listings →</span></div><div class="job-meta" style="font-size:12px;color:var(--muted)">Access since ${formatDate(d.since)}</div></a>`).join('')
           : '<div class="empty"><div class="empty-text">When a client gives you listing access from their hire page, they appear here.</div></div>'}</div>`;
     }
     const rs = (rooms || []).filter(r => r.status !== 'closed');
-    out += `<div class="section-card"><div class="section-header"><div class="section-title">🤝 Deal rooms</div><a href="/deal-room" class="sec-link">All rooms →</a></div>
+    out += `<div class="section-card"><div class="section-header"><div class="section-title">Deal rooms</div><a href="/deal-room" class="sec-link">All rooms →</a></div>
       ${rs.length ? rs.slice(0, 6).map(r => `<a class="job-row job-link" href="/deal-room?id=${Number(r.id)}"><div class="job-top"><div class="job-title">${esc(r.title)}</div><span class="badge ${r.my_status === 'invited' ? 'badge-pending' : ''}">${r.my_status === 'invited' ? 'Invitation' : 'Member'}</span></div></a>`).join('')
         : '<div class="empty"><div class="empty-text">Clients can invite you into a deal room to advise on a licence or sale.</div></div>'}</div>`;
     return out;
@@ -486,7 +453,7 @@
         <div class="role-banner ${esc(role)}">
           <div class="role-banner-icon">${roleEmoji[role]}</div>
           <div><div class="role-banner-title">${roleMap[role]}</div><div class="role-banner-sub">${roleDesc[role]}</div></div>
-          <div class="verified-pill ${verified?'yes':'no'}">${verified?'✅ Verified':'⏳ Not verified yet'}</div>
+          <div class="verified-pill ${verified?'yes':'no'}">${verified?'Verified':'Not verified yet'}</div>
         </div>`;
       document.getElementById('verifyCard').innerHTML = verifyCard(ver);
       const pending = hires.filter(h => ['pending', 'accepted'].includes(h.status));
@@ -495,14 +462,14 @@
       document.getElementById('statPending').textContent = pending.length;
       document.getElementById('statActive').textContent = active.length;
       document.getElementById('statCompleted').textContent = profile?.completed_jobs ?? completed.length;
-      document.getElementById('statRating').textContent = profile?.avg_rating ? '⭐ ' + Number(profile.avg_rating).toFixed(1) : '—';
+      document.getElementById('statRating').textContent = profile?.avg_rating ? '★ ' + Number(profile.avg_rating).toFixed(1) : '—';
       if (profile?.rating_count) document.getElementById('statRatingSub').textContent = `${profile.rating_count} review${profile.rating_count === 1 ? '' : 's'}`;
       const fill = (el, list, emptyIcon, emptyText) => {
         el.innerHTML = !list.length ? `<div class="empty"><div class="empty-icon">${emptyIcon}</div><div class="empty-text">${emptyText}</div></div>` : list.map(jobCard).join('');
       };
-      fill(document.getElementById('pendingList'), pending, '📭', verified ? 'No new requests' : 'Requests arrive once you are verified');
-      fill(document.getElementById('activeList'), active, '⚡', 'No active jobs');
-      fill(document.getElementById('completedList'), completed.slice(0, 8), '🎉', 'No completed jobs yet');
+      fill(document.getElementById('pendingList'), pending, '', verified ? 'No new requests' : 'Requests arrive once you are verified');
+      fill(document.getElementById('activeList'), active, '', 'No active jobs');
+      fill(document.getElementById('completedList'), completed.slice(0, 8), '', 'No completed jobs yet');
       document.getElementById('extraPanels').innerHTML = extraPanels(role, apps, rooms, del);
     }catch(err){console.error(err);}
   }
@@ -549,17 +516,19 @@
       if (!res.ok) return;
       const notifs = await res.json();
       const el = document.getElementById('notifList');
-      if (!notifs.length) { el.innerHTML = `<div class="notif-empty">📭 No notifications yet</div>`; return; }
-      el.innerHTML = notifs.map(n => `
-        <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="handleNotifClick(event, ${n.id}, '${n.link||''}')">
-          <div class="notif-item-icon">${(n.title||'').match(/^\S+/)?.[0] || '🔔'}</div>
+      if (!notifs.length) { el.innerHTML = `<div class="notif-empty">No notifications yet</div>`; return; }
+      el.innerHTML = notifs.map(n => {
+        const t = String(n.title || '').replace(/^[^\p{L}\p{N}]+/u, '').trim();
+        const link = /^\/(?!\/)[^\s"'<>]*$/.test(n.link || '') ? n.link : '';
+        return `<div class="notif-item ${!n.read ? 'unread' : ''}" data-nid="${Number(n.id)}" data-link="${ihEsc(link)}" onclick="handleNotifClick(event, Number(this.dataset.nid), this.dataset.link)">
+          <div class="notif-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
           <div>
-            <div class="notif-item-title">${(n.title||'').replace(/^\S+\s/, '')}</div>
-            <div class="notif-item-msg">${n.message||''}</div>
+            <div class="notif-item-title">${ihEsc(t)}</div>
+            <div class="notif-item-msg">${ihEsc(n.message || '')}</div>
             <div class="notif-item-time">${formatNotifTime(n.created_at)}</div>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     } catch(e) {}
   }
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Patent your idea — IdeaHub</title>
 <meta name="description" content="Apply for a patent through IdeaHub: describe your invention, get a fixed quote from a registered patent attorney or agent, and pay safely through escrow. The fee is released only after your application is filed." />
@@ -125,26 +125,15 @@
     <div class="step"><h3>Filed, then released</h3><p>The attorney uploads the official filing receipt. You confirm and the fee is released.</p></div>
   </div>
   <div class="trust two">
-    <div><b>🗺️ The right route</b>Tell us where you live and where you want to sell. We suggest a route (home office first, PCT, or straight to the US) and your practitioner confirms it.</div>
-    <div><b>📅 Every deadline tracked</b>A patent takes years. Your case keeps each stage, the 12-month and 30-month deadlines and US maintenance fees, and reminds you and your practitioner before each one.</div>
+    <div><b>The right route</b>Tell us where you live and where you want to sell. We suggest a route (home office first, PCT, or straight to the US) and your practitioner confirms it.</div>
+    <div><b>Every deadline tracked</b>A patent takes years. Your case keeps each stage, the 12-month and 30-month deadlines and US maintenance fees, and reminds you and your practitioner before each one.</div>
   </div>
   <div class="trust">
-    <div><b>🔒 Confidential</b>Only the attorney you choose and IdeaHub admins can read your invention. Files are stored privately, never in public links.</div>
-    <div><b>🛡️ Protected payment</b>If the attorney doesn't file, open a dispute and IdeaHub reviews it. Refunds come from escrow.</div>
-    <div><b>✅ Registered practitioners</b>Only attorneys and agents whose patent-office registration IdeaHub has checked are shown, for the office you file at.</div>
+    <div><b>Confidential</b>Only the attorney you choose and IdeaHub admins can read your invention. Files are stored privately, never in public links.</div>
+    <div><b>Protected payment</b>If the attorney doesn't file, open a dispute and IdeaHub reviews it. Refunds come from escrow.</div>
+    <div><b>Registered practitioners</b>Only attorneys and agents whose patent-office registration IdeaHub has checked are shown, for the office you file at.</div>
   </div>
 </main>
-
-<footer>
-  <span>© 2026 IdeaHub by <a href="https://picela.co" target="_blank" rel="noopener" style="color:var(--accent);">Picela</a></span>
-  <div class="footer-links">
-    <a href="/browse">Marketplace</a>
-    <a href="/find-support">Support Services</a>
-    <a href="/how-it-works">How It Works</a>
-    <a href="/terms">Terms</a>
-    <a href="/privacy">Privacy</a>
-  </div>
-</footer>
 
 <script>
   const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
@@ -175,8 +164,8 @@
     const items = data[tab] || [];
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
     document.getElementById('list').innerHTML = items.length ? items.map(row).join('')
-      : tab === 'mine' ? `<div class="empty"><div class="icon">📄</div>No patent applications yet.<br><a class="btn btn-gold btn-sm" style="margin-top:1rem" href="/patent-apply">Start one</a></div>`
-      : `<div class="empty"><div class="icon">⚖️</div>No client applications yet. Creators find you through your service profile.</div>`;
+      : tab === 'mine' ? `<div class="empty"><div class="icon"></div>No patent applications yet.<br><a class="btn btn-gold btn-sm" style="margin-top:1rem" href="/patent-apply">Start one</a></div>`
+      : `<div class="empty"><div class="icon"></div>No client applications yet. Creators find you through your service profile.</div>`;
   }
   document.getElementById('tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) { tab = t.dataset.tab; render(); } });
 

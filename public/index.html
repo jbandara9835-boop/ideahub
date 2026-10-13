@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>IdeaHub — Where Ideas Become Empires</title>
 <meta name="google-site-verification" content="Kk9fDthupWJaHE6IqkmH_1zx18BzS4KTK3r5v3BQM48" />
@@ -190,7 +190,7 @@ section { padding: 6rem 2rem; position: relative; }
 .idea-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; display: block; transition: all .25s; }
 .idea-card:hover { border-color: rgba(245,200,66,0.25); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
 .idea-card-banner { height: 130px; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; }
-.idea-card-banner-icon { font-size: 32px; opacity: .55; }
+.idea-card-banner-icon { font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.55); }
 .idea-card-body { padding: 1.4rem; }
 .idea-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 1rem; }
 .idea-category { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 4px 10px; border-radius: 20px; background: var(--accent-dim); color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -213,7 +213,7 @@ section { padding: 6rem 2rem; position: relative; }
 .roles-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 3rem; }
 .role-card { --c: var(--accent); border: 1px solid color-mix(in srgb, var(--c) 18%, transparent); border-radius: 20px; padding: 1.75rem 1.5rem; text-decoration: none; color: inherit; display: flex; flex-direction: column; background: var(--bg); transition: all .25s; }
 .role-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--c) 45%, transparent); background: color-mix(in srgb, var(--c) 5%, var(--bg)); box-shadow: 0 12px 40px color-mix(in srgb, var(--c) 10%, transparent); }
-.role-emoji-big { font-size: 34px; margin-bottom: 1rem; display: block; }
+.role-emoji-big { margin-bottom: 1rem; display: block; color: var(--c); }
 .role-hook { font-family: 'Cabinet Grotesk', sans-serif; font-size: 19px; font-weight: 800; line-height: 1.2; margin-bottom: .6rem; }
 .role-desc-text { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 1.25rem; flex: 1; }
 .role-cta { font-size: 13px; font-weight: 600; color: var(--c); }
@@ -277,8 +277,6 @@ footer a:hover { color: var(--text); }
 }
 @media (max-width: 768px) {
   :root { --nav-h: 62px; }
-  body { padding-bottom: 56px; }
-  .bottom-tabbar { display: block; }
   #mobileSearchBar { display: block; }
   .hero-search { display: none; }
   .hero { min-height: calc(100svh - 56px); padding: calc(var(--nav-h) + 4.4rem) 1rem 74px; }
@@ -320,7 +318,7 @@ footer a:hover { color: var(--text); }
 <div id="mobileSearchBar">
   <form role="search" onsubmit="event.preventDefault(); doSearch(this.q.value)">
     <input type="search" name="q" placeholder="Search ideas, industries..." aria-label="Search ideas" />
-    <button type="submit" aria-label="Search">🔍</button>
+    <button type="submit" aria-label="Search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
   </form>
 </div>
 
@@ -354,47 +352,47 @@ footer a:hover { color: var(--text); }
       <h1 class="hero-title"><span>Where ideas</span><span class="gold">become</span><span>empires</span></h1>
       <p class="hero-sub">Buy, sell and invest in <b>breakthrough ideas</b>. Work with verified attorneys, accountants and managers. <b>One platform, every step.</b></p>
       <div class="hero-actions">
-        <a class="hero-btn-main" href="/browse">🔍 Browse ideas</a>
+        <a class="hero-btn-main" href="/browse">Browse ideas</a>
         <a class="hero-btn-sec" href="/signup">✦ Join free</a>
       </div>
     </div>
 
     <div class="hero-panel" role="group" aria-roledescription="slide" aria-label="2 of 4">
-      <div class="slide-tag tag-1">💡 For creators &amp; inventors</div>
+      <div class="slide-tag tag-1">For creators &amp; inventors</div>
       <h2 class="hero-title"><span>Got an idea?</span><span class="gold">Got a patent?</span><span class="soft">Turn it into capital</span></h2>
       <p class="hero-sub">List your idea or patent and reach <b>investors who are looking</b>. Set your price, keep the full details private until payment is held in escrow, and get paid securely.</p>
       <div class="hero-actions">
-        <a class="hero-btn-main" href="/signup?role=idea_creator">💡 List your idea</a>
-        <a class="hero-btn-sec" href="/signup?role=patent_seller">📋 List a patent</a>
+        <a class="hero-btn-main" href="/signup?role=idea_creator">List your idea</a>
+        <a class="hero-btn-sec" href="/signup?role=patent_seller">List a patent</a>
       </div>
     </div>
 
     <div class="hero-panel" role="group" aria-roledescription="slide" aria-label="3 of 4">
-      <div class="slide-tag tag-2">💼 For investors &amp; businesses</div>
+      <div class="slide-tag tag-2">For investors &amp; businesses</div>
       <h2 class="hero-title"><span>Find it.</span><span class="gold">Fund it.</span><span>Build it.</span></h2>
       <p class="hero-sub">Browse original ideas, post an <b>Idea Request</b> for exactly what you need, or appoint a <b>Virtual Manager</b> to build the business for you. Every payment goes through escrow.</p>
       <div class="hero-actions">
-        <a class="hero-btn-main" href="/idea-requests">📣 Request an idea</a>
-        <a class="hero-btn-sec" href="/managers">🤝 Find a manager</a>
+        <a class="hero-btn-main" href="/idea-requests">Request an idea</a>
+        <a class="hero-btn-sec" href="/managers">Find a manager</a>
       </div>
     </div>
 
     <div class="hero-panel" role="group" aria-roledescription="slide" aria-label="4 of 4">
-      <div class="slide-tag tag-3">🤝 For professionals</div>
+      <div class="slide-tag tag-3">For professionals</div>
       <h2 class="hero-title"><span>Attorneys.</span><span class="gold">Accountants.</span><span>Managers.</span></h2>
       <p class="hero-sub">Patent attorneys, chartered accountants, corporate services firms and Virtual Managers: get verified and meet <b>creators and investors who need you</b>.</p>
       <div class="hero-actions">
-        <a class="hero-btn-main" href="/signup">⚖️ Join as a professional</a>
-        <a class="hero-btn-sec" href="/signup?role=virtual_manager">🧭 Become a manager</a>
+        <a class="hero-btn-main" href="/signup">Join as a professional</a>
+        <a class="hero-btn-sec" href="/signup?role=virtual_manager">Become a manager</a>
       </div>
     </div>
   </div>
 
   <div class="hero-foot">
     <div class="hero-trust">
-      <span>🔒 Escrow-protected payments</span>
+      <span>Escrow-protected payments</span>
       <span>✓ Verified professionals</span>
-      <span>🛡️ Ideas protected until paid</span>
+      <span>Ideas protected until paid</span>
     </div>
     <div class="hero-stats" id="heroStats" hidden></div>
     <div class="hero-controls">
@@ -404,7 +402,7 @@ footer a:hover { color: var(--text); }
         <button class="hero-dot" type="button" aria-label="Slide 3"><i></i></button>
         <button class="hero-dot" type="button" aria-label="Slide 4"><i></i></button>
       </div>
-      <button class="hero-pause" id="heroPause" type="button" aria-label="Pause the slideshow">❚❚</button>
+      <button class="hero-pause" id="heroPause" type="button" aria-label="Pause the slideshow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg></button>
     </div>
   </div>
 </section>
@@ -414,7 +412,7 @@ footer a:hover { color: var(--text); }
   <div class="container">
     <div class="trending-header reveal">
       <div>
-        <div class="section-label">🔥 Hot right now</div>
+        <div class="section-label">Hot right now</div>
         <h2 class="section-title">Trending ideas</h2>
         <div class="section-sub">Fresh ideas from creators, ready to be discovered.</div>
       </div>
@@ -442,14 +440,14 @@ footer a:hover { color: var(--text); }
       <div class="section-sub" style="margin:0 auto;">Everyone has a role. Every role has power. Find yours.</div>
     </div>
     <div class="roles-grid">
-      <a class="role-card r-creator" href="/signup?role=idea_creator"><span class="role-emoji-big">💡</span><div class="role-hook">Got a brilliant idea gathering dust?</div><div class="role-desc-text">Turn it into income. List your idea, set your price and connect with investors who believe in it.</div><div class="role-cta">Sell your idea →</div></a>
-      <a class="role-card r-investor" href="/signup?role=investor"><span class="role-emoji-big">🔍</span><div class="role-hook">Looking for your next investment?</div><div class="role-desc-text">Browse ideas across every industry, each with an originality check, or post a request and let creators come to you.</div><div class="role-cta">Start investing →</div></a>
-      <a class="role-card r-business" href="/signup?role=business_owner"><span class="role-emoji-big">🏭</span><div class="role-hook">Want to expand your business?</div><div class="role-desc-text">List your business for franchising, partnerships or investment, and meet the people who can take it further.</div><div class="role-cta">Expand now →</div></a>
-      <a class="role-card r-patent" href="/signup?role=patent_seller"><span class="role-emoji-big">📋</span><div class="role-hook">Own a patent? Turn it into cash.</div><div class="role-desc-text">Don't let it sit unused. License or sell it to businesses and investors ready to bring it to life.</div><div class="role-cta">List your patent →</div></a>
-      <a class="role-card r-manager" href="/signup?role=virtual_manager"><span class="role-emoji-big">🧭</span><div class="role-hook">Ready to run deals for others?</div><div class="role-desc-text">Become a Virtual Manager. Act for creators, investors or businesses under a clear mandate: find deals, negotiate and build ventures, and earn fees through IdeaHub.</div><div class="role-cta">Become a manager →</div></a>
-      <a class="role-card r-attorney" href="/signup?role=patent_attorney"><span class="role-emoji-big">⚖️</span><div class="role-hook">Patent attorney or agent?</div><div class="role-desc-text">File patents for creators, review deals and protect intellectual property, with clients who find you here.</div><div class="role-cta">Join as an attorney →</div></a>
-      <a class="role-card r-accountant" href="/signup?role=chartered_accountant"><span class="role-emoji-big">🧮</span><div class="role-hook">Chartered accountant?</div><div class="role-desc-text">Help creators and investors with valuations, tax, company setup and due diligence. Get verified and get hired.</div><div class="role-cta">Offer your services →</div></a>
-      <a class="role-card r-corporate" href="/signup?role=corporate_services"><span class="role-emoji-big">🏢</span><div class="role-hook">Company secretary or corporate services firm?</div><div class="role-desc-text">Register companies and keep them compliant: incorporation, secretarial work and annual filings.</div><div class="role-cta">Offer your services →</div></a>
+      <a class="role-card r-creator" href="/signup?role=idea_creator"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></span><div class="role-hook">Got a brilliant idea gathering dust?</div><div class="role-desc-text">Turn it into income. List your idea, set your price and connect with investors who believe in it.</div><div class="role-cta">Sell your idea →</div></a>
+      <a class="role-card r-investor" href="/signup?role=investor"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span><div class="role-hook">Looking for your next investment?</div><div class="role-desc-text">Browse ideas across every industry, each with an originality check, or post a request and let creators come to you.</div><div class="role-cta">Start investing →</div></a>
+      <a class="role-card r-business" href="/signup?role=business_owner"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18M9 20v-6h6v6"/></svg></span><div class="role-hook">Want to expand your business?</div><div class="role-desc-text">List your business for franchising, partnerships or investment, and meet the people who can take it further.</div><div class="role-cta">Expand now →</div></a>
+      <a class="role-card r-patent" href="/signup?role=patent_seller"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span><div class="role-hook">Own a patent? Turn it into cash.</div><div class="role-desc-text">Don't let it sit unused. License or sell it to businesses and investors ready to bring it to life.</div><div class="role-cta">List your patent →</div></a>
+      <a class="role-card r-manager" href="/signup?role=virtual_manager"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></span><div class="role-hook">Ready to run deals for others?</div><div class="role-desc-text">Become a Virtual Manager. Act for creators, investors or businesses under a clear mandate: find deals, negotiate and build ventures, and earn fees through IdeaHub.</div><div class="role-cta">Become a manager →</div></a>
+      <a class="role-card r-attorney" href="/signup?role=patent_attorney"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M7 21h10M5 7h14"/><path d="m5 7-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></svg></span><div class="role-hook">Patent attorney or agent?</div><div class="role-desc-text">File patents for creators, review deals and protect intellectual property, with clients who find you here.</div><div class="role-cta">Join as an attorney →</div></a>
+      <a class="role-card r-accountant" href="/signup?role=chartered_accountant"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg></span><div class="role-hook">Chartered accountant?</div><div class="role-desc-text">Help creators and investors with valuations, tax, company setup and due diligence. Get verified and get hired.</div><div class="role-cta">Offer your services →</div></a>
+      <a class="role-card r-corporate" href="/signup?role=corporate_services"><span class="role-emoji-big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></span><div class="role-hook">Company secretary or corporate services firm?</div><div class="role-desc-text">Register companies and keep them compliant: incorporation, secretarial work and annual filings.</div><div class="role-cta">Offer your services →</div></a>
     </div>
   </div>
 </section>
@@ -462,10 +460,10 @@ footer a:hover { color: var(--text); }
       <h2 class="section-title">More ways to use IdeaHub</h2>
     </div>
     <div class="ways-grid">
-      <a class="way" href="/idea-requests"><div class="ic">📣</div><b>Request an Idea</b><p>Investors post what they need; creators send proposals. Pay only for the one you choose.</p><span>See requests →</span></a>
-      <a class="way" href="/businesses"><div class="ic">🌍</div><b>Business Expansion</b><p>Franchises, partnerships and investment in growing businesses, with meetings booked on IdeaHub.</p><span>Explore businesses →</span></a>
-      <a class="way" href="/managers"><div class="ic">🧭</div><b>Find a Manager</b><p>Appoint a checked Virtual Manager to find deals and build a business for you. You approve every binding step.</p><span>Find a manager →</span></a>
-      <a class="way" href="/wall"><div class="ic">📌</div><b>IdeaWall</b><p>Share social work, innovations and life hacks with the community, free.</p><span>Open IdeaWall →</span></a>
+      <a class="way" href="/idea-requests"><div class="ic"></div><b>Request an Idea</b><p>Investors post what they need; creators send proposals. Pay only for the one you choose.</p><span>See requests →</span></a>
+      <a class="way" href="/businesses"><div class="ic"></div><b>Business Expansion</b><p>Franchises, partnerships and investment in growing businesses, with meetings booked on IdeaHub.</p><span>Explore businesses →</span></a>
+      <a class="way" href="/managers"><div class="ic"></div><b>Find a Manager</b><p>Appoint a checked Virtual Manager to find deals and build a business for you. You approve every binding step.</p><span>Find a manager →</span></a>
+      <a class="way" href="/wall"><div class="ic"></div><b>IdeaWall</b><p>Share social work, innovations and life hacks with the community, free.</p><span>Open IdeaWall →</span></a>
     </div>
   </div>
 </section>
@@ -498,60 +496,21 @@ footer a:hover { color: var(--text); }
   </div>
 </section>
 
-<footer>
-  <a class="foot-logo" href="/" aria-label="IdeaHub home">
-    <span class="foot-logo-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></span>
-    <b>IdeaHub</b>
-  </a>
-  <nav class="footer-links" aria-label="Footer">
-    <a href="/browse">Marketplace</a>
-    <a href="/idea-requests">Request an Idea</a>
-    <a href="/businesses">Business Expansion</a>
-    <a href="/managers">Find a Manager</a>
-    <a href="/find-support">Professionals</a>
-    <a href="/wall">IdeaWall</a>
-    <a href="/life-hacks">Life Hacks</a>
-    <a href="/how-it-works">How It Works</a>
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
-  </nav>
-  <div class="foot-legal">
-    <span>© <span id="yr">2026</span> <a href="https://picela.co" target="_blank" rel="noopener">Picela (Pvt) Ltd</a>. All rights reserved.</span>
-    <div><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/refunds">Refunds</a></div>
-  </div>
-</footer>
-
-<!-- Phones: bottom tab bar -->
-<nav class="bottom-tabbar" aria-label="Quick links">
-  <div class="tabbar-inner">
-    <a class="tabbar-item active" href="/" aria-current="page"><span class="tabbar-icon">🏠</span><span>Home</span></a>
-    <a class="tabbar-item" href="/browse"><span class="tabbar-icon">🔍</span><span>Marketplace</span></a>
-    <a class="tabbar-post-btn" href="/signup" id="tabPostBtn" aria-label="Join free">+</a>
-    <a class="tabbar-item" href="/messages"><span class="tabbar-icon">💬</span><span>Messages</span></a>
-    <a class="tabbar-item" href="/wall"><span class="tabbar-icon">📌</span><span>IdeaWall</span></a>
-  </div>
-</nav>
-
 <script>
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let user = null; try { user = JSON.parse(localStorage.getItem('ih_user') || 'null'); } catch (e) {}
-  $('yr').textContent = new Date().getFullYear();
 
   // ── Industries: the same list creators choose from when listing an idea ──
-  const INDUSTRIES = [['Technology', '💻'], ['Health & Wellness', '🏥'], ['Education', '📚'], ['Finance', '💰'], ['Food & Beverage', '🍔'], ['E-commerce', '🛒'], ['Entertainment', '🎬'], ['Real Estate', '🏢'], ['Travel', '✈️'], ['Environment', '🌿'], ['Agriculture', '🌾'], ['Other', '✦']];
+  const INDUSTRIES = [['Technology', ''], ['Health & Wellness', ''], ['Education', ''], ['Finance', ''], ['Food & Beverage', ''], ['E-commerce', ''], ['Entertainment', ''], ['Real Estate', ''], ['Travel', ''], ['Environment', ''], ['Agriculture', ''], ['Other', '✦']];
   const browseUrl = (q, cat) => { const p = new URLSearchParams(); if (q) p.set('search', q); if (cat) p.set('category', cat); const s = p.toString(); return '/browse' + (s ? '?' + s : ''); };
   window.doSearch = (q, cat) => { location.href = browseUrl(String(q || '').trim(), cat || ''); };
   document.querySelector('.search-wrap select').insertAdjacentHTML('beforeend', INDUSTRIES.map(([n]) => `<option value="${esc(n)}">${esc(n)}</option>`).join(''));
   $('popularLinks').insertAdjacentHTML('beforeend', ['Technology', 'Agriculture', 'Food & Beverage', 'Health & Wellness'].map(n => `<a href="${browseUrl('', n)}">${esc(n)}</a>`).join(''));
-  $('catGrid').innerHTML = INDUSTRIES.map(([n, ic]) => `<a class="cat-pill" href="${browseUrl('', n)}"><span aria-hidden="true">${ic}</span>${esc(n)}</a>`).join('');
+  $('catGrid').innerHTML = INDUSTRIES.map(([n, ic]) => `<a class="cat-pill" href="${browseUrl('', n)}">${esc(n)}</a>`).join('');
 
-  // ── Bottom tab bar "+" goes where this person can actually post ──
-  const POST = { idea_creator: ['/submit', 'List an idea'], patent_seller: ['/submit', 'List an idea or patent'], investor: ['/post-request', 'Post an Idea Request'], business_owner: ['/list-business', 'List your business'] };
-  const pb = $('tabPostBtn');
-  if (user) { const [href, label] = POST[user.role] || ['/wall', 'Post on IdeaWall']; pb.href = href; pb.setAttribute('aria-label', label); }
 
   // Phones: hide the fixed search bar while scrolling down
   (function () {
@@ -566,6 +525,7 @@ footer a:hover { color: var(--text); }
   const dots = [...document.querySelectorAll('.hero-dot')];
   const pauseBtn = $('heroPause');
   const SLIDE_MS = 7000;
+  const PAUSE_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>', PLAY_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>';
   hero.style.setProperty('--slide-ms', SLIDE_MS + 'ms');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const PHOTOS = ['photo-1519389950473-47ba0277781c', 'photo-1517245386807-bb43f82c33c4', 'photo-1521791136064-7986c2920216', 'photo-1532012197267-da84d127e765'];
@@ -607,7 +567,7 @@ footer a:hover { color: var(--text); }
   panels.forEach((p, k) => { if (k) { p.setAttribute('aria-hidden', 'true'); p.inert = true; } });
   dots.forEach((d, k) => d.addEventListener('click', () => show(k, true)));
   document.querySelectorAll('.hero-arrow').forEach(b => b.addEventListener('click', () => show(cur + Number(b.dataset.step), true)));
-  function setPaused(v) { userPaused = v; pauseBtn.textContent = v ? '▶' : '❚❚'; pauseBtn.setAttribute('aria-label', v ? 'Play the slideshow' : 'Pause the slideshow'); schedule(); }
+  function setPaused(v) { userPaused = v; pauseBtn.innerHTML = v ? PLAY_ICON : PAUSE_ICON; pauseBtn.setAttribute('aria-label', v ? 'Play the slideshow' : 'Pause the slideshow'); schedule(); }
   pauseBtn.addEventListener('click', () => setPaused(!userPaused));
   // Pause while someone is reading or using it
   const stage = $('heroStage');
@@ -650,7 +610,7 @@ footer a:hover { color: var(--text); }
       const r = idea.originality_rating;
       const stars = Math.round(Number(idea.creator_stars) || 0);
       return `<a class="idea-card" href="/idea?id=${encodeURIComponent(idea.id)}">
-        <div class="idea-card-banner" style="background:${grad(idea.title || ind)}"><span class="idea-card-banner-icon" aria-hidden="true">${ICONS[ind] || '✦'}</span></div>
+        <div class="idea-card-banner" style="background:${grad(idea.title || ind)}"><span class="idea-card-banner-icon" aria-hidden="true">${esc(ind)}</span></div>
         <div class="idea-card-body">
           <div class="idea-card-top"><span class="idea-category">${esc(ind)}</span><span class="idea-price">$${Number(idea.price || 0).toLocaleString()}</span></div>
           <div class="idea-title">${esc(idea.title || 'Untitled idea')}</div>
@@ -659,7 +619,7 @@ footer a:hover { color: var(--text); }
           <div class="idea-card-foot">
             <div class="idea-creator"><div class="idea-creator-av">${idea.creator_avatar ? `<img src="${esc(idea.creator_avatar)}" alt="">` : esc(ini)}</div>
               <div><div>${esc(name || 'IdeaHub creator')}</div><div style="color:var(--accent);font-size:11px;margin-top:2px">${stars ? '★'.repeat(stars) + '☆'.repeat(5 - stars) : '<span style="color:var(--muted)">New creator</span>'}</div></div></div>
-            <div class="idea-meta">👁 ${Number(idea.views || 0).toLocaleString()}</div>
+            <div class="idea-meta">${Number(idea.views || 0).toLocaleString()} views</div>
           </div>
         </div></a>`;
     }).join('');

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Choose Your Role — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -59,7 +59,7 @@
   .role-card.selected { border-color: var(--accent); background: var(--accent-dim); }
   .role-check { position: absolute; top: 7px; right: 7px; width: 16px; height: 16px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; font-size: 9px; color: #0d0d0f; font-weight: 700; }
   .role-card.selected .role-check { opacity: 1; }
-  .role-emoji { font-size: 26px; display: block; margin-bottom: 0.5rem; }
+  .role-emoji { display: block; margin-bottom: 0.5rem; color: var(--accent, #f5c842); }
   .role-name { font-size: 12px; font-weight: 600; display: block; color: var(--text); line-height: 1.3; }
   .role-desc { font-size: 10px; color: var(--muted); display: block; margin-top: 3px; }
   .role-card[data-role="idea_creator"].selected { border-color:#f5c842; background:rgba(245,200,66,0.1); }
@@ -104,49 +104,49 @@
   <div class="role-grid">
     <div class="role-card selected" data-role="idea_creator" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">💡</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></span>
       <span class="role-name">Idea Creator</span>
       <span class="role-desc">Post & sell ideas</span>
     </div>
     <div class="role-card" data-role="investor" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">💼</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span>
       <span class="role-name">Investor</span>
       <span class="role-desc">Discover & fund</span>
     </div>
     <div class="role-card" data-role="virtual_manager" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">🤝</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></span>
       <span class="role-name">Virtual Manager</span>
       <span class="role-desc">Manage & grow</span>
     </div>
     <div class="role-card" data-role="patent_attorney" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">⚖️</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M7 21h10M5 7h14"/><path d="m5 7-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></svg></span>
       <span class="role-name">Patent Attorney / Agent</span>
       <span class="role-desc">Patent filing &amp; advice</span>
     </div>
     <div class="role-card" data-role="chartered_accountant" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">🧮</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg></span>
       <span class="role-name">Chartered Accountant</span>
       <span class="role-desc">Finance & tax services</span>
     </div>
     <div class="role-card" data-role="patent_seller" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">📋</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span>
       <span class="role-name">Patent Seller</span>
       <span class="role-desc">Sell patents</span>
     </div>
     <div class="role-card" data-role="corporate_services" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">🏢</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></span>
       <span class="role-name">Company Secretary</span>
       <span class="role-desc">Company setup &amp; compliance</span>
     </div>
     <div class="role-card" data-role="business_owner" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">🏭</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18M9 20v-6h6v6"/></svg></span>
       <span class="role-name">Business Owner</span>
       <span class="role-desc">Expand your business</span>
     </div>
@@ -169,7 +169,7 @@
     window.location.href = '/login';
   }
 
-  if (!profile) window.location.href = '/login';
+  if (!profile) { window.location.replace('/login'); throw new Error('no profile'); }
   const e = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
   const greetingEl = document.getElementById('userGreeting');

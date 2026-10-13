@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>WhatsApp Simulator — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -68,13 +68,14 @@ h1 { font-size: 26px; margin: 0 0 6px; }
       <div class="err" id="err"></div>
     </div>
     <div class="phone">
-      <div class="ph-head"><div class="ph-av">💡</div><div><div class="ph-name">IdeaHub</div><div class="ph-st" id="botNum">business account</div></div></div>
+      <div class="ph-head"><div class="ph-av"></div><div><div class="ph-name">IdeaHub</div><div class="ph-st" id="botNum">business account</div></div></div>
       <div class="chat" id="chat"></div>
-      <div class="bar"><textarea id="txt" placeholder="Message" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendText()}"></textarea><button onclick="sendText()" aria-label="Send">➤</button></div>
+      <div class="bar"><textarea id="txt" placeholder="Message" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendText()}"></textarea><button onclick="sendText()" aria-label="Send"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button></div>
     </div>
   </div>
 </main>
 <script>
+  (function () { let u = null; try { u = JSON.parse(localStorage.getItem("ih_user") || "null"); } catch (e) {} if (!u || u.role !== "admin") { location.replace(u ? "/" : "/login?next=%2Fwa-sim"); throw new Error("admin only"); } })();
   const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
   if (!token) location.href = '/login?next=/wa-sim';
   const $ = id => document.getElementById(id);
@@ -97,7 +98,7 @@ h1 { font-size: 26px; margin: 0 0 6px; }
     }
     if (m.list && m.list.rows && m.list.rows.length) {
       const a = document.createElement('div'); a.className = 'acts';
-      const open = document.createElement('button'); open.textContent = '☰ ' + (m.list.button || 'Choose');
+      const open = document.createElement('button'); open.textContent = (m.list.button || 'Choose');
       const rows = document.createElement('div'); rows.className = 'rows'; rows.style.display = 'none';
       m.list.rows.forEach(r => { const x = document.createElement('button'); x.innerHTML = esc(r.title) + (r.description ? `<small>${esc(r.description)}</small>` : ''); x.onclick = () => { a.querySelectorAll('button').forEach(y => y.disabled = true); send({ reply_id: r.id, reply_title: r.title }, r.title); }; rows.appendChild(x); });
       open.onclick = () => { rows.style.display = rows.style.display === 'none' ? 'block' : 'none'; $('chat').scrollTop = 1e9; };

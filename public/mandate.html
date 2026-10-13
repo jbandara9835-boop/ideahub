@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mandate — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -76,7 +76,7 @@
 
   async function load() {
     try { [D, META] = await Promise.all([api('/api/mandates/' + id), MG.meta()]); }
-    catch (e) { $('root').innerHTML = `<div class="card empty"><div class="big">🔒</div>${esc(e.message)}<br><a class="btn btn-ghost btn-sm" style="margin-top:12px" href="/managers">Back to managers</a></div>`; return; }
+    catch (e) { $('root').innerHTML = `<div class="card empty"><div class="big"></div>${esc(e.message)}<br><a class="btn btn-ghost btn-sm" style="margin-top:12px" href="/managers">Back to managers</a></div>`; return; }
     document.title = D.title + ' — Mandate — IdeaHub';
     render();
   }
@@ -97,9 +97,9 @@
       <div class="row between"><div><div class="eyebrow">Mandate · ${esc(META.sides[D.client_side] || '')}</div><h1 style="font-family:'Cabinet Grotesk',sans-serif;font-size:27px;margin:0;line-height:1.2">${esc(D.title)}</h1></div>${statusPill(D.status)}</div>
       <div class="parties" style="margin-top:16px">
         <a class="party" href="/public-profile?id=${D.client.id}" style="text-decoration:none">${avatar(D.client.avatar_url, D.client.name)}<div><div class="who">${esc(D.client.name)}${isC() ? ' (you)' : ''}</div><div class="role">Client</div></div></a>
-        <span class="link-arrow" aria-hidden="true">⇄</span>
+        <span class="link-arrow" aria-hidden="true"></span>
         <a class="party" href="/public-profile?id=${D.manager.id}" style="text-decoration:none">${avatar(D.manager.avatar_url, D.manager.name)}<div><div class="who">${esc(D.manager.name)}${isM() ? ' (you)' : ''}</div><div class="role">Manager · ${levelPill(D.manager.level)}</div></div></a>
-        <div style="margin-left:auto" class="row">${D.viewer !== 'admin' ? `<a class="btn btn-ghost btn-sm" href="/messages?user=${other().id}">💬 Message ${esc(other().name.split(' ')[0])}</a>` : ''}${D.status === 'active' && D.viewer !== 'admin' ? `<button class="btn btn-danger btn-sm" data-end>End mandate</button>` : ''}</div>
+        <div style="margin-left:auto" class="row">${D.viewer !== 'admin' ? `<a class="btn btn-ghost btn-sm" href="/messages?user=${other().id}">Message ${esc(other().name.split(' ')[0])}</a>` : ''}${D.status === 'active' && D.viewer !== 'admin' ? `<button class="btn btn-danger btn-sm" data-end>End mandate</button>` : ''}</div>
       </div>
       <div class="facts">
         <div class="fact"><span>Industry</span><b>${esc(D.focus_industry || '—')}</b></div>
@@ -112,7 +112,7 @@
   function termsBlock(full) {
     return `<div class="card pad">
       <div class="card-title">What the manager may do</div>
-      <div class="checks">${D.scope_labels.map(s => `<div class="check" style="cursor:default">✅ <span>${esc(s.label)}</span></div>`).join('')}</div>
+      <div class="checks">${D.scope_labels.map(s => `<div class="check" style="cursor:default"><span>${esc(s.label)}</span></div>`).join('')}</div>
       ${D.goals ? `<div class="hr"></div><div class="lbl" style="margin-bottom:6px">Goals</div><div class="sub" style="white-space:pre-wrap;line-height:1.55">${esc(D.goals)}</div>` : ''}
       <div class="hr"></div><div class="lbl" style="margin-bottom:6px">Mandate agreement (${esc(D.terms.version)})</div><div class="terms">${esc(D.terms.text)}</div>
       ${full || ''}
@@ -166,12 +166,12 @@
     }
     if (attn.length) out.push(`<div class="card pad attn"><div class="card-title">Needs attention</div>${attn.map(a => `<div class="list-item" style="align-items:center"><div class="grow">${a.replace(/<button/, '</div><button')}</div>`).join('')}</div>`);
     if (isM() && D.status === 'active') out.push(`<div class="card pad"><div class="card-title">Quick actions</div><div class="row">
-      ${Object.entries(META.actions).filter(([, v]) => has(v.scope)).length ? `<button class="btn btn-vm btn-sm" data-prepare>✋ Prepare a step for approval</button>` : ''}
+      ${Object.entries(META.actions).filter(([, v]) => has(v.scope)).length ? `<button class="btn btn-vm btn-sm" data-prepare>Prepare a step for approval</button>` : ''}
       <button class="btn btn-ghost btn-sm" data-additem>＋ Add to pipeline</button>
-      ${D.fee_hourly > 0 ? '<button class="btn btn-ghost btn-sm" data-loghours>⏱️ Log hours</button>' : ''}
-      ${has('listings') ? `<a class="btn btn-ghost btn-sm" href="/manage?owner=${D.client.id}">📝 Manage listings</a>` : ''}
-      ${has('messages') ? '<button class="btn btn-ghost btn-sm" data-msgfor>✉️ Message someone for the client</button>' : ''}
-      <button class="btn btn-ghost btn-sm" data-oneoff>🧾 Request a one-off fee</button></div></div>`);
+      ${D.fee_hourly > 0 ? '<button class="btn btn-ghost btn-sm" data-loghours>Log hours</button>' : ''}
+      ${has('listings') ? `<a class="btn btn-ghost btn-sm" href="/manage?owner=${D.client.id}">Manage listings</a>` : ''}
+      ${has('messages') ? '<button class="btn btn-ghost btn-sm" data-msgfor>Message someone for the client</button>' : ''}
+      <button class="btn btn-ghost btn-sm" data-oneoff>Request a one-off fee</button></div></div>`);
     if (D.status === 'active' && D.viewer !== 'admin') out.push(interviewsCard());
     const deals = D.deals.filter(d => d.status !== 'cancelled');
     out.push(`<div class="grid g2">
@@ -216,30 +216,30 @@
       ${b.experience ? `<div class="lbl">Work history</div><div class="bgtxt" style="margin:4px 0 12px">${esc(b.experience)}</div>` : ''}
       ${b.references_text ? `<div class="lbl">References</div><div class="bgtxt" style="margin:4px 0 12px">${esc(b.references_text)}</div><div class="tiny muted" style="margin:-6px 0 12px">Tip: contact a reference before you hire, and ask what the manager did for them.</div>` : ''}
       ${!b.about && !b.experience ? '<div class="sub small" style="margin-bottom:12px">No work history added yet. Ask about it in your questions or the interview.</div>' : ''}
-      <div class="row">${b.has_cv ? `<button class="btn btn-ghost btn-sm" data-cv="${m.id}">📄 Open CV</button>` : '<span class="tiny muted">No CV uploaded</span>'}${b.linkedin_url ? `<a class="btn btn-ghost btn-sm" href="${esc(b.linkedin_url)}" target="_blank" rel="noopener nofollow">LinkedIn ↗</a>` : ''}<a class="btn btn-ghost btn-sm" href="/public-profile?id=${m.id}" target="_blank">Public profile</a></div></div>`;
+      <div class="row">${b.has_cv ? `<button class="btn btn-ghost btn-sm" data-cv="${m.id}">Open CV</button>` : '<span class="tiny muted">No CV uploaded</span>'}${b.linkedin_url ? `<a class="btn btn-ghost btn-sm" href="${esc(b.linkedin_url)}" target="_blank" rel="noopener nofollow">LinkedIn ↗</a>` : ''}<a class="btn btn-ghost btn-sm" href="/public-profile?id=${m.id}" target="_blank">Public profile</a></div></div>`;
   }
   function clientBg() {
     const f = D.hiring.client_facts || {}, c = D.client;
     const roleTxt = { idea_creator: 'Idea creator', patent_seller: 'Patent seller', investor: 'Investor', business_owner: 'Business owner' }[f.role] || '';
-    return `<div class="card pad"><div class="card-title">About ${esc(c.name)}</div><div class="chips" style="margin-bottom:12px">${roleTxt ? `<span class="pill">${roleTxt}</span>` : ''}${f.country ? `<span class="pill">📍 ${esc(f.country)}</span>` : ''}${f.member_since ? `<span class="pill">Member since ${MG.date(f.member_since)}</span>` : ''}${f.ideas_listed ? `<span class="pill">${f.ideas_listed} idea${f.ideas_listed > 1 ? 's' : ''} listed</span>` : ''}${f.purchases ? `<span class="pill">${f.purchases} purchase${f.purchases > 1 ? 's' : ''}</span>` : ''}</div>
+    return `<div class="card pad"><div class="card-title">About ${esc(c.name)}</div><div class="chips" style="margin-bottom:12px">${roleTxt ? `<span class="pill">${roleTxt}</span>` : ''}${f.country ? `<span class="pill">${esc(f.country)}</span>` : ''}${f.member_since ? `<span class="pill">Member since ${MG.date(f.member_since)}</span>` : ''}${f.ideas_listed ? `<span class="pill">${f.ideas_listed} idea${f.ideas_listed > 1 ? 's' : ''} listed</span>` : ''}${f.purchases ? `<span class="pill">${f.purchases} purchase${f.purchases > 1 ? 's' : ''}</span>` : ''}</div>
       ${D.goals ? `<div class="lbl">What they want</div><div class="bgtxt" style="margin:4px 0 12px">${esc(D.goals)}</div>` : ''}<a class="btn btn-ghost btn-sm" href="/public-profile?id=${c.id}" target="_blank">Public profile</a></div>`;
   }
   function interviewsCard() {
     const H = D.hiring, list = H.interviews.filter(x => x.status !== 'cancelled');
     const can = D.viewer !== 'admin' && ['proposed', 'active'].includes(D.status) && !H.pledge_needed;
     const word = D.status === 'proposed' ? 'interview' : 'call';
-    return `<div class="card pad"><div class="card-title">Video ${word}s ${can ? `<button class="btn btn-ghost btn-sm" data-offer>📅 Offer times</button>` : ''}</div>
+    return `<div class="card pad"><div class="card-title">Video ${word}s ${can ? `<button class="btn btn-ghost btn-sm" data-offer>Offer times</button>` : ''}</div>
       ${list.length ? list.map(x => {
         const soon = x.status === 'scheduled' && new Date(x.chosen_at).getTime() - Date.now() < 15 * 60000, started = soon;
         return `<div class="list-item"><div class="grow">
-          <div class="li-title">${x.status === 'scheduled' ? `📅 ${local(x.chosen_at)}` : x.status === 'done' ? `✅ ${local(x.chosen_at)}` : x.mine ? 'You offered times' : 'Pick a time'} <span class="tiny muted">· ${x.minutes || 30} min</span></div>
+          <div class="li-title">${x.status === 'scheduled' ? `${local(x.chosen_at)}` : x.status === 'done' ? `Held ${local(x.chosen_at)}` : x.mine ? 'You offered times' : 'Pick a time'} <span class="tiny muted">· ${x.minutes || 30} min</span></div>
           ${x.note ? `<div class="li-sub">“${esc(x.note)}”</div>` : ''}
           ${x.status === 'proposed' ? `<div class="row" style="margin-top:8px">${(x.slots || []).map(sl => x.mine || !can ? `<span class="pill">${local(sl)}</span>` : `<button class="btn btn-vm btn-sm" data-choose="${x.id}" data-slot="${esc(sl)}">${local(sl)}</button>`).join('')}</div>` : ''}
-          <div class="row" style="margin-top:8px">${x.status === 'scheduled' && can ? `<a class="btn ${soon ? 'btn-vm' : 'btn-ghost'} btn-sm" href="${callUrl()}" target="_blank">📹 Join video call</a>${started ? `<button class="btn btn-ghost btn-sm" data-ivdone="${x.id}">Mark as done</button>` : '<span class="tiny muted">Opens 15 minutes before</span>'}` : ''}
+          <div class="row" style="margin-top:8px">${x.status === 'scheduled' && can ? `<a class="btn ${soon ? 'btn-vm' : 'btn-ghost'} btn-sm" href="${callUrl()}" target="_blank">Join video call</a>${started ? `<button class="btn btn-ghost btn-sm" data-ivdone="${x.id}">Mark as done</button>` : '<span class="tiny muted">Opens 15 minutes before</span>'}` : ''}
           ${['proposed', 'scheduled'].includes(x.status) && can ? `<button class="btn btn-ghost btn-sm" data-ivcancel="${x.id}">Cancel</button>` : ''}</div>
         </div><span class="pill ${x.status === 'scheduled' ? 'blue' : x.status === 'done' ? 'green' : 'gold'}">${{ proposed: 'Choosing a time', scheduled: 'Booked', done: 'Done' }[x.status]}</span></div>`; }).join('')
         : `<div class="empty" style="padding:14px">${H.pledge_needed ? 'Confirm the confidentiality promise first.' : `No ${word} yet. Offer up to 3 times; the other person picks one. The call runs inside IdeaHub, private to you both.`}</div>`}
-      ${D.status === 'active' && can ? `<div class="hr"></div><a class="btn btn-ghost btn-sm" href="${callUrl()}" target="_blank">📹 Start a call now</a> <span class="tiny muted">${esc(other().name.split(' ')[0])} is notified</span>` : ''}</div>`;
+      ${D.status === 'active' && can ? `<div class="hr"></div><a class="btn btn-ghost btn-sm" href="${callUrl()}" target="_blank">Start a call now</a> <span class="tiny muted">${esc(other().name.split(' ')[0])} is notified</span>` : ''}</div>`;
   }
   function questionsCard() {
     const H = D.hiring, can = D.viewer !== 'admin' && !H.pledge_needed;
@@ -272,7 +272,7 @@
   // ── Approvals ──
   function approvals() {
     const list = D.actions;
-    const head = isM() && D.status === 'active' ? `<div class="row between" style="margin-bottom:14px"><p class="sub small" style="margin:0">Prepare a step; your client approves it and IdeaHub carries it out in their name, with their payment.</p><button class="btn btn-vm btn-sm" data-prepare>✋ Prepare a step</button></div>` : isC() ? `<p class="sub small" style="margin:0 0 14px">Your manager prepares these. Nothing happens until you approve. Payments come from you, through IdeaHub.</p>` : '';
+    const head = isM() && D.status === 'active' ? `<div class="row between" style="margin-bottom:14px"><p class="sub small" style="margin:0">Prepare a step; your client approves it and IdeaHub carries it out in their name, with their payment.</p><button class="btn btn-vm btn-sm" data-prepare>Prepare a step</button></div>` : isC() ? `<p class="sub small" style="margin:0 0 14px">Your manager prepares these. Nothing happens until you approve. Payments come from you, through IdeaHub.</p>` : '';
     return head + `<div class="card pad">${list.length ? list.map(a => {
       const [lbl, cls] = ACT_STATUS[a.status] || [a.status, ''];
       const pay = a.payload || {};
@@ -283,7 +283,7 @@
         ${a.status === 'pending' && isM() ? `<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm" data-withdraw="${a.id}">Withdraw</button>${link ? `<a class="btn btn-ghost btn-sm" href="${link}" target="_blank">View</a>` : ''}</div>` : ''}
         ${a.status === 'approved' && link ? `<div class="row" style="margin-top:8px"><a class="btn btn-ghost btn-sm" href="${a.kind === 'purchase' ? '/transactions' : a.kind === 'post_request' && a.ref_id ? '/request/' + a.ref_id : a.kind === 'expansion_apply' && a.ref_id ? '/expansion?id=' + a.ref_id : a.kind === 'hire' && a.ref_id ? '/hire?id=' + a.ref_id : link}">Open</a></div>` : ''}
         </div><span class="pill ${cls}">${esc(lbl)}</span></div>`;
-    }).join('') : `<div class="empty"><div class="big">✋</div>No steps yet.</div>`}</div>`;
+    }).join('') : `<div class="empty"><div class="big"></div>No steps yet.</div>`}</div>`;
   }
   async function prepareDialog() {
     const kinds = Object.entries(META.actions).filter(([, v]) => has(v.scope));
@@ -322,8 +322,8 @@
     if (isC()) {
       const recos = D.items;
       return `<div class="card pad">${recos.length ? recos.map(i => `<div class="list-item"><div class="grow"><div class="li-title">${esc(i.title)} <span class="pill" style="margin-left:6px">${esc(i.kind)}</span></div>${i.note ? `<div class="li-sub" style="white-space:pre-wrap">${esc(i.note)}</div>` : ''}
-        <div class="row" style="margin-top:10px">${i.ref_id && KIND_LINK[i.kind] ? `<a class="btn btn-ghost btn-sm" href="${KIND_LINK[i.kind](i.ref_id)}" target="_blank">View</a>` : ''}<button class="btn ${i.client_feedback === 'interested' ? 'btn-gold' : 'btn-ghost'} btn-sm" data-fb="interested" data-item="${i.id}">👍 Interested</button><button class="btn ${i.client_feedback === 'not_interested' ? 'btn-danger' : 'btn-ghost'} btn-sm" data-fb="not_interested" data-item="${i.id}">Not for me</button></div></div></div>`).join('')
-        : `<div class="empty"><div class="big">⭐</div>Your manager's recommendations will appear here.</div>`}</div>`;
+        <div class="row" style="margin-top:10px">${i.ref_id && KIND_LINK[i.kind] ? `<a class="btn btn-ghost btn-sm" href="${KIND_LINK[i.kind](i.ref_id)}" target="_blank">View</a>` : ''}<button class="btn ${i.client_feedback === 'interested' ? 'btn-gold' : 'btn-ghost'} btn-sm" data-fb="interested" data-item="${i.id}">Interested</button><button class="btn ${i.client_feedback === 'not_interested' ? 'btn-danger' : 'btn-ghost'} btn-sm" data-fb="not_interested" data-item="${i.id}">Not for me</button></div></div></div>`).join('')
+        : `<div class="empty"><div class="big">★</div>Your manager's recommendations will appear here.</div>`}</div>`;
     }
     return `<div class="row between" style="margin-bottom:12px"><p class="sub small" style="margin:0">Track everything you work on for this client. Tick “Show to client” to send it as a recommendation.</p>${D.status === 'active' ? '<button class="btn btn-vm btn-sm" data-additem>＋ Add</button>' : ''}</div>
       <div class="board">${STAGES.map(([k, l]) => { const its = D.items.filter(i => i.stage === k); return `<div class="stage-col"><h4>${l}<span>${its.length}</span></h4>${its.map(i => `<div class="item"><div class="t">${i.ref_id && KIND_LINK[i.kind] ? `<a href="${KIND_LINK[i.kind](i.ref_id)}" target="_blank" style="text-decoration:none">${esc(i.title)} ↗</a>` : esc(i.title)}</div>${i.note ? `<div class="n">${esc(i.note)}</div>` : ''}
@@ -351,7 +351,7 @@
   function venture() {
     const vs = D.ventures;
     if (!vs.length) return isM() && D.status === 'active' ? `<div class="card pad"><div class="card-title">Plan a managed venture</div><p class="sub small">Set out how you'll build the business for your client, as milestones. Your client approves the plan, then funds each milestone fee into escrow as you start it; it's paid to you when they approve your evidence.${D.manager.level === 'verified' || D.manager.level === 'senior' ? '' : ' <b>Ventures need the Verified level</b> (ID and proof of address checked).'}</p><button class="btn btn-vm" data-venture>Plan the venture</button></div>`
-      : `<div class="card empty"><div class="big">🚀</div>No venture yet. Your manager proposes a plan with milestones for you to approve.</div>`;
+      : `<div class="card empty"><div class="big"></div>No venture yet. Your manager proposes a plan with milestones for you to approve.</div>`;
     return vs.map(v => {
       const total = v.milestones.reduce((s, x) => s + Number(x.fee || 0), 0);
       const done = v.milestones.filter(x => x.status === 'approved').length;

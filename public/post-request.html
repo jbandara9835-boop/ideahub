@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Post a Request — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -98,40 +98,7 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav">
-    <a class="nav-item" href="/buyer-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Marketplace</span></a>
-    <a class="nav-item active" href="/idea-requests"><span class="nav-icon">🎯</span><span>Idea Requests</span></a>
-    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-  </nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <main class="main">
   <div class="topbar">
@@ -142,7 +109,7 @@
   <div class="form-wrap">
     <div>
       <div class="form-card">
-        <div class="form-section-title">🎯 Describe Your Problem</div>
+        <div class="form-section-title">Describe Your Problem</div>
         <div class="field">
           <label class="lbl">Request Title *</label>
           <input type="text" id="title" placeholder="e.g. I need an app idea for elderly care at home" maxlength="100" oninput="updatePreview()" />
@@ -176,7 +143,7 @@
       </div>
 
       <div class="form-card">
-        <div class="form-section-title">💰 Budget & Timeline</div>
+        <div class="form-section-title">Budget & Timeline</div>
         <div class="row">
           <div class="field">
             <label class="lbl">Minimum Budget (USD)</label>
@@ -193,7 +160,7 @@
         </div>
 
         <div class="msg error" id="errorMsg"></div>
-        <div class="msg success" id="successMsg">🎉 Request posted! All creators have been notified. Redirecting...</div>
+        <div class="msg success" id="successMsg">Request posted! All creators have been notified. Redirecting...</div>
 
         <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
           <div class="spinner" id="spinner"></div>
@@ -218,7 +185,7 @@
         </div>
 
         <div class="tips">
-          <div class="tips-title">💡 Tips for a great request</div>
+          <div class="tips-title">Tips for a great request</div>
           <ul>
             <li>Be specific about the problem you're solving</li>
             <li>Mention your target audience</li>
@@ -244,23 +211,23 @@
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon"></span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon"></span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon"></span><span>Marketplace</span></a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon"></span><span>Request an Idea</span></a>
       <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
-    <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
-    <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
-    <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
-    <a class="nav-item" href="/expansion"><span class="nav-icon">🏢</span><span>Expansion Deals</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
+      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon"></span><span>Find an Attorney</span></a>
+      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon"></span><span>Virtual Manager</span></a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon"></span><span>Find an Accountant</span></a>
+    <a class="nav-item" href="/patents"><span class="nav-icon"></span><span>Patent Applications</span></a>
+    <a class="nav-item" href="/deal-room"><span class="nav-icon"></span><span>Deal Rooms</span></a>
+    <a class="nav-item" href="/hire"><span class="nav-icon"></span><span>My Hires</span></a>
+    <a class="nav-item" href="/expansion"><span class="nav-icon"></span><span>Expansion Deals</span></a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon"></span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon"></span><span>Messages</span></a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon"></span><span>Wallet</span></a>
     `;
   }
   const token = localStorage.getItem('ih_token');

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Start a patent application — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -87,7 +87,7 @@
 
   <!-- 1. Invention -->
   <section class="stage panel" data-stage="0">
-    <div class="note gold" style="margin-bottom:1.1rem">🔒 Keep your invention confidential until it's filed. In most countries, anything already public (online, on IdeaHub, at a trade fair) can't be patented.</div>
+    <div class="note gold" style="margin-bottom:1.1rem">Keep your invention confidential until it's filed. In most countries, anything already public (online, on IdeaHub, at a trade fair) can't be patented.</div>
     <div class="field" id="ideaField">
       <label for="idea">Link one of your IdeaHub ideas <span class="muted">(optional)</span></label>
       <select class="select" id="idea"><option value="">No, this is a new invention</option></select>
@@ -102,7 +102,7 @@
     <div class="field"><label for="prior">Similar products or patents you know of <span class="muted">(optional)</span></label><textarea class="textarea" id="prior" maxlength="3000" style="min-height:80px"></textarea></div>
     <div class="field">
       <label>Drawings, sketches or documents <span class="muted">(optional)</span></label>
-      <label class="drop" for="fileIn">📎 Add files (PDF, Word, images · up to 10 MB each)</label>
+      <label class="drop" for="fileIn">Add files (PDF, Word, images · up to 10 MB each)</label>
       <input type="file" id="fileIn" multiple accept=".pdf,.doc,.docx,.txt,image/*" class="hidden" />
       <div class="files" id="files"></div>
     </div>
@@ -161,7 +161,7 @@
   <section class="stage panel" data-stage="4">
     <div class="panel-title">Review and send</div>
     <dl class="review" id="review"></dl>
-    <div class="note gold" style="margin:1.25rem 0 1rem;">🔒 Only <b id="attyName">the practitioner</b> and IdeaHub admins will be able to read this. Your files are stored privately. Their email notification doesn't include your invention details. After you send it, IdeaHub's AI also does a quick private pre-check you can both read.</div>
+    <div class="note gold" style="margin:1.25rem 0 1rem;">Only <b id="attyName">the practitioner</b> and IdeaHub admins will be able to read this. Your files are stored privately. Their email notification doesn't include your invention details. After you send it, IdeaHub's AI also does a quick private pre-check you can both read.</div>
     <label class="check"><input type="checkbox" id="ack" /> I understand who can see my invention, and I'm sending it to this practitioner to get a quote.</label>
   </section>
 
@@ -208,7 +208,7 @@
   }
 
   // Files
-  function renderFiles() { $('files').innerHTML = files.map((f, i) => `<div class="file"><span>📄 ${esc(f.name)} <span class="muted">(${(f.size / 1048576).toFixed(1)} MB)</span></span><button data-rm="${i}" aria-label="Remove">✕</button></div>`).join(''); }
+  function renderFiles() { $('files').innerHTML = files.map((f, i) => `<div class="file"><span>${esc(f.name)} <span class="muted">(${(f.size / 1048576).toFixed(1)} MB)</span></span><button data-rm="${i}" aria-label="Remove">✕</button></div>`).join(''); }
   $('fileIn').addEventListener('change', e => {
     for (const f of e.target.files) { if (f.size > 10 * 1048576) { toast(`${f.name} is over 10 MB`); continue; } if (files.length >= 10) { toast('Up to 10 files here; add more later'); break; } files.push(f); }
     e.target.value = ''; renderFiles();
@@ -261,7 +261,7 @@
     $('jur').innerHTML = PR.JUR_LABELS.map(j => `<button type="button" class="opt ${state.jurisdiction === j ? 'on' : ''}" data-j="${esc(j)}">${esc(j)}</button>`).join('');
     $('types').innerHTML = PR.FILING_TYPES.map(t => `<button type="button" class="opt ${state.filing_type === t.label ? 'on' : ''}" data-t="${esc(t.label)}"><b>${esc(t.label)}</b><span>${esc(t.help)}</span></button>`).join('');
     const us = PR.officeFor(state.jurisdiction) === 'USPTO';
-    $('usNote').innerHTML = us && foreignInvolved() ? '<div class="note" style="margin:-.3rem 0 1.1rem">🇺🇸 Since 20 July 2026, applicants or inventors living outside the US must file through a <b>USPTO-registered</b> patent attorney or agent. Only those are shown in the next step.</div>' : '';
+    $('usNote').innerHTML = us && foreignInvolved() ? '<div class="note" style="margin:-.3rem 0 1.1rem">Since 20 July 2026, applicants or inventors living outside the US must file through a <b>USPTO-registered</b> patent attorney or agent. Only those are shown in the next step.</div>' : '';
     $('entityBox').classList.toggle('hidden', !us);
     document.querySelectorAll('#entityBox .seg').forEach(s => { const v = state.entity[s.dataset.q]; s.querySelectorAll('button').forEach(b => b.classList.toggle('on', v !== undefined && (b.dataset.v === 'yes') === v)); });
     const ent = PR.usEntity(state.entity); $('entityOut').textContent = ent.text;
@@ -283,7 +283,7 @@
     } catch (e) { attorneys = []; }
     if (!attorneys.some(a => a.id === state.attorney_id)) state.attorney_id = null;
     if (!attorneys.length) {
-      $('attys').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon">⚖️</div>No practitioners registered for ${esc(state.jurisdiction)} have joined IdeaHub yet.<br>Try another office, or choose "International (PCT)" or "Other / not sure". Your answers are saved in this browser.</div>`;
+      $('attys').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon"></div>No practitioners registered for ${esc(state.jurisdiction)} have joined IdeaHub yet.<br>Try another office, or choose "International (PCT)" or "Other / not sure". Your answers are saved in this browser.</div>`;
       return;
     }
     $('attys').innerHTML = attorneys.map(a => `<button type="button" class="atty ${state.attorney_id === a.id ? 'on' : ''}" data-a="${a.id}">

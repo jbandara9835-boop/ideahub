@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Deal room — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -116,13 +116,13 @@
     $('root').innerHTML = `<div class="top"><div class="kicker">Deal rooms</div><h1>Your deal rooms</h1><p class="muted" style="font-size:14px;line-height:1.6;max-width:640px">A deal room brings both sides of a deal together with their own attorneys, accountants and other advisers. Each side also has a private channel.</p></div>
       <div class="list">${rooms.length ? rooms.map(r => `<a class="app-row" href="/deal-room?id=${Number(r.id)}"><div><h3>${esc(r.title)}</h3><div class="app-meta" style="font-size:12.5px;color:var(--muted);margin-top:4px">${r.kind === 'licence' ? 'Licence deal' : r.kind === 'business' ? 'Business expansion deal' : 'Listing deal'} · ${r.my_role === 'party' ? 'You are a party' : 'You are an adviser'}</div></div>
         <span class="pill ${r.my_status === 'invited' ? 'st-requested' : 'st-in_progress'}">${r.my_status === 'invited' ? 'Invitation' : 'Open'}</span></a>`).join('')
-        : '<div class="empty"><div class="icon">🤝</div>No deal rooms yet. Open one from a listing or a licence deal.</div>'}</div>`;
+        : '<div class="empty"><div class="icon"></div>No deal rooms yet. Open one from a listing or a licence deal.</div>'}</div>`;
   }
 
   // ── Invitation (not yet accepted) ──
   function renderInvitation(d) {
     $('root').innerHTML = `<div class="panel" style="max-width:560px;margin:2rem auto;text-align:center">
-      <div style="font-size:40px">🤝</div><h2 style="margin:.6rem 0">You're invited to a deal room</h2>
+      <div style="font-size:40px"></div><h2 style="margin:.6rem 0">You're invited to a deal room</h2>
       <p class="muted" style="font-size:14px;line-height:1.6">You've been asked to join <b style="color:var(--text)">"${esc(d.room?.title)}"</b> as ${esc(d.invitation.label || d.invitation.role_label)}.</p>
       <div style="display:flex;gap:10px;justify-content:center;margin-top:1.2rem"><button class="btn btn-gold" data-act="accept">Accept</button><button class="btn btn-ghost" data-act="decline-inv">Decline</button></div></div>`;
   }
@@ -165,13 +165,13 @@
         <div class="meta"><span class="pill st-in_progress">Deal room</span>${d.me.admin ? '<span>Admin view: all channels</span>' : `<span>You're on the <b style="color:var(--text)">${esc(sideName(d.me.side))}</b> side${isAdviser ? ' as an adviser' : ''}</span>`}<a href="${esc(d.deal.link)}">${esc(d.deal.label)} →</a></div></div>
       <div class="grid"><div>
         <div class="panel">
-          <div class="tabs"><button class="tab ${chan === 'shared' ? 'on' : ''}" data-chan="shared">Everyone</button>${priv ? `<button class="tab private ${chan !== 'shared' ? 'on' : ''}" data-chan="side">🔒 ${esc(sideName(priv))} side only</button>` : d.me.admin ? `<button class="tab private ${chan !== 'shared' ? 'on' : ''}" data-chan="side">🔒 Private channels</button>` : ''}</div>
+          <div class="tabs"><button class="tab ${chan === 'shared' ? 'on' : ''}" data-chan="shared">Everyone</button>${priv ? `<button class="tab private ${chan !== 'shared' ? 'on' : ''}" data-chan="side">${esc(sideName(priv))} side only</button>` : d.me.admin ? `<button class="tab private ${chan !== 'shared' ? 'on' : ''}" data-chan="side">Private channels</button>` : ''}</div>
           <div class="chan-note ${chan !== 'shared' ? 'private' : ''}">${chan === 'shared' ? 'Everyone in the room sees this: both sides and all advisers.' : d.me.admin ? 'Both sides\' private channels.' : `Only you and your side's advisers see this. ${esc(sideName(priv === 'a' ? 'b' : 'a'))} and their advisers never do.`}</div>
           <div class="thread" id="thread">${msgs || '<div class="sys">No messages yet.</div>'}</div>
           ${d.me.admin ? '' : `<div class="compose"><textarea class="textarea" id="msgIn" placeholder="${chan === 'shared' ? 'Message everyone…' : 'Private message to your side…'}" maxlength="4000"></textarea><button class="btn btn-gold" id="sendBtn">Send</button></div>`}
         </div>
-        <div class="panel"><div class="panel-title">Files ${chan === 'shared' ? '(everyone)' : '(private)'} ${d.me.admin ? '' : `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">📎 Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*" />`}</div>
-          <div class="flist">${files.length ? files.map(f => `<div class="frow"><span class="nm">📄 ${esc(f.name)}${f.channel !== 'shared' ? '<span class="lock">🔒 private</span>' : ''} <span class="muted" style="font-size:11.5px">· ${esc(f.uploaded_by)}</span></span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files here yet.</div>'}</div></div>
+        <div class="panel"><div class="panel-title">Files ${chan === 'shared' ? '(everyone)' : '(private)'} ${d.me.admin ? '' : `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*" />`}</div>
+          <div class="flist">${files.length ? files.map(f => `<div class="frow"><span class="nm">${esc(f.name)}${f.channel !== 'shared' ? '<span class="lock">private</span>' : ''} <span class="muted" style="font-size:11.5px">· ${esc(f.uploaded_by)}</span></span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files here yet.</div>'}</div></div>
         ${!d.me.admin ? `<div class="panel"><div class="panel-title">Adviser work (your side, private)</div>
           ${d.jobs.length ? d.jobs.map(j => jobCard(j, d)).join('') : `<div class="muted" style="font-size:13px;line-height:1.6">${isAdviser ? 'Send your client a fixed quote. They pay into IdeaHub escrow, and the fee is released when they confirm your work.' : 'Your advisers can send you fixed quotes here. You pay into escrow and release the fee when the work is done.'}</div>`}
           ${isAdviser ? `<details style="margin-top:1rem"><summary class="btn btn-gold btn-sm" style="list-style:none;display:inline-flex">+ Send a quote to your client</summary>
@@ -188,7 +188,7 @@
           <div class="pp">${people('a').map(p => personRow(p, d)).join('')}</div>
           <div class="side-h">${esc(sideName('b'))} side ${isParty && d.me.side === 'b' ? '<button class="btn btn-ghost btn-sm" data-act="invite">+ Adviser</button>' : ''}</div>
           <div class="pp">${people('b').map(p => personRow(p, d)).join('')}</div>
-          ${d.me.admin ? '' : `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=room&id=${d.room.id}" target="_blank" rel="noopener">📹 Start a video call with the room</a>`}
+          ${d.me.admin ? '' : `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=room&id=${d.room.id}" target="_blank" rel="noopener">Start a video call with the room</a>`}
         </div>
         <div class="note" style="font-size:12.5px">Advisers can talk, share files and join calls. Only the two parties act on the deal itself. IdeaHub hosts the room but is not a party to the deal or to any adviser's work.</div>
       </aside></div>`;
@@ -200,7 +200,7 @@
       const r = await fetch(`/api/rooms/${id}`, { headers: H() });
       if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
       const d = await r.json();
-      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/deal-room">Your deal rooms</a></div>`; return; }
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/deal-room">Your deal rooms</a></div>`; return; }
       if (d.invitation) return renderInvitation(d);
       const keep = {}; ['msgIn', 'jTitle', 'jScope', 'jAmt', 'jDays'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
       R = d; document.title = `${d.room.title} — Deal room — IdeaHub`; render(d);

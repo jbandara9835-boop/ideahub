@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Admin Panel — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -61,7 +61,7 @@
   .stat-value.purple { color:var(--purple); }
 
   /* TABS */
-  .tabs { display:flex; gap:8px; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:0; }
+  .tabs { display:flex; flex-wrap:wrap; gap:4px 8px; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:0; max-width:100%; }
   .tab { padding:0.75rem 1.25rem; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; background:none; border-top:none; border-left:none; border-right:none; font-family:'DM Sans',sans-serif; }
   .tab:hover { color:var(--text); }
   .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
@@ -178,45 +178,18 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">🛡️</div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav">
-    <a class="nav-item active" href="/admin"><span class="nav-icon">🛡️</span><span>Admin Panel</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/"><span class="nav-icon">🏠</span><span>Main Site</span></a>
-    <a class="nav-item" href="/browse"><span class="nav-icon">💡</span><span>Marketplace</span></a>
-    <a class="nav-item" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
-    <a class="nav-item" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-  </nav>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">A</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Admin</div>
-      <div class="user-role-sb">Administrator</div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <main class="main">
   <div class="topbar">
     <div>
-      <div class="page-title">🛡️ Admin Panel</div>
+      <div class="page-title">Admin Panel</div>
       <div class="page-subtitle">Manage certificates, users and platform activity</div>
     </div>
   </div>
 
   <div class="admin-banner">
-    <div class="admin-banner-icon">⚠️</div>
+    <div class="admin-banner-icon"></div>
     <div>You are viewing the <strong>IdeaHub Admin Panel</strong>. Actions here directly affect the platform and users. Please review carefully before approving or rejecting.</div>
   </div>
 
@@ -231,27 +204,27 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('certs', this)">📜 Certificates <span class="tab-count red" id="tabCertCount">0</span></button>
-    <button class="tab" onclick="switchTab('roles', this)">🔄 Role Requests <span class="tab-count red" id="tabRoleCount">0</span></button>
-    <button class="tab" onclick="switchTab('disputes', this)">⚖️ Disputes <span class="tab-count red" id="tabDisputeCount">0</span></button>
-    <button class="tab" onclick="switchTab('practitioners', this)">🪪 Professionals <span class="tab-count red" id="tabPracCount">0</span></button>
-    <button class="tab" onclick="switchTab('businesses', this)">🏢 Businesses <span class="tab-count red" id="tabBizCount">0</span></button>
-    <button class="tab" onclick="switchTab('mgr', this)">🧭 Managers <span class="tab-count red" id="tabMgrCount">0</span></button>
-    <button class="tab" onclick="switchTab('wall', this)">🧱 IdeaWall <span class="tab-count red" id="tabWallCount">0</span></button>
-    <a class="tab" href="/wa-sim" target="_blank" style="text-decoration:none">💬 WhatsApp simulator</a>
-    <button class="tab" onclick="switchTab('withdrawals', this)">💸 Withdrawals <span class="tab-count red" id="tabWithdrawCount">0</span></button>
-    <button class="tab" onclick="switchTab('users', this)">👥 Users <span class="tab-count" id="tabUserCount">0</span></button>
-    <button class="tab" onclick="switchTab('hires', this)">🤝 Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
-    <button class="tab" onclick="switchTab('ideas', this)">💡 Ideas <span class="tab-count" id="tabIdeaCount">0</span></button>
-    <button class="tab" onclick="switchTab('patents', this)">📋 Patent Review <span class="tab-count red" id="tabPatentCount">0</span></button>
+    <button class="tab active" onclick="switchTab('certs', this)">Certificates <span class="tab-count red" id="tabCertCount">0</span></button>
+    <button class="tab" onclick="switchTab('roles', this)">Role Requests <span class="tab-count red" id="tabRoleCount">0</span></button>
+    <button class="tab" onclick="switchTab('disputes', this)">Disputes <span class="tab-count red" id="tabDisputeCount">0</span></button>
+    <button class="tab" onclick="switchTab('practitioners', this)">Professionals <span class="tab-count red" id="tabPracCount">0</span></button>
+    <button class="tab" onclick="switchTab('businesses', this)">Businesses <span class="tab-count red" id="tabBizCount">0</span></button>
+    <button class="tab" onclick="switchTab('mgr', this)">Managers <span class="tab-count red" id="tabMgrCount">0</span></button>
+    <button class="tab" onclick="switchTab('wall', this)">IdeaWall <span class="tab-count red" id="tabWallCount">0</span></button>
+    <a class="tab" href="/wa-sim" target="_blank" style="text-decoration:none">WhatsApp simulator</a>
+    <button class="tab" onclick="switchTab('withdrawals', this)">Withdrawals <span class="tab-count red" id="tabWithdrawCount">0</span></button>
+    <button class="tab" onclick="switchTab('users', this)">Users <span class="tab-count" id="tabUserCount">0</span></button>
+    <button class="tab" onclick="switchTab('hires', this)">Hire Requests <span class="tab-count" id="tabHireCount">0</span></button>
+    <button class="tab" onclick="switchTab('ideas', this)">Ideas <span class="tab-count" id="tabIdeaCount">0</span></button>
+    <button class="tab" onclick="switchTab('patents', this)">Patent Review <span class="tab-count red" id="tabPatentCount">0</span></button>
   </div>
 
   <!-- CERTIFICATES TAB -->
   <div class="tab-content active" id="tab-certs">
     <div style="display:flex;gap:10px;margin-bottom:1.25rem;">
-      <button onclick="filterCerts('pending')" id="certFilter-pending" style="background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">⏳ Pending</button>
-      <button onclick="filterCerts('approved')" id="certFilter-approved" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">✅ Approved</button>
-      <button onclick="filterCerts('rejected')" id="certFilter-rejected" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">❌ Rejected</button>
+      <button onclick="filterCerts('pending')" id="certFilter-pending" style="background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">Pending</button>
+      <button onclick="filterCerts('approved')" id="certFilter-approved" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">Approved</button>
+      <button onclick="filterCerts('rejected')" id="certFilter-rejected" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">Rejected</button>
       <button onclick="filterCerts('all')" id="certFilter-all" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;">All</button>
     </div>
     <div id="certsList"><div class="loading"><div class="spin"></div> Loading certificates...</div></div>
@@ -267,13 +240,13 @@
     <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Patent attorneys and agents add their patent-office registrations here. Check each number on the office's official register (name must match), then verify it. Only verified registrations let them receive patent work for that office. For the USPTO, use the public practitioner search.</div>
     <div id="pracList"><div class="loading"><div class="spin"></div> Loading…</div></div>
     <div style="font-size:15px;font-weight:700;margin:2rem 0 .5rem">Accountants, company secretaries and virtual managers</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Open the document and check it against the issuing body's public register (CA Sri Lanka member search, ACCA register, Registrar of Companies, etc.). For a government ID, check the photo, name and that the last 4 characters match. Verifying gives the ✅ badge and lists them in Find Support.</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Open the document and check it against the issuing body's public register (CA Sri Lanka member search, ACCA register, Registrar of Companies, etc.). For a government ID, check the photo, name and that the last 4 characters match. Verifying gives the badge and lists them in Professionals.</div>
     <div id="credList"><div class="loading"><div class="spin"></div> Loading…</div></div>
   </div>
 
   <!-- BUSINESSES TAB -->
   <div class="tab-content" id="tab-businesses">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Business Expansion listings go live only after you check them. Open the certificate and compare the company name and registration number with the official register (in Sri Lanka, the Registrar of Companies e-ROC search). Approve to make it live with the ✅ Verified badge, or send it back with a reason.</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Business Expansion listings go live only after you check them. Open the certificate and compare the company name and registration number with the official register (in Sri Lanka, the Registrar of Companies e-ROC search). Approve to make it live with the Verified badge, or send it back with a reason.</div>
     <div id="bizList"><div class="loading"><div class="spin"></div> Loading…</div></div>
   </div>
 
@@ -302,7 +275,7 @@
 
   <!-- USERS TAB -->
   <div class="tab-content" id="tab-users">
-    <input class="search-input" id="userSearch" placeholder="🔍 Search users by name or email..." oninput="filterUsers()" />
+    <input class="search-input" id="userSearch" placeholder="Search users by name or email..." oninput="filterUsers()" />
     <div class="user-table">
       <div class="user-head">
         <div>User</div><div>Role</div><div>Country</div><div>Joined</div><div>Status</div>
@@ -330,7 +303,7 @@
   <div class="tab-content" id="tab-ideas">
     <div id="appealsBox"></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <input class="search-input" id="ideaSearch" placeholder="🔍 Search ideas..." oninput="filterIdeas()" style="flex:1;min-width:220px;" />
+      <input class="search-input" id="ideaSearch" placeholder="Search ideas..." oninput="filterIdeas()" style="flex:1;min-width:220px;" />
       <select id="ideaStatus" onchange="filterIdeas()" style="margin-bottom:1rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:0.7rem 0.9rem;font-size:13px;font-family:inherit;">
         <option value="">All statuses</option><option value="live">Live</option><option value="under_review">Under review</option><option value="rejected">Rejected</option><option value="escrow">In escrow</option><option value="sold">Sold</option>
       </select>
@@ -348,7 +321,7 @@
 <!-- REJECT REASON MODAL -->
 <div class="modal-overlay" id="rejectModal">
   <div class="modal">
-    <div class="modal-title">❌ Reject Certificate</div>
+    <div class="modal-title">Reject Certificate</div>
     <div class="modal-sub">Please provide a reason so the user knows what to fix or resubmit.</div>
     <textarea id="rejectReason" placeholder="e.g. Certificate appears expired. Please upload a valid, current certificate from an accredited institution."></textarea>
     <div class="modal-actions">
@@ -365,7 +338,7 @@
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
   if (!token || !user) window.location.href = '/login';
-  if (user?.role !== 'admin') { alert('Admin access only!'); window.location.href = '/'; }
+  if (user?.role !== 'admin') { location.replace(user ? '/dashboard' : '/login?next=%2Fadmin'); throw new Error('admin only'); }
 
   const initials = (user?.first_name?.[0]||'') + (user?.last_name?.[0]||'');
   document.getElementById('sidebarAvatar').textContent = initials||'A';
@@ -374,7 +347,7 @@
   function logout() { localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user'); window.location.href='/login'; }
 
   const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', admin:'Admin' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
+  const roleEmoji = { virtual_manager:'', patent_attorney:'', chartered_accountant:'', corporate_services:'' };
 
   let allCerts = []; let allUsers = []; let allHires = []; let allIdeas = []; let allRoleRequests = []; let allDisputes = []; let allWithdrawals = [];
   function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
@@ -388,7 +361,7 @@
     document.getElementById(`tab-${tab}`).classList.add('active');
   }
 
-  function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
+  function formatDate(d) { if (!d || isNaN(new Date(d))) return '—'; return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
 
   // CERTIFICATES
   function filterCerts(status) {
@@ -404,7 +377,7 @@
   function renderCerts() {
     const filtered = activeCertFilter === 'all' ? allCerts : allCerts.filter(c => c.status === activeCertFilter);
     const el = document.getElementById('certsList');
-    if (!filtered.length) { el.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No ${activeCertFilter} certificates</div></div>`; return; }
+    if (!filtered.length) { el.innerHTML=`<div class="empty"><div class="empty-icon"></div><div class="empty-text">No ${activeCertFilter} certificates</div></div>`; return; }
 
     el.innerHTML = filtered.map(c => {
       const uName = `${c.user?.first_name||''} ${c.user?.last_name||''}`.trim()||'Unknown';
@@ -418,29 +391,29 @@
               <div class="cert-avatar">${uInitials}</div>
               <div class="cert-user-info">
                 <div class="cert-user-name">${escHtml(uName)}</div>
-                <div class="cert-user-role">${roleEmoji[uRole]||'👤'} ${roleMap[uRole]||uRole}</div>
+                <div class="cert-user-role">${roleEmoji[uRole]||''} ${roleMap[uRole]||uRole}</div>
               </div>
             </div>
-            <span class="cert-status-badge ${c.status}">${c.status==='pending'?'⏳ Pending':c.status==='approved'?'✅ Approved':'❌ Rejected'}</span>
+            <span class="cert-status-badge ${c.status}">${c.status==='pending'?'Pending':c.status==='approved'?'Approved':'Rejected'}</span>
           </div>
 
           <div class="cert-details">
-            <div class="cert-detail"><div class="cert-detail-label">Certificate</div><div class="cert-detail-val">${c.title}</div></div>
+            <div class="cert-detail"><div class="cert-detail-label">Certificate</div><div class="cert-detail-val">${escHtml(c.title)}</div></div>
             <div class="cert-detail"><div class="cert-detail-label">Issued By</div><div class="cert-detail-val">${c.issuer||'—'}</div></div>
             <div class="cert-detail"><div class="cert-detail-label">Year</div><div class="cert-detail-val">${c.issued_year||'—'}</div></div>
           </div>
 
           <div style="margin-bottom:0.75rem;">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">📎 File: ${c.file_name||'Unknown file'}</div>
-            <div style="font-size:12px;color:var(--muted);">📅 Submitted: ${formatDate(c.created_at)}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">File: ${escHtml(c.file_name||'Unknown file')}</div>
+            <div style="font-size:12px;color:var(--muted);">Submitted: ${formatDate(c.created_at)}</div>
             ${c.status==='rejected'&&c.reject_reason?`<div style="font-size:12px;color:var(--error);margin-top:4px;">Reason: ${c.reject_reason}</div>`:''}
-            ${c.status==='approved'&&c.verified_at?`<div style="font-size:12px;color:var(--success);margin-top:4px;">✅ Approved: ${formatDate(c.verified_at)}</div>`:''}
+            ${c.status==='approved'&&c.verified_at?`<div style="font-size:12px;color:var(--success);margin-top:4px;">Approved: ${formatDate(c.verified_at)}</div>`:''}
           </div>
 
           ${c.status==='pending' ? `
             <div class="cert-actions">
-              <button class="btn-approve" onclick="approveCert(${c.id})">✅ Approve</button>
-              <button class="btn-reject-cert" onclick="openReject(${c.id})">❌ Reject</button>
+              <button class="btn-approve" onclick="approveCert(${c.id})">Approve</button>
+              <button class="btn-reject-cert" onclick="openReject(${c.id})">Reject</button>
               <span style="font-size:12px;color:var(--muted);">User: ${escHtml(uName)} · ${escHtml(c.user?.email||'')}</span>
             </div>
           ` : ''}
@@ -483,7 +456,7 @@
   function renderRoleRequests() {
     const el = document.getElementById('rolesList');
     const pending = allRoleRequests.filter(r => r.status === 'pending');
-    if (!pending.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🔄</div><div class="empty-text">No pending role requests</div></div>`; return; }
+    if (!pending.length) { el.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No pending role requests</div></div>`; return; }
 
     el.innerHTML = pending.map(r => {
       const uName = `${r.user?.first_name||''} ${r.user?.last_name||''}`.trim()||'Unknown';
@@ -500,9 +473,9 @@
             <div class="cert-detail"><div class="cert-detail-label">Jurisdiction</div><div class="cert-detail-val">${escHtml(r.jurisdiction||'—')}</div></div>
           </div>
           <div style="margin-bottom:1rem;">
-            ${r.licence_file_url ? `<a href="${escHtml(r.licence_file_url)}" target="_blank" class="cert-file-btn">📄 View ${ca ? 'Certificate' : 'Licence'}</a>` : ''}
-            ${r.gov_id_url ? `<a href="${escHtml(r.gov_id_url)}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
-            ${!r.licence_file_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">⚠️ No documents uploaded</div>' : ''}
+            ${r.licence_file_url ? `<a href="${escHtml(r.licence_file_url)}" target="_blank" class="cert-file-btn">View ${ca ? 'Certificate' : 'Licence'}</a>` : ''}
+            ${r.gov_id_url ? `<a href="${escHtml(r.gov_id_url)}" target="_blank" class="cert-file-btn" style="margin-left:8px;">View Gov ID</a>` : ''}
+            ${!r.licence_file_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">No documents uploaded</div>' : ''}
           </div>
           ${r.statement ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${escHtml(r.statement)}</div>` : ''}
         `;
@@ -514,9 +487,9 @@
             <div class="cert-detail"><div class="cert-detail-label">Year</div><div class="cert-detail-val">${escHtml(r.patent_year||'—')}</div></div>
           </div>
           <div style="margin-bottom:1rem;">
-            ${r.patent_cert_url ? `<a href="${escHtml(r.patent_cert_url)}" target="_blank" class="cert-file-btn">📄 View Patent Cert</a>` : ''}
-            ${r.gov_id_url ? `<a href="${escHtml(r.gov_id_url)}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Gov ID</a>` : ''}
-            ${!r.patent_cert_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">⚠️ No documents uploaded</div>' : ''}
+            ${r.patent_cert_url ? `<a href="${escHtml(r.patent_cert_url)}" target="_blank" class="cert-file-btn">View Patent Cert</a>` : ''}
+            ${r.gov_id_url ? `<a href="${escHtml(r.gov_id_url)}" target="_blank" class="cert-file-btn" style="margin-left:8px;">View Gov ID</a>` : ''}
+            ${!r.patent_cert_url && !r.gov_id_url ? '<div style="font-size:12px;color:var(--error);">No documents uploaded</div>' : ''}
           </div>
           ${r.patent_description ? `<div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">${escHtml(r.patent_description)}</div>` : ''}
         `;
@@ -532,13 +505,13 @@
                 <div class="cert-user-role">Currently: ${roleMap[r.user?.role]||r.user?.role||'—'} → Requesting: <strong>${roleLabel}</strong></div>
               </div>
             </div>
-            <span class="cert-status-badge pending">⏳ Pending</span>
+            <span class="cert-status-badge pending">Pending</span>
           </div>
           ${detailsHtml}
           <div class="cert-actions">
-            <button class="btn-approve" onclick="approveRoleRequest(${r.id})">✅ Approve</button>
-            <button class="btn-reject-cert" onclick="rejectRoleRequest(${r.id})">❌ Reject</button>
-            <span style="font-size:12px;color:var(--muted);">${r.user?.email||''} · ${formatDate(r.created_at)}</span>
+            <button class="btn-approve" onclick="approveRoleRequest(${r.id})">Approve</button>
+            <button class="btn-reject-cert" onclick="rejectRoleRequest(${r.id})">Reject</button>
+            <span style="font-size:12px;color:var(--muted);">${escHtml(r.user?.email||'')} · ${formatDate(r.created_at)}</span>
           </div>
         </div>
       `;
@@ -573,7 +546,7 @@
   // DISPUTES
   function renderDisputes() {
     const el = document.getElementById('disputesList');
-    if (!allDisputes.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⚖️</div><div class="empty-text">No open disputes</div></div>`; return; }
+    if (!allDisputes.length) { el.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No open disputes</div></div>`; return; }
     el.innerHTML = allDisputes.map(t => {
       if (t.kind === 'patent') return patentDisputeCard(t);
       if (t.kind === 'room_job') return roomJobCard(t);
@@ -589,7 +562,7 @@
               <div class="cert-user-name">${escHtml(t.idea_title || 'Idea')} · <span style="color:var(--accent);">$${Number(t.amount||0).toLocaleString()}</span></div>
               <div class="cert-user-role">Deal #${escHtml(t.id)} · disputed ${formatDate(t.disputed_at)}${days ? ` (${days} day${days>1?'s':''} ago)` : ''}</div>
             </div>
-            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+            <span class="cert-status-badge rejected">Disputed</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Buyer</div><div class="cert-detail-val">${escHtml(buyer)}</div><div style="font-size:11px;color:var(--muted);">${escHtml(t.buyer?.email||'')}</div></div>
@@ -598,8 +571,8 @@
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Buyer's reason</div>${escHtml(t.dispute_reason || '—')}</div>
           <div class="cert-actions">
-            <button class="btn-approve" onclick="resolveDispute('${t.id}','release')">💰 Release to seller</button>
-            <button class="btn-reject-cert" onclick="resolveDispute('${t.id}','refund')">↩️ Refund buyer</button>
+            <button class="btn-approve" onclick="resolveDispute('${t.id}','release')">Release to seller</button>
+            <button class="btn-reject-cert" onclick="resolveDispute('${t.id}','refund')">Refund buyer</button>
           </div>
         </div>`;
     }).join('');
@@ -613,10 +586,10 @@
         <div class="cert-card pending">
           <div class="cert-top">
             <div class="cert-user-info">
-              <div class="cert-user-name">📜 ${escHtml(p.title || 'Patent application')} · <span style="color:var(--accent);">$${Number(p.amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-name">${escHtml(p.title || 'Patent application')} · <span style="color:var(--accent);">$${Number(p.amount||0).toLocaleString()}</span></div>
               <div class="cert-user-role">Patent job #${escHtml(p.id)} · ${escHtml((p.stage||'').replace(/_/g,' '))} · ${escHtml(p.jurisdiction||'')} · disputed ${formatDate(p.disputed_at)}${days ? ` (${days} day${days>1?'s':''} ago)` : ''}</div>
             </div>
-            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+            <span class="cert-status-badge rejected">Disputed</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Creator (paid)</div><div class="cert-detail-val">${escHtml(creator)}</div><div style="font-size:11px;color:var(--muted);">${escHtml(p.creator?.email||'')}</div></div>
@@ -625,9 +598,9 @@
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Creator's reason</div>${escHtml(p.dispute_reason || '—')}</div>
           <div class="cert-actions">
-            <a class="cert-file-btn" href="/patent-application?id=${encodeURIComponent(p.id)}" target="_blank">📄 Open messages &amp; files</a>
-            <button class="btn-approve" onclick="resolvePatentDispute('${escHtml(p.id)}','release')">💰 Release to attorney</button>
-            <button class="btn-reject-cert" onclick="resolvePatentDispute('${escHtml(p.id)}','refund')">↩️ Refund creator ($${Number(p.total||0).toLocaleString()})</button>
+            <a class="cert-file-btn" href="/patent-application?id=${encodeURIComponent(p.id)}" target="_blank">Open messages &amp; files</a>
+            <button class="btn-approve" onclick="resolvePatentDispute('${escHtml(p.id)}','release')">Release to attorney</button>
+            <button class="btn-reject-cert" onclick="resolvePatentDispute('${escHtml(p.id)}','refund')">Refund creator ($${Number(p.total||0).toLocaleString()})</button>
           </div>
         </div>`;
   }
@@ -644,7 +617,7 @@
   function renderRegs() {
     const el = document.getElementById('pracList');
     updatePracCount();
-    if (!allRegs.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">⚖️</div><div class="empty-text">No registrations submitted yet</div></div>`; return; }
+    if (!allRegs.length) { el.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No registrations submitted yet</div></div>`; return; }
     const order = { pending: 0, rejected: 1, verified: 2 };
     el.innerHTML = [...allRegs].sort((a, b) => order[a.status] - order[b.status]).map(r => {
       const name = `${r.user?.first_name||''} ${r.user?.last_name||''}`.trim() || 'Unknown';
@@ -656,7 +629,7 @@
               <div class="cert-user-name">${escHtml(name)} · <span style="color:var(--accent);">${escHtml(r.office_label)}</span></div>
               <div class="cert-user-role">${escHtml(r.user?.email || '')}${r.user?.country ? ' · ' + escHtml(r.user.country) : ''} · submitted ${formatDate(r.updated_at || r.created_at)}</div>
             </div>
-            <span class="cert-status-badge ${r.status === 'verified' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending'}">${r.status === 'verified' ? '✅ Verified' : r.status === 'rejected' ? '❌ Rejected' : '⏳ To check'}</span>
+            <span class="cert-status-badge ${r.status === 'verified' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending'}">${r.status === 'verified' ? 'Verified' : r.status === 'rejected' ? 'Rejected' : 'To check'}</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Registration number</div><div class="cert-detail-val">${escHtml(r.reg_number)}</div></div>
@@ -665,10 +638,10 @@
           </div>
           ${r.review_note ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:.8rem">Note: ${escHtml(r.review_note)}</div>` : ''}
           <div class="cert-actions">
-            ${r.register_url ? `<a class="cert-file-btn" href="${escHtml(r.register_url)}" target="_blank" rel="noopener">🔎 Official register</a>` : ''}
-            <a class="cert-file-btn" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔎 Search the web</a>
-            ${r.status !== 'verified' ? `<button class="btn-approve" onclick="reviewReg(${Number(r.id)},'verified')">✅ Verify</button>` : ''}
-            ${r.status !== 'rejected' ? `<button class="btn-reject-cert" onclick="reviewReg(${Number(r.id)},'rejected')">❌ ${r.status === 'verified' ? 'Revoke' : 'Reject'}</button>` : ''}
+            ${r.register_url ? `<a class="cert-file-btn" href="${escHtml(r.register_url)}" target="_blank" rel="noopener">Official register</a>` : ''}
+            <a class="cert-file-btn" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">Search the web</a>
+            ${r.status !== 'verified' ? `<button class="btn-approve" onclick="reviewReg(${Number(r.id)},'verified')">Verify</button>` : ''}
+            ${r.status !== 'rejected' ? `<button class="btn-reject-cert" onclick="reviewReg(${Number(r.id)},'rejected')">${r.status === 'verified' ? 'Revoke' : 'Reject'}</button>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -684,7 +657,7 @@
   function renderCreds() {
     updatePracCount();
     const el = document.getElementById('credList');
-    if (!allCreds.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🪪</div><div class="empty-text">No credentials submitted yet</div></div>`; return; }
+    if (!allCreds.length) { el.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No credentials submitted yet</div></div>`; return; }
     const order = { pending: 0, rejected: 1, verified: 2 };
     const roleLbl = { chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney / Agent' };
     el.innerHTML = [...allCreds].sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3)).map(c => {
@@ -696,7 +669,7 @@
               <div class="cert-user-name">${escHtml(name)} · <span style="color:var(--accent);">${escHtml(c.kind_label || c.kind)}</span></div>
               <div class="cert-user-role">${escHtml(roleLbl[c.user?.role] || c.user?.role || '')} · ${escHtml(c.user?.email || '')}${c.user?.country ? ' · ' + escHtml(c.user.country) : ''} · submitted ${formatDate(c.updated_at || c.created_at)}</div>
             </div>
-            <span class="cert-status-badge ${c.status === 'verified' ? 'approved' : c.status === 'rejected' ? 'rejected' : 'pending'}">${c.status === 'verified' ? '✅ Verified' : c.status === 'rejected' ? '❌ Rejected' : '⏳ To check'}</span>
+            <span class="cert-status-badge ${c.status === 'verified' ? 'approved' : c.status === 'rejected' ? 'rejected' : 'pending'}">${c.status === 'verified' ? 'Verified' : c.status === 'rejected' ? 'Rejected' : 'To check'}</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Issued by</div><div class="cert-detail-val">${escHtml(c.body)}</div></div>
@@ -705,10 +678,10 @@
           </div>
           ${c.review_note ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:.8rem">Note: ${escHtml(c.review_note)}</div>` : ''}
           <div class="cert-actions">
-            <button class="cert-file-btn" onclick="openCredFile(${Number(c.id)})">📄 Open document</button>
-            ${c.kind !== 'identity' ? `<a class="cert-file-btn" href="https://www.google.com/search?q=${encodeURIComponent((c.name_on_record || name) + ' ' + c.body + ' ' + c.number)}" target="_blank" rel="noopener">🔎 Search the web</a>` : ''}
-            ${c.status !== 'verified' ? `<button class="btn-approve" onclick="reviewCred(${Number(c.id)},'verified')">✅ Verify</button>` : ''}
-            ${c.status !== 'rejected' ? `<button class="btn-reject-cert" onclick="reviewCred(${Number(c.id)},'rejected')">❌ ${c.status === 'verified' ? 'Revoke' : 'Reject'}</button>` : ''}
+            <button class="cert-file-btn" onclick="openCredFile(${Number(c.id)})">Open document</button>
+            ${c.kind !== 'identity' ? `<a class="cert-file-btn" href="https://www.google.com/search?q=${encodeURIComponent((c.name_on_record || name) + ' ' + c.body + ' ' + c.number)}" target="_blank" rel="noopener">Search the web</a>` : ''}
+            ${c.status !== 'verified' ? `<button class="btn-approve" onclick="reviewCred(${Number(c.id)},'verified')">Verify</button>` : ''}
+            ${c.status !== 'rejected' ? `<button class="btn-reject-cert" onclick="reviewCred(${Number(c.id)},'rejected')">${c.status === 'verified' ? 'Revoke' : 'Reject'}</button>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -738,7 +711,7 @@
     try { const r = await fetch(`${API_URL}/api/admin/wall/reports`, { headers:{ Authorization:`Bearer ${token}` } }); list = r.ok ? await r.json() : []; } catch (e) { list = []; }
     document.getElementById('tabWallCount').textContent = list.length;
     const el = document.getElementById('wallList');
-    if (!list.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No reported posts</div></div>`; return; }
+    if (!list.length) { el.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No reported posts</div></div>`; return; }
     el.innerHTML = list.map(p => {
       const reasons = {}; p.reports.forEach(r => { reasons[r.reason] = (reasons[r.reason] || 0) + 1; });
       const img = (p.media || []).find(m => m.type !== 'video');
@@ -755,9 +728,9 @@
         <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;max-height:160px;overflow:auto;white-space:pre-wrap">${escHtml(p.description || '')}</div>
         ${img ? `<img src="${escHtml(img.url)}" alt="" style="max-width:220px;max-height:160px;border-radius:8px;margin-bottom:1rem;object-fit:cover">` : ''}
         <div class="cert-actions">
-          <a class="cert-file-btn" href="/wall/post/${Number(p.id)}" target="_blank">🔗 Open post</a>
-          <button class="btn-approve" onclick="reviewWall(${Number(p.id)},'keep')">✅ Keep</button>
-          <button class="btn-reject-cert" onclick="reviewWall(${Number(p.id)},'remove')">🗑️ Remove</button>
+          <a class="cert-file-btn" href="/wall/post/${Number(p.id)}" target="_blank">Open post</a>
+          <button class="btn-approve" onclick="reviewWall(${Number(p.id)},'keep')">Keep</button>
+          <button class="btn-reject-cert" onclick="reviewWall(${Number(p.id)},'remove')">Remove</button>
         </div>
       </div>`;
     }).join('');
@@ -783,9 +756,9 @@
           <span class="cert-status-badge ${held ? 'rejected' : 'pending'}">${held ? 'Problem reported' : 'Unpaid 14+ days'}</span></div>
         ${b.description ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:.5rem">${escHtml(b.description)}</div>` : ''}
         ${b.dispute_reason ? `<div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;white-space:pre-wrap">${escHtml(b.dispute_reason)}</div>` : ''}
-        <div class="cert-actions"><a class="cert-file-btn" href="/mandate?id=${Number(b.mandate_id)}&tab=activity" target="_blank">🔗 Open mandate</a>
-          ${held ? `<button class="btn-approve" onclick="resolveMgrBill(${Number(b.id)},'release')">✅ Release to manager</button><button class="btn-reject-cert" onclick="resolveMgrBill(${Number(b.id)},'refund')">↩️ Refund client</button>` : ''}</div></div>`;
-    el.innerHTML = (d.disputed.length ? d.disputed.map(b => card(b, true)).join('') : `<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No disputed manager fees</div></div>`)
+        <div class="cert-actions"><a class="cert-file-btn" href="/mandate?id=${Number(b.mandate_id)}&tab=activity" target="_blank">Open mandate</a>
+          ${held ? `<button class="btn-approve" onclick="resolveMgrBill(${Number(b.id)},'release')">Release to manager</button><button class="btn-reject-cert" onclick="resolveMgrBill(${Number(b.id)},'refund')">Refund client</button>` : ''}</div></div>`;
+    el.innerHTML = (d.disputed.length ? d.disputed.map(b => card(b, true)).join('') : `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No disputed manager fees</div></div>`)
       + (d.overdue.length ? `<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:1.5rem 0 .75rem">Unpaid for over 14 days</div>` + d.overdue.map(b => card(b, false)).join('') : '');
   }
   async function resolveMgrBill(id, action) {
@@ -818,27 +791,27 @@
               <div class="cert-user-name">${escHtml(b.business_name)} · <span style="color:var(--accent);">${escHtml(b.industry || '')}</span></div>
               <div class="cert-user-role">Owner: ${escHtml(owner)} · ${escHtml(b.owner?.email || '')} · ${escHtml(b.city ? b.city + ', ' : '')}${escHtml(b.country || '')} · updated ${formatDate(b.updated_at || b.created_at)}</div>
             </div>
-            <span class="cert-status-badge ${b.is_verified ? 'approved' : b.status === 'rejected' ? 'rejected' : 'pending'}">${escHtml(b.status_label)}${b.is_verified ? ' · ✅' : ''}</span>
+            <span class="cert-status-badge ${b.is_verified ? 'approved' : b.status === 'rejected' ? 'rejected' : 'pending'}">${escHtml(b.status_label)}${b.is_verified ? ' ·' : ''}</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Registration number</div><div class="cert-detail-val">${escHtml(b.reg_number || '—')}</div></div>
             <div class="cert-detail"><div class="cert-detail-label">Registered in</div><div class="cert-detail-val">${escHtml(b.reg_country || b.country || '—')}</div></div>
             <div class="cert-detail"><div class="cert-detail-label">Certificate</div><div class="cert-detail-val">${b.has_document ? escHtml(b.reg_doc_name || 'Uploaded') : 'Not uploaded yet'}</div></div>
           </div>
-          <div style="font-size:12.5px;margin-bottom:.6rem"><b>${b.direction === 'seek' ? 'Looking for' : 'Offering'}:</b> ${escHtml((b.expansion_types || []).join(', ').replace(/_/g, ' '))} · route: ${escHtml(b.route || '—')}${b.confidential ? ' · <span style="color:#c4b5fd">🔒 Confidential</span>' : ''}</div>
+          <div style="font-size:12.5px;margin-bottom:.6rem"><b>${b.direction === 'seek' ? 'Looking for' : 'Offering'}:</b> ${escHtml((b.expansion_types || []).join(', ').replace(/_/g, ' '))} · route: ${escHtml(b.route || '—')}${b.confidential ? ' · <span style="color:#c4b5fd">Confidential</span>' : ''}</div>
           ${b.confidential ? `<div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.3);border-radius:8px;padding:0.75rem;font-size:13px;line-height:1.6;margin-bottom:.6rem"><div class="cert-detail-label">Public summary (check it doesn't reveal the business)</div><b>${escHtml(b.teaser_title || '')}</b><br>${escHtml(b.teaser || '')}</div>` : ''}
           <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;max-height:120px;overflow:auto;white-space:pre-wrap">${escHtml(b.description || '')}</div>
           ${b.review_note ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:.8rem">Last note: ${escHtml(b.review_note)}</div>` : ''}
           <div class="cert-actions">
-            ${b.has_document ? `<button class="cert-file-btn" onclick="openBizDoc(${Number(b.id)})">📄 Open certificate</button>` : ''}
-            <a class="cert-file-btn" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔎 Search the web</a>
-            ${/^https?:\/\//i.test(b.website || '') ? `<a class="cert-file-btn" href="${escHtml(b.website)}" target="_blank" rel="noopener nofollow">🌐 Website</a>` : ''}
-            ${!b.is_verified && b.has_document ? `<button class="btn-approve" onclick="reviewBiz(${Number(b.id)},'approve')">✅ Approve</button>` : ''}
-            ${b.status !== 'rejected' && b.status !== 'closed' ? `<button class="btn-reject-cert" onclick="reviewBiz(${Number(b.id)},'reject')">❌ ${b.is_verified ? 'Take down' : 'Send back'}</button>` : ''}
+            ${b.has_document ? `<button class="cert-file-btn" onclick="openBizDoc(${Number(b.id)})">Open certificate</button>` : ''}
+            <a class="cert-file-btn" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">Search the web</a>
+            ${/^https?:\/\//i.test(b.website || '') ? `<a class="cert-file-btn" href="${escHtml(b.website)}" target="_blank" rel="noopener nofollow">Website</a>` : ''}
+            ${!b.is_verified && b.has_document ? `<button class="btn-approve" onclick="reviewBiz(${Number(b.id)},'approve')">Approve</button>` : ''}
+            ${b.status !== 'rejected' && b.status !== 'closed' ? `<button class="btn-reject-cert" onclick="reviewBiz(${Number(b.id)},'reject')">${b.is_verified ? 'Take down' : 'Send back'}</button>` : ''}
           </div>
         </div>`;
     };
-    el.innerHTML = (queue.length ? queue.map(card).join('') : `<div class="empty"><div class="empty-icon">🏢</div><div class="empty-text">No listings waiting for review</div></div>`)
+    el.innerHTML = (queue.length ? queue.map(card).join('') : `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No listings waiting for review</div></div>`)
       + (legacy.length ? `<div style="font-size:15px;font-weight:700;margin:2rem 0 .5rem">Live but not verified (listed before checks started)</div>` + legacy.map(card).join('') : '');
   }
   async function openBizDoc(id) {
@@ -865,10 +838,10 @@
         <div class="cert-card pending">
           <div class="cert-top">
             <div class="cert-user-info">
-              <div class="cert-user-name">💼 ${escHtml(h.title)} · <span style="color:var(--accent);">$${Number(h.amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-name">${escHtml(h.title)} · <span style="color:var(--accent);">$${Number(h.amount||0).toLocaleString()}</span></div>
               <div class="cert-user-role">Hire #${escHtml(h.id)} · disputed ${formatDate(h.disputed_at)}</div>
             </div>
-            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+            <span class="cert-status-badge rejected">Disputed</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Client (paid)</div><div class="cert-detail-val">${escHtml(nm(h.client))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(h.client?.email||'')}</div></div>
@@ -877,9 +850,9 @@
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Agreed scope</div>${escHtml(h.quote_scope||h.description||'')}<div class="cert-detail-label" style="margin-top:8px">Client's reason</div>${escHtml(h.dispute_reason||'—')}</div>
           <div class="cert-actions">
-            <a class="cert-file-btn" href="/hire?id=${encodeURIComponent(h.id)}" target="_blank">📄 Open hire &amp; messages</a>
-            <button class="btn-approve" onclick="resolveHire('${escHtml(h.id)}','release')">💰 Release to professional</button>
-            <button class="btn-reject-cert" onclick="resolveHire('${escHtml(h.id)}','refund')">↩️ Refund client ($${Number(h.total||0).toLocaleString()})</button>
+            <a class="cert-file-btn" href="/hire?id=${encodeURIComponent(h.id)}" target="_blank">Open hire &amp; messages</a>
+            <button class="btn-approve" onclick="resolveHire('${escHtml(h.id)}','release')">Release to professional</button>
+            <button class="btn-reject-cert" onclick="resolveHire('${escHtml(h.id)}','refund')">Refund client ($${Number(h.total||0).toLocaleString()})</button>
           </div>
         </div>`;
   }
@@ -889,10 +862,10 @@
         <div class="cert-card pending">
           <div class="cert-top">
             <div class="cert-user-info">
-              <div class="cert-user-name">🎯 ${escHtml(r.title)} · <span style="color:var(--accent);">$${Number(r.escrow_amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-name">${escHtml(r.title)} · <span style="color:var(--accent);">$${Number(r.escrow_amount||0).toLocaleString()}</span></div>
               <div class="cert-user-role">Idea request #${escHtml(r.id)} · disputed ${formatDate(r.disputed_at)}</div>
             </div>
-            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+            <span class="cert-status-badge rejected">Disputed</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Investor (paid)</div><div class="cert-detail-val">${escHtml(nm(r.investor))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(r.investor?.email||'')}</div></div>
@@ -901,9 +874,9 @@
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Agreed scope</div>${escHtml(r.agreed_scope||'—')}${r.delivery_note ? `<div class="cert-detail-label" style="margin-top:8px">Delivery note</div>${escHtml(r.delivery_note)}` : ''}<div class="cert-detail-label" style="margin-top:8px">Investor's reason</div>${escHtml(r.dispute_reason||'—')}</div>
           <div class="cert-actions">
-            <a class="cert-file-btn" href="/request/${encodeURIComponent(r.id)}" target="_blank">📄 Open request &amp; files</a>
-            <button class="btn-approve" onclick="resolveRequest('${escHtml(r.id)}','release')">💰 Release to creator</button>
-            <button class="btn-reject-cert" onclick="resolveRequest('${escHtml(r.id)}','refund')">↩️ Refund investor ($${Number(r.total||0).toLocaleString()})</button>
+            <a class="cert-file-btn" href="/request/${encodeURIComponent(r.id)}" target="_blank">Open request &amp; files</a>
+            <button class="btn-approve" onclick="resolveRequest('${escHtml(r.id)}','release')">Release to creator</button>
+            <button class="btn-reject-cert" onclick="resolveRequest('${escHtml(r.id)}','refund')">Refund investor ($${Number(r.total||0).toLocaleString()})</button>
           </div>
         </div>`;
   }
@@ -942,10 +915,10 @@
         <div class="cert-card pending">
           <div class="cert-top">
             <div class="cert-user-info">
-              <div class="cert-user-name">🤝 ${escHtml(j.title)} · <span style="color:var(--accent);">$${Number(j.amount||0).toLocaleString()}</span></div>
+              <div class="cert-user-name">${escHtml(j.title)} · <span style="color:var(--accent);">$${Number(j.amount||0).toLocaleString()}</span></div>
               <div class="cert-user-role">Adviser job #${escHtml(j.id)} in deal room #${escHtml(j.room_id)} · disputed ${formatDate(j.disputed_at)}</div>
             </div>
-            <span class="cert-status-badge rejected">⚠️ Disputed</span>
+            <span class="cert-status-badge rejected">Disputed</span>
           </div>
           <div class="cert-details">
             <div class="cert-detail"><div class="cert-detail-label">Client (paid)</div><div class="cert-detail-val">${escHtml(nm(j.client))}</div><div style="font-size:11px;color:var(--muted);">${escHtml(j.client?.email||'')}</div></div>
@@ -954,9 +927,9 @@
           </div>
           <div style="background:var(--surface2);border-radius:8px;padding:0.85rem;font-size:13px;line-height:1.6;margin-bottom:1rem;"><div class="cert-detail-label">Scope</div>${escHtml(j.scope||'')}<div class="cert-detail-label" style="margin-top:8px">Client's reason</div>${escHtml(j.dispute_reason||'—')}</div>
           <div class="cert-actions">
-            <a class="cert-file-btn" href="/deal-room?id=${encodeURIComponent(j.room_id)}" target="_blank">📄 Open deal room</a>
-            <button class="btn-approve" onclick="resolveRoomJob('${escHtml(j.id)}','release')">💰 Release to adviser</button>
-            <button class="btn-reject-cert" onclick="resolveRoomJob('${escHtml(j.id)}','refund')">↩️ Refund client ($${Number(j.total||0).toLocaleString()})</button>
+            <a class="cert-file-btn" href="/deal-room?id=${encodeURIComponent(j.room_id)}" target="_blank">Open deal room</a>
+            <button class="btn-approve" onclick="resolveRoomJob('${escHtml(j.id)}','release')">Release to adviser</button>
+            <button class="btn-reject-cert" onclick="resolveRoomJob('${escHtml(j.id)}','refund')">Refund client ($${Number(j.total||0).toLocaleString()})</button>
           </div>
         </div>`;
   }
@@ -1001,7 +974,7 @@
   // WITHDRAWALS
   function renderWithdrawals() {
     const el = document.getElementById('withdrawalsList');
-    if (!allWithdrawals.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">💸</div><div class="empty-text">No withdrawal requests yet</div></div>`; return; }
+    if (!allWithdrawals.length) { el.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No withdrawal requests yet</div></div>`; return; }
     const pending = allWithdrawals.filter(w => w.status === 'requested');
     const done = allWithdrawals.filter(w => w.status !== 'requested');
     const detailRows = w => {
@@ -1017,12 +990,12 @@
             <div class="cert-user-name">${escHtml(`${w.user?.first_name||''} ${w.user?.last_name||''}`.trim() || 'Seller')} · <span style="color:var(--accent);">$${Number(w.amount).toLocaleString()}</span></div>
             <div class="cert-user-role">${escHtml(w.user?.email||'')} · requested ${formatDate(w.requested_at)} · ${w.method === 'paypal' ? 'PayPal' : 'Bank transfer'}</div>
           </div>
-          <span class="cert-status-badge pending">⏳ To pay</span>
+          <span class="cert-status-badge pending">To pay</span>
         </div>
         <div class="cert-details">${detailRows(w)}</div>
         <div class="cert-actions">
-          <button class="btn-approve" onclick="processWithdrawal(${w.id},'paid')">✅ Mark as paid</button>
-          <button class="btn-reject-cert" onclick="processWithdrawal(${w.id},'rejected')">❌ Reject</button>
+          <button class="btn-approve" onclick="processWithdrawal(${w.id},'paid')">Mark as paid</button>
+          <button class="btn-reject-cert" onclick="processWithdrawal(${w.id},'rejected')">Reject</button>
         </div>
       </div>`).join('') : `<div class="empty" style="padding:1.5rem;"><div class="empty-text">Nothing to pay out right now</div></div>`)
     + (done.length ? `<div style="font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:700;margin:1.5rem 0 0.75rem;">History</div>
@@ -1032,7 +1005,7 @@
           <div style="font-weight:600;">$${Number(w.amount).toLocaleString()}</div>
           <div style="font-size:13px;color:var(--muted);">${formatDate(w.processed_at)}</div>
           <div style="font-size:12px;color:var(--muted);">${escHtml(w.reference || w.admin_note || '')}</div>
-          <div>${w.status === 'paid' ? '<span style="color:var(--success);font-size:12px;">✅ Paid</span>' : '<span style="color:var(--error);font-size:12px;">❌ Rejected</span>'}</div>
+          <div>${w.status === 'paid' ? '<span style="color:var(--success);font-size:12px;">Paid</span>' : '<span style="color:var(--error);font-size:12px;">Rejected</span>'}</div>
         </div>`).join('')}</div>` : '');
   }
 
@@ -1080,7 +1053,7 @@
 
   function renderUsers(users) {
     const el = document.getElementById('usersList');
-    if (!users.length) { el.innerHTML='<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No users found</div></div>'; return; }
+    if (!users.length) { el.innerHTML='<div class="empty"><div class="empty-icon"></div><div class="empty-text">No users found</div></div>'; return; }
     el.innerHTML = users.map(u => {
       const name = `${u.first_name||''} ${u.last_name||''}`.trim()||'Unknown';
       const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
@@ -1088,12 +1061,12 @@
         <div class="user-row">
           <div class="user-name-cell">
             <div class="user-av">${initials}</div>
-            <div><div style="font-weight:500;">${name}</div><div style="font-size:12px;color:var(--muted);">${u.email||''}</div></div>
+            <div><div style="font-weight:500;">${escHtml(name)}</div><div style="font-size:12px;color:var(--muted);">${escHtml(u.email||'')}</div></div>
           </div>
           <div><span class="role-pill ${u.role||''}">${roleMap[u.role]||u.role||'—'}</span></div>
-          <div style="font-size:13px;color:var(--muted);">${u.country||'—'}</div>
+          <div style="font-size:13px;color:var(--muted);">${escHtml(u.country||'—')}</div>
           <div style="font-size:13px;color:var(--muted);">${formatDate(u.created_at)}</div>
-          <div>${u.verification_status==='verified' ? '<span style="color:var(--success);font-size:12px;">✅ Verified</span>'
+          <div>${u.verification_status==='verified' ? '<span style="color:var(--success);font-size:12px;">Verified</span>'
             : u.verification_status==='pending' ? `<div style="display:flex;gap:4px;flex-wrap:wrap;"><button class="btn-approve" style="padding:3px 8px;font-size:11px;" onclick="setVerification(${u.id},'verified')">Verify</button><button class="btn-reject-cert" style="padding:3px 8px;font-size:11px;" onclick="setVerification(${u.id},'unverified')">Reject</button></div>`
             : '<span style="color:var(--muted);font-size:12px;">—</span>'}</div>
         </div>
@@ -1118,10 +1091,10 @@
 
   function renderIdeas(ideas) {
     const el = document.getElementById('ideasList');
-    if (!ideas.length) { el.innerHTML='<div class="empty"><div class="empty-icon">💡</div><div class="empty-text">No ideas found</div></div>'; return; }
+    if (!ideas.length) { el.innerHTML='<div class="empty"><div class="empty-icon"></div><div class="empty-text">No ideas found</div></div>'; return; }
     el.innerHTML = ideas.map(i => `
       <div class="user-row" style="grid-template-columns:2fr 1fr 1fr 1fr 110px 100px;cursor:pointer;" onclick="toggleOrig(${Number(i.id)})" title="Show originality report">
-        <div style="font-weight:500;">${escHtml(i.icon||'💡')} ${escHtml(i.title)}</div>
+        <div style="font-weight:500;">${escHtml(i.icon||'')} ${escHtml(i.title)}</div>
         <div style="font-size:13px;color:var(--muted);">${escHtml(i.industry||'—')}</div>
         <div style="font-weight:600;color:var(--accent);">$${Number(i.price||0).toLocaleString()}</div>
         <div style="font-size:13px;color:var(--muted);">${escHtml(i.creator_name||'—')}</div>
@@ -1141,18 +1114,18 @@
     const s = i.status || 'live';
     const btn = (label, color, action) => `<button onclick="event.stopPropagation();moderateIdea(${Number(i.id)}, '${action}', this)" style="background:none;border:1px solid ${color};color:${color};border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;">${label}</button>`;
     const acts = [];
-    if (['under_review', 'rejected'].includes(s)) acts.push(btn('✅ Approve & make live', '#6ee7b7', 'approve'));
-    if (['live', 'under_review'].includes(s)) acts.push(btn('❌ Reject / take down', '#ff6b6b', 'reject'));
+    if (['under_review', 'rejected'].includes(s)) acts.push(btn('Approve & make live', '#6ee7b7', 'approve'));
+    if (['live', 'under_review'].includes(s)) acts.push(btn('Reject / take down', '#ff6b6b', 'reject'));
     const note = s === 'escrow' ? 'A purchase is in progress, so this idea can\'t be taken down. Use the Disputes tab if there is a problem.'
       : s === 'sold' ? 'This idea has been sold.' : s === 'rejected' ? 'Rejected. The creator was told why and can edit and resubmit; it then comes back here as “under review”.'
       : s === 'under_review' ? 'Waiting for your review.' + (i.has_patent ? ' Patent documents are in the Patent Reviews tab.' : '') : '';
     const m = i.moderation;
-    const modLine = m && m.action ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--text);">${m.by === 'bot' ? '🤖 Originality bot' : '👤 Admin'} · ${escHtml({ hold: 'held for review', reject: 'rejected', release: 'released', approve: 'approved' }[m.action] || m.action)}${m.at ? ' · ' + new Date(m.at).toLocaleString() : ''}${m.note ? `<br><span style="color:var(--muted);">${escHtml(m.note)}</span>` : ''}</span>` : '';
+    const modLine = m && m.action ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--text);">${m.by === 'bot' ? 'Originality bot' : 'Admin'} · ${escHtml({ hold: 'held for review', reject: 'rejected', release: 'released', approve: 'approved' }[m.action] || m.action)}${m.at ? ' · ' + new Date(m.at).toLocaleString() : ''}${m.note ? `<br><span style="color:var(--muted);">${escHtml(m.note)}</span>` : ''}</span>` : '';
     const appeal = (allAppeals || []).find(a => a.idea_id === i.id);
-    const appealLine = appeal ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--accent);">📨 Open appeal: “${escHtml(appeal.message)}” — decide it in the Appeals box above.</span>` : '';
+    const appealLine = appeal ? `<span style="font-size:12.5px;flex-basis:100%;color:var(--accent);">Open appeal: “${escHtml(appeal.message)}” — decide it in the Appeals box above.</span>` : '';
     const qs = i.quality_score;
     const qIssues = (i.quality_issues || []).filter(x => x.level !== 'tip');
-    const qLine = qs != null ? `<span style="font-size:12.5px;flex-basis:100%;">📝 Listing quality <strong style="color:${qs >= 75 ? '#6ee7b7' : qs >= 55 ? '#f5c842' : '#ff6b6b'};">${Number(qs)}/100</strong>${qIssues.length ? `<span style="color:var(--muted);"> · ${qIssues.map(x => escHtml(x.message)).join(' · ')}</span>` : ''}</span>` : '';
+    const qLine = qs != null ? `<span style="font-size:12.5px;flex-basis:100%;">Listing quality <strong style="color:${qs >= 75 ? '#6ee7b7' : qs >= 55 ? '#f5c842' : '#ff6b6b'};">${Number(qs)}/100</strong>${qIssues.length ? `<span style="color:var(--muted);"> · ${qIssues.map(x => escHtml(x.message)).join(' · ')}</span>` : ''}</span>` : '';
     return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border);">
       ${modLine}${appealLine}${qLine}
       ${acts.join('')}
@@ -1193,7 +1166,7 @@
     if (!box) return;
     if (!allAppeals.length) { box.innerHTML = ''; return; }
     box.innerHTML = `<div style="border:1px solid rgba(245,200,66,0.35);background:rgba(245,200,66,0.05);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
-      <div style="font-weight:700;margin-bottom:0.75rem;">📨 Appeals waiting (${allAppeals.length})</div>
+      <div style="font-weight:700;margin-bottom:0.75rem;">Appeals waiting (${allAppeals.length})</div>
       ${allAppeals.map(a => {
         const who = a.user ? `${a.user.first_name || ''} ${a.user.last_name || ''}`.trim() || a.user.email : 'Creator';
         const idea = a.idea || {};
@@ -1202,7 +1175,7 @@
             <div><a href="/idea?id=${encodeURIComponent(a.idea_id)}" target="_blank" style="color:var(--text);font-weight:600;">${escHtml(idea.title || 'Idea #' + a.idea_id)}</a>
               <span style="color:var(--muted);"> · ${escHtml(who)} · ${escHtml((idea.status || '').replace('_', ' '))}${idea.originality_score != null ? ' · originality ' + Number(idea.originality_score) : ''} · ${new Date(a.created_at).toLocaleDateString()}</span></div>
             <div style="display:flex;gap:8px;">
-              <button onclick="decideAppeal(${Number(a.id)}, 'overturn', this)" style="background:none;border:1px solid #6ee7b7;color:#6ee7b7;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">✅ Accept · make live</button>
+              <button onclick="decideAppeal(${Number(a.id)}, 'overturn', this)" style="background:none;border:1px solid #6ee7b7;color:#6ee7b7;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">Accept · make live</button>
               <button onclick="decideAppeal(${Number(a.id)}, 'uphold', this)" style="background:none;border:1px solid #ff6b6b;color:#ff6b6b;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;">Keep decision</button>
             </div>
           </div>
@@ -1234,14 +1207,14 @@
 
   function origReport(i) {
     const r = i.originality;
-    const btn = `<button onclick="event.stopPropagation();recheckOrig(${Number(i.id)}, this)" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">${r ? '↻ Re-check' : 'Run check'}</button>`;
+    const btn = `<button onclick="event.stopPropagation();recheckOrig(${Number(i.id)}, this)" style="background:none;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;">${r ? 'Re-check' : 'Run check'}</button>`;
     if (!r) return `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><span style="color:var(--muted);">No originality check yet. Ideas are checked automatically when submitted or edited.</span>${btn}</div>`;
     const sec = (title, body) => `<div style="margin-top:12px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px;">${title}</div>${body}</div>`;
     let h = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
       <div><div style="font-weight:700;color:${origColor(r.score)};">${Number(r.score)}/100 · ${escHtml(ORIG_LABEL[r.verdict] || r.verdict)}</div>
       <div style="color:var(--muted);margin-top:4px;line-height:1.5;">${escHtml(r.summary)}</div></div>${btn}</div>`;
     if ((r.similar||[]).length) h += sec('Similar listings', r.similar.map(s =>
-      `<div style="padding:6px 0;"><a href="/idea?id=${encodeURIComponent(s.id)}" target="_blank" style="color:var(--text);font-weight:600;">${escHtml(s.title)}</a> <span style="color:var(--muted);">· ${Number(s.similarity)}% alike${s.public ? '' : ' · 🔒 private'}</span><div style="color:var(--muted);">${escHtml(s.reason)}</div></div>`).join(''));
+      `<div style="padding:6px 0;"><a href="/idea?id=${encodeURIComponent(s.id)}" target="_blank" style="color:var(--text);font-weight:600;">${escHtml(s.title)}</a> <span style="color:var(--muted);">· ${Number(s.similarity)}% alike${s.public ? '' : ' · private'}</span><div style="color:var(--muted);">${escHtml(s.reason)}</div></div>`).join(''));
     if ((r.known_products||[]).length) h += sec('Known products', r.known_products.map(p => `<div style="padding:4px 0;"><strong>${escHtml(p.name)}</strong> <span style="color:var(--muted);">— ${escHtml(p.note)}</span></div>`).join(''));
     if ((r.patent_keywords||[]).length) h += sec('Patent keywords', `${r.patent_keywords.map(k => `<span style="display:inline-block;margin:0 6px 6px 0;padding:3px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;">${escHtml(k)}</span>`).join('')}
       ${r.patent_url && /^https:\/\/patents\.google\.com\//.test(r.patent_url) ? `<div><a href="${escHtml(r.patent_url)}" target="_blank" style="color:var(--accent);">Search Google Patents ↗</a></div>` : ''}`);
@@ -1265,13 +1238,13 @@
       const idea = allIdeas.find(x => x.id === id);
       if (idea) { idea.originality = d; idea.originality_score = d.score; idea.originality_checked_at = d.checked_at; }
       openOrigId = id; filterIdeas();
-    } catch (e) { alert(e.message); btn.disabled = false; btn.textContent = '↻ Re-check'; }
+    } catch (e) { alert(e.message); btn.disabled = false; btn.textContent = 'Re-check'; }
   }
 
   // HIRES
   function renderHires(hires) {
     const el = document.getElementById('hiresList');
-    if (!hires.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🤝</div><div class="empty-text">No hire requests yet</div></div>'; return; }
+    if (!hires.length) { el.innerHTML='<div class="empty"><div class="empty-icon"></div><div class="empty-text">No hire requests yet</div></div>'; return; }
     el.innerHTML = hires.map(h => `
       <div class="hire-row">
         <div style="font-weight:500;font-size:13px;"><a href="/hire?id=${Number(h.id)}" target="_blank" style="color:inherit">${escHtml(h.title)}</a></div>
@@ -1287,38 +1260,38 @@
     const el = document.getElementById('patentsList');
     const pending = ideas.filter(i => i.status === 'under_review' && i.has_patent);
     if (!pending.length) {
-      el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No patent reviews pending</div></div>`;
+      el.innerHTML = `<div class="empty"><div class="empty-icon"></div><div class="empty-text">No patent reviews pending</div></div>`;
       return;
     }
     el.innerHTML = pending.map(i => `
       <div class="cert-card pending" style="margin-bottom:12px;">
         <div class="cert-top">
           <div class="cert-user">
-            <div class="cert-avatar">${i.creator_name ? i.creator_name.split(' ').map(n=>n[0]).join('').toUpperCase() : '?'}</div>
+            <div class="cert-avatar">${escHtml(i.creator_name ? i.creator_name.split(' ').map(n=>n[0]).join('').toUpperCase() : '?')}</div>
             <div class="cert-user-info">
-              <div class="cert-user-name">${i.title}</div>
-              <div class="cert-user-role">by ${i.creator_name || 'Unknown'}</div>
+              <div class="cert-user-name">${escHtml(i.title)}</div>
+              <div class="cert-user-role">by ${escHtml(i.creator_name || 'Unknown')}</div>
             </div>
           </div>
-          <span class="cert-status-badge pending">⏳ Under Review</span>
+          <span class="cert-status-badge pending">Under Review</span>
         </div>
 
         <div class="cert-details">
-          <div class="cert-detail"><div class="cert-detail-label">Industry</div><div class="cert-detail-val">${i.industry || '—'}</div></div>
+          <div class="cert-detail"><div class="cert-detail-label">Industry</div><div class="cert-detail-val">${escHtml(i.industry || '—')}</div></div>
           <div class="cert-detail"><div class="cert-detail-label">Price</div><div class="cert-detail-val" style="color:var(--accent);">$${(i.price||0).toLocaleString()}</div></div>
           <div class="cert-detail"><div class="cert-detail-label">Patent Number</div><div class="cert-detail-val">${i.patent_number || '—'}</div></div>
         </div>
 
         <div style="margin-bottom:1rem;">
-          ${i.patent_jurisdiction ? `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">🌍 Jurisdiction: ${i.patent_jurisdiction}</div>` : ''}
-          ${i.patent_cert_url ? `<a href="${i.patent_cert_url}" target="_blank" class="cert-file-btn">📄 View Patent Certificate</a>` : '<div style="font-size:12px;color:var(--error);">⚠️ No certificate uploaded</div>'}
-          ${i.patent_id_url ? `<a href="${i.patent_id_url}" target="_blank" class="cert-file-btn" style="margin-left:8px;">🪪 View Government ID</a>` : ''}
+          ${i.patent_jurisdiction ? `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Jurisdiction: ${i.patent_jurisdiction}</div>` : ''}
+          ${i.patent_cert_url ? `<a href="${i.patent_cert_url}" target="_blank" class="cert-file-btn">View Patent Certificate</a>` : '<div style="font-size:12px;color:var(--error);">No certificate uploaded</div>'}
+          ${i.patent_id_url ? `<a href="${i.patent_id_url}" target="_blank" class="cert-file-btn" style="margin-left:8px;">View Government ID</a>` : ''}
         </div>
 
         <div class="cert-actions">
-          <button class="btn-approve" onclick="approvePatent(${i.id})">✅ Approve & Go Live</button>
-          <button class="btn-reject-cert" onclick="rejectPatent(${i.id})">❌ Reject</button>
-          ${i.patent_number ? `<a href="https://patents.google.com/patent/${i.patent_number.replace(/[,\s]/g,'')}" target="_blank" style="font-size:12px;color:var(--accent);margin-left:8px;">🔍 Verify on Google Patents</a>` : ''}
+          <button class="btn-approve" onclick="approvePatent(${i.id})">Approve & Go Live</button>
+          <button class="btn-reject-cert" onclick="rejectPatent(${i.id})">Reject</button>
+          ${i.patent_number ? `<a href="https://patents.google.com/patent/${i.patent_number.replace(/[,\s]/g,'')}" target="_blank" style="font-size:12px;color:var(--accent);margin-left:8px;">Verify on Google Patents</a>` : ''}
         </div>
       </div>
     `).join('');
@@ -1331,7 +1304,7 @@
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       });
-      if (res.ok) { alert('✅ Idea approved and now live!'); loadAll(); }
+      if (res.ok) { alert('Idea approved and now live!'); loadAll(); }
       else { const d = await res.json(); alert(d.error || 'Failed'); }
     } catch(e) { alert('Something went wrong.'); }
   }
@@ -1345,7 +1318,7 @@
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ reason })
       });
-      if (res.ok) { alert('❌ Idea rejected.'); loadAll(); }
+      if (res.ok) { alert('Idea rejected.'); loadAll(); }
       else { const d = await res.json(); alert(d.error || 'Failed'); }
     } catch(e) { alert('Something went wrong.'); }
   }

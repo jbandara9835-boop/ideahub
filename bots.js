@@ -401,13 +401,29 @@ async function buildDigest(supabase) {
       .select('*', { count: 'exact', head: true }).eq('status', 'open')),
   ]);
 
+  // Other admin queues (each count is null if its table doesn't exist yet)
+  const q = (label, table, col, val) => countOf(supabase, label, s => s.from(table).select('*', { count: 'exact', head: true }).eq(col, val));
+  const [pendingCreds, pendingRegs, pendingListings, openWallReports, hireDisputes, requestDisputes, patentDisputes, roomDisputes, managerDisputes] = await Promise.all([
+    q('pending credentials', 'pro_credentials', 'status', 'pending'),
+    q('pending patent registrations', 'patent_registrations', 'status', 'pending'),
+    q('listings to review', 'business_listings', 'status', 'pending_review'),
+    q('open IdeaWall reports', 'wall_reports', 'status', 'open'),
+    q('hire disputes', 'hire_requests', 'status', 'disputed'),
+    q('request disputes', 'idea_requests', 'status', 'disputed'),
+    q('patent disputes', 'patent_applications', 'status', 'disputed'),
+    q('deal room job disputes', 'deal_room_jobs', 'status', 'disputed'),
+    q('manager fee disputes', 'mandate_bills', 'status', 'disputed')
+  ]);
+  const queues = { pendingCreds, pendingRegs, pendingListings, openWallReports, hireDisputes, requestDisputes, patentDisputes, roomDisputes, managerDisputes };
+
   const newEscrows = txs.filter(t => t.created_at >= since);
   const completed = txs.filter(t => t.status === 'completed' && t.completed_at && t.completed_at >= since);
   const feesEarned = completed.reduce((s, t) => s + Number(t.fee || 0), 0);
   const zeroResult = chats.filter(c => c.result_count === 0).slice(0, 8);
   const pendingVerif = pendingVerifUsers.length;
   const verifDetails = pendingVerifUsers.map(u => ({ name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email, missing: verificationMissing(u) }));
-  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0) + (openAppeals || 0) + openDisputes.length + pendingWithdrawals.length;
+  const pendingTotal = pendingVerif + (pendingRoles || 0) + (pendingPatents || 0) + (openAppeals || 0) + openDisputes.length + pendingWithdrawals.length
+    + Object.values(queues).reduce((a, b) => a + (Number(b) || 0), 0);
   // latest run per bot
   const lastRuns = {};
   for (const r of botRuns) if (!lastRuns[r.bot]) lastRuns[r.bot] = r;
@@ -415,7 +431,7 @@ async function buildDigest(supabase) {
   return {
     newUsers, newIdeas, newRequests, newBusinesses, newEscrows, completed, feesEarned,
     chats, zeroResult, pendingVerif, pendingRoles, pendingPatents, pendingTotal,
-    totalUsers, liveIdeas, verifDetails, lastRuns, openDisputes, pendingWithdrawals, openAppeals
+    totalUsers, liveIdeas, verifDetails, lastRuns, openDisputes, pendingWithdrawals, openAppeals, queues
   };
 }
 
@@ -443,9 +459,17 @@ function digestHtml(d) {
   if (d.openAppeals) actions.push(`${d.openAppeals} idea appeal${d.openAppeals > 1 ? 's' : ''} from creators — Admin → Ideas → Appeals`);
   const lowOrig = d.newIdeas.filter(i => i.originality_score != null && i.originality_score < 40);
   if (lowOrig.length) actions.push(`${lowOrig.length} new idea${lowOrig.length > 1 ? 's' : ''} scored low on originality (under 40) — see Admin → Ideas`);
+  const Q = d.queues || {}, s = n => (n > 1 ? 's' : '');
+  if (Q.pendingCreds) actions.push(`${Q.pendingCreds} professional credential${s(Q.pendingCreds)} to check — Admin → Professionals`);
+  if (Q.pendingRegs) actions.push(`${Q.pendingRegs} patent-office registration${s(Q.pendingRegs)} to check — Admin → Professionals`);
+  if (Q.pendingListings) actions.push(`${Q.pendingListings} business listing${s(Q.pendingListings)} waiting for review — Admin → Businesses`);
+  if (Q.openWallReports) actions.push(`${Q.openWallReports} IdeaWall report${s(Q.openWallReports)} — Admin → IdeaWall`);
+  const disputesOther = (Q.hireDisputes || 0) + (Q.requestDisputes || 0) + (Q.patentDisputes || 0) + (Q.roomDisputes || 0);
+  if (disputesOther) actions.push(`${disputesOther} dispute${s(disputesOther)} on hires, Idea Requests, patents or deal rooms — Admin → Disputes`);
+  if (Q.managerDisputes) actions.push(`${Q.managerDisputes} manager fee${s(Q.managerDisputes)} with a problem reported — Admin → Managers`);
   if (d.pendingPatents) actions.push(`${d.pendingPatents} idea${d.pendingPatents > 1 ? 's' : ''} waiting for review (held by the originality bot, resubmitted, or patent checks) — Admin → Ideas → Under review`);
 
-  const botNames = { requests: 'Request clean-up', quality: 'Listing quality', originality: 'Originality checks', escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', digest: 'Digest' };
+  const botNames = { requests: 'Request clean-up', quality: 'Listing quality', originality: 'Originality checks', escrow: 'Escrow watchdog', verification: 'Verification', trending: 'Trending scores', ratings: 'Star ratings', nudge: 'Day-3 nudges', managers: 'Manager fees and deals', digest: 'Digest' };
   const botLines = Object.keys(botNames).filter(b => b !== 'digest').map(b => {
     const r = d.lastRuns[b];
     const state = !r ? 'no run in the last 24h' : r.status === 'ok' ? esc(r.details || 'ok') : `<span style="color:#ff6b6b;">FAILED: ${esc(r.details || '')}</span>`;

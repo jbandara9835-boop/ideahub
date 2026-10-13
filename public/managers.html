@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Find a Manager — IdeaHub</title>
 <meta name="description" content="Hire an IdeaHub Manager to find ideas, run deals and build a business for you, under a clear mandate. You approve every step and pay only through IdeaHub." />
@@ -107,15 +107,15 @@
       && (!ind || (m.industries || []).includes(ind)) && (!side || !(m.sides || []).length || m.sides.includes(side)) && (!fee || (m.fee_models || []).includes(fee)));
     $('list').innerHTML = rows.length ? rows.map(m => `
       <article class="card mcard">
-        <div class="row" style="flex-wrap:nowrap">${avatar(m.avatar_url, m.name, 'lg')}<div style="min-width:0"><div class="name">${esc(m.name)}</div><div class="row" style="gap:6px;margin-top:4px">${levelPill(m.level)}${m.country ? `<span class="tiny muted">📍 ${esc(m.country)}</span>` : ''}</div></div></div>
+        <div class="row" style="flex-wrap:nowrap">${avatar(m.avatar_url, m.name, 'lg')}<div style="min-width:0"><div class="name">${esc(m.name)}</div><div class="row" style="gap:6px;margin-top:4px">${levelPill(m.level)}${m.country ? `<span class="tiny muted">${esc(m.country)}</span>` : ''}</div></div></div>
         <div class="head">${esc(m.headline || 'IdeaHub manager')}</div>
         ${(m.industries || []).length ? `<div class="chips">${m.industries.map(i => `<span class="chip">${esc(i)}</span>`).join('')}</div>` : ''}
-        <div class="chips">${m.has_cv ? '<span class="chip" title="Clients see the CV when hiring with screening">📄 CV</span>' : ''}${m.has_history ? '<span class="chip">🗂️ Work history</span>' : ''}${m.has_references ? '<span class="chip">👥 References</span>' : ''}${m.linkedin_url ? '<span class="chip">LinkedIn</span>' : ''}</div>
+        <div class="chips">${m.has_cv ? '<span class="chip" title="Clients see the CV when hiring with screening">CV</span>' : ''}${m.has_history ? '<span class="chip">Work history</span>' : ''}${m.has_references ? '<span class="chip">References</span>' : ''}${m.linkedin_url ? '<span class="chip">LinkedIn</span>' : ''}</div>
         <div class="mstats"><div><b>${m.clients_served}</b><span>clients</span></div><div><b>${m.deals_closed}</b><span>deals closed</span></div><div><b>${m.rating != null ? '★ ' + m.rating : '—'}</b><span>${m.rating_count ? m.rating_count + ' review' + (m.rating_count === 1 ? '' : 's') : 'no reviews yet'}</span></div></div>
         <div class="small sub">${esc(MG.feeText(m.retainer_from, m.hourly_rate, m.success_pct))}${(m.languages || []).length ? ` · ${esc(m.languages.join(', '))}` : ''}</div>
         <div class="row" style="margin-top:auto"><button class="btn btn-ghost btn-sm" data-bg="${m.id}">Background</button>${!isVM && (m.id !== (me && me.id)) ? `<button class="btn btn-vm btn-sm" data-appoint="${m.id}">Appoint</button>` : ''}</div>
       </article>`).join('')
-      : `<div class="card empty" style="grid-column:1/-1"><div class="big">🔎</div>No managers match yet.${isClient ? '<br><button class="btn btn-gold btn-sm" style="margin-top:10px" data-post>Post what you need and let managers pitch</button>' : ''}</div>`;
+      : `<div class="card empty" style="grid-column:1/-1"><div class="big"></div>No managers match yet.${isClient ? '<br><button class="btn btn-gold btn-sm" style="margin-top:10px" data-post>Post what you need and let managers pitch</button>' : ''}</div>`;
   }
   ['fq', 'find', 'fside', 'ffee'].forEach(id => $(id).addEventListener('input', renderManagers));
 
@@ -145,9 +145,9 @@
         <div class="row between"><div class="row">${avatar(r.client.avatar_url, r.client.name, 'sm')}<span class="small sub">${esc(r.client.name)} · ${esc(meta.sides[r.client_side] || '')} · ${MG.ago(r.created_at)}</span></div><div class="row">${r.industry ? `<span class="pill">${esc(r.industry)}</span>` : ''}<span class="pill vm">${r.pitch_count} pitch${r.pitch_count === 1 ? '' : 'es'}</span></div></div>
         <h3 style="margin:10px 0 0;font-family:'Cabinet Grotesk',sans-serif;font-size:18px">${esc(r.title)}</h3>
         <div class="needs">${esc(r.needs)}</div>
-        <div class="chips">${(r.scopes || []).map(s => `<span class="chip">${esc((meta.scopes[s] || {}).label || s)}</span>`).join('')}${(r.fee_models || []).map(f => `<span class="chip">💵 ${esc({ retainer: 'Monthly', hourly: 'Hourly', success: 'Success fee' }[f] || f)}</span>`).join('')}${r.budget ? `<span class="chip">Budget: ${esc(r.budget)}</span>` : ''}</div>
+        <div class="chips">${(r.scopes || []).map(s => `<span class="chip">${esc((meta.scopes[s] || {}).label || s)}</span>`).join('')}${(r.fee_models || []).map(f => `<span class="chip">${esc({ retainer: 'Monthly', hourly: 'Hourly', success: 'Success fee' }[f] || f)}</span>`).join('')}${r.budget ? `<span class="chip">Budget: ${esc(r.budget)}</span>` : ''}</div>
         ${isVM ? `<div class="row" style="margin-top:12px">${pitched.includes(r.id) ? '<span class="pill green">✓ You pitched</span>' : `<button class="btn btn-vm btn-sm" data-pitch="${r.id}">Pitch</button>`}</div>` : ''}
-      </article>`).join('') : `<div class="card empty"><div class="big">📭</div>No open requests right now.</div>`;
+      </article>`).join('') : `<div class="card empty"><div class="big"></div>No open requests right now.</div>`;
   }
   function pitch(id) {
     const r = requests.find(x => x.id === id); if (!r) return;
@@ -189,7 +189,7 @@
       $('myMandates').innerHTML = mine.length ? mine.map(m => `
         <a class="list-item" href="/mandate?id=${m.id}" style="text-decoration:none">${avatar(m.manager.avatar_url, m.manager.name)}<div class="grow"><div class="li-title">${esc(m.title)}</div><div class="li-sub">${esc(m.manager.name)} · ${esc(m.focus_industry || '')} · ${esc(MG.feeText(m.fee_retainer, m.fee_hourly, m.fee_success_pct))}</div></div>
           <div class="row" style="justify-content:flex-end">${m.pending_approvals ? `<span class="pill gold">${m.pending_approvals} to approve</span>` : ''}${m.bills_due ? `<span class="pill gold">${m.bills_due} to pay</span>` : ''}${statusPill(m.status)}</div></a>`).join('')
-        : `<div class="empty"><div class="big">🤝</div>No managers yet. Appoint one from Find a manager, or post what you need.</div>`;
+        : `<div class="empty"><div class="big"></div>No managers yet. Appoint one from Find a manager, or post what you need.</div>`;
       $('myReqs').innerHTML = rs.length ? rs.map(r => `
         <div class="list-item"><div class="grow"><div class="row between"><div class="li-title">${esc(r.title)}</div><div class="row">${statusPill(r.status === 'open' ? 'proposed' : r.status === 'hired' ? 'active' : 'ended').replace('Waiting for an answer', 'Open').replace('Active', 'Manager chosen').replace('Ended', 'Closed')}${r.status === 'open' ? `<button class="btn btn-ghost btn-sm" data-closereq="${r.id}">Close</button>` : ''}</div></div>
           ${(r.pitches || []).length ? r.pitches.map(p => `<div class="card" style="padding:12px 14px;margin-top:10px;background:var(--card2)"><div class="row between"><div class="row">${avatar(p.manager.avatar_url, p.manager.name, 'sm')}<b>${esc(p.manager.name)}</b>${MG.levelPill(p.manager.level)}</div><span class="small sub">${esc(MG.feeText(p.fee_retainer, p.fee_hourly, p.fee_success_pct))}</span></div><div class="small sub" style="margin:8px 0;white-space:pre-wrap">${esc(p.message)}</div><div class="row">${p.status === 'sent' && r.status === 'open' ? `<button class="btn btn-vm btn-sm" data-accept="${p.id}">Choose this manager</button><button class="btn btn-ghost btn-sm" data-decline="${p.id}">Decline</button>` : `<span class="pill ${p.status === 'shortlisted' ? 'vm' : ''}">${p.status === 'accepted' ? 'Chosen' : p.status === 'shortlisted' ? 'Shortlisted · screening' : p.status === 'declined' ? 'Declined' : 'Not chosen'}</span>`}<a class="btn btn-ghost btn-sm" href="/public-profile?id=${p.manager.id}">Profile</a></div></div>`).join('') : '<div class="li-sub">No pitches yet. Managers are notified of new requests on their board.</div>'}
@@ -213,7 +213,7 @@
     }
     const bgb = t.closest('[data-bg]'); if (bgb) {
       const m = managers.find(x => x.id === Number(bgb.dataset.bg)); if (!m) return;
-      MG.dialog(m.name, `<div class="row" style="margin-bottom:12px">${avatar(m.avatar_url, m.name, 'lg')}<div><div class="row" style="gap:6px">${levelPill(m.level)}${m.country ? `<span class="tiny muted">📍 ${esc(m.country)}</span>` : ''}</div><div class="small sub" style="margin-top:4px">${esc(m.headline || '')}</div></div></div>
+      MG.dialog(m.name, `<div class="row" style="margin-bottom:12px">${avatar(m.avatar_url, m.name, 'lg')}<div><div class="row" style="gap:6px">${levelPill(m.level)}${m.country ? `<span class="tiny muted">${esc(m.country)}</span>` : ''}</div><div class="small sub" style="margin-top:4px">${esc(m.headline || '')}</div></div></div>
         ${m.about ? `<div class="lbl" style="margin-bottom:4px">About</div><div class="sub small" style="white-space:pre-wrap;line-height:1.55;margin-bottom:14px">${esc(m.about)}</div>` : ''}
         ${m.experience ? `<div class="lbl" style="margin-bottom:4px">Work history</div><div class="sub small" style="white-space:pre-wrap;line-height:1.55;margin-bottom:14px">${esc(m.experience)}</div>` : ''}
         <div class="notice vm small">${m.has_cv ? 'Their CV' : 'Their full background'}${m.has_references ? ' and references' : ''} ${m.has_cv || m.has_references ? 'are' : 'is'} shared with you when you appoint them with screening. You can also ask written questions and hold a video interview before agreeing anything.</div>

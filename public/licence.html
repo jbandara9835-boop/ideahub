@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Licence — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -120,7 +120,7 @@
         <p>Both of you confirmed the signed agreement. ${owes ? `Pay IdeaHub's licence fee of <b>${money(d.my_fee_share)}</b> to register it.` : d.fee_paid_by_me ? 'You paid your share. Waiting for the other side.' : `Waiting for ${esc(otherName)} to pay IdeaHub's licence fee.`}</p>
         ${owes ? (d.payments_open ? `<div class="btns"><button class="btn btn-gold" data-act="pay">Pay ${money(d.my_fee_share)}</button></div>` : '<div class="note" style="margin-top:.8rem">Online payments are launching soon.</div>') : ''}</div>`;
     }
-    if (s === 'active') return `<div class="panel action"><h2>✅ Licence active</h2><p>${esc(d.type_label)} from <b>${esc(fdate(d.start_date))}</b>${d.end_date ? ` to <b>${esc(fdate(d.end_date))}</b>` : ''}. Payments between you follow your signed agreement. We'll remind you both before it ends.</p>
+    if (s === 'active') return `<div class="panel action"><h2>Licence active</h2><p>${esc(d.type_label)} from <b>${esc(fdate(d.start_date))}</b>${d.end_date ? ` to <b>${esc(fdate(d.end_date))}</b>` : ''}. Payments between you follow your signed agreement. We'll remind you both before it ends.</p>
       <p style="margin-top:.6rem;font-size:13px" class="muted">Some patent offices record licences. Ask your practitioner whether yours should be.</p></div>`;
     if (s === 'ended') return `<div class="panel action"><h2>Licence ended</h2><p>It ended on ${esc(fdate(d.end_date))}. To renew, send a new request from the patent listing.</p></div>`;
     if (s === 'declined') return `<div class="panel action"><h2>Declined</h2><p>${esc(d.decline_reason || '')}</p></div>`;
@@ -136,7 +136,7 @@
     $('root').innerHTML = `
       <div class="top"><a href="/patents#licences" class="muted" style="font-size:13px;text-decoration:none">← Licences</a>
         <h1>${esc(d.idea_title)}</h1>
-        <div class="meta"><span class="pill st-${esc(d.status)}">${esc(d.status_label)}</span><b style="color:var(--text)">${esc(d.type_label)}</b><span>${esc(d.territory)}</span>${d.idea ? `<a href="/idea?id=${Number(d.idea.id)}">📋 Patent listing</a>` : ''}</div></div>
+        <div class="meta"><span class="pill st-${esc(d.status)}">${esc(d.status_label)}</span><b style="color:var(--text)">${esc(d.type_label)}</b><span>${esc(d.territory)}</span>${d.idea ? `<a href="/idea?id=${Number(d.idea.id)}">Patent listing</a>` : ''}</div></div>
       ${track(d)}
       <div class="grid"><div>
         ${actionPanel(d)}
@@ -148,8 +148,8 @@
           ${d.start_date && ['signed', 'active', 'ended'].includes(d.status) ? `<dt>Registered dates</dt><dd>${esc(fdate(d.start_date))}${d.end_date ? ' to ' + esc(fdate(d.end_date)) : ' (no end date)'}</dd>` : ''}
           ${d.idea ? `<dt>Patent</dt><dd>${esc(d.idea.patent_jurisdiction || '')} ${esc(d.idea.patent_number || '')} · ${pd.status === 'granted' ? 'Granted' : 'Pending'}${pd.expiry_date ? ' · expires ' + esc(fdate(pd.expiry_date)) : ''}</dd>` : ''}
         </dl></div>
-        <div class="panel"><div class="panel-title">Files ${open ? `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">📎 Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.txt,image/*" />` : ''}</div>
-          <div class="flist">${d.files.length ? d.files.map(f => `<div class="frow"><span class="nm">📄 ${esc(f.name)}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : `<div class="muted" style="font-size:13px">${d.status === 'requested' ? 'Files can be shared once the owner accepts.' : 'No files yet. Share drafts and the signed agreement here. Only the two of you can open them.'}</div>`}</div></div>
+        <div class="panel"><div class="panel-title">Files ${open ? `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.txt,image/*" />` : ''}</div>
+          <div class="flist">${d.files.length ? d.files.map(f => `<div class="frow"><span class="nm">${esc(f.name)}</span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : `<div class="muted" style="font-size:13px">${d.status === 'requested' ? 'Files can be shared once the owner accepts.' : 'No files yet. Share drafts and the signed agreement here. Only the two of you can open them.'}</div>`}</div></div>
         <div class="panel"><div class="panel-title">Messages</div>
           <div class="thread" id="thread">${msgs || '<div class="sys">No messages yet.</div>'}</div>
           ${talk ? `<div class="compose"><textarea class="textarea" id="msgIn" placeholder="Write a message…" maxlength="4000"></textarea><button class="btn btn-gold" id="sendBtn">Send</button></div>` : ''}
@@ -157,8 +157,8 @@
       </div>
       <aside class="side">
         <div class="panel">${person(d.licensor, 'Patent owner (licensor)')}${person(d.licensee, 'Licensee')}
-          ${talk && d.status !== 'requested' ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=licence&id=${d.id}" target="_blank" rel="noopener">📹 Start a video call</a>
-          <button class="btn btn-gold btn-sm" style="width:100%;margin-top:8px" data-act="room">🤝 Deal room: bring in your advisers</button>
+          ${talk && d.status !== 'requested' ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=licence&id=${d.id}" target="_blank" rel="noopener">Start a video call</a>
+          <button class="btn btn-gold btn-sm" style="width:100%;margin-top:8px" data-act="room">Deal room: bring in your advisers</button>
           <div class="muted" style="font-size:11.5px;text-align:center;margin-top:6px">Both sides can add their attorney and accountant, with a private channel for each side.</div>` : ''}
         </div>
         <div class="panel"><div class="panel-title">IdeaHub fee</div>
@@ -173,7 +173,7 @@
       const r = await fetch(`/api/licences/${id}`, { headers: H() });
       if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
       const d = await r.json();
-      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}</div>`; return; }
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'This licence was not found, or you are not part of it.')}<div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="/transactions">Wallet</a><a class="btn btn-gold btn-sm" href="/messages">Messages</a></div></div>`; return; }
       const keep = {}; ['msgIn', 'cStart', 'cEnd'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
       D = d; document.title = `${d.idea_title}: licence — IdeaHub`; render(d);
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
@@ -219,7 +219,7 @@
     busy = false;
   });
 
-  if (!id) $('root').innerHTML = '<div class="empty">Licence not found.</div>';
+  if (!id) $('root').innerHTML = '<div class="empty"><b>No licence selected.</b><br>Open a licence from the idea or patent page, or from the link in your notifications.'+'<div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="/transactions">Wallet</a><a class="btn btn-gold btn-sm" href="/messages">Messages</a></div>'+'</div>';
   else {
     load();
     if (params.get('sent')) { history.replaceState(null, '', location.pathname + '?id=' + id); setTimeout(() => toast('Request sent to the owner.'), 400); }

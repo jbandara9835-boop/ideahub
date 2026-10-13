@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Marketplace — IdeaHub</title>
   <meta name="description" content="Browse thousands of ideas across technology, health, finance, and more. Filter by industry, stage, and price, and connect directly with creators on IdeaHub." />
@@ -191,7 +191,7 @@
 
     @media (max-width:768px) {
       .bottom-tabbar { display: block; }
-      body { padding-bottom: 56px; }
+
 
       .topnav { padding:0 12px; gap:8px; }
       .nav-logo span { display:none; }
@@ -247,7 +247,7 @@
       <input type="text" id="mobileSearchInput" placeholder="Search ideas, industries..." autocomplete="off" oninput="handleSuggestInput(this.value, 'mobileSuggestDropdown')" onkeydown="if(event.key==='Enter'){ doMobileSearch(); }" onfocus="handleSuggestInput(this.value, 'mobileSuggestDropdown')" />
       <div class="search-suggest-dropdown" id="mobileSuggestDropdown"></div>
     </div>
-    <button onclick="doMobileSearch()">🔍</button>
+    <button onclick="doMobileSearch()" aria-label="Search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
   </div>
 </div>
 
@@ -286,7 +286,7 @@
 <div class="filter-bar">
   <div class="filter-inner">
     <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilterPanel()">
-      ⚙ Filters <span class="filter-count-badge" id="filterCountBadge" style="display:none;">0</span>
+      Filters <span class="filter-count-badge" id="filterCountBadge" style="display:none;">0</span>
     </button>
     <select class="sort-select" id="sortSelect" onchange="applyFilters()">
       <option value="trending" selected>Trending</option>
@@ -380,32 +380,6 @@
   <div class="pagination" id="pagination"></div>
 </main>
 
-<footer class="footer">
-© 2026 <a href="https://picela.co" target="_blank">Picela</a>. All rights reserved. &nbsp;·&nbsp;
-  <a href="/terms">Terms</a> &nbsp;·&nbsp;
-  <a href="/privacy">Privacy</a> &nbsp;·&nbsp;
-  <a href="/cookies">Cookies</a> &nbsp;·&nbsp;
-  <a href="/refunds">Refunds</a></footer>
-
-<!-- BOTTOM TAB BAR (mobile only) -->
-<nav class="bottom-tabbar" id="bottomTabbar">
-  <div class="tabbar-inner">
-    <a class="tabbar-item" href="/" data-tab="home">
-      <span class="tabbar-icon">🏠</span><span>Home</span>
-    </a>
-    <a class="tabbar-item active" href="/browse" data-tab="marketplace">
-      <span class="tabbar-icon">🔍</span><span>Marketplace</span>
-    </a>
-    <a class="tabbar-post-btn" href="/submit" id="tabPostBtn">+</a>
-    <a class="tabbar-item" href="/messages" data-tab="messages">
-      <span class="tabbar-icon">💬</span><span>Messages</span>
-    </a>
-    <a class="tabbar-item" href="/wall" data-tab="wall">
-      <span class="tabbar-icon">📌</span><span>IdeaWall</span>
-    </a>
-  </div>
-</nav>
-
 <script>
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
@@ -414,12 +388,6 @@
   let activeCategory = 'all', activeLevel = null;
   let selectedCountryFilters = [];
 
-  // ── BOTTOM TAB BAR: post button login check ──
-  (function setupTabbar() {
-    const tUser = JSON.parse(localStorage.getItem('ih_user') || localStorage.getItem('user') || 'null');
-    const postBtn = document.getElementById('tabPostBtn');
-    if (postBtn) postBtn.href = tUser ? '/submit' : '/login';
-  })();
 
   // ── AUTO-HIDE FIXED MOBILE SEARCH BAR ON SCROLL ──
   (function setupScrollHideSearch() {
@@ -489,8 +457,8 @@
         <span class="suggest-item-type">${type}</span>
       </div>`;
     industryMatches.forEach(ind => { html += item(ind, '', ind, 'Industry'); });
-    creatorMatches.forEach(name => { html += item(name, '👤', name, 'Creator'); });
-    titleMatches.forEach(idea => { html += item('', '💡', idea.title || 'Untitled idea', 'Idea', '/idea?id=' + encodeURIComponent(idea.id)); });
+    creatorMatches.forEach(name => { html += item(name, '', name, 'Creator'); });
+    titleMatches.forEach(idea => { html += item('', '', idea.title || 'Untitled idea', 'Idea', '/idea?id=' + encodeURIComponent(idea.id)); });
     dropdown.innerHTML = html;
     dropdown.classList.add('show');
   }
@@ -682,7 +650,7 @@
   }
 
   const levelLabel = { 1:'Concept', 2:'Prototype', 3:'Market Ready' };
-  const emojiMap = { Technology:'💻', Health:'🏥', Education:'📚', Finance:'💰', Food:'🍔', 'Food & Beverage':'🍔', 'Real Estate':'🏠', Travel:'✈️', Other:'💡', 'E-commerce':'🛒', Environment:'🌿', Entertainment:'🎮', 'Health & Wellness':'💊', Transport:'🚗', Agriculture:'🌾' };
+  const emojiMap = { Technology:'', Health:'', Education:'', Finance:'', Food:'', 'Food & Beverage':'', 'Real Estate':'', Travel:'', Other:'', 'E-commerce':'', Environment:'', Entertainment:'', 'Health & Wellness':'', Transport:'', Agriculture:'' };
 
   function formatPrice(p) {
     if (!p) return 'Make Offer';
@@ -722,7 +690,7 @@
   }
 
   // Engagement levels the creator offers, as a compact icon tag
-  const ENG_ICONS = { video_call: '📹', meet_in_person: '🤝', prototype: '🧪', supplier: '🏭', sales_support: '📈', partnership: '👥' };
+  const ENG_ICONS = { video_call: '', meet_in_person: '', prototype: '', supplier: '', sales_support: '', partnership: '' };
   const ENG_NAMES = { video_call: 'video call', meet_in_person: 'meeting', prototype: 'prototype', supplier: 'supplier', sales_support: 'sales support', partnership: 'partnership' };
   function engTag(e) {
     const keys = Object.keys(e || {}).filter(k => ENG_ICONS[k]);
@@ -738,7 +706,7 @@
     const hasImage = idea.images && idea.images.length > 0;
     const bannerHTML = hasImage
       ? `<div class="card-banner" style="background-image:url('${escH(encodeURI(idea.images[0]))}');"></div>`
-      : `<div class="card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="card-banner-icon">${emojiMap[industry]||'💡'}</span></div>`;
+      : `<div class="card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="card-banner-icon">${emojiMap[industry]||''}</span></div>`;
     return `
       <a class="idea-card" href="/idea?id=${encodeURIComponent(idea.id)}">
         ${bannerHTML}
@@ -752,7 +720,7 @@
         <div class="card-tags">
           ${origTag(idea.originality_rating)}
           ${industry ? `<span class="card-tag">${escH(industry)}</span>` : ''}
-          ${idea.has_patent ? `<span class="card-tag">${idea.patent_verified ? '✅ Verified patent' : '📋 Patent'}</span>` : ''}
+          ${idea.has_patent ? `<span class="card-tag">${idea.patent_verified ? 'Verified patent' : 'Patent'}</span>` : ''}
           ${engTag(idea.engagements)}
         </div>
         <div class="card-creator">
@@ -765,7 +733,7 @@
         </div>
         <div class="card-footer">
           <div class="card-price">${idea.has_patent ? `<span title="Patents are licensed or sold by negotiation with the owner">${formatPrice(idea.price)}<span style="font-size:11px;color:var(--muted);font-weight:500;display:block;margin-top:2px">guide · licence or sale</span></span>` : formatPrice(idea.price)}</div>
-          <div class="card-meta">👁 ${Number(idea.views)||0}</div>
+          <div class="card-meta">${Number(idea.views)||0} views</div>
           <span class="btn-view">View →</span>
         </div>
       </a>`;

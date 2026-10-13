@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📹</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Video call — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet" />
+<style>[class*="icon"]:empty,[class*="emoji"]:empty{display:none!important}</style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --bg: #080809; --surface: #111114; --border: rgba(255,255,255,0.08); --accent: #f5c842; --text: #f0ede8; --muted: #8a867e; }
@@ -39,7 +40,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 </head>
 <body>
 <div class="bar">
-  <a class="logo" href="/" aria-label="IdeaHub home"><span>💡</span><b>IdeaHub</b></a>
+  <a class="logo" href="/" aria-label="IdeaHub home"><span></span><b>IdeaHub</b></a>
   <div class="title" id="title">Video call</div>
   <a class="back" id="back" href="/messages">← Back</a>
 </div>
@@ -72,21 +73,21 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
     try {
       r = await fetch('/api/calls/join', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ type, id }) });
       d = await r.json().catch(() => ({}));
-    } catch (e) { return show('📶', 'No connection', 'Check your internet connection and try again.', `<button class="btn gold" onclick="start()">Try again</button>${backBtn()}`); }
+    } catch (e) { return show('', 'No connection', 'Check your internet connection and try again.', `<button class="btn gold" onclick="start()">Try again</button>${backBtn()}`); }
     if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
     if (d.back) { back = d.back; $('back').href = back; }
     if (!r.ok) {
       if (d.code === 'too_early') {
         const at = new Date(d.opens_at);
-        show('🕒', 'Not open yet', `You can join from ${at.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}. Keep this page open and it will connect automatically.`, backBtn());
+        show('', 'Not open yet', `You can join from ${at.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}. Keep this page open and it will connect automatically.`, backBtn());
         retry = setTimeout(start, Math.max(15000, Math.min(at - Date.now() + 2000, 5 * 60000)));
         return;
       }
-      return show(d.code === 'video_not_configured' ? '🛠️' : '⚠️', d.code === 'video_not_configured' ? 'Video calls are coming soon' : 'Can\'t join this call', d.error || 'Something went wrong.', `${r.status >= 500 ? '<button class="btn gold" onclick="start()">Try again</button>' : ''}${backBtn()}`);
+      return show(d.code === 'video_not_configured' ? '' : '', d.code === 'video_not_configured' ? 'Video calls are coming soon' : 'Can\'t join this call', d.error || 'Something went wrong.', `${r.status >= 500 ? '<button class="btn gold" onclick="start()">Try again</button>' : ''}${backBtn()}`);
     }
-    $('title').innerHTML = `${esc(d.title)}<small>🔒 Private</small>`;
+    $('title').innerHTML = `${esc(d.title)}<small>Private</small>`;
     document.title = `${d.title} — IdeaHub`;
-    if (!window.Daily) return show('⚠️', 'Video couldn\'t load', 'Something blocked the video component. Disable ad blockers for this page and try again.', `<button class="btn gold" onclick="location.reload()">Reload</button>${backBtn()}`);
+    if (!window.Daily) return show('', 'Video couldn\'t load', 'Something blocked the video component. Disable ad blockers for this page and try again.', `<button class="btn gold" onclick="location.reload()">Reload</button>${backBtn()}`);
     $('msg').classList.add('hidden');
     try {
       if (frame) { try { await frame.destroy(); } catch (e) {} }
@@ -95,14 +96,14 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
         iframeStyle: { position: 'absolute', inset: '0', width: '100%', height: '100%', border: '0', background: '#080809' },
         theme: { colors: { accent: '#f5c842', accentText: '#080809', background: '#080809', backgroundAccent: '#1a1a1f', baseText: '#f0ede8', border: '#2a2a30', mainAreaBg: '#111114', mainAreaBgAccent: '#1a1a1f', mainAreaText: '#f0ede8', supportiveText: '#8a867e' } }
       });
-      frame.on('left-meeting', () => { frame.destroy().catch(() => {}); frame = null; show('👋', 'You left the call', '', `<button class="btn gold" onclick="start()">Rejoin</button>${backBtn()}`); });
-      frame.on('error', ev => { show('⚠️', 'The call ended', (ev && ev.errorMsg) || 'The call was interrupted.', `<button class="btn gold" onclick="start()">Rejoin</button>${backBtn()}`); });
+      frame.on('left-meeting', () => { frame.destroy().catch(() => {}); frame = null; show('', 'You left the call', '', `<button class="btn gold" onclick="start()">Rejoin</button>${backBtn()}`); });
+      frame.on('error', ev => { show('', 'The call ended', (ev && ev.errorMsg) || 'The call was interrupted.', `<button class="btn gold" onclick="start()">Rejoin</button>${backBtn()}`); });
       await frame.join({ url: d.url, token: d.token });
     } catch (e) {
-      show('⚠️', 'Couldn\'t start the video', e.message || 'Please try again.', `<button class="btn gold" onclick="start()">Try again</button>${backBtn()}`);
+      show('', 'Couldn\'t start the video', e.message || 'Please try again.', `<button class="btn gold" onclick="start()">Try again</button>${backBtn()}`);
     }
   }
-  if (!type || !id) show('⚠️', 'Call not found', 'This link is incomplete.', backBtn()); else start();
+  if (!type || !id) show('', 'Call not found', 'This link is incomplete.', backBtn()); else start();
 </script>
 </body>
 </html>

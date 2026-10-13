@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Switch Role — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -49,7 +49,7 @@
   .role-card.needs-approval { border-style:dashed; }
   .role-card.needs-approval.selected { border-color:var(--orange); background:rgba(251,146,60,0.1); }
   .approval-tag { position:absolute; top:6px; right:6px; font-size:9px; background:rgba(251,146,60,0.15); color:var(--orange); padding:2px 6px; border-radius:4px; border:1px solid rgba(251,146,60,0.3); }
-  .role-emoji { font-size:28px; display:block; margin-bottom:8px; }
+  .role-emoji { display:block; margin-bottom:8px; color: var(--accent, #f5c842); }
   .role-name { font-size:12px; font-weight:600; display:block; color:var(--text); line-height:1.3; }
   .role-desc { font-size:10px; color:var(--muted); display:block; margin-top:3px; }
   .role-check { position:absolute; top:7px; left:7px; width:16px; height:16px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; font-size:9px; color:#0d0d0f; font-weight:700; }
@@ -103,7 +103,7 @@
   <p class="subtitle">Your profile details are carried over. Fill in any new role-specific fields below.</p>
 
   <div class="current-role-bar">
-    <span style="font-size:24px;" id="currentRoleEmoji">💡</span>
+    <span style="font-size:24px;" id="currentRoleEmoji"></span>
     <div>
       <div class="current-role-label">Your current role</div>
       <div class="current-role-val" id="currentRoleLabel">—</div>
@@ -114,69 +114,68 @@
   <div class="role-grid" id="roleGrid">
     <div class="role-card" data-role="idea_creator" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">💡</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></span>
       <span class="role-name">Idea Creator</span>
       <span class="role-desc">Post & sell ideas</span>
     </div>
     <div class="role-card" data-role="investor" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">💼</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span>
       <span class="role-name">Investor</span>
       <span class="role-desc">Discover & fund ideas</span>
     </div>
     <div class="role-card" data-role="virtual_manager" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">🤝</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></span>
       <span class="role-name">Virtual Manager</span>
       <span class="role-desc">Act for creators &amp; investors</span>
     </div>
     <div class="role-card needs-approval" data-role="patent_attorney" onclick="selectRole(this)">
       <div class="approval-tag">Needs Approval</div>
       <div class="role-check">✓</div>
-      <span class="role-emoji">⚖️</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M7 21h10M5 7h14"/><path d="m5 7-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></svg></span>
       <span class="role-name">Patent Attorney / Agent</span>
       <span class="role-desc">Patent filing &amp; advice</span>
     </div>
     <div class="role-card needs-approval" data-role="chartered_accountant" onclick="selectRole(this)">
       <div class="approval-tag">Needs Approval</div>
       <div class="role-check">✓</div>
-      <span class="role-emoji">🧮</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg></span>
       <span class="role-name">Chartered Accountant</span>
       <span class="role-desc">Finance & tax services</span>
     </div>
     <div class="role-card needs-approval" data-role="patent_seller" onclick="selectRole(this)">
       <div class="approval-tag">Needs Approval</div>
       <div class="role-check">✓</div>
-      <span class="role-emoji">📋</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span>
       <span class="role-name">Patent Seller</span>
       <span class="role-desc">Sell your patents</span>
     </div>
     <div class="role-card" data-role="business_owner" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">🏭</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18M9 20v-6h6v6"/></svg></span>
       <span class="role-name">Business Owner</span>
       <span class="role-desc">Expand your business</span>
     </div>
     <div class="role-card" data-role="corporate_services" onclick="selectRole(this)">
       <div class="role-check">✓</div>
-      <span class="role-emoji">🏢</span>
+      <span class="role-emoji"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></span>
       <span class="role-name">Company Secretary</span>
       <span class="role-desc">Company setup &amp; compliance</span>
     </div>
   </div>
 
   <!-- NOTICES -->
-  <div class="instant-notice" id="instantNotice">
-    ✅ <strong>Instant switch</strong> — This role change takes effect immediately. Your existing data and profile are preserved.
+  <div class="instant-notice" id="instantNotice"><strong>Instant switch</strong> — This role change takes effect immediately. Your existing data and profile are preserved.
   </div>
   <div class="approval-notice" id="approvalNotice">
-    <strong>⏳ Admin Approval Required</strong>
+    <strong>Admin Approval Required</strong>
     This role requires verification. Fill in the details below and submit — our team will review within 24–48 hours. You'll keep your current role until approved.
   </div>
 
   <!-- PRE-FILLED PROFILE (always shown) -->
   <div class="card">
-    <div class="card-title">👤 Your Profile Details <span style="font-size:11px;color:var(--success);font-weight:400;">Auto-filled from your account</span></div>
+    <div class="card-title">Your Profile Details <span style="font-size:11px;color:var(--success);font-weight:400;">Auto-filled from your account</span></div>
     <div class="row2">
       <div class="field"><label>First Name</label><input type="text" id="firstName" /></div>
       <div class="field"><label>Last Name</label><input type="text" id="lastName" /></div>
@@ -191,7 +190,7 @@
 
   <!-- EXTRA FIELDS FOR PATENT ATTORNEY -->
   <div class="extra-fields card" id="attorneyFields">
-    <div class="card-title"><span id="proTitle">⚖️ Patent Attorney / Agent Details</span> <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
+    <div class="card-title"><span id="proTitle">Patent Attorney / Agent Details</span> <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
     <div class="field">
       <label id="proLicenceLbl">Bar Licence Number</label>
       <input type="text" id="licenceNumber" placeholder="e.g. BAR-2024-00123" />
@@ -233,7 +232,7 @@
 
   <!-- EXTRA FIELDS FOR PATENT SELLER -->
   <div class="extra-fields card" id="sellerFields">
-    <div class="card-title">📋 Patent Seller Details <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
+    <div class="card-title">Patent Seller Details <span style="font-size:11px;color:var(--orange);font-weight:400;">Required for approval</span></div>
     <div class="field">
       <label>Patent Number(s)</label>
       <input type="text" id="patentNumbers" placeholder="e.g. US10,234,567 B2" />
@@ -284,7 +283,7 @@
   const token = localStorage.getItem('ih_token');
   const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
-  if (!token || !user) window.location.href = '/login';
+  if (!token || !user) { window.location.replace('/login?next=%2Fswitch-role'); throw new Error('signed out'); }
 
   const APPROVAL_ROLES = ['patent_attorney', 'chartered_accountant', 'patent_seller'];
   const roleLabels = {
@@ -293,8 +292,8 @@
     business_owner: 'Business Owner', corporate_services: 'Corporate Services'
   };
   const roleEmojis = {
-    idea_creator:'💡', investor:'💼', virtual_manager:'🤝',
-    patent_attorney:'⚖️', chartered_accountant:'🧮', patent_seller:'📋', business_owner:'🏭', corporate_services:'🏢'
+    idea_creator:'', investor:'', virtual_manager:'',
+    patent_attorney:'', chartered_accountant:'', patent_seller:'', business_owner:'', corporate_services:''
   };
   const dashMap = {
     idea_creator:'/dashboard', patent_seller:'/dashboard',
@@ -306,7 +305,7 @@
   let selectedRole = null;
 
   // Init
-  document.getElementById('currentRoleEmoji').textContent = roleEmojis[user.role] || '👤';
+  document.getElementById('currentRoleEmoji').textContent = roleEmojis[user.role] || '';
   document.getElementById('currentRoleLabel').textContent = roleLabels[user.role] || user.role;
   document.getElementById('backLink').href = dashMap[user.role] || '/dashboard';
 
@@ -339,7 +338,7 @@
     document.getElementById('attorneyFields').classList.toggle('show', isPro);
     if (isPro) {
       const ca = selectedRole === 'chartered_accountant';
-      document.getElementById('proTitle').textContent = ca ? '🧮 Chartered Accountant Details' : '⚖️ Patent Attorney / Agent Details';
+      document.getElementById('proTitle').textContent = ca ? 'Chartered Accountant Details' : 'Patent Attorney / Agent Details';
       document.getElementById('proLicenceLbl').textContent = ca ? 'Membership Number' : 'Bar Licence Number';
       document.getElementById('licenceNumber').placeholder = ca ? 'e.g. CA 12345' : 'e.g. BAR-2024-00123';
       document.getElementById('proBodyLbl').textContent = ca ? 'Professional Body' : 'Bar Association';
@@ -402,7 +401,7 @@
         const updatedUser = { ...user, ...profileData, role: selectedRole };
         localStorage.setItem('ih_user', JSON.stringify(updatedUser));
 
-        successEl.textContent = `✅ Role switched to ${roleLabels[selectedRole]}! Redirecting to your new dashboard…`;
+        successEl.textContent = `Role switched to ${roleLabels[selectedRole]}! Redirecting to your new dashboard…`;
         successEl.classList.add('show');
         setTimeout(() => { window.location.href = dashMap[selectedRole] || '/dashboard'; }, 1500);
 
@@ -451,7 +450,7 @@
         if (!res.ok) throw new Error(data.error || 'Failed to submit request');
 
         successEl.innerHTML = `
-          ⏳ <strong>Request submitted!</strong> Our team will review your application within 24–48 hours.
+ <strong>Request submitted!</strong> Our team will review your application within 24–48 hours.
           You'll be notified by email once approved. You'll keep your current role (${roleLabels[user.role]}) until then.
         `;
         successEl.classList.add('show');

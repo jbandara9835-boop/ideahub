@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Expansion Deals — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -76,7 +76,7 @@
   function initials(n) { return esc(String(n || '?').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase()); }
   function person(p, role) { if (!p) return ''; return `<div class="person"><div class="av">${p.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : initials(p.name)}</div><div><b>${esc(p.name)}</b><small>${esc(role)}</small></div></div>`; }
   let D = null, busy = false, listTab = null;
-  const STEP_LABEL = { reviewed: 'Mark reviewed', shortlisted: '⭐ Shortlist', meetup_scheduled: '📅 Schedule a meetup', negotiating: '🤝 Start negotiating', agreed: '🎉 Mark as agreed', rejected: 'Not selected' };
+  const STEP_LABEL = { reviewed: 'Mark reviewed', shortlisted: '★ Shortlist', meetup_scheduled: 'Schedule a meetup', negotiating: 'Start negotiating', agreed: 'Mark as agreed', rejected: 'Not selected' };
 
   async function api(path, body, method) {
     const r = await fetch(path, { method: method || 'POST', headers: { ...H(), 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
@@ -96,7 +96,7 @@
       const items = listTab === 'sent' ? d.sent : d.received;
       $('root').innerHTML = `<div class="top"><div class="kicker">Business Expansion</div><h1>${listTab === 'sent' ? 'Listings you responded to' : 'Responses to your listings'}</h1></div>
         <div class="tabs"><button class="tab ${listTab === 'sent' ? 'on' : ''}" data-lt="sent">I responded (${d.sent.length})</button><button class="tab ${listTab === 'received' ? 'on' : ''}" data-lt="received">To my listings (${d.received.length})</button></div>
-        ${items.length ? items.map(a => row(a, listTab === 'received' ? a.investor_name : '')).join('') : `<div class="empty"><div class="icon">🏢</div>${listTab === 'sent' ? 'You haven\'t applied to any business yet.<br><a class="btn btn-gold btn-sm" style="margin-top:1rem" href="/businesses">Browse businesses</a>' : 'No applications yet.<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/business-dashboard">Your listings</a>'}</div>`}`;
+        ${items.length ? items.map(a => row(a, listTab === 'received' ? a.investor_name : '')).join('') : `<div class="empty"><div class="icon"></div>${listTab === 'sent' ? 'You haven\'t applied to any business yet.<br><a class="btn btn-gold btn-sm" style="margin-top:1rem" href="/businesses">Browse businesses</a>' : 'No applications yet.<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/business-dashboard">Your listings</a>'}</div>`}`;
     };
     document.addEventListener('click', e => { const b = e.target.closest('[data-lt]'); if (b) { listTab = b.dataset.lt; draw(); } });
     draw();
@@ -112,21 +112,21 @@
   function meetupBox(a) {
     if (!a.meetup_date || !['meetup_scheduled', 'negotiating', 'agreed'].includes(a.status)) return '';
     const virtual = a.meetup_type !== 'in_person';
-    return `<div class="meet">📅 <b>${esc(fullWhen(a.meetup_date))}</b> · ${virtual ? 'IdeaHub video call' : 'In person: ' + esc(a.meetup_location || '')}
+    return `<div class="meet"><b>${esc(fullWhen(a.meetup_date))}</b> · ${virtual ? 'IdeaHub video call' : 'In person: ' + esc(a.meetup_location || '')}
       ${a.meetup_notes ? `<div style="color:var(--soft);font-size:13px;margin-top:4px">${esc(a.meetup_notes)}</div>` : ''}
-      ${virtual ? `<div style="margin-top:.6rem"><a class="btn btn-gold btn-sm" href="/call?type=expansion&id=${Number(a.id)}" target="_blank" rel="noopener">📹 Join the video call</a></div>` : ''}</div>`;
+      ${virtual ? `<div style="margin-top:.6rem"><a class="btn btn-gold btn-sm" href="/call?type=expansion&id=${Number(a.id)}" target="_blank" rel="noopener">Join the video call</a></div>` : ''}</div>`;
   }
 
   function actionPanel(a) {
     const v = a.viewer, s = a.status, biz = esc(a.listing?.business_name || 'this business'), inv = esc(a.investor?.name || 'the other party');
     if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>You can read this application and its messages.</p></div>`;
-    if (s === 'agreed') return `<div class="panel action"><h2>🎉 Agreement reached</h2>
+    if (s === 'agreed') return `<div class="panel action"><h2>Agreement reached</h2>
       <p>Before anyone signs or pays, have an attorney prepare the ${esc(a.type_label.toLowerCase())} agreement${['merger', 'acquisition', 'stake', 'supplier_acquisition', 'distributor_acquisition', 'joint_venture'].includes(a.expansion_type) ? ', and have a chartered accountant value the business and run due diligence' : ', and check the numbers with an accountant'}. Bring them into the deal room. IdeaHub connects you; the agreement and payments are between you.</p>
       <div class="btns"><a class="btn btn-gold btn-sm" href="/find-support?type=patent_attorney">Find an attorney</a><a class="btn btn-ghost btn-sm" href="/find-support?type=chartered_accountant">Find an accountant</a></div>${meetupBox(a)}</div>`;
     if (s === 'rejected') return `<div class="panel action"><h2>Not selected</h2><p>${v === 'owner' ? `You didn't select ${inv}.` : `The owner didn't select this application.`}${a.reject_reason ? ' ' + esc(a.reject_reason) : ''}</p>${v === 'investor' ? '<div class="btns"><a class="btn btn-gold btn-sm" href="/businesses">Find other businesses</a></div>' : ''}</div>`;
     if (s === 'withdrawn') return `<div class="panel action"><h2>Withdrawn</h2><p>${v === 'owner' ? `${inv} withdrew this application.` : 'You withdrew this application.'}</p>${v === 'investor' && a.listing?.status === 'active' ? `<div class="btns"><a class="btn btn-ghost btn-sm" href="/business/${Number(a.listing.id)}">Apply again</a></div>` : ''}</div>`;
     if (v === 'investor') {
-      const msg = { pending: 'The owner will review your application. Use the messages below to introduce yourself.', reviewed: 'The owner has reviewed your application.', shortlisted: '⭐ You were shortlisted. The owner will suggest a meetup.', meetup_scheduled: 'A meetup is booked.', negotiating: '🤝 The owner wants to agree terms with you. Discuss them below.' }[s] || '';
+      const msg = { pending: 'The owner will review your application. Use the messages below to introduce yourself.', reviewed: 'The owner has reviewed your application.', shortlisted: '★ You were shortlisted. The owner will suggest a meetup.', meetup_scheduled: 'A meetup is booked.', negotiating: 'The owner wants to agree terms with you. Discuss them below.' }[s] || '';
       return `<div class="panel action"><h2>${esc(a.status_label)}</h2><p>${msg}</p>${meetupBox(a)}<div class="btns"><button class="btn btn-danger btn-sm" data-act="withdraw">Withdraw application</button></div></div>`;
     }
     // owner
@@ -136,8 +136,8 @@
     return `<div class="panel action"><h2>${esc(a.status_label)}</h2>
       <p>${{ pending: `${inv} applied. Review their plan, then shortlist them or book a meetup.`, reviewed: 'Shortlist them or book a meetup.', shortlisted: 'Book a meetup to get to know each other.', meetup_scheduled: 'After the meetup, start negotiating terms, or book another meetup.', negotiating: 'When you have agreed the terms, mark it as agreed.' }[s] || ''}</p>
       ${meetupBox(a)}
-      ${showMeet ? `<details style="margin-top:1rem" ${s === 'shortlisted' ? 'open' : ''}><summary style="cursor:pointer;font-weight:600;font-size:14px">📅 ${a.meetup_date ? 'Reschedule the meetup' : 'Schedule a meetup'}</summary>
-        <div style="margin-top:.8rem"><div class="seg"><label><input type="radio" name="mt" value="virtual" checked> 📹 IdeaHub video call</label><label><input type="radio" name="mt" value="in_person"> 🤝 In person</label></div>
+      ${showMeet ? `<details style="margin-top:1rem" ${s === 'shortlisted' ? 'open' : ''}><summary style="cursor:pointer;font-weight:600;font-size:14px">${a.meetup_date ? 'Reschedule the meetup' : 'Schedule a meetup'}</summary>
+        <div style="margin-top:.8rem"><div class="seg"><label><input type="radio" name="mt" value="virtual" checked> IdeaHub video call</label><label><input type="radio" name="mt" value="in_person"> In person</label></div>
         <div class="row2"><div class="field"><label for="mDate">Date and time</label><input class="input" id="mDate" type="datetime-local" /></div><div class="field" id="mLocWrap" style="display:none"><label for="mLoc">Where</label><input class="input" id="mLoc" placeholder="Address or place" /></div></div>
         <div class="field"><label for="mNotes">Note (optional)</label><input class="input" id="mNotes" placeholder="e.g. Bring your site plans" /></div>
         <button class="btn btn-gold btn-sm" data-act="meet">Send meetup</button></div></details>` : ''}
@@ -151,7 +151,7 @@
     $('root').innerHTML = `
       <div class="top"><a href="/expansion" class="muted" style="font-size:13px;text-decoration:none">← Expansion deals</a>
         <h1><a href="/business/${Number(a.listing?.id)}">${esc(a.listing?.business_name || 'Business')}</a></h1>
-        <div class="meta"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span><span>${esc(a.type_label)}</span><span>Applied ${day(a.created_at)}</span>${a.listing?.is_verified ? '<span style="color:var(--green)">✅ Verified business</span>' : ''}</div></div>
+        <div class="meta"><span class="pill st-${esc(a.status)}">${esc(a.status_label)}</span><span>${esc(a.type_label)}</span><span>Applied ${day(a.created_at)}</span>${a.listing?.is_verified ? '<span style="color:var(--green)">Verified business</span>' : ''}</div></div>
       ${track(a)}
       <div class="grid"><div>
         ${actionPanel(a)}
@@ -169,11 +169,11 @@
       </div>
       <aside class="side">
         <div class="panel">${person(a.owner, (a.sides?.owner || 'Business owner') + ' · listing owner')}${person(a.investor, (a.sides?.other || 'Interested party') + (a.investor?.country ? ' · ' + a.investor.country : ''))}
-          ${talk && !['rejected'].includes(a.status) ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=expansion&id=${Number(a.id)}" target="_blank" rel="noopener">📹 Start a video call</a>` : ''}
+          ${talk && !['rejected'].includes(a.status) ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=expansion&id=${Number(a.id)}" target="_blank" rel="noopener">Start a video call</a>` : ''}
         </div>
         ${a.viewer !== 'admin' && (a.room_id || !['rejected', 'withdrawn'].includes(a.status)) ? `<div class="panel"><div class="panel-title">Deal room</div>
           <p class="muted" style="font-size:13px;line-height:1.6">A private space where each side brings its own attorney, accountant or other advisers, shares documents, and has a private channel for advice.</p>
-          ${a.room_id ? `<a class="btn btn-gold btn-sm" style="width:100%;margin-top:.8rem" href="/deal-room?id=${Number(a.room_id)}">Open the deal room →</a>` : `<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:.8rem" data-act="room">🤝 Open a deal room</button>`}</div>` : ''}
+          ${a.room_id ? `<a class="btn btn-gold btn-sm" style="width:100%;margin-top:.8rem" href="/deal-room?id=${Number(a.room_id)}">Open the deal room →</a>` : `<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:.8rem" data-act="room">Open a deal room</button>`}</div>` : ''}
         <div class="note" style="font-size:12.5px">IdeaHub connects you and keeps a record of your conversation. Agreements and payments for the expansion itself are made directly between you, with your own advisers.</div>
       </aside></div>`;
     const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
@@ -184,7 +184,7 @@
       const r = await fetch(`/api/expansion-applications/${id}`, { headers: H() });
       if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
       const d = await r.json();
-      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/expansion">Your expansion deals</a></div>`; return; }
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/expansion">Your expansion deals</a></div>`; return; }
       const keep = {}; ['msgIn', 'mDate', 'mLoc', 'mNotes'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
       D = d; document.title = `${d.listing?.business_name || 'Application'} — Expansion — IdeaHub`; render(d);
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });

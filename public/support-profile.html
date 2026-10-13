@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Support Profile — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -186,38 +186,7 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav">
-    <a class="nav-item" href="/support-dashboard"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-    <a class="nav-item" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-    <a class="nav-item active" href="/support-profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
-    <div class="nav-divider"></div>
-    <a class="nav-item" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-    <a class="nav-item" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
-  </nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <main class="main">
   <div class="topbar">
@@ -244,7 +213,7 @@
             <div class="stat-mini-label">Earned</div>
           </div>
         </div>
-        <div class="stars-display" id="starsDisplay">⭐⭐⭐⭐⭐</div>
+        <div class="stars-display" id="starsDisplay">★★★★★</div>
         <div class="stars-count" id="starsCount">No ratings yet</div>
       </div>
     </div>
@@ -254,7 +223,7 @@
       <!-- PROFESSIONAL INFO -->
       <!-- VERIFICATION -->
       <div class="form-card" id="verify">
-        <div class="form-section-title">🪪 Verification <span id="verPill" class="cert-status pending" style="margin-left:8px;vertical-align:middle">Checking…</span></div>
+        <div class="form-section-title">Verification <span id="verPill" class="cert-status pending" style="margin-left:8px;vertical-align:middle">Checking…</span></div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6" id="verIntro">Loading…</p>
         <div class="cert-list" id="verList" style="margin-bottom:1rem"></div>
         <div id="verForm" class="cert-form show" style="display:none">
@@ -274,7 +243,7 @@
       </div>
 
       <div class="form-card">
-        <div class="form-section-title">🧑‍💼 Professional Information</div>
+        <div class="form-section-title">Professional Information</div>
         <div class="field">
           <label class="lbl">Tagline</label>
           <input type="text" id="tagline" placeholder="e.g. 10+ years in IP Law, 50+ patents filed" maxlength="100" />
@@ -294,17 +263,17 @@
           <div class="avail-grid">
             <label class="avail-option selected available" id="avail_available" onclick="setAvail('available')">
               <input type="radio" name="availability" value="available" checked />
-              <span class="avail-emoji">🟢</span>
+              <span class="avail-emoji"></span>
               <span class="avail-name">Available</span>
             </label>
             <label class="avail-option" id="avail_busy" onclick="setAvail('busy')">
               <input type="radio" name="availability" value="busy" />
-              <span class="avail-emoji">🟡</span>
+              <span class="avail-emoji"></span>
               <span class="avail-name">Busy</span>
             </label>
             <label class="avail-option" id="avail_unavailable" onclick="setAvail('unavailable')">
               <input type="radio" name="availability" value="unavailable" />
-              <span class="avail-emoji">🔴</span>
+              <span class="avail-emoji"></span>
               <span class="avail-name">Unavailable</span>
             </label>
           </div>
@@ -321,7 +290,7 @@
 
       <!-- COUNTRY RESTRICTIONS -->
       <div class="form-card">
-        <div class="form-section-title">🌍 Service Area & Restrictions</div>
+        <div class="form-section-title">Service Area & Restrictions</div>
         <div class="field">
           <label class="lbl">Home Country</label>
           <select id="home_country">
@@ -334,9 +303,9 @@
         <div class="field">
           <label class="lbl">Service Type</label>
           <select id="service_type" onchange="updateServiceType()">
-            <option value="worldwide">🌍 Worldwide — I serve everyone</option>
-            <option value="specific_countries">✅ Specific Countries — I only serve these countries</option>
-            <option value="restricted_countries">🚫 Restricted Countries — I cannot serve these countries</option>
+            <option value="worldwide">Worldwide — I serve everyone</option>
+            <option value="specific_countries">Specific Countries — I only serve these countries</option>
+            <option value="restricted_countries">Restricted Countries — I cannot serve these countries</option>
           </select>
         </div>
 
@@ -374,11 +343,11 @@
 
       <!-- CERTIFICATES -->
       <div class="form-card">
-        <div class="form-section-title">📜 Other qualifications</div>
+        <div class="form-section-title">Other qualifications</div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Degrees and certificates shown on your profile. These don't give the Verified badge; use Verification above for that.</p>
 
         <div class="cert-upload-area" onclick="document.getElementById('certFileInput').click()" id="dropZone">
-          <span class="upload-icon">📄</span>
+          <span class="upload-icon"></span>
           <div class="upload-text">Click to upload or drag & drop</div>
           <div class="upload-sub">PDF, JPG or PNG — Max 5MB</div>
         </div>
@@ -421,7 +390,7 @@
 
       <!-- RATINGS -->
       <div class="form-card">
-        <div class="form-section-title">⭐ My Ratings & Reviews</div>
+        <div class="form-section-title">★ My Ratings & Reviews</div>
         <div id="ratingsList">
           <div class="empty">No ratings yet — complete jobs to get reviews</div>
         </div>
@@ -431,6 +400,8 @@
 </main>
 
 <script>
+const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
   const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
   // ── SHARED SIDEBAR NAV ──
@@ -442,23 +413,23 @@
     if (newIdeaBtn && user && ['idea_creator','patent_seller'].includes(user.role)) newIdeaBtn.style.display = 'block';
     nav.innerHTML = `
       <div class="nav-section-label">My Account</div>
-      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon">⚡</span><span>Dashboard</span></a>
-      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon">👤</span><span>My Profile</span></a>
+      <a class="nav-item ${path === '/dashboard' || path === '/buyer-dashboard' || path === '/business-dashboard' || path === '/support-dashboard' ? 'active' : ''}" href="${user && ['investor'].includes(user.role) ? '/buyer-dashboard' : user && ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'].includes(user.role) ? '/support-dashboard' : user && user.role === 'business_owner' ? '/business-dashboard' : '/dashboard'}"><span class="nav-icon"></span><span>Dashboard</span></a>
+      <a class="nav-item ${path === '/profile' ? 'active' : ''}" href="/profile"><span class="nav-icon"></span><span>My Profile</span></a>
       <div class="nav-section-label">Marketplace</div>
-      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon">🔍</span><span>Marketplace</span></a>
-      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon">🎯</span><span>Request an Idea</span></a>
+      <a class="nav-item ${path === '/browse' ? 'active' : ''}" href="/browse"><span class="nav-icon"></span><span>Marketplace</span></a>
+      <a class="nav-item ${path === '/idea-requests' ? 'active' : ''}" href="/idea-requests"><span class="nav-icon"></span><span>Request an Idea</span></a>
       <div class="nav-section-label">Support</div>
-      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon">⚖️</span><span>Find an Attorney</span></a>
-      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon">🧑‍💼</span><span>Virtual Manager</span></a>
-      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon">🧮</span><span>Find an Accountant</span></a>
-    <a class="nav-item" href="/patents"><span class="nav-icon">📜</span><span>Patent Applications</span></a>
-    <a class="nav-item" href="/deal-room"><span class="nav-icon">🤝</span><span>Deal Rooms</span></a>
-    <a class="nav-item" href="/hire"><span class="nav-icon">💼</span><span>My Hires</span></a>
-    <a class="nav-item" href="/expansion"><span class="nav-icon">🏢</span><span>Expansion Deals</span></a>
-      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon">🤝</span><span>Support Services</span></a>
+      <a class="nav-item" href="/find-support?type=patent_attorney"><span class="nav-icon"></span><span>Find an Attorney</span></a>
+      <a class="nav-item" href="/find-support?type=virtual_manager"><span class="nav-icon"></span><span>Virtual Manager</span></a>
+      <a class="nav-item" href="/find-support?type=chartered_accountant"><span class="nav-icon"></span><span>Find an Accountant</span></a>
+    <a class="nav-item" href="/patents"><span class="nav-icon"></span><span>Patent Applications</span></a>
+    <a class="nav-item" href="/deal-room"><span class="nav-icon"></span><span>Deal Rooms</span></a>
+    <a class="nav-item" href="/hire"><span class="nav-icon"></span><span>My Hires</span></a>
+    <a class="nav-item" href="/expansion"><span class="nav-icon"></span><span>Expansion Deals</span></a>
+      <a class="nav-item ${path === '/find-support' ? 'active' : ''}" href="/find-support"><span class="nav-icon"></span><span>Support Services</span></a>
       <div class="nav-section-label">Activity</div>
-      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon">💬</span><span>Messages</span></a>
-      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon">💰</span><span>Wallet</span></a>
+      <a class="nav-item ${path === '/messages' ? 'active' : ''}" href="/messages"><span class="nav-icon"></span><span>Messages</span></a>
+      <a class="nav-item ${path === '/transactions' ? 'active' : ''}" href="/transactions"><span class="nav-icon"></span><span>Wallet</span></a>
     `;
   }
   const token = localStorage.getItem('ih_token');
@@ -467,9 +438,9 @@
 
   const SUPPORT_ROLES = ['virtual_manager','patent_attorney','chartered_accountant','corporate_services'];
   const roleMap = { virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney / Agent', chartered_accountant:'Chartered Accountant', corporate_services:'Corporate Services' };
-  const roleEmoji = { virtual_manager:'🤝', patent_attorney:'⚖️', chartered_accountant:'🧮', corporate_services:'🏢' };
+  const roleEmoji = { virtual_manager:'', patent_attorney:'', chartered_accountant:'', corporate_services:'' };
 
-  if (!token || !user) window.location.href = '/login';
+  if (!token || !user) { window.location.replace('/login?next=%2Fsupport-profile'); throw new Error('signed out'); }
   if (!SUPPORT_ROLES.includes(user?.role)) window.location.href = '/profile';
 
   let selectedLangs = [];
@@ -480,7 +451,7 @@
 
   // Setup sidebar
   const initials = (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '');
-  const avatarUrl = user.avatar_url || user.avatarUrl;
+  const avatarUrl = user && (user.avatar_url || user.avatarUrl);
       const avatarEl = document.getElementById('sidebarAvatar');
       if (avatarEl) {
         if (avatarUrl) {
@@ -564,7 +535,7 @@
   function renderTags(type) {
     const arr = type === 'allowed' ? allowedCountries : restrictedCountries;
     const el = document.getElementById(type === 'allowed' ? 'allowedTags' : 'restrictedTags');
-    el.innerHTML = arr.map(c => `<div class="tag">${c}<span class="tag-remove" onclick="removeTag('${type}','${c}')">×</span></div>`).join('');
+    el.innerHTML = arr.map(c => `<div class="tag">${ihEsc(c)}<span class="tag-remove" data-t="${ihEsc(type)}" data-c="${ihEsc(c)}" onclick="removeTag(this.dataset.t, this.dataset.c)">×</span></div>`).join('');
   }
 
   document.getElementById('allowedInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTag('allowed'); } });
@@ -625,7 +596,7 @@
 
       pendingFileUrl = filePath;
       pendingFileName = file.name;
-      document.getElementById('certFileName').textContent = `📎 ${file.name}`;
+      document.getElementById('certFileName').textContent = `${file.name}`;
       document.getElementById('certForm').classList.add('show');
 
     } catch (err) {
@@ -684,14 +655,14 @@
 
     list.innerHTML = certs.map(c => `
       <div class="cert-item">
-        <div class="cert-icon">${c.file_name?.endsWith('.pdf') ? '📄' : '🖼️'}</div>
+        <div class="cert-icon">${c.file_name?.endsWith('.pdf') ? '' : ''}</div>
         <div class="cert-info">
           <div class="cert-title">${esc(c.title)}</div>
           <div class="cert-meta">${esc(c.issuer || 'Unknown issuer')} ${c.issued_year ? '· ' + esc(c.issued_year) : ''} · ${esc(c.file_name || '')}</div>
           ${c.status === 'rejected' && c.reject_reason ? `<div style="font-size:11px;color:var(--error);margin-top:3px;">Reason: ${esc(c.reject_reason)}</div>` : ''}
         </div>
-        <span class="cert-status ${c.status}">${c.status === 'pending' ? '⏳ Pending' : c.status === 'approved' ? '✅ Verified' : '❌ Rejected'}</span>
-        <button class="cert-delete" onclick="deleteCert(${Number(c.id)})" title="Delete">🗑</button>
+        <span class="cert-status ${c.status}">${c.status === 'pending' ? 'Pending' : c.status === 'approved' ? 'Verified' : 'Rejected'}</span>
+        <button class="cert-delete" onclick="deleteCert(${Number(c.id)})" title="Delete" aria-label="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
       </div>
     `).join('');
   }
@@ -704,13 +675,13 @@
     if (!ratings.length) { list.innerHTML = '<div class="empty">No ratings yet — complete jobs to get reviews</div>'; return; }
 
     const avg = (ratings.reduce((s, r) => s + r.stars, 0) / ratings.length).toFixed(1);
-    document.getElementById('starsDisplay').innerHTML = '⭐'.repeat(Math.round(avg)) + `<span style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;margin-left:6px;">${avg}</span>`;
+    document.getElementById('starsDisplay').innerHTML = '★'.repeat(Math.round(avg)) + `<span style="font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;margin-left:6px;">${avg}</span>`;
     document.getElementById('starsCount').textContent = `${ratings.length} review${ratings.length !== 1 ? 's' : ''}`;
 
     list.innerHTML = ratings.map(r => `
       <div class="rating-item">
         <div class="rating-header">
-          <div class="rating-stars">${'⭐'.repeat(r.stars)}</div>
+          <div class="rating-stars">${'★'.repeat(r.stars)}</div>
           <div class="rating-name">${esc(r.rater?.first_name || 'Anonymous')} ${esc(r.rater?.last_name || '')}</div>
           <div class="rating-date">${new Date(r.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</div>
         </div>
@@ -746,9 +717,9 @@
         document.getElementById('statEarnings').textContent = '$' + (profile.total_earnings || 0).toLocaleString();
 
         if (profile.is_verified) {
-          document.getElementById('verifiedBannerEl').innerHTML = `<div class="verified-banner">✅ Verified Professional</div>`;
+          document.getElementById('verifiedBannerEl').innerHTML = `<div class="verified-banner">Verified Professional</div>`;
         } else {
-          document.getElementById('verifiedBannerEl').innerHTML = `<div class="pending-banner">⏳ Verification Pending</div>`;
+          document.getElementById('verifiedBannerEl').innerHTML = `<div class="pending-banner">Verification Pending</div>`;
         }
       }
     } catch (err) { console.error(err); }
@@ -797,21 +768,21 @@
       VER = await r.json(); if (!r.ok) throw new Error();
     } catch (e) { document.getElementById('verIntro').textContent = 'Could not load verification status.'; return; }
     const pill = document.getElementById('verPill');
-    pill.className = 'cert-status ' + (VER.verified ? 'approved' : 'pending'); pill.textContent = VER.verified ? '✅ Verified' : 'Not verified';
+    pill.className = 'cert-status ' + (VER.verified ? 'approved' : 'pending'); pill.textContent = VER.verified ? 'Verified' : 'Not verified';
     const need = (VER.required || []).map(x => x.label).join(' or ');
     const attorney = (VER.required || []).some(x => x.manage);
     document.getElementById('verIntro').innerHTML = attorney
       ? `Patent attorneys and agents are verified through their patent-office registrations. ${VER.verified ? 'You\'re verified.' : 'Add each office you\'re registered with on the Patents page.'} <a href="/patents#regSection" style="color:var(--accent)">Manage registrations →</a>`
-      : VER.verified ? `You're verified. Clients see the ✅ badge and your checked credential on Find Support.`
-      : `To appear in Find Support and receive requests, add your <b>${esc(need)}</b> with a copy of the certificate. IdeaHub checks it, usually within 2 business days.${VER.verified_only ? '' : ' (Unverified profiles are currently still shown.)'}`;
-    const st = { pending: ['pending', '⏳ Being checked'], verified: ['approved', '✅ Verified'], rejected: ['rejected', '❌ Not accepted'] };
+      : VER.verified ? `You're verified. Clients see the badge and your checked credential on Professionals.`
+      : `To appear in Professionals and receive requests, add your <b>${esc(need)}</b> with a copy of the certificate. IdeaHub checks it, usually within 2 business days.${VER.verified_only ? '' : ' (Unverified profiles are currently still shown.)'}`;
+    const st = { pending: ['pending', 'Being checked'], verified: ['approved', 'Verified'], rejected: ['rejected', 'Not accepted'] };
     document.getElementById('verList').innerHTML = (VER.credentials || []).map(c => `
-      <div class="cert-item"><div class="cert-icon">🪪</div><div class="cert-info">
+      <div class="cert-item"><div class="cert-icon"></div><div class="cert-info">
         <div class="cert-title">${esc(c.kind_label)}</div>
         <div class="cert-meta">${esc(c.body)} · ${c.kind === 'identity' ? 'ending ' : 'No. '}${esc(c.number)} · ${esc(c.name_on_record || '')}</div>
         ${c.status === 'rejected' && c.review_note ? `<div style="font-size:11px;color:var(--error);margin-top:3px;">${esc(c.review_note)}</div>` : ''}
       </div><span class="cert-status ${st[c.status]?.[0] || 'pending'}">${st[c.status]?.[1] || esc(c.status)}</span>
-      <button class="cert-delete" onclick="deleteCredential(${Number(c.id)})" title="Remove">🗑</button></div>`).join('');
+      <button class="cert-delete" onclick="deleteCredential(${Number(c.id)})" title="Remove" aria-label="Remove"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button></div>`).join('');
     const form = document.getElementById('verForm');
     if (!(VER.kinds || []).length) { form.style.display = 'none'; return; }
     form.style.display = 'block';

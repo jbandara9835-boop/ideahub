@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Life Hacks — Free everyday tips from IdeaHub creators</title>
 <meta name="description" id="metaDesc" content="Free life hacks shared by IdeaHub creators: clever, tested tips for home, food, money, health, tech, work and travel." />
@@ -129,7 +129,7 @@ footer a:hover { color: var(--text); }
   <h1>Life <span>Hacks</span></h1>
   <p>Clever, tested tips for everyday life — at home, in the kitchen, with money, health, tech, work and travel. Free to read, free to share.</p>
   <div class="hero-actions">
-    <label class="search"><span aria-hidden="true">🔍</span><input id="q" type="search" placeholder="Search life hacks, e.g. onions, budget, laptop battery" autocomplete="off" /></label>
+    <label class="search"><span aria-hidden="true"></span><input id="q" type="search" placeholder="Search life hacks, e.g. onions, budget, laptop battery" autocomplete="off" /></label>
     <a class="btn-gold" id="shareBtn" href="/wall?compose=hack">✦ Share a life hack</a>
   </div>
 </section>
@@ -161,25 +161,13 @@ footer a:hover { color: var(--text); }
   </div>
 </section>
 
-<footer>
-  <span>© 2026 IdeaHub by <a href="https://picela.co" target="_blank" rel="noopener" style="color:var(--accent);">Picela</a></span>
-  <div class="footer-links">
-    <a href="/browse">Marketplace</a>
-    <a href="/wall">IdeaWall</a>
-    <a href="/how-it-works">How It Works</a>
-    <a href="/about">About</a>
-    <a href="/terms">Terms</a>
-    <a href="/privacy">Privacy</a>
-  </div>
-</footer>
-
 <div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="mTitle">
   <div class="modal" id="modal"></div>
 </div>
 
 <script>
   const TOPICS = ['All', 'Home', 'Food & Kitchen', 'Money', 'Health', 'Tech', 'Work & Study', 'Travel', 'Other'];
-  const TOPIC_ICON = { 'Home': '🏠', 'Food & Kitchen': '🍳', 'Money': '💰', 'Health': '❤️', 'Tech': '💻', 'Work & Study': '📚', 'Travel': '✈️', 'Other': '✦' };
+  const TOPIC_ICON = { 'Home': '', 'Food & Kitchen': '', 'Money': '', 'Health': '', 'Tech': '', 'Work & Study': '', 'Travel': '', 'Other': '✦' };
   const PAGE = 12;
   let topic = '', sort = 'latest', search = '', offset = 0, posts = [], loading = false;
   const token = (() => { try { return localStorage.getItem('ih_token'); } catch (e) { return null; } })();
@@ -217,12 +205,12 @@ footer a:hover { color: var(--text); }
     const img = p.media_url && p.media_type !== 'video' ? `<img class="card-img" src="${esc(p.media_url)}" alt="" loading="lazy">` : '';
     return `<button class="card" data-id="${Number(p.id)}">
       ${img}
-      <span class="topic">${TOPIC_ICON[p.hack_topic] || '🛠️'} ${esc(p.hack_topic || 'Life hack')}</span>
+      <span class="topic">${TOPIC_ICON[p.hack_topic] || ''} ${esc(p.hack_topic || 'Life hack')}</span>
       <h2>${esc(p.title)}</h2>
       ${p.description ? `<p>${esc(p.description)}</p>` : ''}
       <div class="card-foot">
         <span class="author"><span class="av">${avatar(p)}</span><span>${name(p)}</span></span>
-        <span class="stats"><span title="Likes">💡 ${Number(p.likes_count) || 0}</span><span title="Comments">💬 ${Number(p.comments_count) || 0}</span></span>
+        <span class="stats"><span title="Likes">${Number(p.likes_count) || 0} likes</span><span title="Comments">${Number(p.comments_count) || 0} comments</span></span>
       </div>
     </button>`;
   }
@@ -240,13 +228,13 @@ footer a:hover { color: var(--text); }
       posts = posts.concat(batch); offset += batch.length;
       const grid = document.getElementById('grid');
       if (!posts.length) {
-        grid.innerHTML = `<div class="empty"><div class="icon">🛠️</div>${search || topic ? 'No life hacks match that yet.' : 'No life hacks yet.'}<br><a href="${token ? '/wall?compose=hack' : '/login'}" style="color:var(--accent);">Be the first to share one →</a></div>`;
+        grid.innerHTML = `<div class="empty"><div class="icon"></div>${search || topic ? 'No life hacks match that yet.' : 'No life hacks yet.'}<br><a href="${token ? '/wall?compose=hack' : '/login'}" style="color:var(--accent);">Be the first to share one →</a></div>`;
       } else if (reset) grid.innerHTML = posts.map(card).join('');
       else grid.insertAdjacentHTML('beforeend', batch.map(card).join(''));
       document.getElementById('countLine').textContent = posts.length ? `Showing ${posts.length} life hack${posts.length > 1 ? 's' : ''}${topic ? ' in ' + topic : ''}${search ? ` for “${search}”` : ''}` : '';
       document.getElementById('moreBtn').style.display = batch.length === PAGE ? 'block' : 'none';
     } catch (e) {
-      document.getElementById('grid').innerHTML = '<div class="empty"><div class="icon">😕</div>Couldn\'t load life hacks. Please refresh.</div>';
+      document.getElementById('grid').innerHTML = '<div class="empty"><div class="icon"></div>Couldn\'t load life hacks. Please refresh.</div>';
     }
     loading = false;
   }
@@ -268,15 +256,15 @@ footer a:hover { color: var(--text); }
     const media = p.media_url ? (p.media_type === 'video' ? `<video class="full" src="${esc(p.media_url)}" controls playsinline></video>` : `<img class="full" src="${esc(p.media_url)}" alt="">`) : '';
     document.getElementById('modal').innerHTML = `
       <button class="close" id="closeBtn" aria-label="Close">✕</button>
-      <span class="topic">${TOPIC_ICON[p.hack_topic] || '🛠️'} ${esc(p.hack_topic || 'Life hack')}</span>
+      <span class="topic">${TOPIC_ICON[p.hack_topic] || ''} ${esc(p.hack_topic || 'Life hack')}</span>
       <h2 id="mTitle">${esc(p.title)}</h2>
       <div class="body">${esc(p.description || '')}</div>
       ${media}
       <div class="modal-foot">
         <a class="author" href="/public-profile?id=${encodeURIComponent(p.user_id)}" style="text-decoration:none;"><span class="av">${avatar(p)}</span><span>${name(p)} · ${esc(ago(p.created_at))}</span></a>
         <div class="modal-actions">
-          <button class="small-btn" id="copyBtn">🔗 Copy link</button>
-          <a class="small-btn gold" href="/wall?category=Life%20Hack">💬 Like & discuss on IdeaWall</a>
+          <button class="small-btn" id="copyBtn">Copy link</button>
+          <a class="small-btn gold" href="/wall?category=Life%20Hack">Like & discuss on IdeaWall</a>
         </div>
       </div>`;
     ov.classList.add('open'); document.body.style.overflow = 'hidden';

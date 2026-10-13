@@ -18,15 +18,15 @@
   else root.Routes = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   var GROUPS = [
-    { key: 'markets', icon: '🌍', label: 'Grow into new markets', short: 'New markets',
+    { key: 'markets', icon: '', label: 'Grow into new markets', short: 'New markets',
       help: 'Replicate a proven business in new places: franchises and licences.' },
-    { key: 'horizontal', icon: '🤝', label: 'Horizontal integration', short: 'Horizontal',
+    { key: 'horizontal', icon: '', label: 'Horizontal integration', short: 'Horizontal',
       help: 'Combine with a business at the same level: mergers, acquisitions, stakes, joint ventures.' },
-    { key: 'backward', icon: '🏭', label: 'Vertical integration: towards supply', short: 'Backward (supply)',
+    { key: 'backward', icon: '', label: 'Vertical integration: towards supply', short: 'Backward (supply)',
       help: 'Secure inputs: acquire or partner with suppliers and manufacturers.' },
-    { key: 'forward', icon: '🚚', label: 'Vertical integration: towards customers', short: 'Forward (distribution)',
+    { key: 'forward', icon: '', label: 'Vertical integration: towards customers', short: 'Forward (distribution)',
       help: 'Reach customers: distributors, dealers, agents and retail partners.' },
-    { key: 'brand', icon: '🏷️', label: 'Product & brand extension', short: 'Brand extension',
+    { key: 'brand', icon: '', label: 'Product & brand extension', short: 'Brand extension',
       help: 'Put products under other brands, or brands on other products: white label, private label, co-branding.' }
   ];
   // offer = wording when the lister offers it; seek = wording when the lister is looking for it.
@@ -61,7 +61,7 @@
   TYPES.forEach(function (t) { BY_KEY[t.key] = t; (BY_GROUP[t.group] = BY_GROUP[t.group] || []).push(t); });
   var GROUP = {}; GROUPS.forEach(function (g) { GROUP[g.key] = g; });
 
-  // Deal forms that fit each other besides the same form (e.g. someone acquiring a supplier ↔ a business for sale)
+  // Deal forms that fit each other besides the same form (e.g. someone acquiring a supplier a business for sale)
   var CROSS = {
     supplier_acquisition: ['acquisition', 'stake'], distributor_acquisition: ['acquisition', 'stake'],
     acquisition: ['supplier_acquisition', 'distributor_acquisition', 'stake'], stake: ['acquisition', 'supplier_acquisition', 'distributor_acquisition'],

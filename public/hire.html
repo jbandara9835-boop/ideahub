@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Hires — IdeaHub</title>
 <meta name="robots" content="noindex" />
@@ -98,7 +98,7 @@
       const items = listTab === 'mine' ? mine : incoming;
       $('root').innerHTML = `<div class="top"><div class="kicker">Hires</div><h1>${listTab === 'mine' ? 'Professionals you hired' : 'Requests from clients'}</h1></div>
         ${isPro || incoming.length ? `<div class="tabs"><button class="tab ${listTab === 'mine' ? 'on' : ''}" data-lt="mine">I hired (${mine.length})</button><button class="tab ${listTab === 'incoming' ? 'on' : ''}" data-lt="incoming">Client requests (${incoming.length})</button></div>` : ''}
-        ${items.length ? items.map(h => row(h, h.other)).join('') : `<div class="empty"><div class="icon">🤝</div>${listTab === 'mine' ? 'You haven\'t hired anyone yet.<br><a class="btn btn-gold btn-sm" style="margin-top:1rem" href="/find-support">Find a professional</a>' : 'No client requests yet. Clients find you through Find Support once you\'re verified.'}</div>`}`;
+        ${items.length ? items.map(h => row(h, h.other)).join('') : `<div class="empty"><div class="icon"></div>${listTab === 'mine' ? 'You haven\'t hired anyone yet.<br><a class="btn btn-gold btn-sm" style="margin-top:1rem" href="/find-support">Find a professional</a>' : 'No client requests yet. Clients find you through Professionals once you\'re verified.'}</div>`}`;
     };
     document.addEventListener('click', e => { const b = e.target.closest('[data-lt]'); if (b) { listTab = b.dataset.lt; draw(); } });
     draw();
@@ -136,11 +136,11 @@
     if (s === 'delivered' && v === 'pro') return `<div class="panel action"><h2>Waiting for the client to confirm</h2><p>Your fee of ${money(h.amount)} is released when they confirm, or automatically on <b>${day(h.confirm_by)}</b>.</p></div>`;
     if (s === 'disputed') return `<div class="panel action"><h2>Under review by IdeaHub</h2><p>A problem was reported: <i>${esc(h.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while IdeaHub reviews the messages here.</p></div>`;
     if (s === 'completed') {
-      if (v === 'client' && !h.rating) return `<div class="panel action"><h2>✅ Completed: leave a review</h2><p>How was ${esc(other)}? Your review helps other creators choose.</p>
+      if (v === 'client' && !h.rating) return `<div class="panel action"><h2>Completed: leave a review</h2><p>How was ${esc(other)}? Your review helps other creators choose.</p>
         <div class="stars" id="stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-star="${n}" aria-label="${n} stars">★</button>`).join('')}</div>
         <textarea class="textarea" id="rvText" style="min-height:70px" placeholder="What went well? (optional)"></textarea>
         <div class="btns"><button class="btn btn-gold" data-act="rate">Post review</button></div></div>`;
-      return `<div class="panel action"><h2>✅ Completed</h2>${h.rating ? `<p><span style="color:var(--accent)">${'★'.repeat(h.rating.stars)}</span>${'☆'.repeat(5 - h.rating.stars)} ${h.rating.review ? '· ' + esc(h.rating.review) : ''}</p>` : `<p>${v === 'pro' ? 'The payment was added to your wallet.' : ''}</p>`}</div>`;
+      return `<div class="panel action"><h2>Completed</h2>${h.rating ? `<p><span style="color:var(--accent)">${'★'.repeat(h.rating.stars)}</span>${'☆'.repeat(5 - h.rating.stars)} ${h.rating.review ? '· ' + esc(h.rating.review) : ''}</p>` : `<p>${v === 'pro' ? 'The payment was added to your wallet.' : ''}</p>`}</div>`;
     }
     if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>IdeaHub refunded ${money(h.total)} to the client.${h.resolution_note ? ' Note: ' + esc(h.resolution_note) : ''}</p></div>`;
     if (s === 'rejected') return `<div class="panel action"><h2>Declined</h2><p>${esc(h.cancel_reason || 'The professional declined this request.')}</p>${v === 'client' ? '<div class="btns"><a class="btn btn-gold" href="/find-support">Find another professional</a></div>' : ''}</div>`;
@@ -160,11 +160,11 @@
   function render(h) {
     const v = h.viewer, talk = !['rejected', 'cancelled'].includes(h.status) && v !== 'admin';
     const msgs = h.messages.map(m => m.system ? `<div class="sys">${esc(m.text)} · ${when(m.created_at)}</div>`
-      : `<div class="msg ${m.from_id === me?.id ? 'me' : ''}">${esc(m.text)}${m.file_url && /^https:\/\//.test(m.file_url) ? `<br><a href="${esc(m.file_url)}" target="_blank" rel="noopener" style="color:var(--accent)">📎 ${esc(m.file_name || 'File')}</a>` : ''}<small>${m.from_id === h.client?.id ? esc(h.client.name) : esc(h.pro?.name || '')} · ${when(m.created_at)}</small></div>`).join('');
+      : `<div class="msg ${m.from_id === me?.id ? 'me' : ''}">${esc(m.text)}${m.file_url && /^https:\/\//.test(m.file_url) ? `<br><a href="${esc(m.file_url)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(m.file_name || 'File')}</a>` : ''}<small>${m.from_id === h.client?.id ? esc(h.client.name) : esc(h.pro?.name || '')} · ${when(m.created_at)}</small></div>`).join('');
     $('root').innerHTML = `
       <div class="top"><a href="/hire" class="muted" style="font-size:13px;text-decoration:none">← Hires</a>
         <h1>${esc(h.title)}</h1>
-        <div class="meta"><span class="pill st-${esc(h.status)}">${esc(h.status_label)}</span><span>${esc(h.pro?.role_label || '')}</span><span>Requested ${day(h.created_at)}</span>${h.idea ? `<a href="/idea?id=${Number(h.idea.id)}" style="color:var(--accent);text-decoration:none">💡 ${esc(h.idea.title)}</a>` : ''}</div></div>
+        <div class="meta"><span class="pill st-${esc(h.status)}">${esc(h.status_label)}</span><span>${esc(h.pro?.role_label || '')}</span><span>Requested ${day(h.created_at)}</span>${h.idea ? `<a href="/idea?id=${Number(h.idea.id)}" style="color:var(--accent);text-decoration:none">${esc(h.idea.title)}</a>` : ''}</div></div>
       ${track(h)}
       <div class="grid"><div>
         ${actionPanel(h)}
@@ -181,7 +181,7 @@
       </div>
       <aside class="side">
         <div class="panel">${person(h.client, 'Client')}${person(h.pro, h.pro?.role_label || 'Professional')}
-          ${talk ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=hire&id=${h.id}" target="_blank" rel="noopener">📹 Start a video call</a>` : ''}
+          ${talk ? `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=hire&id=${h.id}" target="_blank" rel="noopener">Start a video call</a>` : ''}
         </div>
         ${delegationPanel(h)}
         <div class="panel"><div class="panel-title">Payment</div>
@@ -199,13 +199,13 @@
       const r = await fetch(`/api/hire/${id}`, { headers: H() });
       if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
       const d = await r.json();
-      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon">🔒</div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/hire">Your hires</a></div>`; return; }
+      if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/hire">Your hires</a></div>`; return; }
       const keep = {}; ['msgIn', 'qAmt', 'qDays', 'qScope', 'dNote', 'rvText'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
       D = d; document.title = `${d.title} — Hire — IdeaHub`; render(d);
       if (d.viewer === 'client' && d.delegation?.active && d.delegation.id) {
         fetch('/api/delegations/' + d.delegation.id + '/log', { headers: H() }).then(r => r.ok ? r.json() : []).then(log => {
           const el = $('delLog'); if (!el) return;
-          el.innerHTML = log.length ? `<div class="muted" style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Recent changes</div>` + log.slice(0, 8).map(x => `<div style="font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border)">${x.action === 'create' ? '📝 Added' : '✏️ Edited'} ${x.idea_id ? `<a href="/idea?id=${Number(x.idea_id)}" style="color:var(--accent);text-decoration:none">${esc(x.detail || 'a listing')}</a>` : esc(x.detail || 'a listing')} <span class="muted">· ${when(x.created_at)}</span></div>`).join('') : '<div class="muted" style="font-size:12.5px">No changes made yet.</div>';
+          el.innerHTML = log.length ? `<div class="muted" style="font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Recent changes</div>` + log.slice(0, 8).map(x => `<div style="font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border)">${x.action === 'create' ? 'Added' : 'Edited'} ${x.idea_id ? `<a href="/idea?id=${Number(x.idea_id)}" style="color:var(--accent);text-decoration:none">${esc(x.detail || 'a listing')}</a>` : esc(x.detail || 'a listing')} <span class="muted">· ${when(x.created_at)}</span></div>`).join('') : '<div class="muted" style="font-size:12.5px">No changes made yet.</div>';
         }).catch(() => {});
       }
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });

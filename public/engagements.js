@@ -11,17 +11,17 @@
   else root.Engagements = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   var LEVELS = [
-    { key: 'video_call', icon: '📹', label: 'Explain it on a video call', short: 'Video call',
+    { key: 'video_call', icon: '', label: 'Explain it on a video call', short: 'Video call',
       help: 'Walk the buyer through the idea and answer questions live.' },
-    { key: 'meet_in_person', icon: '🤝', label: 'Meet the buyer in person', short: 'Meet in person',
+    { key: 'meet_in_person', icon: '', label: 'Meet the buyer in person', short: 'Meet in person',
       help: 'A face-to-face meeting.', warning: 'In-person meetings happen outside IdeaHub. We are not responsible for them, so meet in a public place.' },
-    { key: 'prototype', icon: '🧪', label: 'Sell the prototype', short: 'Prototype',
+    { key: 'prototype', icon: '', label: 'Sell the prototype', short: 'Prototype',
       help: 'Hand over a working prototype or sample with the idea.' },
-    { key: 'supplier', icon: '🏭', label: 'Make the product and supply it', short: 'Supplier',
+    { key: 'supplier', icon: '', label: 'Make the product and supply it', short: 'Supplier',
       help: 'Produce and supply the product to the buyer.' },
-    { key: 'sales_support', icon: '📈', label: 'Help until the product sells', short: 'Sales support',
+    { key: 'sales_support', icon: '', label: 'Help until the product sells', short: 'Sales support',
       help: 'Stay involved until the buyer is selling the product.' },
-    { key: 'partnership', icon: '👥', label: 'Join the buyer as a partner', short: 'Partnership',
+    { key: 'partnership', icon: '', label: 'Join the buyer as a partner', short: 'Partnership',
       help: 'Build the business together as a partner.' }
   ];
   var BY_KEY = {};

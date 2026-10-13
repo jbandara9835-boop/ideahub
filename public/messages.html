@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Messages — IdeaHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -77,6 +77,7 @@
 
   /* CHAT AREA */
   .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .m-back { display: none; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: none; color: var(--text); font-size: 18px; cursor: pointer; flex-shrink: 0; margin-right: 4px; }
 
   .chat-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
   .chat-header-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--muted); }
@@ -183,9 +184,14 @@
   @media (max-width: 600px) {
     .sidebar { display: none; }
     .main { margin-left: 0; }
-    .conv-list { width: 100%; border-right: none; display: none; }
-    .conv-list.show { display: flex; position: fixed; inset: 0; z-index: 50; background: var(--bg); }
-    .chat-area { width: 100%; }
+    /* Phones: the list first; a chat opens full-screen with a back arrow */
+    .conv-list { width: 100%; border-right: none; display: flex; }
+    .chat-area { width: 100%; display: none; }
+    body.in-chat .conv-list { display: none; }
+    body.in-chat .chat-area { display: flex; }
+    .m-back { display: inline-flex !important; }
+    body.in-chat .ih-tabbar { display: none !important; }
+    body.in-chat.ih-has-tabbar { padding-bottom: 0 !important; }
     .topbar { padding: 1rem; }
     .chat-input-area { padding: 0.75rem 1rem; }
     .chat-messages { padding: 1rem; }
@@ -198,32 +204,7 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-    <span class="logo-text"><a href="/" style="text-decoration:none;color:inherit;">IdeaHub</a></span>
-  </div>
-  <nav class="nav" id="sidebarNav"></nav>
-  <div id="newIdeaBtn" style="margin-bottom:0.75rem;display:none;">
-    <a href="/submit" style="display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#0d0d0f;border-radius:8px;padding:0.6rem;font-size:13px;font-weight:600;text-decoration:none;font-family:'Cabinet Grotesk',sans-serif;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">✚ New Idea</a>
-  </div>
-  <div class="user-card" id="userCard" onclick="toggleUserMenu()" style="cursor:pointer;">
-    <div class="avatar-sm" id="sidebarAvatar">?</div>
-    <div class="user-info">
-      <div class="user-name-sb" id="sidebarName">Loading...</div>
-      <div class="user-role-sb" id="sidebarRole">—</div>
-              <div id="sidebarStars" style="font-size:11px;margin-top:2px;letter-spacing:1px;"></div>
-    </div>
-    <span style="color:var(--muted);font-size:12px;">⋯</span>
-  </div>
-  <div id="userMenu" style="display:none;position:absolute;bottom:90px;left:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.5rem;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-    <a href="/profile" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">👤 View Profile</a>
-    <a href="/settings" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">⚙️ Settings</a>
-    <div style="height:1px;background:var(--border);margin:0.35rem 0;"></div>
-    <a href="/switch-role" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--text);text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">🔄 Switch Role</a>
-    <button onclick="logout()" style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.75rem;border-radius:8px;font-size:14px;color:var(--error);background:none;border:none;cursor:pointer;width:100%;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='none'">🚪 Logout</button>
-  </div>
-</aside>
+<aside class="sidebar"></aside><script src="/app-nav.js"></script>
 
 <div class="main">
   <div class="topbar">
@@ -246,7 +227,7 @@
     <!-- CHAT AREA -->
     <div class="chat-area" id="chatArea">
       <div class="no-chat-selected">
-        <div class="empty-icon">💬</div>
+        <div class="empty-icon"></div>
         <div class="empty-text">Select a conversation to start chatting</div>
       </div>
     </div>
@@ -256,7 +237,7 @@
 <!-- ADD PERSON MODAL -->
 <div class="modal-overlay" id="addPersonModal">
   <div class="call-modal">
-    <h3>👥 Add Someone to Chat</h3>
+    <h3>Add Someone to Chat</h3>
     <p style="font-size:12px;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;">Add a lawyer, accountant, or other professional to a new group chat with you and ${activeConv?.name||'this person'}. The other party must approve before the group becomes active.</p>
     <label>Search by Name</label>
     <input type="text" id="addPersonSearch" placeholder="Type a name..." oninput="searchAddPerson(this.value)" autocomplete="off" />
@@ -273,7 +254,7 @@
 <!-- CALL REQUEST MODAL -->
 <div class="modal-overlay" id="callModal">
   <div class="call-modal">
-    <h3>📞 Request a Call</h3>
+    <h3>Request a Call</h3>
     <label>Date & Time</label>
     <input type="datetime-local" id="callDateInput" />
     <label>Note (optional)</label>
@@ -283,7 +264,7 @@
       <button class="call-modal-submit" onclick="submitCallRequest()">Schedule</button>
     </div>
     <div style="text-align:center;margin:0.75rem 0;font-size:11px;color:var(--muted);">— or —</div>
-    <button class="call-modal-submit" style="width:100%;background:var(--success);" onclick="startCallNow()">📹 Video call now</button>
+    <button class="call-modal-submit" style="width:100%;background:var(--success);" onclick="startCallNow()">Video call now</button>
     <div style="text-align:center;margin-top:0.6rem;font-size:11px;color:var(--muted);">Private IdeaHub video call. Works in the browser, no app needed.</div>
   </div>
 </div>
@@ -291,7 +272,7 @@
 <!-- MEET LINK MODAL -->
 <div class="modal-overlay" id="meetLinkModal">
   <div class="call-modal">
-    <h3>📹 Accept call</h3>
+    <h3>Accept call</h3>
     <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem;">The call happens on IdeaHub video: private, in the browser, no app needed. Both of you get a Join button.</p>
     <label>Prefer your own meeting link? (optional)</label>
     <input type="text" id="meetLinkInput" placeholder="https://meet.google.com/… (leave empty for IdeaHub video)" />
@@ -493,11 +474,11 @@
         const isActive = activeGroup?.id === group.id;
         let badge = '';
         if (group.status === 'pending' && status === 'pending') badge = `<span class="group-badge">Pending</span>`;
-        else if (group.status === 'active') badge = `<span class="group-badge">👥 Group</span>`;
+        else if (group.status === 'active') badge = `<span class="group-badge">Group</span>`;
         else if (group.status === 'declined') badge = `<span class="group-badge" style="background:rgba(255,107,107,0.15);color:var(--error);">Declined</span>`;
         return `
           <div class="conv-item ${isActive ? 'active' : ''}" onclick="openGroup(${group.id})">
-            <div class="conv-avatar">👥</div>
+            <div class="conv-avatar"></div>
             <div class="conv-info">
               <div class="conv-name">${escapeHtml(name)} ${badge}</div>
               <div class="conv-preview">${group.status === 'pending' ? 'Awaiting approval...' : 'Group conversation'}</div>
@@ -509,7 +490,7 @@
     // Direct messages section
     html += `<div class="conv-section-label">Direct Messages</div>`;
     if (conversations.length === 0) {
-      html += `<div class="empty-conv" style="padding:2rem;text-align:center;"><div class="empty-icon">💬</div><div class="empty-text" style="font-size:13px;">No messages yet</div></div>`;
+      html += `<div class="empty-conv" style="padding:2rem;text-align:center;"><div class="empty-icon"></div><div class="empty-text" style="font-size:13px;">No messages yet</div></div>`;
     } else {
       html += conversations.map(conv => `
         <div class="conv-item ${activeConv?.id === conv.id ? 'active' : ''}" onclick="openConv(${conv.id})">
@@ -576,12 +557,12 @@
       const namesList = others.map(m => `${m.user?.first_name||''} ${m.user?.last_name||''}`.trim() + (m.user?.role ? ` (${m.user.role.replace(/_/g,' ')})` : '')).join(' and ');
       document.getElementById('chatArea').innerHTML = `
         <div class="chat-header">
-          <div class="chat-header-avatar">👥</div>
+          <div class="chat-header-avatar"></div>
           <div><div class="chat-header-name">Group Chat Request</div><div class="chat-header-sub">Pending your approval</div></div>
         </div>
         <div class="chat-messages" style="justify-content:center;">
           <div class="group-consent-card">
-            <div class="group-consent-title">👥 Group Chat Invitation</div>
+            <div class="group-consent-title">Group Chat Invitation</div>
             <div class="group-consent-text">You've been invited to a group chat with ${escapeHtml(namesList)}. Do you want to join?</div>
             <div class="group-consent-actions">
               <button class="call-btn-accept" onclick="respondToGroup(${activeGroup.id},'approved')">Approve</button>
@@ -594,15 +575,15 @@
 
     if (activeGroup.status === 'declined') {
       document.getElementById('chatArea').innerHTML = `
-        <div class="chat-header"><div class="chat-header-avatar">👥</div><div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">Group declined</div></div></div>
-        <div class="chat-messages"><div class="empty-conv"><div class="empty-icon">❌</div><div class="empty-text">This group chat was declined.</div></div></div>`;
+        <div class="chat-header"><div class="chat-header-avatar"></div><div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">Group declined</div></div></div>
+        <div class="chat-messages"><div class="empty-conv"><div class="empty-icon"></div><div class="empty-text">This group chat was declined.</div></div></div>`;
       return;
     }
 
     if (activeGroup.status === 'pending') {
       document.getElementById('chatArea').innerHTML = `
-        <div class="chat-header"><div class="chat-header-avatar">👥</div><div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">Awaiting approval from others</div></div></div>
-        <div class="chat-messages"><div class="empty-conv"><div class="empty-icon">⏳</div><div class="empty-text">Waiting for everyone to approve...</div></div></div>`;
+        <div class="chat-header"><div class="chat-header-avatar"></div><div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">Awaiting approval from others</div></div></div>
+        <div class="chat-messages"><div class="empty-conv"><div class="empty-icon"></div><div class="empty-text">Waiting for everyone to approve...</div></div></div>`;
       return;
     }
 
@@ -613,12 +594,12 @@
 
       document.getElementById('chatArea').innerHTML = `
         <div class="chat-header">
-          <div class="chat-header-avatar">👥</div>
+          <div class="chat-header-avatar"></div>
           <div><div class="chat-header-name">${escapeHtml(name)}</div><div class="chat-header-sub">${activeGroup.members.length} members</div></div>
-          <button class="call-btn" onclick="openGroupCallModal()" title="Request a call">📞</button>
+          <button class="call-btn" onclick="openGroupCallModal()" title="Request a call" aria-label="Request a call"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></button>
         </div>
         <div class="chat-messages" id="chatMessages">
-          ${msgs.length === 0 ? `<div class="empty-conv"><div class="empty-icon">👋</div><div class="empty-text">Say hello to the group!</div></div>` :
+          ${msgs.length === 0 ? `<div class="empty-conv"><div class="empty-icon"></div><div class="empty-text">Say hello to the group!</div></div>` :
             msgs.map(msg => {
               const isMe = msg.from_id === myId;
               const senderName = `${msg.sender?.first_name||''} ${msg.sender?.last_name||''}`.trim();
@@ -684,18 +665,18 @@
           <div class="chat-header-name">${escapeHtml(activeConv.name)}</div>
           <div class="chat-header-sub">${msgs.length} message${msgs.length !== 1 ? 's' : ''}</div>
         </div>
-        <button class="add-person-btn" onclick="openAddPersonModal()" title="Add someone to chat">👥➕</button>
-        <button class="call-btn" onclick="openCallModal()" title="Request a call">📞</button>
+        <button class="add-person-btn" onclick="openAddPersonModal()" title="Add someone to chat" aria-label="Add someone to chat"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></button>
+        <button class="call-btn" onclick="openCallModal()" title="Request a call" aria-label="Request a call"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></button>
       </div>
       <div class="chat-messages" id="chatMessages">
-        ${msgs.length === 0 ? `<div class="empty-conv"><div class="empty-icon">👋</div><div class="empty-text">Say hello!</div></div>` :
+        ${msgs.length === 0 ? `<div class="empty-conv"><div class="empty-icon"></div><div class="empty-text">Say hello!</div></div>` :
           msgs.map(msg => {
             const isMe = msg.from_id === myId;
             if (msg.type === 'call_request') return renderCallCard(msg, isMe);
             return `
               <div class="msg-bubble ${isMe ? 'me' : 'them'}">
-                ${msg.idea_id ? `<div class="idea-ref">💡 Re: Idea #${escapeHtml(msg.idea_id)}</div>` : ''}
-                ${msg.on_behalf_of ? `<div class="idea-ref">🤝 ${isMe ? 'Sent as manager for' : 'Manager for'} ${escapeHtml(behalfName(msg.on_behalf_of))}</div>` : ''}
+                ${msg.idea_id ? `<div class="idea-ref">Re: Idea #${escapeHtml(msg.idea_id)}</div>` : ''}
+                ${msg.on_behalf_of ? `<div class="idea-ref">${isMe ? 'Sent as manager for' : 'Manager for'} ${escapeHtml(behalfName(msg.on_behalf_of))}</div>` : ''}
                 <div class="bubble">${escapeHtml(msg.text)}</div>
                 <div class="bubble-time">${formatTime(msg.created_at)}</div>
               </div>
@@ -703,7 +684,7 @@
           }).join('')
         }
       </div>
-      ${actingFor ? `<div style="padding:8px 14px;font-size:12.5px;background:rgba(167,139,250,0.1);border-top:1px solid rgba(167,139,250,0.3);color:#c4b5fd;display:flex;justify-content:space-between;gap:10px;align-items:center">✍️ Writing as manager for ${escapeHtml(behalfName(actingFor))}. They see this label on your messages.<button onclick="stopActing()" style="background:none;border:none;color:#c4b5fd;font-weight:700;cursor:pointer;font-size:12.5px">Write as myself</button></div>` : ''}
+      ${actingFor ? `<div style="padding:8px 14px;font-size:12.5px;background:rgba(167,139,250,0.1);border-top:1px solid rgba(167,139,250,0.3);color:#c4b5fd;display:flex;justify-content:space-between;gap:10px;align-items:center">Writing as manager for ${escapeHtml(behalfName(actingFor))}. They see this label on your messages.<button onclick="stopActing()" style="background:none;border:none;color:#c4b5fd;font-weight:700;cursor:pointer;font-size:12.5px">Write as myself</button></div>` : ''}
       <div class="chat-input-area">
         <textarea class="chat-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
         <button class="send-btn" onclick="sendMessage()">
@@ -726,7 +707,7 @@
   }
 
   function renderCallCard(msg, isMe, isGroup) {
-    const statusLabel = { pending:'⏳ Pending', accepted:'✅ Accepted', declined:'❌ Declined' };
+    const statusLabel = { pending:'Pending', accepted:'Accepted', declined:'Declined' };
     const statusClass = { pending:'call-status-pending', accepted:'call-status-accepted', declined:'call-status-declined' };
     let actionsHtml = '';
 
@@ -739,16 +720,16 @@
     } else if (msg.call_status === 'accepted' && msg.meet_link) {
       const link = String(msg.meet_link);
       const safe = /^\/call\?type=(message|group|patent)&id=\d+$/.test(link) || /^https:\/\/[^\s"'<>]+$/i.test(link);
-      if (safe) actionsHtml = `<a class="call-join-btn" href="${escapeHtml(link)}" target="_blank" rel="noopener">📹 Join ${link.startsWith('/call') ? 'video call' : 'call'}</a>`;
+      if (safe) actionsHtml = `<a class="call-join-btn" href="${escapeHtml(link)}" target="_blank" rel="noopener">Join ${link.startsWith('/call') ? 'video call' : 'call'}</a>`;
     }
 
     return `
       <div class="msg-bubble ${isMe ? 'me' : 'them'}">
         <div class="call-card">
-          <div class="call-card-header">📞 Call Request</div>
+          <div class="call-card-header">Call Request</div>
           <div class="call-card-time">${formatCallDate(msg.call_date)}</div>
           ${msg.text ? `<div style="font-size:12px;color:var(--muted);margin-bottom:0.5rem;">${escapeHtml(msg.text)}</div>` : ''}
-          <span class="call-card-status ${statusClass[msg.call_status]||'call-status-pending'}">${statusLabel[msg.call_status]||'⏳ Pending'}</span>
+          <span class="call-card-status ${statusClass[msg.call_status]||'call-status-pending'}">${statusLabel[msg.call_status]||'Pending'}</span>
           ${actionsHtml}
         </div>
         <div class="bubble-time">${formatTime(msg.created_at)}</div>
@@ -872,8 +853,8 @@
       const res = await fetch(isGroup ? `${API_URL}/api/groups/${activeGroup.id}/call-request` : `${API_URL}/api/messages/call-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(isGroup ? { callDate: new Date().toISOString(), note: '📹 Video call now', video: true }
-                                     : { toId: activeConv.id, callDate: new Date().toISOString(), note: '📹 Video call now', video: true })
+        body: JSON.stringify(isGroup ? { callDate: new Date().toISOString(), note: 'Video call now', video: true }
+                                     : { toId: activeConv.id, callDate: new Date().toISOString(), note: 'Video call now', video: true })
       });
       if (!res.ok) throw new Error();
       const saved = await res.json();
@@ -1021,6 +1002,29 @@
 
   loadMessages().then(restoreActiveConv);
   setInterval(loadMessages, 15000);
+
+  // Phones: opening a conversation shows it full-screen; the back arrow returns to the list
+  (function phoneChats() {
+    const enter = () => document.body.classList.add('in-chat');
+    for (const fn of ['openConv', 'openGroup']) {
+      const orig = window[fn];
+      if (typeof orig === 'function') window[fn] = function () { enter(); return orig.apply(this, arguments); };
+    }
+    const qs = new URLSearchParams(location.search);
+    if (qs.get('user') || qs.get('userId') || qs.get('group')) enter();
+    const area = document.getElementById('chatArea');
+    const addBack = () => {
+      const head = area.querySelector('.chat-header');
+      if (head && !head.querySelector('.m-back')) {
+        const b = document.createElement('button');
+        b.className = 'm-back'; b.type = 'button'; b.setAttribute('aria-label', 'Back to all chats'); b.textContent = '‹';
+        b.addEventListener('click', () => { document.body.classList.remove('in-chat'); window.scrollTo(0, 0); });
+        head.insertBefore(b, head.firstChild);
+      }
+    };
+    new MutationObserver(addBack).observe(area, { childList: true, subtree: true });
+    addBack();
+  })();
 </script>
 <script src="/chat-widget.js" defer></script></body>
 </html>
