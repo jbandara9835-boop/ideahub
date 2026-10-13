@@ -375,6 +375,30 @@ app.get('/robots.txt', (req, res) => {
     res.json((await priceGuide(industry)) || { count: 0 });
   });
 
+  // Search suggestions for the home page and the Marketplace: public live ideas, open Idea Requests, industries
+  const SUGGEST_INDUSTRIES = ['Technology', 'Health & Wellness', 'Education', 'Finance', 'Food & Beverage', 'E-commerce', 'Entertainment', 'Real Estate', 'Travel', 'Environment', 'Agriculture', 'Other'];
+  const suggestCache = new Map();
+  app.get('/api/search/suggest', async (req, res) => {
+    const q = String(req.query.q || '').replace(/[%_,()*\\.:"']/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (q.length < 2) return res.json({ ideas: [], requests: [], industries: [] });
+    const key = q.toLowerCase();
+    const hit = suggestCache.get(key);
+    if (hit && Date.now() - hit.at < 60000) return res.json(hit.data);
+    const like = `%${q}%`;
+    const [{ data: ideas }, { data: reqs }] = await Promise.all([
+      supabase.from('ideas').select('id, title, industry, price, visibility').eq('status', 'live').or(`title.ilike.${like},summary.ilike.${like},industry.ilike.${like}`).order('views', { ascending: false }).limit(20),
+      supabase.from('idea_requests').select('id, title, industry').in('status', ['open', 'proposals_received', 'shortlisting', 'pitching']).or(`title.ilike.${like},industry.ilike.${like}`).order('created_at', { ascending: false }).limit(4)
+    ]);
+    const data = {
+      ideas: (ideas || []).filter(i => (Number(i.visibility) || 1) === 1).slice(0, 6).map(i => ({ id: i.id, title: i.title, industry: i.industry, price: i.price })),
+      requests: (reqs || []).map(r => ({ id: r.id, title: r.title, industry: r.industry })),
+      industries: SUGGEST_INDUSTRIES.filter(n => n.toLowerCase().includes(key)).slice(0, 3)
+    };
+    suggestCache.set(key, { at: Date.now(), data });
+    if (suggestCache.size > 500) suggestCache.delete(suggestCache.keys().next().value);
+    res.json(data);
+  });
+
   app.get('/api/ideas/public', async (req, res) => {
     const limit = parseInt(req.query.limit) || 6;
     const { data, error } = await supabase

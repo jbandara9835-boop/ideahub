@@ -483,27 +483,14 @@
     }
 
     let html = '';
-    industryMatches.forEach(ind => {
-      html += `<div class="suggest-item" onclick="selectSuggestion('${ind.replace(/'/g, "\\'")}', '${dropdownId}')">
-        <span class="suggest-item-icon" style="display:none;"></span>
-        <span class="suggest-item-text">${ind}</span>
-        <span class="suggest-item-type">Industry</span>
+    const item = (val, icon, text, type, href) => `<div class="suggest-item" ${href ? `data-href="${escH(href)}"` : `data-value="${escH(val)}"`}>
+        <span class="suggest-item-icon"${icon ? '' : ' style="display:none;"'}>${icon}</span>
+        <span class="suggest-item-text">${escH(text)}</span>
+        <span class="suggest-item-type">${type}</span>
       </div>`;
-    });
-    creatorMatches.forEach(name => {
-      html += `<div class="suggest-item" onclick="selectSuggestion('${name.replace(/'/g, "\\'")}', '${dropdownId}')">
-        <span class="suggest-item-icon">👤</span>
-        <span class="suggest-item-text">${name}</span>
-        <span class="suggest-item-type">Creator</span>
-      </div>`;
-    });
-    titleMatches.forEach(idea => {
-      html += `<div class="suggest-item" onclick="selectSuggestion('${(idea.title||'').replace(/'/g, "\\'")}', '${dropdownId}')">
-        <span class="suggest-item-icon">💡</span>
-        <span class="suggest-item-text">${idea.title}</span>
-        <span class="suggest-item-type">Idea</span>
-      </div>`;
-    });
+    industryMatches.forEach(ind => { html += item(ind, '', ind, 'Industry'); });
+    creatorMatches.forEach(name => { html += item(name, '👤', name, 'Creator'); });
+    titleMatches.forEach(idea => { html += item('', '💡', idea.title || 'Untitled idea', 'Idea', '/idea?id=' + encodeURIComponent(idea.id)); });
     dropdown.innerHTML = html;
     dropdown.classList.add('show');
   }
@@ -517,6 +504,8 @@
   }
 
   document.addEventListener('click', (e) => {
+    const sug = e.target.closest('.suggest-item[data-value], .suggest-item[data-href]');
+    if (sug) { if (sug.dataset.href) location.href = sug.dataset.href; else selectSuggestion(sug.dataset.value, ''); return; }
     if (!e.target.closest('.search-suggest-wrap')) hideAllSuggestDropdowns();
   });
 

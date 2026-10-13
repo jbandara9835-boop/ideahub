@@ -672,6 +672,16 @@ footer a:hover { color: var(--text); }
   } else document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
 })();
 </script>
+<script src="/search-suggest.js"></script>
+<script>
+  // Live suggestions while typing (desktop box and the phone bar)
+  (function () {
+    const form = document.querySelector('.search-wrap');
+    SearchSuggest.attach(form.q, { anchor: form, category: () => form.cat.value });
+    const mob = document.querySelector('#mobileSearchBar form');
+    SearchSuggest.attach(mob.q, { anchor: mob, fixed: true });
+  })();
+</script>
 <script src="/chat-widget.js" defer></script>
 </body>
 </html>
