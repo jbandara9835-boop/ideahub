@@ -36,6 +36,20 @@
 .logline { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
 .logline:first-child { border-top: none; }
 .logline time { color: var(--muted); font-size: 12px; white-space: nowrap; min-width: 92px; }
+.steps { display: flex; flex-direction: column; gap: 0; }
+.stp { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.stp:first-child { border-top: none; }
+.stp .ic { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; background: var(--card2); color: var(--muted); flex-shrink: 0; }
+.stp .ic.ok { background: var(--green-dim); color: var(--green); }
+.stp .ic.now { background: var(--vm-dim); color: var(--vm); }
+.bgtxt { white-space: pre-wrap; line-height: 1.55; font-size: 13.5px; color: var(--sub); }
+.slot { display: inline-flex; }
+.qa { padding: 12px 0; border-top: 1px solid var(--line); }
+.qa:first-child { border-top: none; padding-top: 2px; }
+.qa .q { font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+.qa .a { font-size: 13.5px; color: var(--sub); margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; border-left: 2px solid var(--vm); padding-left: 10px; }
+.hire-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .hire-grid { grid-template-columns: 1fr; } }
 @media (max-width: 760px) { .facts { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
@@ -108,10 +122,12 @@
   function render() {
     const root = $('root');
     if (D.status === 'proposed') {
-      const mine = D.proposed_by === me.id;
-      root.innerHTML = header() + '<div style="height:16px"></div>' + termsBlock(`<div class="hr"></div>${D.can_accept
-        ? `<label class="check" style="margin-bottom:12px"><input type="checkbox" id="agree"> <span>I have read the mandate agreement and accept these terms.</span></label><div class="row"><button class="btn btn-vm" data-accept>Accept and start</button><button class="btn btn-ghost" data-decline>Decline</button></div>`
-        : mine ? `<div class="notice gold">Waiting for ${esc(other().name)} to accept. You'll be notified.</div><div class="row" style="margin-top:12px"><button class="btn btn-ghost btn-sm" data-decline>Withdraw proposal</button></div>` : ''}`);
+      const mine = D.proposed_by === me.id, H = D.hiring, pend = H.pending || [];
+      const blocked = pend.length > 0;
+      const why = pend.includes(D.viewer) ? 'Finish your hiring steps above first (say you are satisfied, or that it is not a fit).' : pend.length ? `${esc(other().name)} asked for a hiring process and hasn't finished it yet. You can accept once they say they're satisfied.` : '';
+      root.innerHTML = header() + '<div style="height:16px"></div>' + hiringSection() + termsBlock(`<div class="hr"></div>${D.can_accept
+        ? `${blocked ? `<div class="notice gold" style="margin-bottom:12px">${why}</div>` : ''}<label class="check" style="margin-bottom:12px"><input type="checkbox" id="agree" ${blocked ? 'disabled' : ''}> <span>I have read the mandate agreement and accept these terms.</span></label><div class="row"><button class="btn btn-vm" data-accept ${blocked ? 'disabled' : ''}>Accept and start</button><button class="btn btn-ghost" data-decline>Decline</button></div>`
+        : mine ? `<div class="notice gold">${blocked ? why.replace('You can accept', 'They can accept') || 'Waiting for the hiring process to finish.' : `Waiting for ${esc(other().name)} to accept. You'll be notified.`}</div><div class="row" style="margin-top:12px"><button class="btn btn-ghost btn-sm" data-decline>Withdraw proposal</button></div>` : ''}`);
       return;
     }
     if (['declined', 'cancelled'].includes(D.status)) { root.innerHTML = header() + `<div class="card pad" style="margin-top:16px"><div class="notice red">This proposal was ${D.status === 'declined' ? 'declined' : 'withdrawn'}.${D.end_reason ? ' ' + esc(D.end_reason) : ''}</div></div>`; return; }
@@ -127,7 +143,7 @@
   }
   function renderPane() {
     const p = $('pane'); if (!p) return;
-    p.innerHTML = ({ overview, approvals, pipeline, venture, fees, tasks, activity, terms: () => termsBlock() }[tab] || overview)();
+    p.innerHTML = ({ overview, approvals, pipeline, venture, fees, tasks, activity, terms: () => (isC() || D.viewer === 'admin' ? managerBg() + '<div style="height:16px"></div>' : '') + termsBlock() }[tab] || overview)();
   }
 
   // ── Overview ──
@@ -156,6 +172,7 @@
       ${has('listings') ? `<a class="btn btn-ghost btn-sm" href="/manage?owner=${D.client.id}">📝 Manage listings</a>` : ''}
       ${has('messages') ? '<button class="btn btn-ghost btn-sm" data-msgfor>✉️ Message someone for the client</button>' : ''}
       <button class="btn btn-ghost btn-sm" data-oneoff>🧾 Request a one-off fee</button></div></div>`);
+    if (D.status === 'active' && D.viewer !== 'admin') out.push(interviewsCard());
     const deals = D.deals.filter(d => d.status !== 'cancelled');
     out.push(`<div class="grid g2">
       <div class="card pad"><div class="card-title">Latest activity <button class="btn btn-ghost btn-sm" data-tab="activity">All</button></div>${D.log.slice(0, 6).map(logLine).join('') || '<div class="empty">Nothing yet.</div>'}</div>
@@ -163,6 +180,93 @@
     </div>`);
     return `<div class="stack">${out.join('')}</div>`;
   }
+  // ── Hiring process ──
+  const local = d => new Date(d).toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  const callUrl = () => `/call?type=mandate&id=${D.id}`;
+  function hiringSection() {
+    const H = D.hiring, mySide = H[D.viewer] || {}, otherSide = H[isC() ? 'manager' : 'client'] || {};
+    const any = H.client.required || H.manager.required;
+    const bg = isC() || D.viewer === 'admin' ? managerBg() : clientBg();
+    if (!any) return `<div class="hire-grid" style="margin-bottom:16px">${bg}<div class="card pad"><div class="card-title">Hiring</div><p class="sub small" style="margin-top:0">This is a quick hire: ${isC() ? 'the manager' : 'the client'} can accept the terms below straight away.</p>${D.viewer !== 'admin' ? `<p class="sub small">Want to ${isC() ? 'see their CV, ask questions and interview them' : 'ask questions and interview the client'} first?</p><button class="btn btn-ghost btn-sm" data-screen>Add a hiring process</button>` : ''}</div></div>`;
+    const pledge = H.pledge_needed ? `<div class="card pad attn" style="margin-bottom:16px"><div class="card-title">Before the hiring process</div><p class="sub small" style="margin-top:0">${esc(D.client.name)} may share plans, ideas and money matters with you during screening, before anything is agreed.</p><label class="check" style="margin-bottom:12px"><input type="checkbox" id="pledgeOk"> <span>I will keep everything I learn in this hiring process confidential and will not use it for myself or anyone else, whether or not I am hired. I understand IdeaHub logs this promise.</span></label><button class="btn btn-vm" data-pledge>Confirm and continue</button></div>` : '';
+    const steps = [];
+    const st = (ok, now, t, sub) => steps.push(`<div class="stp"><span class="ic ${ok ? 'ok' : now ? 'now' : ''}">${ok ? '✓' : '•'}</span><div><b>${t}</b>${sub ? `<div class="li-sub">${sub}</div>` : ''}</div></div>`);
+    if (H.client.required || H.manager.required) {
+      const ivDone = H.interviews.some(x => x.status === 'done'), ivBooked = H.interviews.find(x => x.status === 'scheduled');
+      st(!!H.pledge_at, !H.pledge_at, 'Confidentiality promise', H.pledge_at ? `Given by ${esc(D.manager.name)}` : `${esc(D.manager.name)} confirms before screening starts`);
+      if (H.client.required) st(true, false, 'Background shared', `${H.background.has_cv ? 'CV, ' : ''}work history, ID and address checks`);
+      st(H.questions.some(q => q.answer), H.questions.length > 0, 'Written questions', `${H.questions.length} asked, ${H.questions.filter(q => q.answer).length} answered (optional)`);
+      st(ivDone, !!ivBooked, 'Video interview', ivDone ? 'Done' : ivBooked ? `Booked for ${local(ivBooked.chosen_at)}` : 'Offer times; the other person picks one');
+      for (const side of ['client', 'manager']) if (H[side].required) st(!!H[side].cleared_at, false, `${side === 'client' ? esc(D.client.name) : esc(D.manager.name)} is satisfied`, H[side].cleared_at ? 'Done' : side === D.viewer ? 'Your decision, when you are ready' : 'Waiting');
+    }
+    const decide = mySide.required && !mySide.cleared_at && D.viewer !== 'admin' ? `<div class="hr"></div><div class="lbl" style="margin-bottom:8px">Your decision</div><div class="row"><button class="btn btn-vm btn-sm" data-hdecide="continue">I'm satisfied, continue</button><button class="btn btn-danger btn-sm" data-hdecide="not_fit">Not a fit</button></div>`
+      : mySide.required && mySide.cleared_at ? `<div class="notice green small" style="margin-top:10px">You said you're satisfied.</div>`
+      : !mySide.required && D.viewer !== 'admin' ? `<div class="hr"></div><button class="btn btn-ghost btn-sm" data-screen>I want to screen too</button>` : '';
+    const left = bg + interviewsCard() + questionsCard();
+    const right = `<div class="card pad"><div class="card-title">Hiring steps <small>${H.client.required && H.manager.required ? 'both sides screening' : H.client.required ? 'asked by the client' : 'asked by the manager'}</small></div><div class="steps">${steps.join('')}</div>${decide}</div>` + notesCard();
+    return pledge + `<div class="hire-grid" style="margin-bottom:16px"><div class="stack">${left}</div><div class="stack">${right}</div></div>`;
+  }
+  function managerBg() {
+    const b = D.hiring.background, m = D.manager;
+    const chk = (ok, t) => `<span class="pill ${ok ? 'green' : ''}">${ok ? '✓' : '—'} ${t}</span>`;
+    return `<div class="card pad"><div class="card-title">About ${esc(m.name)} ${levelPill(m.level)}</div>
+      ${b.headline ? `<div style="font-weight:700;margin-bottom:8px">${esc(b.headline)}</div>` : ''}
+      <div class="chips" style="margin-bottom:12px">${chk(b.id_checked, 'ID checked')}${chk(b.address_checked, 'Address checked')}${chk(b.induction_passed, 'Induction passed')}<span class="pill">${m.clients_served || 0} clients · ${m.deals_closed || 0} deals${m.rating != null ? ` · ★ ${m.rating}` : ''}</span>${b.member_since ? `<span class="pill">Member since ${MG.date(b.member_since)}</span>` : ''}</div>
+      ${b.about ? `<div class="lbl">About</div><div class="bgtxt" style="margin:4px 0 12px">${esc(b.about)}</div>` : ''}
+      ${b.experience ? `<div class="lbl">Work history</div><div class="bgtxt" style="margin:4px 0 12px">${esc(b.experience)}</div>` : ''}
+      ${b.references_text ? `<div class="lbl">References</div><div class="bgtxt" style="margin:4px 0 12px">${esc(b.references_text)}</div><div class="tiny muted" style="margin:-6px 0 12px">Tip: contact a reference before you hire, and ask what the manager did for them.</div>` : ''}
+      ${!b.about && !b.experience ? '<div class="sub small" style="margin-bottom:12px">No work history added yet. Ask about it in your questions or the interview.</div>' : ''}
+      <div class="row">${b.has_cv ? `<button class="btn btn-ghost btn-sm" data-cv="${m.id}">📄 Open CV</button>` : '<span class="tiny muted">No CV uploaded</span>'}${b.linkedin_url ? `<a class="btn btn-ghost btn-sm" href="${esc(b.linkedin_url)}" target="_blank" rel="noopener nofollow">LinkedIn ↗</a>` : ''}<a class="btn btn-ghost btn-sm" href="/public-profile?id=${m.id}" target="_blank">Public profile</a></div></div>`;
+  }
+  function clientBg() {
+    const f = D.hiring.client_facts || {}, c = D.client;
+    const roleTxt = { idea_creator: 'Idea creator', patent_seller: 'Patent seller', investor: 'Investor', business_owner: 'Business owner' }[f.role] || '';
+    return `<div class="card pad"><div class="card-title">About ${esc(c.name)}</div><div class="chips" style="margin-bottom:12px">${roleTxt ? `<span class="pill">${roleTxt}</span>` : ''}${f.country ? `<span class="pill">📍 ${esc(f.country)}</span>` : ''}${f.member_since ? `<span class="pill">Member since ${MG.date(f.member_since)}</span>` : ''}${f.ideas_listed ? `<span class="pill">${f.ideas_listed} idea${f.ideas_listed > 1 ? 's' : ''} listed</span>` : ''}${f.purchases ? `<span class="pill">${f.purchases} purchase${f.purchases > 1 ? 's' : ''}</span>` : ''}</div>
+      ${D.goals ? `<div class="lbl">What they want</div><div class="bgtxt" style="margin:4px 0 12px">${esc(D.goals)}</div>` : ''}<a class="btn btn-ghost btn-sm" href="/public-profile?id=${c.id}" target="_blank">Public profile</a></div>`;
+  }
+  function interviewsCard() {
+    const H = D.hiring, list = H.interviews.filter(x => x.status !== 'cancelled');
+    const can = D.viewer !== 'admin' && ['proposed', 'active'].includes(D.status) && !H.pledge_needed;
+    const word = D.status === 'proposed' ? 'interview' : 'call';
+    return `<div class="card pad"><div class="card-title">Video ${word}s ${can ? `<button class="btn btn-ghost btn-sm" data-offer>📅 Offer times</button>` : ''}</div>
+      ${list.length ? list.map(x => {
+        const soon = x.status === 'scheduled' && new Date(x.chosen_at).getTime() - Date.now() < 15 * 60000, started = soon;
+        return `<div class="list-item"><div class="grow">
+          <div class="li-title">${x.status === 'scheduled' ? `📅 ${local(x.chosen_at)}` : x.status === 'done' ? `✅ ${local(x.chosen_at)}` : x.mine ? 'You offered times' : 'Pick a time'} <span class="tiny muted">· ${x.minutes || 30} min</span></div>
+          ${x.note ? `<div class="li-sub">“${esc(x.note)}”</div>` : ''}
+          ${x.status === 'proposed' ? `<div class="row" style="margin-top:8px">${(x.slots || []).map(sl => x.mine || !can ? `<span class="pill">${local(sl)}</span>` : `<button class="btn btn-vm btn-sm" data-choose="${x.id}" data-slot="${esc(sl)}">${local(sl)}</button>`).join('')}</div>` : ''}
+          <div class="row" style="margin-top:8px">${x.status === 'scheduled' && can ? `<a class="btn ${soon ? 'btn-vm' : 'btn-ghost'} btn-sm" href="${callUrl()}" target="_blank">📹 Join video call</a>${started ? `<button class="btn btn-ghost btn-sm" data-ivdone="${x.id}">Mark as done</button>` : '<span class="tiny muted">Opens 15 minutes before</span>'}` : ''}
+          ${['proposed', 'scheduled'].includes(x.status) && can ? `<button class="btn btn-ghost btn-sm" data-ivcancel="${x.id}">Cancel</button>` : ''}</div>
+        </div><span class="pill ${x.status === 'scheduled' ? 'blue' : x.status === 'done' ? 'green' : 'gold'}">${{ proposed: 'Choosing a time', scheduled: 'Booked', done: 'Done' }[x.status]}</span></div>`; }).join('')
+        : `<div class="empty" style="padding:14px">${H.pledge_needed ? 'Confirm the confidentiality promise first.' : `No ${word} yet. Offer up to 3 times; the other person picks one. The call runs inside IdeaHub, private to you both.`}</div>`}
+      ${D.status === 'active' && can ? `<div class="hr"></div><a class="btn btn-ghost btn-sm" href="${callUrl()}" target="_blank">📹 Start a call now</a> <span class="tiny muted">${esc(other().name.split(' ')[0])} is notified</span>` : ''}</div>`;
+  }
+  function questionsCard() {
+    const H = D.hiring, can = D.viewer !== 'admin' && !H.pledge_needed;
+    return `<div class="card pad"><div class="card-title">Questions <small>in writing, so you can compare answers</small></div>
+      ${H.questions.length ? H.questions.map(q => `<div class="qa"><div class="tiny muted">${q.mine ? 'You asked' : `${esc(other().name)} asked`} · ${MG.ago(q.created_at)}</div><div class="q">${esc(q.question)}</div>
+        ${q.answer ? `<div class="a">${esc(q.answer)}</div>` : q.mine ? '<div class="tiny muted" style="margin-top:6px">Waiting for an answer</div>' : can ? `<div class="row" style="margin-top:8px;align-items:flex-start"><textarea class="in" id="ans-${q.id}" maxlength="3000" style="min-height:60px;flex:1"></textarea><button class="btn btn-vm btn-sm" data-answer="${q.id}">Answer</button></div>` : ''}</div>`).join('')
+        : `<div class="sub small">${H.questions_hidden ? `${H.questions_hidden} question${H.questions_hidden > 1 ? 's are' : ' is'} waiting. Confirm the confidentiality promise to see ${H.questions_hidden > 1 ? 'them' : 'it'}.` : 'No questions yet.'}</div>`}
+      ${can ? `<div class="hr"></div><form class="row" id="askForm" style="align-items:flex-start"><textarea class="in" id="askQ" maxlength="1000" placeholder="${isC() ? 'e.g. Tell me about a deal you closed for a client. How would you approach my goals?' : 'e.g. What budget have you set aside? How quickly do you want to move?'}" style="min-height:60px;flex:1"></textarea><button class="btn btn-ghost btn-sm">Ask</button></form>` : ''}</div>`;
+  }
+  function notesCard() {
+    if (D.viewer === 'admin') return '';
+    return `<div class="card pad"><div class="card-title">My private notes <small>only you see these</small></div><textarea class="in" id="myNote" maxlength="4000" placeholder="Impressions, things to check, reference calls…">${esc(D.hiring.my_note || '')}</textarea><div class="row" style="margin-top:8px"><button class="btn btn-ghost btn-sm" data-savenote>Save notes</button></div></div>`;
+  }
+  function offerDialog() {
+    const def = h => { const d = new Date(Date.now() + h * 3600000); d.setMinutes(0, 0, 0); const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:00`; };
+    MG.dialog(`Offer times for a video ${D.status === 'proposed' ? 'interview' : 'call'}`, `<p class="sub small" style="margin-top:0">Offer up to three times in your local time. ${esc(other().name)} picks one and you both get a reminder by notification and email.</p>
+      ${[1, 2, 3].map(i => `<div class="field"><label for="sl${i}">Option ${i}${i > 1 ? ' (optional)' : ''}</label><input class="in" id="sl${i}" type="datetime-local" ${i === 1 ? `value="${def(26)}"` : ''}></div>`).join('')}
+      <div class="grid g2"><div class="field"><label for="slm">Length</label><select class="in" id="slm"><option value="15">15 minutes</option><option value="30" selected>30 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option></select></div><div class="field"><label for="sln">Note (optional)</label><input class="in" id="sln" maxlength="500" placeholder="What you'd like to cover"></div></div>`,
+      `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="slgo">Send times</button>`, { width: '500px' });
+    $('slgo').onclick = e => MG.busy(e.currentTarget, async () => {
+      const slots = [1, 2, 3].map(i => $('sl' + i).value).filter(Boolean).map(v => new Date(v).toISOString());
+      if (!slots.length) throw new Error('Choose at least one time.');
+      await api(`/api/mandates/${id}/interviews`, { method: 'POST', body: { slots, minutes: Number($('slm').value), note: $('sln').value } });
+      MG.close(); toast('Times sent'); await load();
+    });
+  }
+
   const logLine = l => `<div class="logline"><time title="${esc(new Date(l.created_at).toLocaleString())}">${esc(MG.ago(l.created_at))}</time><div><b>${esc(l.actor)}</b> <span class="sub">${esc(l.detail || l.action)}</span></div></div>`;
 
   // ── Approvals ──
@@ -325,6 +429,21 @@
     if ((b = q('[data-end]'))) { const reason = prompt('End this mandate? Fees already earned stay due. Optional reason:', ''); if (reason === null) return; return MG.busy(b, async () => { await api(`/api/mandates/${id}/end`, { method: 'POST', body: { reason } }); toast('Mandate ended'); await load(); }); }
     if ((b = q('[data-rate]'))) { const review = prompt('A few words about working with your manager (optional):', '') || ''; return MG.busy(b, async () => { await api(`/api/mandates/${id}/rate`, { method: 'POST', body: { stars: Number(b.dataset.rate), review } }); toast('Thank you for the review'); await load(); }); }
     if (q('[data-prepare]')) return prepareDialog();
+    if ((b = q('[data-screen]'))) { if (!confirm(isC() ? 'Add a hiring process? You will see their background, can ask questions and hold a video interview, and the mandate can only be agreed once you say you are satisfied.' : 'Add a hiring process? You can ask the client questions and hold a video interview before agreeing.')) return; return MG.busy(b, async () => { await api(`/api/mandates/${id}/screening/request`, { method: 'POST' }); toast('Hiring process added'); await load(); }); }
+    if ((b = q('[data-pledge]'))) { if (!$('pledgeOk').checked) return toast('Tick the box to confirm.'); return MG.busy(b, async () => { await api(`/api/mandates/${id}/screening/pledge`, { method: 'POST', body: { agree: true } }); await load(); }); }
+    if ((b = q('[data-hdecide]'))) {
+      const d = b.dataset.hdecide; let note = '';
+      if (d === 'not_fit') { note = prompt('Not a fit? This declines the mandate. An optional, kind note to the other person:', ''); if (note === null) return; }
+      else if (!confirm('Say you are satisfied with the hiring process? The mandate can then be accepted.')) return;
+      return MG.busy(b, async () => { await api(`/api/mandates/${id}/screening/decide`, { method: 'POST', body: { decision: d, note } }); await load(); });
+    }
+    if (q('[data-offer]')) return offerDialog();
+    if ((b = q('[data-choose]'))) { if (!confirm(`Book ${local(b.dataset.slot)}?`)) return; return MG.busy(b, async () => { await api(`/api/mandate-interviews/${b.dataset.choose}/choose`, { method: 'POST', body: { slot: b.dataset.slot } }); toast('Booked'); await load(); }); }
+    if ((b = q('[data-ivcancel]'))) { const note = prompt('Cancel this call? Optional note:', ''); if (note === null) return; return MG.busy(b, async () => { await api(`/api/mandate-interviews/${b.dataset.ivcancel}/cancel`, { method: 'POST', body: { note } }); await load(); }); }
+    if ((b = q('[data-ivdone]'))) return MG.busy(b, async () => { await api(`/api/mandate-interviews/${b.dataset.ivdone}/done`, { method: 'POST' }); await load(); });
+    if ((b = q('[data-answer]'))) return MG.busy(b, async () => { await api(`/api/mandate-questions/${b.dataset.answer}/answer`, { method: 'POST', body: { answer: $('ans-' + b.dataset.answer).value } }); toast('Answer sent'); await load(); });
+    if ((b = q('[data-savenote]'))) return MG.busy(b, async () => { await api(`/api/mandates/${id}/note`, { method: 'PUT', body: { note: $('myNote').value } }); toast('Notes saved'); });
+    if ((b = q('[data-cv]'))) return MG.busy(b, async () => { const w = window.open('about:blank', '_blank'); try { const d = await api(`/api/managers/${b.dataset.cv}/cv`); if (w) { w.opener = null; w.location = d.url; } else location.href = d.url; } catch (err) { if (w) w.close(); throw err; } });
     if (q('[data-additem]')) return addItemDialog();
     if (q('[data-venture]')) return ventureDialog();
     if ((b = q('[data-approve]'))) {
@@ -383,6 +502,7 @@
     } catch (err) { toast(err.message); }
   });
   document.addEventListener('submit', async e => {
+    if (e.target.id === 'askForm') { e.preventDefault(); try { await api(`/api/mandates/${id}/questions`, { method: 'POST', body: { question: $('askQ').value } }); toast('Question sent'); await load(); } catch (err) { toast(err.message); } return; }
     if (e.target.id !== 'taskForm') return; e.preventDefault();
     try { await api(`/api/mandates/${id}/tasks`, { method: 'POST', body: { title: $('tt').value, due_date: $('td').value || null } }); await load(); } catch (err) { toast(err.message); }
   });

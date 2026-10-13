@@ -85,6 +85,10 @@
         <div class="field"><label for="mfBudget">Spending limit per step (optional)</label><div class="inline-prefix"><span>$</span><input class="in" id="mfBudget" type="number" min="0" step="1" value="${d.budget_limit || ''}" placeholder="No limit"></div></div>
         <div class="field"><label for="mfEnd">End date (optional)</label><input class="in" id="mfEnd" type="date" value="${esc(d.end_date || '')}"></div>
       </div>
+      <div class="field"><span class="lbl">${o.asManager ? 'Before agreeing' : 'How do you want to hire?'}</span><div class="checks" id="mfHire">
+        <label class="check"><input type="radio" name="mfHire" value="quick" ${d.screening ? '' : 'checked'}> <span><b>${o.asManager ? 'Go straight to the terms' : 'Quick hire'}</b><br><span class="tiny muted">${o.asManager ? 'The client can accept as soon as they have read the terms.' : 'The manager can accept these terms straight away. Good when you already know and trust them.'}</span></span></label>
+        <label class="check"><input type="radio" name="mfHire" value="screen" ${d.screening ? 'checked' : ''}> <span><b>${o.asManager ? 'Interview the client first' : 'Hire with screening'}</b><br><span class="tiny muted">${o.asManager ? 'Ask questions and hold a video interview before either of you agrees.' : 'See their CV, work history and references, ask written questions and hold a video interview. Nothing is agreed until you say you are satisfied. They promise to keep what they learn confidential, even if not hired.'}</span></span></label>
+      </div></div>
       <div class="notice gold small">The manager prepares; you approve and pay through IdeaHub. A manager only ever works for one side of a deal. The other side accepts these terms before anything starts.</div>`;
   }
   function readMandateForm() {
@@ -93,7 +97,8 @@
       client_side: v('mfSide') || undefined, title: v('mfTitle'), focus_industry: v('mfInd'), goals: v('mfGoals'),
       scopes: [...document.querySelectorAll('#mfScopes input:checked')].map(i => i.value),
       fee_retainer: Number(v('mfRet') || 0), fee_hourly: Number(v('mfHr') || 0), fee_success_pct: Number(v('mfPct') || 0),
-      budget_limit: v('mfBudget') ? Number(v('mfBudget')) : null, end_date: v('mfEnd') || null
+      budget_limit: v('mfBudget') ? Number(v('mfBudget')) : null, end_date: v('mfEnd') || null,
+      screening: !!document.querySelector('input[name=mfHire][value=screen]:checked')
     };
   }
 

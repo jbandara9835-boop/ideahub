@@ -87,7 +87,7 @@
     const acts = W.actions.filter(a => a.mandate_id === m.id && a.status === 'pending').length;
     const due = W.bills.filter(b => b.mandate_id === m.id && b.status === 'due').length;
     return `<a class="list-item" href="/mandate?id=${m.id}" style="text-decoration:none">${avatar(m.client.avatar_url, m.client.name)}<div class="grow"><div class="li-title">${esc(m.title)}</div><div class="li-sub">${esc(m.client.name)} · ${esc(META.sides[m.client_side] || '')} · ${esc(m.focus_industry || '')} · ${esc(MG.feeText(m.fee_retainer, m.fee_hourly, m.fee_success_pct))}</div>
-      <div class="chips" style="margin-top:6px">${acts ? `<span class="chip">✋ ${acts} waiting for approval</span>` : ''}${due ? `<span class="chip">🧾 ${due} fee${due > 1 ? 's' : ''} unpaid</span>` : ''}${m.status === 'proposed' ? `<span class="chip">${m.proposed_by === MG.me.id ? 'Waiting for the client' : 'The client proposed this: review it'}</span>` : ''}</div></div>${statusPill(m.status)}</a>`;
+      <div class="chips" style="margin-top:6px">${acts ? `<span class="chip">✋ ${acts} waiting for approval</span>` : ''}${due ? `<span class="chip">🧾 ${due} fee${due > 1 ? 's' : ''} unpaid</span>` : ''}${m.status === 'proposed' ? `<span class="chip">${m.screen_client || m.screen_manager ? '🧾 Hiring process' + (m.screen_client && !m.client_cleared_at ? ': the client is screening you' : '') : m.proposed_by === MG.me.id ? 'Waiting for the client' : 'The client proposed this: review it'}</span>` : ''}</div></div>${statusPill(m.status)}</a>`;
   }
   function clients() {
     const groups = [['Proposals', W.mandates.filter(m => m.status === 'proposed')], ['Active', W.mandates.filter(m => m.status === 'active')], ['Past', W.mandates.filter(m => !['proposed', 'active'].includes(m.status))]];
@@ -130,11 +130,16 @@
         <div class="hr"></div>
         <div class="chk">${ic(ck.identity)}<div class="grow" style="flex:1"><b>ID check</b><div class="li-sub">${st(ck.identity)}</div></div>${ck.identity === 'verified' ? '' : '<a class="btn btn-ghost btn-sm" href="/support-profile#verify">Upload ID</a>'}</div>
         <div class="chk">${ic(ck.induction)}<div class="grow" style="flex:1"><b>Induction quiz</b><div class="li-sub">${ck.induction ? 'Passed' : '10 questions on the manager rules. Pass mark 8.'}</div></div>${ck.induction ? '' : '<button class="btn btn-vm btn-sm" data-quiz>Take the quiz</button>'}</div>
+        <div class="chk">${ic(!!p.cv_path)}<div class="grow" style="flex:1"><b>CV and work history</b><div class="li-sub">${p.cv_path && p.experience ? 'Added' : 'Optional, but clients who screen managers look for it'}</div></div></div>
         <div class="chk">${ic(ck.address)}<div class="grow" style="flex:1"><b>Proof of address</b><div class="li-sub">${st(ck.address)} · needed for the Verified level</div></div>${ck.address === 'verified' ? '' : '<a class="btn btn-ghost btn-sm" href="/support-profile#verify">Upload</a>'}</div>
       </div>
       <div class="card pad"><div class="card-title">How clients see you <a class="btn btn-ghost btn-sm" href="/support-profile">Photo, languages, availability</a></div>
         <div class="field"><label for="pfHead">Headline</label><input class="in" id="pfHead" maxlength="120" value="${esc(p.headline || '')}" placeholder="e.g. Helping investors buy and launch food-tech ideas in Sri Lanka"></div>
         <div class="field"><label for="pfAbout">About you</label><textarea class="in" id="pfAbout" maxlength="1500" placeholder="Your experience, the deals you've done, how you work.">${esc(p.about || '')}</textarea></div>
+        <div class="field"><label for="pfExp">Work history</label><textarea class="in" id="pfExp" maxlength="4000" style="min-height:120px" placeholder="2019–2024 · Business Development Manager, ABC Foods (Colombo): opened 12 franchise outlets…\n2016–2019 · …">${esc(p.experience || '')}</textarea><div class="hint">Shown on your Background card in Find a Manager.</div></div>
+        <div class="field"><label for="pfRef">References</label><textarea class="in" id="pfRef" maxlength="1500" style="min-height:70px" placeholder="Name, role, company, and how they know you. Ask them first. Shared only with clients who are hiring you with screening.">${esc(p.references_text || '')}</textarea></div>
+        <div class="grid g2"><div class="field"><label for="pfLi">LinkedIn profile (optional)</label><input class="in" id="pfLi" maxlength="200" value="${esc(p.linkedin_url || '')}" placeholder="https://www.linkedin.com/in/…"></div>
+          <div class="field"><span class="lbl">CV (PDF, up to 5 MB)</span><div class="row" style="min-height:44px">${p.cv_path ? `<span class="pill green">📄 ${esc(p.cv_name || 'CV')}</span><button class="btn btn-ghost btn-sm" type="button" data-cvview>View</button><button class="btn btn-ghost btn-sm" type="button" data-cvdel>Remove</button>` : '<span class="tiny muted">No CV yet</span>'}<label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.cv_path ? 'Replace' : 'Upload CV'}<input type="file" id="cvFile" accept="application/pdf" style="display:none"></label></div><div class="hint">Only clients who are considering you (screening, or after your pitch) and IdeaHub can open it.</div></div></div>
         <div class="grid g2"><div class="field"><label for="pfInd">Industries (comma separated)</label><input class="in" id="pfInd" value="${esc((p.industries || []).join(', '))}" placeholder="Agriculture, Food & Beverage"></div><div class="field"><label for="pfCty">Countries you cover</label><input class="in" id="pfCty" value="${esc((p.countries || []).join(', '))}" placeholder="Sri Lanka, Maldives"></div></div>
         <div class="field"><span class="lbl">I work for</span><div class="row">${Object.entries(META.sides).map(([k, v]) => `<label class="check"><input type="checkbox" data-side value="${k}" ${sides.includes(k) ? 'checked' : ''}> <span>${esc({ creator: 'Idea creators', investor: 'Investors', business: 'Businesses' }[k] || v)}</span></label>`).join('')}</div></div>
         <div class="field"><span class="lbl">Fee models I offer</span><div class="row">${[['retainer', 'Monthly retainer'], ['hourly', 'Hourly'], ['success', 'Success fee']].map(([k, v]) => `<label class="check"><input type="checkbox" data-fee value="${k}" ${fees.includes(k) ? 'checked' : ''}> <span>${v}</span></label>`).join('')}</div></div>
@@ -154,10 +159,10 @@
     });
   }
   async function propose() {
-    const body = await MG.mandateForm({ side: 'creator', chooseSide: true, intro: 'Propose a mandate to an idea creator, investor or business. They review the terms and accept before anything starts.' });
+    const body = await MG.mandateForm({ side: 'creator', chooseSide: true, asManager: true, intro: 'Propose a mandate to an idea creator, investor or business. They review the terms and accept before anything starts.' });
     MG.dialog('Propose a mandate', `<div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" placeholder="e.g. https://ideahub.it.com/public-profile?id=42"></div>` + body,
       `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="psend">Send proposal</button>`, { width: '680px' });
-    const onSide = async () => { const d = MG.readMandateForm(); const html = await MG.mandateForm({ side: $('mfSide').value, chooseSide: true, defaults: d }); const keep = $('pcl').value; $('mgDialogBody').innerHTML = `<div class="notice red err" id="mgErr" role="alert"></div><div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" value="${esc(keep)}"></div>` + html; $('mfSide').onchange = onSide; };
+    const onSide = async () => { const d = MG.readMandateForm(); const html = await MG.mandateForm({ side: $('mfSide').value, chooseSide: true, asManager: true, defaults: d }); const keep = $('pcl').value; $('mgDialogBody').innerHTML = `<div class="notice red err" id="mgErr" role="alert"></div><div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" value="${esc(keep)}"></div>` + html; $('mfSide').onchange = onSide; };
     $('mfSide').onchange = onSide;
     $('psend').onclick = e => MG.busy(e.currentTarget, async () => {
       const cid = lastNum($('pcl').value); if (!cid) throw new Error('Paste the client\'s profile link.');
@@ -166,13 +171,17 @@
     });
   }
 
+  // Keep what the manager typed when the profile tab re-renders (e.g. after a CV upload)
+  const typed = () => { const v = id => $(id) ? $(id).value : undefined; const o = { headline: v('pfHead'), about: v('pfAbout'), experience: v('pfExp'), references_text: v('pfRef'), linkedin_url: v('pfLi') }; Object.keys(o).forEach(k => o[k] === undefined && delete o[k]); return o; };
   document.addEventListener('click', e => {
     const q = s => e.target.closest(s); let b;
     if ((b = q('[data-tab]'))) { tab = b.dataset.tab; const u = new URL(location); u.searchParams.set('tab', tab); history.replaceState(null, '', u); render(); return; }
     if (q('[data-quiz]')) return quiz();
     if ((b = q('[data-propose]'))) { if (!b.disabled) propose(); return; }
+    if ((b = q('[data-cvview]'))) return MG.busy(b, async () => { const w = window.open('about:blank', '_blank'); try { const d = await api(`/api/managers/${MG.me.id}/cv`); if (w) { w.opener = null; w.location = d.url; } } catch (err) { if (w) w.close(); throw err; } });
+    if ((b = q('[data-cvdel]'))) { if (!confirm('Remove your CV?')) return; return MG.busy(b, async () => { await api('/api/manager/cv', { method: 'DELETE' }); const keep = typed(); P = await api('/api/manager/profile'); P.profile = Object.assign(P.profile || {}, keep); render(); toast('CV removed'); }); }
     if ((b = q('[data-saveprof]'))) return MG.busy(b, async () => {
-      await api('/api/manager/profile', { method: 'PUT', body: { headline: $('pfHead').value, about: $('pfAbout').value, industries: $('pfInd').value, countries: $('pfCty').value,
+      await api('/api/manager/profile', { method: 'PUT', body: { headline: $('pfHead').value, about: $('pfAbout').value, experience: $('pfExp').value, references_text: $('pfRef').value, linkedin_url: $('pfLi').value.trim(), industries: $('pfInd').value, countries: $('pfCty').value,
         sides: [...document.querySelectorAll('[data-side]:checked')].map(i => i.value), fee_models: [...document.querySelectorAll('[data-fee]:checked')].map(i => i.value),
         retainer_from: $('pfRet').value || null, hourly_rate: $('pfHr').value || null, success_pct: $('pfPct').value || null } });
       toast('Profile saved'); P = await api('/api/manager/profile');
@@ -180,6 +189,15 @@
   });
   document.addEventListener('change', async e => {
     const t = e.target;
+    if (t.id === 'cvFile' && t.files[0]) {
+      const f = t.files[0];
+      if (f.type !== 'application/pdf') return toast('Upload your CV as a PDF.');
+      if (f.size > 5 * 1024 * 1024) return toast('The CV must be under 5 MB.');
+      const fd = new FormData(); fd.append('file', f);
+      toast('Uploading…');
+      try { const r = await fetch('/api/manager/cv', { method: 'POST', headers: { Authorization: 'Bearer ' + MG.token }, body: fd }); const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Upload failed. Please try again.'); const keep = typed(); P = await api('/api/manager/profile'); P.profile = Object.assign(P.profile || {}, keep); render(); toast('CV uploaded'); } catch (err) { toast(err.message); }
+      return;
+    }
     if (t.dataset.task) { try { await api(`/api/mandate-tasks/${t.dataset.task}`, { method: 'PUT', body: { done: true } }); toast('Done'); W = await api('/api/manager/workspace'); render(); } catch (err) { toast(err.message); } }
   });
   load();

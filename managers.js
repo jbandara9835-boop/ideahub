@@ -25,6 +25,12 @@
 //   Ventures     a business built for an investor: plan + milestones; each milestone fee is
 //                paid into escrow and released when the investor approves the evidence.
 //   Requests     clients post "I need a manager"; managers pitch; accepting a pitch drafts a mandate.
+//   Hiring       optional, per side. Either side can ask for screening before agreeing: the
+//                manager's CV, work history and references, written questions, and one or more
+//                video interviews (built-in calls). The manager first pledges to keep what they
+//                learn confidential. The mandate can't be accepted until each side that asked
+//                for screening says "satisfied" (or "not a fit", which declines it).
+//                Without screening, a mandate can be accepted straight away (quick hire).
 //   Levels       New → Associate (ID checked + induction quiz) → Verified (+ proof of address)
 //                → Senior (5 completed mandates or deals, rating 4.5+). Associates can take
 //                mandates; ventures need Verified.
@@ -98,6 +104,8 @@ const norm = s => String(s || '').trim().toLowerCase();
 const sideOfRole = r => r === 'investor' ? 'investor' : r === 'business_owner' ? 'business' : 'creator';
 const CLIENT_ROLES = ['idea_creator', 'patent_seller', 'investor', 'business_owner'];
 const OPEN_MANDATE = ['proposed', 'active'];
+// Sides that asked for a hiring process and haven't said "satisfied" yet
+const screeningPending = m => [m.screen_client && !m.client_cleared_at ? 'client' : null, m.screen_manager && !m.manager_cleared_at ? 'manager' : null].filter(Boolean);
 
 // ── CORE (shared by routes and bots) ─────────────────────────────────────────
 function core(supabase, escrow) {
@@ -426,6 +434,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
         headline: p.headline || (S[u.id] || {}).tagline || '', about: p.about || '', industries: p.industries || [], countries: p.countries || [],
         languages: (S[u.id] || {}).languages || p.languages || [], sides: p.sides || [], fee_models: p.fee_models || [],
         retainer_from: p.retainer_from, hourly_rate: p.hourly_rate, success_pct: p.success_pct,
+        has_cv: !!p.cv_path, has_history: !!p.experience, has_references: !!p.references_text, experience: p.experience || '', linkedin_url: p.linkedin_url || null,
         level, level_label: LEVELS[level], ...st
       });
     }
@@ -457,8 +466,12 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       user_id: req.user.id, headline: txt(b.headline, 120) || null, about: txt(b.about, 1500) || null,
       industries: list(b.industries, 8), countries: list(b.countries, 10),
       sides: list(b.sides, 3).filter(s => SIDES[s]), fee_models: list(b.fee_models, 3).filter(f => ['retainer', 'hourly', 'success'].includes(f)),
-      retainer_from: num(b.retainer_from, 1e6), hourly_rate: num(b.hourly_rate, 1e5), success_pct: num(b.success_pct, 50), updated_at: new Date().toISOString()
+      retainer_from: num(b.retainer_from, 1e6), hourly_rate: num(b.hourly_rate, 1e5), success_pct: num(b.success_pct, 50), updated_at: new Date().toISOString(),
+      experience: txt(b.experience, 4000) || null, references_text: txt(b.references_text, 1500) || null
     };
+    const li = txt(b.linkedin_url, 200);
+    if (li && !/^https:\/\/([a-z]{2,3}\.)?linkedin\.com\/[^\s"'<>]+$/i.test(li)) return res.status(400).json({ error: 'Paste your full LinkedIn profile link (https://www.linkedin.com/in/…), or leave it empty.' });
+    row.linkedin_url = li || null;
     const { data, error } = await supabase.from('manager_profiles').upsert([row], { onConflict: 'user_id' }).select().single();
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
@@ -504,10 +517,12 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (dup && dup.length) return res.status(400).json({ error: 'You already have an open mandate with this person.', id: dup[0].id });
     const conflict = await c.mandateConflict(managerId, clientId, t.fields.focus_industry);
     if (conflict) return res.status(400).json({ error: req.user.id === managerId ? conflict.replace('This manager already works', 'You already work').replace('This manager works', 'You work') : conflict, code: 'conflict' });
-    const { data, error } = await supabase.from('mandates').insert([{ ...t.fields, client_id: clientId, manager_id: managerId, client_side: side, status: 'proposed', proposed_by: req.user.id, source_request_id: intId(b.request_id) }]).select().single();
+    const screen = b.screening === true;
+    const { data, error } = await supabase.from('mandates').insert([{ ...t.fields, client_id: clientId, manager_id: managerId, client_side: side, status: 'proposed', proposed_by: req.user.id, source_request_id: intId(b.request_id),
+      screen_client: screen && req.user.id === clientId, screen_manager: screen && req.user.id === managerId }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     const other = req.user.id === clientId ? managerId : clientId;
-    await c.log(data.id, req.user.id, 'proposed', `${fullName(u)} proposed the mandate.`);
+    await c.log(data.id, req.user.id, 'proposed', `${fullName(u)} proposed the mandate${screen ? ', with a hiring process (CV, questions and an interview) before agreeing' : ''}.`);
     await escrow.notify(other, { type: 'mandate_proposed', title: '🤝 Mandate proposal', message: `${fullName(u)} proposed "${data.title}". Review the terms and accept or decline.`, link: `/mandate?id=${data.id}` });
     await escrow.emailUser(other, `Mandate proposal: "${data.title}"`, `${escrow.esc(fullName(u))} proposed a mandate`, `Review the tasks and fees for <strong>"${escrow.esc(data.title)}"</strong>, then accept or decline.`, 'Review', `/mandate?id=${data.id}`);
     res.status(201).json(data);
@@ -541,6 +556,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if ((ventures || []).length) { const { data: ml } = await supabase.from('venture_milestones').select('*').in('venture_id', ventures.map(v => v.id)).order('sort', { ascending: true }); milestones = ml || []; }
     const U = await c.users([m.client_id, m.manager_id, ...(lg || []).map(l => l.actor_id)]);
     const person = id => U[id] ? { id, name: fullName(U[id]), avatar_url: U[id].avatar_url || null, role: U[id].role } : null;
+    const hiring = await hiringData(m, as, req.user.id);
     res.json({
       ...m, viewer: as, client: person(m.client_id), manager: { ...person(m.manager_id), level: await c.levelOf(m.manager_id), ...(await c.statsOf(m.manager_id)) },
       scope_labels: (m.scopes || []).map(s => ({ key: s, label: (SCOPES[s] || {}).label || s })),
@@ -548,13 +564,16 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       log: (lg || []).map(l => ({ ...l, actor: l.actor_id ? fullName(U[l.actor_id]) : 'IdeaHub' })), deals: deals || [], rating: rating && rating[0] ? rating[0] : null,
       ventures: (ventures || []).map(v => ({ ...v, milestones: milestones.filter(x => x.venture_id === v.id) })),
       terms: { version: m.agreement_version || TERMS_VERSION, text: m.agreement_text || TERMS_TEXT, points: TERMS_POINTS },
-      fee_rate: FEE_RATE, payments_open: c.payments.purchasesOpen(), can_accept: m.status === 'proposed' && m.proposed_by !== req.user.id && as !== 'admin'
+      fee_rate: FEE_RATE, payments_open: c.payments.purchasesOpen(), can_accept: m.status === 'proposed' && m.proposed_by !== req.user.id && as !== 'admin',
+      hiring
     });
   });
   app.post('/api/mandates/:id/accept', authMiddleware, async (req, res) => {
     const { m, as, u } = await access(req, req.params.id); if (!m || !as) return nf(res);
     if (m.status !== 'proposed' || m.proposed_by === req.user.id || as === 'admin') return res.status(400).json({ error: 'Only the other side can accept this proposal.' });
     if (!(req.body && req.body.agree === true)) return res.status(400).json({ error: 'Please read and accept the mandate terms.' });
+    const waitingOn = screeningPending(m);
+    if (waitingOn.length) return res.status(400).json({ error: waitingOn.includes(as) ? 'Finish your hiring steps first: tell IdeaHub you are satisfied, or decline.' : `The ${waitingOn[0]} asked for a hiring process and hasn't finished it yet.`, code: 'screening' });
     if (await c.levelOf(m.manager_id) === 'new') return res.status(400).json({ error: 'The manager must finish the ID check and induction first.' });
     const conflict = await c.mandateConflict(m.manager_id, m.client_id, m.focus_industry, m.id);
     if (conflict) return res.status(400).json({ error: conflict, code: 'conflict' });
@@ -563,7 +582,17 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const a = rows && rows[0]; if (!a) return res.status(409).json({ error: 'This proposal changed. Refresh.' });
     await c.log(m.id, req.user.id, 'accepted', `${fullName(u)} accepted the mandate. It is now active.`);
     if (Number(a.fee_retainer) > 0) await c.createBill(a, { kind: 'retainer', description: `Retainer ${now.toISOString().slice(0, 10)} to ${new Date(now.getTime() + RETAINER_DAYS * 86400000).toISOString().slice(0, 10)}`, amount: a.fee_retainer, period_start: now.toISOString(), period_end: new Date(now.getTime() + RETAINER_DAYS * 86400000).toISOString() });
-    if (a.source_request_id) await supabase.from('manager_requests').update({ status: 'hired' }).eq('id', a.source_request_id);
+    if (a.source_request_id) {
+      await supabase.from('manager_requests').update({ status: 'hired' }).eq('id', a.source_request_id);
+      // Other candidates still being considered for the same request: withdraw them politely
+      const { data: sib } = await supabase.from('mandates').select('id, manager_id, title').eq('source_request_id', a.source_request_id).eq('status', 'proposed');
+      for (const x of (sib || []).filter(x => x.id !== a.id)) {
+        await supabase.from('mandates').update({ status: 'cancelled', end_reason: 'The client hired another manager for this request.', ended_at: now.toISOString() }).eq('id', x.id).eq('status', 'proposed');
+        await supabase.from('mandate_interviews').update({ status: 'cancelled' }).eq('mandate_id', x.id).in('status', ['proposed', 'scheduled']);
+        await c.log(x.id, null, 'cancelled', 'The client hired another manager for this request.');
+        await escrow.notify(x.manager_id, { type: 'mandate_declined', title: 'Not chosen this time', message: `The client hired another manager for "${x.title}". Thank you for your time.`, link: `/mandate?id=${x.id}` });
+      }
+    }
     const other = req.user.id === m.client_id ? m.manager_id : m.client_id;
     await escrow.notify(other, { type: 'mandate_active', title: '✅ Mandate accepted', message: `"${m.title}" is now active.`, link: `/mandate?id=${m.id}` });
     res.json(a);
@@ -574,6 +603,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const mine = m.proposed_by === req.user.id;
     const note = txt(req.body && req.body.note, 500);
     await supabase.from('mandates').update({ status: mine ? 'cancelled' : 'declined', end_reason: note || null, ended_at: new Date().toISOString() }).eq('id', m.id).eq('status', 'proposed');
+    await supabase.from('mandate_interviews').update({ status: 'cancelled' }).eq('mandate_id', m.id).in('status', ['proposed', 'scheduled']);
     await c.log(m.id, req.user.id, mine ? 'cancelled' : 'declined', `${fullName(u)} ${mine ? 'withdrew' : 'declined'} the proposal.${note ? ' ' + note : ''}`);
     const other = req.user.id === m.client_id ? m.manager_id : m.client_id;
     await escrow.notify(other, { type: 'mandate_declined', title: mine ? 'Proposal withdrawn' : 'Proposal declined', message: `"${m.title}" was ${mine ? 'withdrawn' : 'declined'}.${note ? ' ' + note : ''}`, link: `/mandate?id=${m.id}` });
@@ -1065,6 +1095,228 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     res.json({ ok: true });
   });
 
+  // ── Hiring process (optional, per side): CV, background, questions, video interviews ──
+  const CV_BUCKET = 'patent-files';
+  const multer = require('multer');
+  const cvUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+  const sideName = as => as === 'client' ? 'client' : 'manager';
+  const otherOf = (m, uid) => uid === m.client_id ? m.manager_id : m.client_id;
+  async function hiringData(m, as, uid) {
+    const [{ data: iv }, { data: qs }, { data: nt }, { data: prof }, { data: creds }, { data: cu }, { data: mu }] = await Promise.all([
+      supabase.from('mandate_interviews').select('*').eq('mandate_id', m.id).order('created_at', { ascending: false }).limit(30),
+      supabase.from('mandate_questions').select('*').eq('mandate_id', m.id).order('created_at', { ascending: true }).limit(40),
+      as === 'admin' ? Promise.resolve({ data: null }) : supabase.from('mandate_notes').select('note, updated_at').eq('mandate_id', m.id).eq('user_id', uid).maybeSingle(),
+      supabase.from('manager_profiles').select('*').eq('user_id', m.manager_id).maybeSingle(),
+      supabase.from('pro_credentials').select('kind, status').eq('user_id', m.manager_id),
+      supabase.from('users').select('id, role, country, created_at').eq('id', m.client_id).maybeSingle(),
+      supabase.from('users').select('id, created_at').eq('id', m.manager_id).maybeSingle()
+    ]);
+    const ok = k => (creds || []).some(x => x.kind === k && x.status === 'verified');
+    const p = prof || {};
+    const pledgeNeeded = as === 'manager' && m.status === 'proposed' && (m.screen_client || m.screen_manager) && !m.manager_pledge_at;
+    let clientFacts = null;
+    if (cu) {
+      const [{ data: ideas }, { data: buys }] = await Promise.all([
+        supabase.from('ideas').select('id').eq('creator_id', m.client_id).limit(200),
+        supabase.from('transactions').select('id').eq('buyer_id', m.client_id).limit(200)
+      ]);
+      clientFacts = { role: cu.role, country: cu.country || null, member_since: cu.created_at || null, ideas_listed: (ideas || []).length, purchases: (buys || []).length };
+    }
+    return {
+      client: { required: !!m.screen_client, cleared_at: m.client_cleared_at || null },
+      manager: { required: !!m.screen_manager, cleared_at: m.manager_cleared_at || null },
+      pending: screeningPending(m), pledge_at: m.manager_pledge_at || null, pledge_needed: pledgeNeeded,
+      background: {
+        headline: p.headline || '', about: p.about || '', experience: p.experience || '', references_text: p.references_text || '', linkedin_url: p.linkedin_url || null,
+        industries: p.industries || [], countries: p.countries || [], has_cv: !!p.cv_path, cv_uploaded_at: p.cv_uploaded_at || null,
+        id_checked: ok('identity'), address_checked: ok('address'), induction_passed: !!p.induction_passed_at, member_since: (mu && mu.created_at) || null
+      },
+      client_facts: clientFacts,
+      interviews: (iv || []).map(x => ({ ...x, mine: x.proposed_by === uid })),
+      questions: pledgeNeeded ? [] : (qs || []).map(q => ({ ...q, mine: q.asked_by === uid })),
+      questions_hidden: pledgeNeeded ? (qs || []).length : 0,
+      my_note: nt ? nt.note : ''
+    };
+  }
+  const needPledge = (m, as) => as === 'manager' && m.status === 'proposed' && (m.screen_client || m.screen_manager) && !m.manager_pledge_at;
+  const PLEDGE_ERR = 'First confirm that you will keep everything you learn in this hiring process confidential.';
+
+  app.post('/api/mandates/:id/screening/request', authMiddleware, async (req, res) => {
+    const { m, as, u } = await access(req, req.params.id); if (!m || !['client', 'manager'].includes(as)) return nf(res);
+    if (m.status !== 'proposed') return res.status(400).json({ error: 'A hiring process can only be added before the mandate is agreed.' });
+    const col = as === 'client' ? 'screen_client' : 'screen_manager';
+    if (m[col]) return res.json({ ok: true });
+    await supabase.from('mandates').update({ [col]: true, [`${sideName(as)}_cleared_at`]: null }).eq('id', m.id).eq('status', 'proposed');
+    await c.log(m.id, req.user.id, 'screening', `${fullName(u)} asked for a hiring process (CV, questions and an interview) before agreeing.`);
+    await escrow.notify(otherOf(m, req.user.id), { type: 'mandate_screening', title: '🧾 Hiring process requested', message: `${fullName(u)} would like to interview before agreeing "${m.title}".`, link: `/mandate?id=${m.id}` });
+    res.json({ ok: true });
+  });
+  app.post('/api/mandates/:id/screening/pledge', authMiddleware, async (req, res) => {
+    const { m, as, u } = await access(req, req.params.id); if (!m || as !== 'manager') return nf(res);
+    if (!(req.body && req.body.agree === true)) return res.status(400).json({ error: 'Tick the box to confirm.' });
+    if (!m.manager_pledge_at) {
+      await supabase.from('mandates').update({ manager_pledge_at: new Date().toISOString() }).eq('id', m.id);
+      await c.log(m.id, req.user.id, 'pledge', `${fullName(u)} promised to keep everything learned in the hiring process confidential, even if not hired.`);
+    }
+    res.json({ ok: true });
+  });
+  app.post('/api/mandates/:id/screening/decide', authMiddleware, async (req, res) => {
+    const { m, as, u } = await access(req, req.params.id); if (!m || !['client', 'manager'].includes(as)) return nf(res);
+    if (m.status !== 'proposed') return res.status(400).json({ error: 'This mandate is not waiting for an answer.' });
+    const col = as === 'client' ? 'screen_client' : 'screen_manager';
+    if (!m[col]) return res.status(400).json({ error: 'You did not ask for a hiring process.' });
+    const decision = req.body && req.body.decision, note = txt(req.body && req.body.note, 500);
+    if (decision === 'continue') {
+      await supabase.from('mandates').update({ [`${sideName(as)}_cleared_at`]: new Date().toISOString() }).eq('id', m.id).eq('status', 'proposed');
+      await c.log(m.id, req.user.id, 'screening', `${fullName(u)} finished the hiring process and is happy to continue.`);
+      await escrow.notify(otherOf(m, req.user.id), { type: 'mandate_screening', title: '✅ Hiring step done', message: `${fullName(u)} is happy to continue with "${m.title}".`, link: `/mandate?id=${m.id}` });
+      return res.json({ ok: true });
+    }
+    if (decision !== 'not_fit') return res.status(400).json({ error: 'Choose continue or not a fit.' });
+    const mine = m.proposed_by === req.user.id;
+    await supabase.from('mandates').update({ status: mine ? 'cancelled' : 'declined', end_reason: note || 'Not a fit after the hiring process.', ended_at: new Date().toISOString() }).eq('id', m.id).eq('status', 'proposed');
+    await supabase.from('mandate_interviews').update({ status: 'cancelled' }).eq('mandate_id', m.id).in('status', ['proposed', 'scheduled']);
+    await c.log(m.id, req.user.id, 'declined', `${fullName(u)} decided it is not a fit.${note ? ' ' + note : ''}`);
+    await escrow.notify(otherOf(m, req.user.id), { type: 'mandate_declined', title: 'Not a fit this time', message: `${fullName(u)} decided not to go ahead with "${m.title}".${note ? ' ' + note : ''}`, link: `/mandate?id=${m.id}` });
+    if (as === 'client' && m.source_request_id) await supabase.from('manager_pitches').update({ status: 'declined' }).eq('request_id', m.source_request_id).eq('manager_id', m.manager_id);
+    res.json({ ok: true });
+  });
+
+  // Interviews / meetings (video calls through /call?type=mandate&id=)
+  app.post('/api/mandates/:id/interviews', authMiddleware, async (req, res) => {
+    const { m, as, u } = await access(req, req.params.id); if (!m || !['client', 'manager'].includes(as)) return nf(res);
+    if (!['proposed', 'active'].includes(m.status)) return res.status(400).json({ error: 'This mandate is closed.' });
+    if (needPledge(m, as)) return res.status(400).json({ error: PLEDGE_ERR, code: 'pledge' });
+    const now = Date.now();
+    const slots = [...new Set((Array.isArray(req.body && req.body.slots) ? req.body.slots : []).map(x => new Date(x)).filter(d => !isNaN(d)).map(d => d.toISOString()))];
+    if (!slots.length || slots.length > 3) return res.status(400).json({ error: 'Offer 1 to 3 times.' });
+    if (slots.some(x => new Date(x).getTime() < now + 30 * 60000)) return res.status(400).json({ error: 'Each time must be at least 30 minutes from now.' });
+    if (slots.some(x => new Date(x).getTime() > now + 60 * 86400000)) return res.status(400).json({ error: 'Choose times within the next 60 days.' });
+    const { data: open } = await supabase.from('mandate_interviews').select('id').eq('mandate_id', m.id).in('status', ['proposed', 'scheduled']);
+    if ((open || []).length >= 3) return res.status(400).json({ error: 'There are already 3 open meetings. Cancel one first.' });
+    const kind = m.status === 'proposed' ? 'interview' : 'meeting';
+    const { data, error } = await supabase.from('mandate_interviews').insert([{ mandate_id: m.id, proposed_by: req.user.id, kind, slots, status: 'proposed', note: txt(req.body.note, 500) || null, minutes: [15, 30, 45, 60].includes(Number(req.body.minutes)) ? Number(req.body.minutes) : 30 }]).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    await c.log(m.id, req.user.id, 'interview', `${fullName(u)} offered ${slots.length} time${slots.length > 1 ? 's' : ''} for a video ${kind}.`);
+    await escrow.notify(otherOf(m, req.user.id), { type: 'mandate_interview', title: `📹 Pick a time for a video ${kind}`, message: `${fullName(u)} offered times for "${m.title}".`, link: `/mandate?id=${m.id}` });
+    res.status(201).json(data);
+  });
+  async function loadInterview(req) {
+    const { data: x } = await supabase.from('mandate_interviews').select('*').eq('id', intId(req.params.iid)).single();
+    if (!x) return {};
+    const r = await access(req, x.mandate_id);
+    return { x, ...r };
+  }
+  app.post('/api/mandate-interviews/:iid/choose', authMiddleware, async (req, res) => {
+    const { x, m, as, u } = await loadInterview(req); if (!x || !m || !['client', 'manager'].includes(as)) return nf(res);
+    if (x.proposed_by === req.user.id) return res.status(400).json({ error: 'The other person picks one of your times.' });
+    if (x.status !== 'proposed') return res.status(400).json({ error: 'A time was already agreed or this was cancelled.' });
+    if (needPledge(m, as)) return res.status(400).json({ error: PLEDGE_ERR, code: 'pledge' });
+    const slot = (x.slots || []).find(s => new Date(s).getTime() === new Date(req.body && req.body.slot).getTime());
+    if (!slot) return res.status(400).json({ error: 'Choose one of the offered times.' });
+    if (new Date(slot).getTime() < Date.now()) return res.status(400).json({ error: 'That time has passed. Ask for new times.' });
+    await supabase.from('mandate_interviews').update({ status: 'scheduled', chosen_at: slot }).eq('id', x.id).eq('status', 'proposed');
+    const when = new Date(slot).toUTCString().replace(':00 GMT', ' GMT');
+    await c.log(m.id, req.user.id, 'interview', `Video ${x.kind || 'interview'} agreed for ${when}.`);
+    for (const id of [m.client_id, m.manager_id]) {
+      await escrow.notify(id, { type: 'mandate_interview', title: `📅 Video ${x.kind || 'interview'} booked`, message: `"${m.title}": ${when}. Join from the mandate page.`, link: `/mandate?id=${m.id}` });
+      await escrow.emailUser(id, `Video ${x.kind || 'interview'} booked: "${m.title}"`, `Your video ${x.kind || 'interview'} is booked`, `<strong>${escrow.esc(when)}</strong> (shown in GMT; the mandate page shows your local time). The call opens 15 minutes before; join it from the mandate page.`, 'Open the mandate', `/mandate?id=${m.id}`);
+    }
+    res.json({ ok: true });
+  });
+  app.post('/api/mandate-interviews/:iid/cancel', authMiddleware, async (req, res) => {
+    const { x, m, as, u } = await loadInterview(req); if (!x || !m || !['client', 'manager'].includes(as)) return nf(res);
+    if (!['proposed', 'scheduled'].includes(x.status)) return res.status(400).json({ error: 'This meeting is not open.' });
+    const note = txt(req.body && req.body.note, 300);
+    await supabase.from('mandate_interviews').update({ status: 'cancelled', cancel_note: note || null }).eq('id', x.id);
+    await c.log(m.id, req.user.id, 'interview', `${fullName(u)} cancelled a video ${x.kind || 'interview'}.${note ? ' ' + note : ''}`);
+    await escrow.notify(otherOf(m, req.user.id), { type: 'mandate_interview', title: 'Video call cancelled', message: `${fullName(u)} cancelled the video ${x.kind || 'interview'} for "${m.title}".${note ? ' ' + note : ''}`, link: `/mandate?id=${m.id}` });
+    res.json({ ok: true });
+  });
+  app.post('/api/mandate-interviews/:iid/done', authMiddleware, async (req, res) => {
+    const { x, m, as, u } = await loadInterview(req); if (!x || !m || !['client', 'manager'].includes(as)) return nf(res);
+    if (x.status !== 'scheduled') return res.status(400).json({ error: 'Only a booked call can be marked as done.' });
+    if (new Date(x.chosen_at).getTime() > Date.now() + 15 * 60000) return res.status(400).json({ error: 'You can mark it done once the call has started.' });
+    await supabase.from('mandate_interviews').update({ status: 'done', done_by: req.user.id, done_at: new Date().toISOString() }).eq('id', x.id);
+    await c.log(m.id, req.user.id, 'interview', `${fullName(u)} marked the video ${x.kind || 'interview'} as done.`);
+    res.json({ ok: true });
+  });
+
+  // Written questions (either side can ask; the other answers)
+  app.post('/api/mandates/:id/questions', authMiddleware, async (req, res) => {
+    const { m, as, u } = await access(req, req.params.id); if (!m || !['client', 'manager'].includes(as)) return nf(res);
+    if (m.status !== 'proposed') return res.status(400).json({ error: 'Questions are part of the hiring process, before the mandate is agreed. Use messages now.' });
+    if (needPledge(m, as)) return res.status(400).json({ error: PLEDGE_ERR, code: 'pledge' });
+    const q = txt(req.body && req.body.question, 1000); if (q.length < 8) return res.status(400).json({ error: 'Write your question.' });
+    const quality = require('./public/listing-quality');
+    const contact = quality.hasContact(q); if (contact) return res.status(400).json({ error: `Please remove ${contact}. Keep the conversation on IdeaHub.` });
+    const { data: all } = await supabase.from('mandate_questions').select('id').eq('mandate_id', m.id);
+    if ((all || []).length >= 30) return res.status(400).json({ error: 'That is a lot of questions. Talk it through on the video interview.' });
+    const { data, error } = await supabase.from('mandate_questions').insert([{ mandate_id: m.id, asked_by: req.user.id, question: q }]).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    await escrow.notify(otherOf(m, req.user.id), { type: 'mandate_question', title: '❓ New question', message: `${fullName(u)} asked a question about "${m.title}".`, link: `/mandate?id=${m.id}` });
+    res.status(201).json(data);
+  });
+  app.post('/api/mandate-questions/:qid/answer', authMiddleware, async (req, res) => {
+    const { data: q } = await supabase.from('mandate_questions').select('*').eq('id', intId(req.params.qid)).single();
+    if (!q) return nf(res);
+    const { m, as, u } = await access(req, q.mandate_id); if (!m || !['client', 'manager'].includes(as)) return nf(res);
+    if (q.asked_by === req.user.id) return res.status(400).json({ error: 'The other person answers your question.' });
+    if (m.status !== 'proposed') return res.status(400).json({ error: 'The hiring process has finished.' });
+    if (needPledge(m, as)) return res.status(400).json({ error: PLEDGE_ERR, code: 'pledge' });
+    const a = txt(req.body && req.body.answer, 3000); if (a.length < 2) return res.status(400).json({ error: 'Write your answer.' });
+    const quality = require('./public/listing-quality');
+    const contact = quality.hasContact(a); if (contact) return res.status(400).json({ error: `Please remove ${contact}. Keep the conversation on IdeaHub.` });
+    await supabase.from('mandate_questions').update({ answer: a, answered_at: new Date().toISOString() }).eq('id', q.id);
+    await escrow.notify(q.asked_by, { type: 'mandate_question', title: '💬 Question answered', message: `${fullName(u)} answered your question about "${m.title}".`, link: `/mandate?id=${m.id}` });
+    res.json({ ok: true });
+  });
+  // Private notes (only the writer sees them)
+  app.put('/api/mandates/:id/note', authMiddleware, async (req, res) => {
+    const { m, as } = await access(req, req.params.id); if (!m || !['client', 'manager'].includes(as)) return nf(res);
+    await supabase.from('mandate_notes').upsert([{ mandate_id: m.id, user_id: req.user.id, note: txt(req.body && req.body.note, 4000), updated_at: new Date().toISOString() }], { onConflict: 'mandate_id,user_id' });
+    res.json({ ok: true });
+  });
+
+  // Manager CV (PDF). Seen by the manager, admins, and clients considering or working with them.
+  app.post('/api/manager/cv', authMiddleware, cvUpload.single('file'), async (req, res) => {
+    const u = await me(req.user.id);
+    if (!u || u.role !== 'virtual_manager') return res.status(403).json({ error: 'Switch to the Virtual Manager role first.' });
+    if (!req.file) return res.status(400).json({ error: 'Choose your CV (PDF, up to 5 MB).' });
+    if (req.file.mimetype !== 'application/pdf' || req.file.buffer.slice(0, 5).toString() !== '%PDF-') return res.status(400).json({ error: 'Upload your CV as a PDF.' });
+    const safe = String(req.file.originalname || 'cv.pdf').replace(/[^\w.\- ]+/g, '_').slice(-80);
+    const path = `mgrcv-${u.id}/${Date.now()}-${require('crypto').randomBytes(3).toString('hex')}.pdf`;
+    const { error: upErr } = await supabase.storage.from(CV_BUCKET).upload(path, req.file.buffer, { contentType: 'application/pdf', upsert: false });
+    if (upErr) return res.status(500).json({ error: 'Could not save the file: ' + upErr.message });
+    const { data: ex } = await supabase.from('manager_profiles').select('cv_path').eq('user_id', u.id).maybeSingle();
+    if (ex && ex.cv_path) await supabase.storage.from(CV_BUCKET).remove([ex.cv_path]).catch(() => {});
+    await supabase.from('manager_profiles').upsert([{ user_id: u.id, cv_path: path, cv_name: safe, cv_uploaded_at: new Date().toISOString() }], { onConflict: 'user_id' });
+    res.status(201).json({ ok: true, cv_name: safe });
+  });
+  app.delete('/api/manager/cv', authMiddleware, async (req, res) => {
+    const { data: ex } = await supabase.from('manager_profiles').select('cv_path').eq('user_id', req.user.id).maybeSingle();
+    if (ex && ex.cv_path) await supabase.storage.from(CV_BUCKET).remove([ex.cv_path]).catch(() => {});
+    await supabase.from('manager_profiles').update({ cv_path: null, cv_name: null, cv_uploaded_at: null }).eq('user_id', req.user.id);
+    res.json({ ok: true });
+  });
+  app.get('/api/managers/:id/cv', authMiddleware, async (req, res) => {
+    const mid = intId(req.params.id), uid = req.user.id;
+    const { data: p } = await supabase.from('manager_profiles').select('cv_path, cv_name').eq('user_id', mid).maybeSingle();
+    if (!p || !p.cv_path) return res.status(404).json({ error: 'This manager has not uploaded a CV.' });
+    let allowed = uid === mid;
+    if (!allowed) { const u = await me(uid); allowed = !!(u && u.role === 'admin'); }
+    if (!allowed) { const { data: ms } = await supabase.from('mandates').select('id').eq('manager_id', mid).eq('client_id', uid).limit(1); allowed = !!(ms && ms.length); }
+    if (!allowed) {
+      const { data: rs } = await supabase.from('manager_requests').select('id').eq('client_id', uid).limit(100);
+      const ids = (rs || []).map(r => r.id);
+      if (ids.length) { const { data: ps } = await supabase.from('manager_pitches').select('id').eq('manager_id', mid).in('request_id', ids).limit(1); allowed = !!(ps && ps.length); }
+    }
+    if (!allowed) return res.status(403).json({ error: 'You can see a manager\'s CV once you\'re considering them: start an appointment with screening, or receive their pitch.' });
+    const { data, error } = await supabase.storage.from(CV_BUCKET).createSignedUrl(p.cv_path, 300);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ url: data.signedUrl, name: p.cv_name });
+  });
+
   // ── "I need a manager" requests + pitches ──
   app.get('/api/manager-requests', async (req, res) => {
     const { data } = await supabase.from('manager_requests').select('*').eq('status', 'open').order('created_at', { ascending: false }).limit(100);
@@ -1118,9 +1370,9 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (!p || !r || r.client_id !== req.user.id) return nf(res);
     if (p.status !== 'sent') return res.status(400).json({ error: 'This pitch was already answered.' });
     const scopes = (r.scopes && r.scopes.length ? r.scopes : Object.keys(SCOPES).filter(k => SCOPES[k].sides.includes(r.client_side)).slice(0, 2));
-    const out = await callAs(req.user.id, 'POST', '/api/mandates', { manager_id: p.manager_id, client_side: r.client_side, title: r.title, goals: r.needs, focus_industry: r.industry || 'General', scopes, fee_retainer: p.fee_retainer, fee_hourly: p.fee_hourly, fee_success_pct: p.fee_success_pct, request_id: r.id });
+    const out = await callAs(req.user.id, 'POST', '/api/mandates', { manager_id: p.manager_id, client_side: r.client_side, title: r.title, goals: r.needs, focus_industry: r.industry || 'General', scopes, fee_retainer: p.fee_retainer, fee_hourly: p.fee_hourly, fee_success_pct: p.fee_success_pct, request_id: r.id, screening: !!(req.body && req.body.screening) });
     if (!out.ok) return res.status(400).json({ error: out.error });
-    await supabase.from('manager_pitches').update({ status: 'accepted' }).eq('id', p.id);
+    await supabase.from('manager_pitches').update({ status: req.body && req.body.screening ? 'shortlisted' : 'accepted' }).eq('id', p.id);
     res.json({ ok: true, mandate_id: out.data.id });
   });
   app.post('/api/manager-pitches/:pid/decline', authMiddleware, async (req, res) => {
@@ -1181,4 +1433,4 @@ async function canActFor(supabase, managerId, clientId, counterpartyId) {
   return { ok: true, mandate: m };
 }
 
-module.exports = { mount, core, canActFor, SCOPES, SIDES, ACTIONS, LEVELS, QUIZ, TERMS_VERSION };
+module.exports = { mount, core, canActFor, screeningPending, SCOPES, SIDES, ACTIONS, LEVELS, QUIZ, TERMS_VERSION };

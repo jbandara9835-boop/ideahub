@@ -7,6 +7,7 @@
 //   message  → an accepted call request in a 1-to-1 chat   (messages.id)
 //   group    → an accepted call request in a group chat     (group_messages.id)
 //   patent   → a patent application (creator + attorney)     (patent_applications.id)
+//   mandate  → a manager mandate: hiring interview (opens 15 min before the agreed time) or a call while active
 // The server checks membership, creates a PRIVATE Daily room that expires, and
 // gives each person a personal meeting token. Nobody can join with just the link.
 // Video and audio go directly between browsers and Daily; nothing passes through
@@ -19,7 +20,7 @@ const HOUR = 3600 * 1000;
 const EARLY_MIN = 15; // a scheduled call opens 15 minutes before its time
 
 const callPath = (type, id) => `/call?type=${type}&id=${id}`;
-const isSafeLink = l => typeof l === 'string' && (/^https:\/\/[^\s"'<>]+$/i.test(l) || /^\/call\?type=(message|group|patent|licence|room|hire|expansion)&id=\d+$/.test(l));
+const isSafeLink = l => typeof l === 'string' && (/^https:\/\/[^\s"'<>]+$/i.test(l) || /^\/call\?type=(message|group|patent|licence|room|hire|expansion|mandate)&id=\d+$/.test(l));
 
 function mount(app, { supabase, authMiddleware, escrow }) {
   const key = () => process.env.DAILY_API_KEY || '';
@@ -91,6 +92,16 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       if (['declined', 'cancelled'].includes(d.status)) return { error: 'This deal is closed.', status: 400 };
       return { participants: [d.licensor_id, d.licensee_id], title: `Call about licensing "${d.idea_title}"`, opensAt: 0, expiresAt: now + 3 * HOUR, max: 6, back: `/licence?id=${d.id}` };
     }
+    if (type === 'mandate') {
+      const { data: m } = await supabase.from('mandates').select('id, title, client_id, manager_id, status').eq('id', id).single();
+      if (!m || ![m.client_id, m.manager_id].includes(userId)) return { error: 'Call not found.', status: 404 };
+      if (!['proposed', 'active'].includes(m.status)) return { error: 'This mandate is closed.', status: 400 };
+      const { data: iv } = await supabase.from('mandate_interviews').select('chosen_at').eq('mandate_id', m.id).eq('status', 'scheduled');
+      const times = (iv || []).map(x => new Date(x.chosen_at).getTime()).filter(t => t + 3 * HOUR > now).sort((a, b) => a - b);
+      if (m.status === 'proposed' && !times.length) return { error: 'Agree a time for the video interview on the mandate page first.', status: 400 };
+      const at = times.length ? times[0] : now;
+      return { participants: [m.client_id, m.manager_id], title: `${m.status === 'proposed' ? 'Interview' : 'Call'}: ${m.title}`, opensAt: m.status === 'proposed' ? at - EARLY_MIN * 60000 : 0, expiresAt: Math.max(at, now) + 3 * HOUR, max: 4, back: `/mandate?id=${m.id}` };
+    }
     return { error: 'Unknown call type.', status: 400 };
   }
 
@@ -131,7 +142,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       const t = await daily('/meeting-tokens', { properties: { room_name: call.room_name, user_name: name(me), user_id: String(req.user.id), exp: tokenExp } });
 
       // Patent calls have no call request, so ring the other person (at most every 10 minutes)
-      if (['patent', 'licence', 'room', 'hire', 'expansion'].includes(type) && (!existing || !existing.last_rung_at || Date.now() - new Date(existing.last_rung_at).getTime() > 10 * 60000 || existing.room_name !== call.room_name)) {
+      if (['patent', 'licence', 'room', 'hire', 'expansion', 'mandate'].includes(type) && (!existing || !existing.last_rung_at || Date.now() - new Date(existing.last_rung_at).getTime() > 10 * 60000 || existing.room_name !== call.room_name)) {
         for (const uid of ctx.participants.filter(x => x && x !== req.user.id)) {
           await escrow.notify(uid, { type: 'call_now', title: '📹 Video call started', message: `${name(me)} started a video call: ${ctx.title.replace(/^Call about /, '')}. Join now.`, link: callPath(type, id) });
         }
