@@ -119,7 +119,7 @@
     .idea-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; cursor:pointer; transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s; text-decoration:none; color:inherit; display:flex; flex-direction:column; }
     .idea-card:hover { transform:translateY(-3px); border-color:var(--gold); box-shadow:0 8px 32px rgba(245,197,24,0.08); }
     .card-banner { height:130px; width:100%; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; }
-.card-banner-icon { font-size:30px; opacity:0.55; }
+.card-banner-icon { font-family:'Cabinet Grotesk','DM Sans',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,.55); }
 .card-top { padding:14px 20px 0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
     .card-emoji { display:none; }
     .card-badge { font-size:0.72rem; font-weight:600; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.03em; }
@@ -706,7 +706,7 @@
     const hasImage = idea.images && idea.images.length > 0;
     const bannerHTML = hasImage
       ? `<div class="card-banner" style="background-image:url('${escH(encodeURI(idea.images[0]))}');"></div>`
-      : `<div class="card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="card-banner-icon">${emojiMap[industry]||''}</span></div>`;
+      : `<div class="card-banner" style="background:${gradientFor(idea.title || industry)};"><span class="card-banner-icon" aria-hidden="true">${escH(industry||'Other')}</span></div>`;
     return `
       <a class="idea-card" href="/idea?id=${encodeURIComponent(idea.id)}">
         ${bannerHTML}
@@ -719,7 +719,7 @@
         </div>
         <div class="card-tags">
           ${origTag(idea.originality_rating)}
-          ${industry ? `<span class="card-tag">${escH(industry)}</span>` : ''}
+          ${industry && hasImage ? `<span class="card-tag">${escH(industry)}</span>` : ''}
           ${idea.has_patent ? `<span class="card-tag">${idea.patent_verified ? 'Verified patent' : 'Patent'}</span>` : ''}
           ${engTag(idea.engagements)}
         </div>

@@ -414,7 +414,7 @@ app.get('/robots.txt', (req, res) => {
     const limit = parseInt(req.query.limit) || 6;
     const { data, error } = await supabase
       .from('ideas')
-      .select('id, title, summary, industry, price, views, creator_id, creator_name, originality, originality_score')
+      .select('id, title, summary, industry, level, price, views, creator_id, creator_name, originality, originality_score')
       .eq('status', 'live')
       .or('visibility.is.null,visibility.eq.1')
       .order('views', { ascending: false })
