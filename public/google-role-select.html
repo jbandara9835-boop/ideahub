@@ -203,6 +203,7 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
+      if (data.needs_code) { location.href = '/login#admin_challenge=' + encodeURIComponent(data.challenge); return; }
       localStorage.setItem('ih_token', data.token);
       localStorage.setItem('ih_user', JSON.stringify(data.user));
       const dashMap = {

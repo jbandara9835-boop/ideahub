@@ -76,8 +76,8 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const t = req.headers.authorization?.split(' ')[1];
     if (!t) return null;
     try {
-      const jwt = require('jsonwebtoken'); const d = jwt.verify(t, process.env.JWT_SECRET);
-      if (!d?.id || d.purpose) return null;
+      const d = await require('./security').viewer(req);
+      if (!d) return null;
       const { data } = await supabase.from('users').select('id, role, first_name, last_name').eq('id', d.id).single();
       return data || null;
     } catch { return null; }

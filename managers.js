@@ -399,7 +399,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   const has = (m, scope) => (m.scopes || []).includes(scope);
   // Run an existing route as another user (used when the client approves an action)
   async function callAs(userId, method, path, body) {
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '2m' });
+    const token = require('./security').service(userId);
     const r = await fetch(`http://127.0.0.1:${port()}${path}`, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: body ? JSON.stringify(body) : undefined });
     const j = await r.json().catch(() => ({}));
     return r.ok ? { ok: true, data: j } : { ok: false, error: j.error || `Could not complete (${r.status}).` };

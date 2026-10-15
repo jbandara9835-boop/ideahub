@@ -217,7 +217,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
           </div>
           <div class="field">
             <label>New Password</label>
-            <input type="password" id="newPassword" placeholder="At least 6 characters" />
+            <input type="password" id="newPassword" placeholder="At least 8 characters" />
           </div>
           <div class="field">
             <label>Confirm New Password</label>
@@ -392,6 +392,16 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
             <button class="danger-btn" style="border-color:var(--error);background:rgba(255,107,107,0.1);" onclick="deleteAccount()">Delete My Account</button>
           </div>
 
+          <div id="dangerConfirm" hidden style="margin-top:1rem;padding:1.25rem;border:1px solid rgba(255,107,107,0.3);border-radius:12px;">
+            <div id="dangerTitle" style="font-size:14px;font-weight:600;margin-bottom:6px;"></div>
+            <div id="dangerText" style="font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;"></div>
+            <label for="dangerPw" style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Your password (if you sign in with Google, type your email address instead)</label>
+            <input type="password" id="dangerPw" autocomplete="current-password" style="width:100%;box-sizing:border-box;margin-bottom:10px;" />
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="danger-btn" id="dangerGo" onclick="runDanger()">Confirm</button>
+              <button class="danger-btn" style="border-color:rgba(255,255,255,.15);color:var(--muted);background:none;" onclick="closeDanger()">Cancel</button>
+            </div>
+          </div>
           <div class="msg error" id="dangerError" style="margin-top:1rem;"></div>
         </div>
       </div>
@@ -402,7 +412,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
 
 <script>
 const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
-const token = localStorage.getItem('ih_token');
+let token = localStorage.getItem('ih_token');
 const user = JSON.parse(localStorage.getItem('ih_user') || 'null');
 
 const roleMap = { idea_creator:'Idea Creator', investor:'Investor', virtual_manager:'Virtual Manager', patent_attorney:'Patent Attorney', chartered_accountant:'Chartered Accountant', patent_seller:'Patent Seller', corporate_services:'Corporate', business_owner:'Business Owner' };
@@ -518,7 +528,7 @@ async function changePassword() {
   const sucEl = document.getElementById('pwSuccess');
   errEl.classList.remove('show'); sucEl.classList.remove('show');
   if (!current) { errEl.textContent = 'Enter your current password.'; errEl.classList.add('show'); return; }
-  if (!newPw || newPw.length < 6) { errEl.textContent = 'New password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+  if (!newPw || newPw.length < 8) { errEl.textContent = 'New password must be at least 8 characters.'; errEl.classList.add('show'); return; }
   if (newPw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
   const btn = document.querySelector('#section-security .save-btn');
   const sp = document.getElementById('pwSpinner');
@@ -532,7 +542,8 @@ async function changePassword() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed');
-    sucEl.textContent = 'Password changed successfully!';
+    if (data.token) { token = data.token; localStorage.setItem('ih_token', data.token); }   // other devices are signed out; this one stays in
+    sucEl.textContent = 'Password changed. Any other devices have been signed out.';
     sucEl.classList.add('show');
     document.getElementById('currentPassword').value = '';
     document.getElementById('newPassword').value = '';
@@ -573,29 +584,52 @@ function saveAppearance() {
   setTimeout(() => el.style.display = 'none', 3000);
 }
 
-function logoutAll() {
-  if (confirm('Log out all other sessions?')) {
-    alert('All other sessions have been logged out.');
-  }
+async function logoutAll() {
+  if (!confirm('Sign out of IdeaHub on every other phone and computer? This device stays signed in.')) return;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/logout-all`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not sign out other devices.');
+    if (data.token) localStorage.setItem('ih_token', data.token);
+    alert('Done. Every other device has been signed out.');
+    location.reload();
+  } catch (err) { alert(err.message); }
 }
 
-function deactivateAccount() {
-  if (confirm('Deactivate your account? Your profile and listings will be hidden until you log back in.')) {
-    alert('Account deactivation coming soon. Contact support@ideahub.it.com for now.');
-  }
+let dangerAction = null;
+function openDanger(kind) {
+  dangerAction = kind;
+  document.getElementById('dangerTitle').textContent = kind === 'delete' ? 'Delete your account' : 'Deactivate your account';
+  document.getElementById('dangerText').textContent = kind === 'delete'
+    ? 'Your profile, listings that were never sold, posts and personal details are removed for good. Records of completed payments are kept as the law requires. Finish any deals in progress and withdraw your wallet balance first.'
+    : 'Your profile is hidden, your listings are taken down and you are signed out everywhere. Sign in again any time to come back (you will need to relist your ideas).';
+  document.getElementById('dangerGo').textContent = kind === 'delete' ? 'Delete my account' : 'Deactivate';
+  document.getElementById('dangerPw').value = '';
+  document.getElementById('dangerConfirm').hidden = false;
+  document.getElementById('dangerPw').focus();
 }
-
-function deleteAccount() {
-  const confirmed = prompt('Type DELETE to permanently delete your account:');
-  if (confirmed === 'DELETE') {
-    alert('Account deletion request received. Our team will process this within 24 hours. Contact support@ideahub.it.com if you have questions.');
-  } else if (confirmed !== null) {
-    const el = document.getElementById('dangerError');
-    el.textContent = 'You must type DELETE exactly to confirm.';
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 3000);
-  }
+function closeDanger() { dangerAction = null; document.getElementById('dangerConfirm').hidden = true; }
+async function runDanger() {
+  const el = document.getElementById('dangerError');
+  el.classList.remove('show');
+  const v = document.getElementById('dangerPw').value;
+  if (!v) { el.textContent = 'Enter your password (or your email address if you use Google).'; el.classList.add('show'); return; }
+  const btn = document.getElementById('dangerGo'); btn.disabled = true;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/${dangerAction === 'delete' ? 'delete-account' : 'deactivate'}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ password: v, confirm: v })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'That did not work.');
+    alert(data.message || 'Done.');
+    localStorage.removeItem('ih_token'); localStorage.removeItem('ih_user');
+    location.href = '/';
+  } catch (err) { el.textContent = err.message; el.classList.add('show'); }
+  btn.disabled = false;
 }
+function deactivateAccount() { openDanger('deactivate'); }
+function deleteAccount() { openDanger('delete'); }
 
 loadProfile();
 </script>

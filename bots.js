@@ -587,7 +587,8 @@ module.exports = function registerBots(app, supabase, sendEmail) {
   app.post('/api/admin/bots/:name/run', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     try {
-      const { id } = jwt.verify(token || '', process.env.JWT_SECRET);
+      const d0 = await require('./security').viewer(req); if (!d0) throw new Error('session');
+      const { id } = d0;
       const { data: user } = await supabase.from('users').select('role').eq('id', id).single();
       if (!user || user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
     } catch {

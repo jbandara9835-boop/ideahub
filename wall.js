@@ -54,9 +54,8 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   const nf = res => res.status(404).json({ error: 'This post is no longer available.' });
   const mediaPrefix = () => { try { return supabase.storage.from(BUCKET).getPublicUrl('x').data.publicUrl.replace(/x$/, ''); } catch (e) { return null; } };
 
-  function viewerId(req) {
-    const t = req.headers.authorization?.split(' ')[1]; if (!t) return null;
-    try { const d = jwt.verify(t, process.env.JWT_SECRET); return d && d.id && !d.purpose ? d.id : null; } catch { return null; }
+  async function viewerId(req) {
+    const d = await require('./security').viewer(req); return d ? d.id : null;
   }
   async function roleOf(id) { if (!id) return null; const { data } = await supabase.from('users').select('role').eq('id', id).single(); return data ? data.role : null; }
   async function admins() { const { data } = await supabase.from('users').select('id').eq('role', 'admin'); return (data || []).map(a => a.id); }
@@ -180,7 +179,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
 
   // ── Feed ──
   app.get('/api/wall', async (req, res) => {
-    const uid = viewerId(req), role = await roleOf(uid);
+    const uid = await viewerId(req), role = await roleOf(uid);
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
     const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
     const sort = req.query.sort === 'trending' ? 'trending' : 'latest';
@@ -318,7 +317,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   // ── Comments ──
   app.get('/api/wall/:id/comments', async (req, res) => {
     const id = intId(req.params.id); const p = id && await loadPost(id);
-    const uid = viewerId(req), role = await roleOf(uid);
+    const uid = await viewerId(req), role = await roleOf(uid);
     if (!p || !visibleTo(p, uid, role)) return nf(res);
     const { data, error } = await supabase.from('wall_comments').select('id, post_id, user_id, text, created_at, users(id, first_name, last_name, avatar_url)').eq('post_id', id).order('created_at', { ascending: true }).limit(500);
     if (error) return res.status(500).json({ error: error.message });

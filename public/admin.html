@@ -1061,17 +1061,33 @@
         <div class="user-row">
           <div class="user-name-cell">
             <div class="user-av">${initials}</div>
-            <div><div style="font-weight:500;">${escHtml(name)}</div><div style="font-size:12px;color:var(--muted);">${escHtml(u.email||'')}</div></div>
+            <div><div style="font-weight:500;">${escHtml(name)}${u.suspended ? ' <span style="font-size:11px;color:var(--error,#ff6b6b);font-weight:600;">Suspended</span>' : u.deleted_at ? ' <span style="font-size:11px;color:var(--muted);">Deleted</span>' : u.deactivated_at ? ' <span style="font-size:11px;color:var(--muted);">Deactivated</span>' : ''}</div><div style="font-size:12px;color:var(--muted);">${escHtml(u.email||'')}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">${escHtml([u.signed_up_with ? 'Signed up with ' + u.signed_up_with : '', u.signup_country ? 'from ' + u.signup_country : '', u.phone_verified ? 'WhatsApp verified' : ''].filter(Boolean).join(' · '))}</div></div>
           </div>
           <div><span class="role-pill ${u.role||''}">${roleMap[u.role]||u.role||'—'}</span></div>
           <div style="font-size:13px;color:var(--muted);">${escHtml(u.country||'—')}</div>
           <div style="font-size:13px;color:var(--muted);">${formatDate(u.created_at)}</div>
           <div>${u.verification_status==='verified' ? '<span style="color:var(--success);font-size:12px;">Verified</span>'
             : u.verification_status==='pending' ? `<div style="display:flex;gap:4px;flex-wrap:wrap;"><button class="btn-approve" style="padding:3px 8px;font-size:11px;" onclick="setVerification(${u.id},'verified')">Verify</button><button class="btn-reject-cert" style="padding:3px 8px;font-size:11px;" onclick="setVerification(${u.id},'unverified')">Reject</button></div>`
-            : '<span style="color:var(--muted);font-size:12px;">—</span>'}</div>
+            : '<span style="color:var(--muted);font-size:12px;">—</span>'}
+            ${u.role !== 'admin' && !u.deleted_at && 'suspended' in u ? `<div style="margin-top:4px;">${u.suspended
+              ? `<button class="btn-approve" style="padding:3px 8px;font-size:11px;" onclick="setSuspended(${Number(u.id)}, false)">Restore</button>`
+              : `<button class="btn-reject-cert" style="padding:3px 8px;font-size:11px;" onclick="setSuspended(${Number(u.id)}, true)">Suspend</button>`}</div>` : ''}</div>
         </div>
       `;
     }).join('');
+  }
+
+  // Suspended accounts are signed out everywhere and can't sign in until restored
+  async function setSuspended(id, on) {
+    let reason = '';
+    if (on) { reason = prompt('Reason for suspending (kept for your records):', 'Spam or fake account'); if (reason === null) return; }
+    else if (!confirm('Restore this account so the person can sign in again?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/admin/users/${id}/suspend`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ suspended: on, reason }) });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok) loadAll(); else alert(d.error || 'Failed');
+    } catch (e) { alert('Something went wrong.'); }
   }
 
   // IDEAS

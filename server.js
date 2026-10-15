@@ -43,8 +43,13 @@ const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':
   }
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 
+  const sec = require('./security');
+  const crypto = require('crypto');
   const app = express();
-  app.use(cors());
+  app.disable('x-powered-by');
+  app.use(sec.originLock);   // requests that skip Cloudflare (the Railway address) are sent to ideahub.it.com
+  app.use(sec.headers);      // HTTPS-only, no framing, no sniffing
+  app.use(cors({ origin: sec.corsOrigin }));
   // Keeps the raw body for the WhatsApp webhook signature check
   app.use(express.json({ verify: (req, res, buf) => { if (req.originalUrl.startsWith('/api/whatsapp/webhook')) req.rawBody = buf; } }));
   // Names and titles are shown all over the site: never let them carry HTML (< or >)
@@ -106,12 +111,14 @@ const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':
 
   app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login?error=google' }), async (req, res) => {
     const user = req.user;
-    const { password: _, ...safeUser } = user;
 
-    // Existing user — log straight in
+    // Existing user — log straight in (unless suspended; admins confirm an emailed code)
     if (user.existed) {
-      const token = require('jsonwebtoken').sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-      return res.redirect(`/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify(safeUser))}`);
+      const gate = await loginGate(user);
+      if (gate.blocked) return res.redirect('/login?error=' + gate.blocked);
+      if (gate.challenge) return res.redirect('/login#admin_challenge=' + gate.challenge);
+      // The # part of an address never reaches servers or other sites, and isn't sent on with links
+      return res.redirect(`/auth/google/success#token=${encodeURIComponent(sec.issue(gate.user))}&user=${encodeURIComponent(JSON.stringify(slimUser(gate.user)))}`);
     }
 
     // New user — go to role selection
@@ -141,6 +148,7 @@ app.get('/robots.txt', (req, res) => {
       .single();
 
     if (error || !user) return res.status(404).json({ error: 'User not found' });
+    { const st = await sec.accountState(user.id); if (st.deactivated_at || st.deleted_at) return res.status(404).json({ error: 'User not found' }); }
 
     const { data: specializations } = await supabase
       .from('user_specializations')
@@ -178,6 +186,7 @@ app.get('/robots.txt', (req, res) => {
     process.env.SUPABASE_URL,
     process.env.SUPABASE_KEY
   );
+  sec.init(supabase);
        require('./chatbot')(app, supabase); require('./bots')(app, supabase, sendEmail);
   const escrow = require('./escrow')(supabase, sendEmail);
   const payments = require('./payments')(supabase);
@@ -431,18 +440,45 @@ app.get('/robots.txt', (req, res) => {
   });
 
   // ── HELPER: verify JWT token ─────────────────────────────────────────────────
-  function authMiddleware(req, res, next) {
-    const header = req.headers.authorization;
-    if (!header) return res.status(401).json({ error: 'No token provided' });
-    const token = header.split(' ')[1];
-    try {
-      req.user = jwt.verify(token, process.env.JWT_SECRET);
-      if (!req.user || !req.user.id || req.user.purpose) return res.status(401).json({ error: 'Invalid token' }); // e.g. a Google sign-up ticket is not a login
-      next();
-    } catch {
-      res.status(401).json({ error: 'Invalid token' });
-    }
+  // Checks the login token AND that the session is still current (password changes, suspension, log out everywhere)
+  function authMiddleware(req, res, next) { return sec.middleware(req, res, next); }
+
+  // What the browser keeps about the signed-in person (never the password or private fields)
+  function slimUser(u) {
+    const keep = ['id', 'email', 'first_name', 'last_name', 'role', 'avatar_url', 'verified', 'verification_status', 'profile_complete', 'profile_stars', 'country', 'tagline', 'phone_verified'];
+    const o = {}; keep.forEach(k => { if (u && u[k] !== undefined) o[k] = u[k]; });
+    o.firstName = o.first_name; o.lastName = o.last_name;
+    return o;
   }
+  // What sign-in replies send back: the account minus secrets
+  function selfUser(u) {
+    const { password, token_version, google_id, suspended_reason, ...rest } = u || {};
+    return { ...rest, firstName: rest.first_name, lastName: rest.last_name };
+  }
+  // Common checks once a person has proved who they are (password or Google):
+  // suspended → blocked; deactivated → welcomed back; admin → emailed sign-in code first.
+  async function loginGate(user) {
+    if (user.deleted_at) return { blocked: 'gone' };
+    if (user.suspended) return { blocked: 'suspended' };
+    if (user.deactivated_at && sec.ready()) {
+      const { data: back } = await supabase.from('users').update({ deactivated_at: null }).eq('id', user.id).select().single();
+      if (back) user = { ...user, ...back };
+      sec.forget(user.id);
+    }
+    if (user.role === 'admin' && sec.adminCodeOn()) {
+      const { id, code } = sec.newChallenge(user.id);
+      await sendEmail(user.email, `IdeaHub admin sign-in code: ${code}`, `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:28px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:12px;">IdeaHub</div>
+          <p style="color:#c9c4bb;line-height:1.6;">Your admin sign-in code is</p>
+          <div style="font-size:32px;font-weight:800;letter-spacing:6px;margin:12px 0 18px;">${code}</div>
+          <p style="color:#9a9080;line-height:1.6;font-size:13px;">It works for 10 minutes. If you didn't just try to sign in, change your password now.</p>
+        </div>`);
+      return { challenge: id };
+    }
+    return { user };
+  }
+
 
   // ── AUTH ─────────────────────────────────────────────────────────────────────
 
@@ -455,6 +491,9 @@ app.get('/robots.txt', (req, res) => {
     if (!firstName || !email || !password) {
       return res.status(400).json({ error: 'First name, email and password are required' });
     }
+    const pwBad = sec.passwordProblem(password);
+    if (pwBad) return res.status(400).json({ error: pwBad });
+    if (sec.limited('signup-ip:' + sec.clientIp(req), 10, 3600000)) return res.status(429).json({ error: 'Too many sign-ups from this connection. Please try again later.' });
 
     const { data: existing } = await supabase
       .from('users')
@@ -481,10 +520,8 @@ app.get('/robots.txt', (req, res) => {
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = sec.issue(user);
     const { password: _, ...safeUser } = user;
-
     // Welcome email
     sendEmail(email, 'Welcome to IdeaHub! 🎉', `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
@@ -502,21 +539,134 @@ app.get('/robots.txt', (req, res) => {
   // LOGIN
   app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
-
+    // Password guessing: 30 tries per connection and 10 wrong passwords per email, per 15 minutes
+    const ip = sec.clientIp(req), emailKey = 'login-fail:' + String(email || '').trim().toLowerCase();
+    if (sec.limited('login-ip:' + ip, 30, 15 * 60000)) return res.status(429).json({ error: 'Too many sign-in attempts. Please wait 15 minutes and try again.' });
+    if (sec.over(emailKey, 10, 15 * 60000)) return res.status(429).json({ error: 'Too many wrong passwords for this account. Please wait 15 minutes, or reset your password.' });
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
       .eq('email', email)
       .single();
+    const match = user && !error && user.password ? await bcrypt.compare(String(password || ''), user.password) : false;
+    if (!match) { sec.hit(emailKey); return res.status(400).json({ error: 'Incorrect email or password.' }); }
+    sec.clear(emailKey);
+    const gate = await loginGate(user);
+    if (gate.blocked) return res.status(gate.blocked === 'suspended' ? 403 : 400).json({ error: gate.blocked === 'suspended' ? sec.SESSION_MSG.suspended : 'Incorrect email or password.' });
+    if (gate.challenge) return res.json({ needs_code: true, challenge: gate.challenge, message: `We emailed a 6-digit sign-in code to ${user.email}.` });
+    res.json({ token: sec.issue(gate.user), user: selfUser(gate.user) });
+  });
 
-    if (!user || error) return res.status(400).json({ error: 'Incorrect email or password.' });
+  // Admin sign-in, step 2: the emailed code
+  app.post('/api/auth/admin-code', async (req, res) => {
+    if (sec.limited('admin-code-ip:' + sec.clientIp(req), 20, 15 * 60000)) return res.status(429).json({ error: 'Too many tries. Please wait 15 minutes.' });
+    const r = sec.solveChallenge(req.body?.challenge, req.body?.code);
+    if (r.error) return res.status(400).json({ error: r.error });
+    const { data: user } = await supabase.from('users').select('*').eq('id', r.userId).single();
+    if (!user || user.suspended || user.deleted_at) return res.status(400).json({ error: 'Please sign in again.' });
+    res.json({ token: sec.issue(user), user: selfUser(user) });
+  });
 
-    const match = user.password ? await bcrypt.compare(String(password || ''), user.password) : false;
-    if (!match) return res.status(400).json({ error: 'Incorrect email or password.' });
+  // ── Deactivate / delete your own account ──
+  // Things that must be finished first, because other people or money depend on them
+  async function openObligations(uid, withWallet) {
+    const q = [
+      supabase.from('transactions').select('id').or(`buyer_id.eq.${uid},seller_id.eq.${uid}`).in('status', ['escrow', 'disputed']).limit(1),
+      supabase.from('idea_requests').select('id').or(`investor_id.eq.${uid},selected_creator_id.eq.${uid}`).in('status', ['agreed', 'in_escrow', 'delivered', 'disputed']).limit(1),
+      supabase.from('hire_requests').select('id').or(`client_id.eq.${uid},support_id.eq.${uid}`).in('status', ['in_progress', 'delivered', 'disputed']).limit(1),
+      supabase.from('mandates').select('id').or(`client_id.eq.${uid},manager_id.eq.${uid}`).eq('status', 'active').limit(1)
+    ];
+    const names = ['an idea sale in progress', 'an Idea Request deal in progress', 'a hire in progress', 'an active manager mandate'];
+    const rs = await Promise.all(q.map(async p => { try { return await p; } catch (e) { return { data: [] }; } }));
+    const open = rs.map((r, i) => ((r && r.data) || []).length ? names[i] : null).filter(Boolean);
+    if (withWallet) {
+      const w = await payments.wallet(uid).catch(() => null);
+      if (w && (Number(w.available) > 0 || Number(w.pending) > 0)) open.push('money in your wallet (withdraw it first)');
+    }
+    return open;
+  }
+  // Password for email accounts; Google accounts type their email address
+  async function confirmSelf(uid, body) {
+    const { data: u } = await supabase.from('users').select('*').eq('id', uid).single();
+    if (!u) return { error: 'Account not found.' };
+    if (u.password) {
+      if (!(await bcrypt.compare(String(body?.password || ''), u.password))) return { error: 'Your password is not right.' };
+    } else if (String(body?.confirm || '').trim().toLowerCase() !== String(u.email).toLowerCase()) {
+      return { error: 'Type your account email address to confirm.' };
+    }
+    return { user: u };
+  }
+  async function takeDownListings(uid) {
+    const steps = [
+      () => supabase.from('ideas').update({ status: 'withdrawn' }).eq('creator_id', uid).in('status', ['live', 'pending_review', 'held', 'rejected']),
+      () => supabase.from('idea_requests').update({ status: 'closed' }).eq('investor_id', uid).in('status', ['open', 'proposals_received', 'shortlisting', 'pitching']),
+      () => supabase.from('business_listings').update({ status: 'withdrawn' }).eq('owner_id', uid).in('status', ['pending', 'pending_review', 'approved', 'live', 'active']),
+      () => supabase.from('manager_requests').update({ status: 'closed' }).eq('client_id', uid).eq('status', 'open')
+    ];
+    for (const step of steps) { try { const r = await step(); if (r && r.error) console.error('take down listings:', r.error.message); } catch (e) { console.error('take down listings:', e.message); } }
+  }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    const { password: _, ...safeUser } = user;
-    res.json({ token, user: { ...safeUser, firstName: user.first_name, lastName: user.last_name } });
+  app.post('/api/auth/deactivate', authMiddleware, async (req, res) => {
+    if (!sec.ready()) return res.status(503).json({ error: 'This needs a quick database update first (security.sql).' });
+    if (sec.limited('danger:' + req.user.id, 10, 3600000)) return res.status(429).json({ error: 'Too many tries. Please wait an hour.' });
+    const me = await confirmSelf(req.user.id, req.body);
+    if (me.error) return res.status(400).json({ error: me.error });
+    if (me.user.role === 'admin') return res.status(400).json({ error: 'Admin accounts can\'t be deactivated.' });
+    const open = await openObligations(req.user.id, false);
+    if (open.length) return res.status(400).json({ error: `Please finish ${open.join(', ')} first.` });
+    await takeDownListings(req.user.id);
+    await sec.bump(req.user.id, { deactivated_at: new Date().toISOString() });
+    res.json({ ok: true, message: 'Your account is deactivated. Sign in any time to reactivate it; your listings will need to be relisted.' });
+  });
+
+  app.post('/api/auth/delete-account', authMiddleware, async (req, res) => {
+    if (!sec.ready()) return res.status(503).json({ error: 'This needs a quick database update first (security.sql).' });
+    if (sec.limited('danger:' + req.user.id, 10, 3600000)) return res.status(429).json({ error: 'Too many tries. Please wait an hour.' });
+    const me = await confirmSelf(req.user.id, req.body);
+    if (me.error) return res.status(400).json({ error: me.error });
+    const u = me.user, uid = u.id;
+    if (u.role === 'admin') return res.status(400).json({ error: 'Admin accounts can\'t be deleted here.' });
+    const open = await openObligations(uid, true);
+    if (open.length) return res.status(400).json({ error: `Please finish ${open.join(', ')} first.` });
+
+    await sendEmail(u.email, 'Your IdeaHub account has been deleted', `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:28px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:12px;">IdeaHub</div>
+        <p style="color:#c9c4bb;line-height:1.6;">Hi ${escHtml(u.first_name || '')}, your account and personal details have been deleted. Records of completed payments are kept as the law requires.</p>
+        <p style="color:#9a9080;line-height:1.6;font-size:13px;">If you didn't ask for this, reply to this email straight away.</p>
+      </div>`);
+
+    // Listings: ideas never sold are removed; anything with a deal behind it is taken down and kept as a record
+    const { data: ideas } = await supabase.from('ideas').select('id, status').eq('creator_id', uid);
+    for (const i of ideas || []) {
+      if (i.status === 'sold') continue;
+      const { data: deals } = await supabase.from('transactions').select('id').eq('idea_id', i.id).limit(1);
+      const del = (deals && deals.length) ? { error: true } : await supabase.from('ideas').delete().eq('id', i.id);
+      if (del.error) await supabase.from('ideas').update({ status: 'withdrawn' }).eq('id', i.id);
+    }
+    await takeDownListings(uid);
+    const wipe = [['wall_posts', 'user_id'], ['support_profiles', 'user_id'], ['manager_profiles', 'user_id'], ['user_specializations', 'user_id'],
+      ['notifications', 'user_id'], ['group_members', 'user_id'], ['delegations', 'owner_id'], ['delegations', 'delegate_id']];
+    for (const [t, c] of wipe) { try { await supabase.from(t).delete().eq(c, uid); } catch (e) { /* keep going */ } }
+
+    // The account row stays (payments and messages point to it) with every personal detail removed
+    const blank = {
+      first_name: 'Deleted', last_name: 'user', email: `deleted-${uid}-${crypto.randomBytes(4).toString('hex')}@deleted.invalid`, password: '',
+      middle_name: null, phone: null, phone_verified: false, avatar_url: null, bio: null, tagline: null, city: null, state: null, postal_code: null,
+      address_line1: null, address_line2: null, expert_area: null, qualification: null, google_id: null, whatsapp_number: null, wa_number: null,
+      deleted_at: new Date().toISOString()
+    };
+    const upd = {}; Object.keys(blank).forEach(k => { if (k in u || ['deleted_at'].includes(k)) upd[k] = blank[k]; });
+    await sec.bump(uid, upd);
+    res.json({ ok: true, message: 'Your account has been deleted.' });
+  });
+
+  // End every sign-in of this account on every device, and keep this one
+  app.post('/api/auth/logout-all', authMiddleware, async (req, res) => {
+    if (!sec.ready()) return res.status(503).json({ error: 'This needs a quick database update first (security.sql).' });
+    const tv = await sec.bump(req.user.id);
+    const { data: user } = await supabase.from('users').select('*').eq('id', req.user.id).single();
+    res.json({ success: true, token: sec.issue({ ...user, token_version: tv }) });
   });
 
   // GET current user profile
@@ -646,7 +796,10 @@ app.get('/robots.txt', (req, res) => {
   app.post('/api/ideas/upload-image', authMiddleware, upload.single('image'), async (req, res) => {
     console.log('Image upload called, file:', req.file?.originalname, req.file?.mimetype, req.file?.size);
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const ext = req.file.mimetype.split('/')[1];
+    const kind = sec.imageType(req.file.buffer);   // checked from the file itself, not the name
+    if (!kind) return res.status(400).json({ error: 'Use a JPG, PNG, WebP or GIF image.' });
+    req.file.mimetype = kind.mime;
+    const ext = kind.ext;
     const fileName = `idea-${req.user.id}-${Date.now()}.${ext}`;
     console.log('Uploading to bucket idea-images:', fileName);
     try {
@@ -670,7 +823,8 @@ app.get('/robots.txt', (req, res) => {
     const t = req.headers.authorization?.split(' ')[1];
     if (!t) return { id: null, role: null, verified: false };
     try {
-      const decoded = jwt.verify(t, process.env.JWT_SECRET);
+      const decoded = await sec.viewer(req);
+      if (!decoded) return { id: null, role: null, verified: false };
       const { data } = await supabase.from('users').select('id, role, verification_status').eq('id', decoded.id).single();
       return { id: data?.id || null, role: data?.role || null, verified: data?.verification_status === 'verified' };
     } catch { return { id: null, role: null, verified: false }; }
@@ -2351,7 +2505,10 @@ app.get('/robots.txt', (req, res) => {
 
   app.post('/api/profile/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const ext = req.file.mimetype.split('/')[1];
+    const kind = sec.imageType(req.file.buffer);
+    if (!kind) return res.status(400).json({ error: 'Use a JPG, PNG, WebP or GIF image.' });
+    req.file.mimetype = kind.mime;
+    const ext = kind.ext;
     const fileName = `avatar-${req.user.id}-${Date.now()}.${ext}`;
     try {
       const { error } = await supabase.storage.from('avatars').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
@@ -2478,8 +2635,9 @@ app.get('/robots.txt', (req, res) => {
   });
 
   app.get('/api/users/search', authMiddleware, async (req, res) => {
-    const q = req.query.q;
-    if (!q || q.length < 2) return res.json([]);
+    // Only letters, digits and spaces reach the database filter (anything else could add conditions to it)
+    const q = sec.filterText(req.query.q, 40);
+    if (q.length < 2) return res.json([]);
     const { data, error } = await supabase.from('users').select('id, first_name, last_name, role').or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%`).neq('id', req.user.id).limit(8);
     if (error) return res.status(500).json({ error: error.message });
     res.json(data||[]);
@@ -2497,9 +2655,10 @@ app.get('/robots.txt', (req, res) => {
     // Check again if user exists (race condition protection)
     let { data: existing } = await supabase.from('users').select('*').eq('email', email).single();
     if (existing) {
-      const token = require('jsonwebtoken').sign({ id: existing.id, email: existing.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-      const { password: _, ...safeUser } = existing;
-      return res.json({ token, user: safeUser });
+      const gate = await loginGate(existing);
+      if (gate.blocked) return res.status(403).json({ error: gate.blocked === 'suspended' ? sec.SESSION_MSG.suspended : 'Please sign in again.' });
+      if (gate.challenge) return res.json({ needs_code: true, challenge: gate.challenge });
+      return res.json({ token: sec.issue(gate.user), user: selfUser(gate.user) });
     }
 
     const { data: newUser, error } = await supabase.from('users').insert([{
@@ -2522,9 +2681,7 @@ app.get('/robots.txt', (req, res) => {
       </div>
     `);
 
-    const token = require('jsonwebtoken').sign({ id: newUser.id, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    const { password: _, ...safeUser } = newUser;
-    res.json({ token, user: safeUser });
+    res.json({ token: sec.issue(newUser), user: selfUser(newUser) });
   });
 
   app.get('/google-role-select', (req, res) => res.sendFile(__dirname + '/public/google-role-select.html'));
@@ -2536,15 +2693,20 @@ app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Ph
   app.post('/api/auth/change-password', authMiddleware, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords required' });
-    if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    const pwBad = sec.passwordProblem(newPassword);
+    if (pwBad) return res.status(400).json({ error: pwBad });
+    if (sec.limited('pwchange:' + req.user.id, 10, 3600000)) return res.status(429).json({ error: 'Too many tries. Please wait an hour.' });
     const { data: user } = await supabase.from('users').select('password').eq('id', req.user.id).single();
     if (!user) return res.status(404).json({ error: 'User not found' });
-    const match = await bcrypt.compare(currentPassword, user.password);
+    const match = user.password ? await bcrypt.compare(String(currentPassword), user.password) : false;
     if (!match) return res.status(400).json({ error: 'Current password is incorrect' });
     const hashed = await bcrypt.hash(newPassword, 10);
     const { error } = await supabase.from('users').update({ password: hashed }).eq('id', req.user.id);
     if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
+    // Every other device is signed out; this one gets a fresh sign-in
+    const tv = await sec.bump(req.user.id);
+    const { data: fresh } = await supabase.from('users').select('id, email, token_version').eq('id', req.user.id).single();
+    res.json({ success: true, token: tv === null ? undefined : sec.issue({ ...(fresh || { id: req.user.id, email: req.user.email }), token_version: tv }) });
   });
 
   app.post('/api/auth/update-email', authMiddleware, async (req, res) => {
@@ -2598,9 +2760,30 @@ app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Ph
   app.get('/api/admin/users', authMiddleware, async (req, res) => {
     const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
     if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
-    const { data, error } = await supabase.from('users').select('id, first_name, last_name, email, role, country, created_at, verified, verification_status').order('created_at', { ascending: false });
+    const base = 'id, first_name, last_name, email, role, country, created_at, verified, verification_status, signup_country, google_id, phone_verified';
+    let { data, error } = await supabase.from('users').select(base + ', suspended, suspended_reason, deactivated_at, deleted_at').order('created_at', { ascending: false });
+    const controls = !error && sec.ready();   // suspension needs security.sql
+    if (error) ({ data, error } = await supabase.from('users').select(base).order('created_at', { ascending: false }));
+    if (error) ({ data, error } = await supabase.from('users').select('id, first_name, last_name, email, role, country, created_at, verified, verification_status').order('created_at', { ascending: false }));
     if (error) return res.status(500).json({ error: error.message });
-    res.json(data || []);
+    res.json((data || []).map(u => ({ ...u, google_id: undefined, signed_up_with: u.google_id ? 'Google' : 'Email', ...(controls ? { suspended: !!u.suspended } : {}) })));
+  });
+
+  // Suspend or restore an account: a suspended person is signed out everywhere and can't sign in
+  app.put('/api/admin/users/:id/suspend', authMiddleware, async (req, res) => {
+    const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    if (!sec.ready()) return res.status(503).json({ error: 'Run security.sql in Supabase first.' });
+    const id = parseInt(req.params.id, 10);
+    if (!id || id === req.user.id) return res.status(400).json({ error: "You can't suspend your own account." });
+    const { data: target } = await supabase.from('users').select('id, role, first_name').eq('id', id).single();
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    if (target.role === 'admin') return res.status(400).json({ error: 'Admin accounts can\'t be suspended here.' });
+    const on = req.body?.suspended !== false;
+    const reason = String(req.body?.reason || '').trim().slice(0, 300) || null;
+    if (on) await sec.bump(id, { suspended: true, suspended_reason: reason, suspended_at: new Date().toISOString() });
+    else { await supabase.from('users').update({ suspended: false, suspended_reason: null, suspended_at: null }).eq('id', id); sec.forget(id); }
+    res.json({ ok: true, suspended: on });
   });
 
   app.get('/api/admin/role-requests', authMiddleware, async (req, res) => {
@@ -2638,6 +2821,10 @@ app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Ph
   app.post('/api/auth/forgot-password', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email required' });
+    const sent = { message: 'If that email exists, a reset link has been sent.' };
+    // At most 3 reset emails per address and 10 per connection, per hour (protects inboxes and our sender reputation)
+    if (sec.limited('reset-ip:' + sec.clientIp(req), 10, 3600000)) return res.status(429).json({ error: 'Too many requests. Please try again in an hour.' });
+    if (sec.limited('reset-email:' + String(email).trim().toLowerCase(), 3, 3600000)) return res.json(sent);
 
     const { data: user } = await supabase.from('users').select('id, first_name').eq('email', email).single();
     if (!user) return res.json({ message: 'If that email exists, a reset link has been sent.' });
@@ -2668,7 +2855,9 @@ app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Ph
   app.post('/api/auth/reset-password', async (req, res) => {
     const { token, password } = req.body;
     if (!token || !password) return res.status(400).json({ error: 'Token and password required' });
-    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    const pwBad = sec.passwordProblem(password);
+    if (pwBad) return res.status(400).json({ error: pwBad });
+    if (sec.limited('reset-try-ip:' + sec.clientIp(req), 20, 3600000)) return res.status(429).json({ error: 'Too many tries. Please wait an hour.' });
 
     // Find token
     const { data: reset } = await supabase
@@ -2686,8 +2875,10 @@ app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Ph
     const { error } = await supabase.from('users').update({ password: hashed }).eq('email', reset.email);
     if (error) return res.status(500).json({ error: error.message });
 
-    // Mark token as used
-    await supabase.from('password_resets').update({ used: true }).eq('token', token);
+    // This link and every older link for the address stop working; every signed-in device is signed out
+    await supabase.from('password_resets').update({ used: true }).eq('email', reset.email);
+    const { data: who } = await supabase.from('users').select('id').eq('email', reset.email).single();
+    if (who) await sec.bump(who.id);
 
     res.json({ message: 'Password reset successfully!' });
   });
@@ -2903,7 +3094,7 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
   // GET Supabase storage upload URL for certificates
   app.post('/api/certificates/upload-url', authMiddleware, async (req, res) => {
     const { fileName, fileType } = req.body;
-    const filePath = `${req.user.id}/${Date.now()}_${fileName}`;
+    const filePath = `${req.user.id}/${Date.now()}_${sec.safeFileName(fileName)}`;
 
     const { data, error } = await supabase.storage
       .from('certificates')

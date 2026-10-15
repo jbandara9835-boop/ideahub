@@ -228,7 +228,7 @@ function bot(supabase, opts = {}) {
 
   // POST the idea through the normal website route, so every check is the same
   async function createIdea(userId, d) {
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '2m' });
+    const token = require('./security').service(userId);
     const body = { title: d.title, summary: d.summary, desc: d.desc, industry: d.industry, ideaType: d.ideaType, countries: d.countries, price: d.price, visibility: d.visibility || 1, level: 1, hasPatent: false, engagements: {}, images: d.images || [], sellerAgreement: ideaTerms.VERSION };
     const r = await (opts.fetch || fetch)(`http://127.0.0.1:${port()}/api/ideas`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));

@@ -51,7 +51,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   async function me(id) { const { data } = await supabase.from('users').select('id, role, first_name, last_name').eq('id', id).single(); return data; }
   async function viewerId(req) {
     const t = req.headers.authorization?.split(' ')[1]; if (!t) return null;
-    try { const d = require('jsonwebtoken').verify(t, process.env.JWT_SECRET); return d && d.id && !d.purpose ? d.id : null; } catch { return null; }
+    const d = await require('./security').viewer(req); return d ? d.id : null;
   }
   async function admins() { const { data } = await supabase.from('users').select('id').eq('role', 'admin'); return (data || []).map(a => a.id); }
   // What a visitor sees. Confidential listings are masked unless the viewer has access (owner, admin, approved NDA).

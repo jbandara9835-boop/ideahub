@@ -493,7 +493,8 @@ async function getUser(req, supabase) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return null;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = await require('./security').viewer(req);
+    if (!decoded) return null;
     const { data } = await supabase.from('users').select('id, role').eq('id', decoded.id).single();
     return data || null;
   } catch { return null; }
@@ -509,7 +510,7 @@ module.exports = function registerChatbot(app, supabase) {
     }
 
     const user = await getUser(req, supabase);
-    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip;
+    const ip = require('./security').clientIp(req); // Cloudflare's visitor IP (a header the visitor sets could be faked)
     const key = user ? `u:${user.id}` : `ip:${ip}`;
     if (rateLimited(key, user ? LIMIT_USER : LIMIT_GUEST)) {
       return res.status(429).json({

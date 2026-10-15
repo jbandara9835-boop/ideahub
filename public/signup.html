@@ -175,7 +175,7 @@
   <div class="field">
     <label class="field-label">Password</label>
     <div class="password-wrap">
-      <input type="password" id="password" placeholder="At least 6 characters" style="padding-right:42px;" autocomplete="new-password" />
+      <input type="password" id="password" placeholder="At least 8 characters" style="padding-right:42px;" autocomplete="new-password" />
       <button class="toggle-pw" id="togglePw" type="button" aria-label="Toggle password">
         <svg id="eyeIcon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
@@ -312,7 +312,7 @@
 
     if (!firstName) { errorMsg.textContent = 'Please enter your first name.'; errorMsg.classList.add('show'); return; }
     if (!email) { errorMsg.textContent = 'Please enter your email.'; errorMsg.classList.add('show'); return; }
-    if (!password || password.length < 6) { errorMsg.textContent = 'Password must be at least 6 characters.'; errorMsg.classList.add('show'); return; }
+    if (!password || password.length < 8) { errorMsg.textContent = 'Password must be at least 8 characters.'; errorMsg.classList.add('show'); return; }
 
     const btn = document.getElementById('signupBtn');
     const spinner = document.getElementById('spinner');

@@ -12,16 +12,21 @@
   <div style="font-size:18px;">Signing you in...</div>
 </div>
 <script>
-  const params = new URLSearchParams(window.location.search);
+  // The sign-in arrives after # (never sent to servers or other sites); older links used ?token=
+  const params = new URLSearchParams(location.hash.slice(1) || location.search);
   const token = params.get('token');
-  const user = JSON.parse(decodeURIComponent(params.get('user')));
+  let user = null; try { user = JSON.parse(params.get('user') || 'null'); } catch (e) {}
+  history.replaceState(null, '', '/auth/google/success');
+  const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard', admin:'/admin' };
   if (token && user) {
     localStorage.setItem('ih_token', token);
     localStorage.setItem('ih_user', JSON.stringify(user));
-    const dashMap = { idea_creator:'/dashboard', investor:'/buyer-dashboard', business_owner:'/business-dashboard', virtual_manager:'/support-dashboard', chartered_accountant:'/support-dashboard', patent_attorney:'/support-dashboard', corporate_services:'/support-dashboard', patent_seller:'/dashboard', admin:'/admin' };
-    window.location.href = dashMap[user.role] || '/dashboard';
+    // Swap in the full profile, then go to the dashboard
+    fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+      .then(r => r.ok ? r.json() : null).then(me => { if (me && me.id) localStorage.setItem('ih_user', JSON.stringify(me)); })
+      .catch(() => {}).finally(() => { location.href = dashMap[user.role] || '/dashboard'; });
   } else {
-    window.location.href = '/login?error=google';
+    location.href = '/login?error=google';
   }
 </script>
 </body>
