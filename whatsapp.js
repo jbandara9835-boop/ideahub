@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// whatsapp.js — IdeaHub on WhatsApp (Meta WhatsApp Cloud API, no Twilio)
+// whatsapp.js — Picela on WhatsApp (Meta WhatsApp Cloud API, no Twilio)
 //
 //   1. VERIFY + LINK (free): on Profile the user taps "Verify WhatsApp". WhatsApp opens with
-//      "IdeaHub code K7P2QX9M" already typed; they press Send. The message arrives from their
+//      "Picela code K7P2QX9M" already typed; they press Send. The message arrives from their
 //      own WhatsApp, which proves the number. We mark the phone verified and link the number
 //      to their account for the bot. Messages a user sends us cost nothing.
 //      Optional paid fallback: we send a code with an approved authentication template
@@ -32,7 +32,7 @@ const jwt = require('jsonwebtoken');
 const quality = require('./public/listing-quality');
 const ideaTerms = require('./public/idea-terms');
 
-const SITE = (process.env.SITE_URL || 'https://ideahub.it.com').replace(/\/$/, '');
+const SITE = (process.env.SITE_URL || 'https://picela.co').replace(/\/$/, '');
 const API = () => `https://graph.facebook.com/${process.env.WA_API_VERSION || 'v23.0'}`;
 const live = () => !!(process.env.WA_TOKEN && process.env.WA_PHONE_ID);
 const botNumber = () => String(process.env.WA_NUMBER || '').replace(/\D/g, '');
@@ -57,7 +57,7 @@ const maskEmail = e => { const [a, b] = String(e || '').split('@'); return b ? a
 const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const newCode = () => Array.from(crypto.randomBytes(8), x => CODE_ABC[x % 32]).join('');
 const hash = s => crypto.createHash('sha256').update(String(s) + (process.env.JWT_SECRET || '')).digest('hex');
-const CODE_RE = /IDEAHUB\s*CODE\s*:?\s*([A-Z2-9]{4}[\s-]?[A-Z2-9]{4})/i;
+const CODE_RE = /PICELA\s*CODE\s*:?\s*([A-Z2-9]{4}[\s-]?[A-Z2-9]{4})/i;
 const BARE_CODE_RE = /^\s*([A-Z2-9]{4}[\s-]?[A-Z2-9]{4})\s*$/i;   // just the code, e.g. "ANQG-9DBF"
 
 // In-memory limits (one Railway instance)
@@ -125,7 +125,7 @@ function core(supabase) {
     const { error } = await supabase.from('users').update({ whatsapp_number: number, whatsapp_linked_at: now, phone: '+' + number, phone_verified: true, phone_verified_at: now }).eq('id', userId);
     if (error) return { error: error.message };
     await supabase.from('wa_verifications').delete().eq('user_id', userId);
-    await supabase.from('notifications').insert([{ user_id: userId, type: 'whatsapp_linked', title: '✅ WhatsApp verified', message: `Your WhatsApp number ${maskNumber(number)} is verified and linked to IdeaHub.`, link: '/profile' }]);
+    await supabase.from('notifications').insert([{ user_id: userId, type: 'whatsapp_linked', title: '✅ WhatsApp verified', message: `Your WhatsApp number ${maskNumber(number)} is verified and linked to Picela.`, link: '/profile' }]);
     return { ok: true };
   }
 
@@ -151,12 +151,12 @@ function prompt(step, d) {
   const n = STEPS.indexOf(step) + 1, head = `*Step ${n} of ${STEPS.length}: ${STEP_NAME[step]}*\n`;
   switch (step) {
     case 'title': return { text: head + 'What is your idea called? Say what it is and who it is for.\n_Example: Solar cold box for small vegetable farmers_' };
-    case 'summary': return { text: head + 'In one or two sentences: what problem does it solve, and who would buy it? Buyers see this before they pay.\n\nDo not add phone numbers, emails or links. Buyers contact you through IdeaHub so the deal is protected.' };
+    case 'summary': return { text: head + 'In one or two sentences: what problem does it solve, and who would buy it? Buyers see this before they pay.\n\nDo not add phone numbers, emails or links. Buyers contact you through Picela so the deal is protected.' };
     case 'desc': return { text: head + 'Now the full idea: how it works, the market, costs, and the first steps to launch. Only the buyer sees this, after paying.\n\nYou can send it in several messages. Tap *Done* when finished.' + (d.desc ? `\n\n(So far: ${d.desc.length} characters. Send more, or tap Done.)` : ''), buttons: d.desc ? [{ id: 'done', title: 'Done' }] : undefined };
     case 'industry': return { text: head + 'Which industry? Reply with the number.\n\n' + INDUSTRIES.map((x, i) => `${i + 1}. ${x}`).join('\n') };
     case 'type': return { text: head + 'What kind of idea is it?', list: { button: 'Choose type', title: 'Idea type', rows: TYPES.map((t, i) => ({ id: 'type_' + i, title: t })) } };
     case 'countries': return { text: head + 'Where can the buyer use it?\nTap *All countries*, or type the countries separated by commas.\n_Example: Sri Lanka, India, Maldives_', buttons: [{ id: 'all', title: 'All countries' }] };
-    case 'price': return { text: head + 'Your price in US dollars (numbers only).\n_Example: 1500_\nIdeaHub keeps 8% when it sells.' };
+    case 'price': return { text: head + 'Your price in US dollars (numbers only).\n_Example: 1500_\nPicela keeps 8% when it sells.' };
     case 'visibility': return { text: head + 'Who can see this listing?', buttons: [{ id: 'vis_1', title: 'Everyone' }, { id: 'vis_2', title: 'Verified buyers' }, { id: 'vis_3', title: 'Private link' }] };
     case 'photos': return { text: head + `Send up to 3 photos (a sketch, mock-up or prototype). Listings with a picture get more views.${d.images && d.images.length ? `\n\n${d.images.length} added.` : ''}`, buttons: [{ id: d.images && d.images.length ? 'done' : 'skip', title: d.images && d.images.length ? 'Done' : 'Skip' }] };
   }
@@ -190,18 +190,18 @@ function review(d) {
 }
 
 const AGREE = {
-  text: '*Idea Transfer Agreement*\nEvery sale on IdeaHub uses the same agreement. In short: when the buyer\'s payment is released to you, the idea and its materials pass to the buyer; you confirm the idea is yours to sell; after the sale you won\'t sell, license or publish it to anyone else; both sides keep it confidential; a patent is only included if the listing says so; Sri Lankan law applies.\n\nDo you agree to sell this idea under the agreement?',
+  text: '*Idea Transfer Agreement*\nEvery sale on Picela uses the same agreement. In short: when the buyer\'s payment is released to you, the idea and its materials pass to the buyer; you confirm the idea is yours to sell; after the sale you won\'t sell, license or publish it to anyone else; both sides keep it confidential; a patent is only included if the listing says so; Sri Lankan law applies.\n\nDo you agree to sell this idea under the agreement?',
   buttons: [{ id: 'agree', title: 'I agree, list it' }, { id: 'terms', title: 'Read it in full' }, { id: 'cancel', title: 'Cancel' }]
 };
 
 function menu(u, hasDraft) {
   const name = (u.first_name || '').trim();
   return {
-    text: `Hi${name ? ' ' + name : ''} 👋 This is IdeaHub. What would you like to do?\n\nYou can type *menu* at any time to come back here.`,
+    text: `Hi${name ? ' ' + name : ''} 👋 This is Picela. What would you like to do?\n\nYou can type *menu* at any time to come back here.`,
     buttons: [hasDraft ? { id: 'continue', title: 'Continue my draft' } : { id: 'new', title: 'List a new idea' }, { id: 'mine', title: 'My ideas' }, { id: 'help', title: 'Help' }]
   };
 }
-const HELP = { text: '*How this works*\n• *List a new idea*: I ask a few questions, then publish it on IdeaHub under your account.\n• *My ideas*: your latest listings and their status.\n• Type *menu* to start again, *back* to go to the previous question, or *cancel* to throw away a draft.\n\nBuyers, payments and messages are handled on the website: ' + SITE + '/dashboard' };
+const HELP = { text: '*How this works*\n• *List a new idea*: I ask a few questions, then publish it on Picela under your account.\n• *My ideas*: your latest listings and their status.\n• Type *menu* to start again, *back* to go to the previous question, or *cancel* to throw away a draft.\n\nBuyers, payments and messages are handled on the website: ' + SITE + '/dashboard' };
 
 function parseCountries(text) {
   const parts = String(text).split(/[,\n;]+| and /i).map(s => s.trim()).filter(Boolean).slice(0, 60);
@@ -253,7 +253,7 @@ function bot(supabase, opts = {}) {
         if (!i) return;
         let text;
         if (i.status === 'live') text = `✅ *${clip(i.title, 60)}* passed the originality check${i.originality_score != null ? ` (score ${i.originality_score}/100)` : ''} and is live.\n${SITE}/idea?id=${i.id}`;
-        else if (i.status === 'under_review') text = `⏳ *${clip(i.title, 60)}* is held for a review.${i.moderation && i.moderation.note ? '\nReason: ' + i.moderation.note : ''}\nYou can improve it here: ${SITE}/submit?edit=${i.id}\nOr ask "Ask IdeaHub" on the website why it was held.`;
+        else if (i.status === 'under_review') text = `⏳ *${clip(i.title, 60)}* is held for a review.${i.moderation && i.moderation.note ? '\nReason: ' + i.moderation.note : ''}\nYou can improve it here: ${SITE}/submit?edit=${i.id}\nOr ask "Ask Picela" on the website why it was held.`;
         else return;
         await C.send(number, { text }, { sim });
       } catch (e) { console.error('WhatsApp follow-up:', e.message); }
@@ -291,15 +291,15 @@ function bot(supabase, opts = {}) {
       if (limited('code:' + number, 6, 3600000)) { return flush([{ text: 'Too many attempts. Please try again in an hour.' }]); }
       const code = m.replace(/[\s-]/g, '');
       const { data: v } = await supabase.from('wa_verifications').select('*').eq('code', code).eq('kind', 'inbound').maybeSingle();
-      if (!v || new Date(v.expires_at) < new Date()) { return flush([{ text: 'That code is not valid or has expired. On the IdeaHub Profile page, tap *Verify WhatsApp* again to get a new one.' }]); }
+      if (!v || new Date(v.expires_at) < new Date()) { return flush([{ text: 'That code is not valid or has expired. On the Picela Profile page, tap *Verify WhatsApp* again to get a new one.' }]); }
       const r = await C.linkNumber(v.user_id, number);
-      if (r.error === 'taken') { return flush([{ text: `This WhatsApp number is already linked to another IdeaHub account (${maskEmail(r.email)}). Unlink it there first (Profile → WhatsApp), then try again.` }]); }
+      if (r.error === 'taken') { return flush([{ text: `This WhatsApp number is already linked to another Picela account (${maskEmail(r.email)}). Unlink it there first (Profile → WhatsApp), then try again.` }]); }
       if (r.error) { return flush([{ text: 'Sorry, something went wrong. Please try again in a minute.' }]); }
       const { data: u } = await supabase.from('users').select('id, role, first_name').eq('id', v.user_id).single();
       await C.saveSession(number, { user_id: v.user_id, state: 'menu', draft: {}, sim, last_inbound_at: new Date().toISOString() });
-      say({ text: `✅ Done! Your WhatsApp number is verified and linked to your IdeaHub account${u && u.first_name ? ', ' + u.first_name : ''}.` });
+      say({ text: `✅ Done! Your WhatsApp number is verified and linked to your Picela account${u && u.first_name ? ', ' + u.first_name : ''}.` });
       if (u && CREATOR_ROLES.includes(u.role)) say(menu(u, false));
-      else say({ text: `You can now get help from IdeaHub here. Listing ideas from WhatsApp is for Idea Creator accounts.` });
+      else say({ text: `You can now get help from Picela here. Listing ideas from WhatsApp is for Idea Creator accounts.` });
       for (const x of replies) await C.send(number, x, { sim, userId: v.user_id });
       return replies;
     }
@@ -307,7 +307,7 @@ function bot(supabase, opts = {}) {
     // 2. Who is this?
     const u = await C.userByNumber(number);
     if (!u) {
-      say({ text: `Hi${input.name ? ' ' + clip(input.name, 30) : ''}! This is *IdeaHub*, the marketplace for business ideas.\n\nTo list ideas from WhatsApp, link this number to your account:\n1. Log in at ${SITE}/profile\n2. Tap *Verify WhatsApp* and send the message it opens.\n\nNo account yet? Join free: ${SITE}/signup` });
+      say({ text: `Hi${input.name ? ' ' + clip(input.name, 30) : ''}! This is *Picela*, the marketplace for business ideas.\n\nTo list ideas from WhatsApp, link this number to your account:\n1. Log in at ${SITE}/profile\n2. Tap *Verify WhatsApp* and send the message it opens.\n\nNo account yet? Join free: ${SITE}/signup` });
       for (const x of replies) await C.send(number, x, { sim });
       return replies;
     }
@@ -553,7 +553,7 @@ function mount(app, { supabase, authMiddleware }) {
     await supabase.from('wa_verifications').delete().eq('user_id', req.user.id);
     const { error } = await supabase.from('wa_verifications').insert([{ user_id: req.user.id, kind: 'inbound', code, expires_at: expires, attempts: 0 }]);
     if (error) return res.status(500).json({ error: error.message });
-    const message = `IdeaHub code ${code.slice(0, 4)}-${code.slice(4)} (sending this verifies my WhatsApp number)`;
+    const message = `Picela code ${code.slice(0, 4)}-${code.slice(4)} (sending this verifies my WhatsApp number)`;
     res.json({ code: code.slice(0, 4) + '-' + code.slice(4), message, expires_at: expires, bot_number: botNumber() ? '+' + botNumber() : null, wa_link: botNumber() ? `https://wa.me/${botNumber()}?text=${encodeURIComponent(message)}` : null, mode: live() ? 'live' : 'simulator' });
   });
   // Paid fallback: we send a code with an approved authentication template
@@ -563,7 +563,7 @@ function mount(app, { supabase, authMiddleware }) {
     if (number.length < 8 || number.length > 15) return res.status(400).json({ error: 'Enter your WhatsApp number with the country code, e.g. +94 77 123 4567.' });
     if (limited('otp:' + req.user.id, 3, 3600000) || limited('otpn:' + number, 3, 3600000)) return res.status(429).json({ error: 'Too many codes requested. Please wait an hour.' });
     const other = await C.userByNumber(number);
-    if (other && other.id !== req.user.id) return res.status(400).json({ error: 'This WhatsApp number is already linked to another IdeaHub account.' });
+    if (other && other.id !== req.user.id) return res.status(400).json({ error: 'This WhatsApp number is already linked to another Picela account.' });
     const code = String(crypto.randomInt(100000, 1000000));
     await supabase.from('wa_verifications').delete().eq('user_id', req.user.id);
     await supabase.from('wa_verifications').insert([{ user_id: req.user.id, kind: 'outbound', phone: number, code_hash: hash(code), expires_at: new Date(Date.now() + 10 * 60000).toISOString(), attempts: 0 }]);
@@ -583,7 +583,7 @@ function mount(app, { supabase, authMiddleware }) {
       return res.status(400).json({ error: 'That code is not right. Please check and try again.' });
     }
     const r = await C.linkNumber(req.user.id, v.phone);
-    if (r.error) return res.status(400).json({ error: r.error === 'taken' ? 'This WhatsApp number is already linked to another IdeaHub account.' : r.error });
+    if (r.error) return res.status(400).json({ error: r.error === 'taken' ? 'This WhatsApp number is already linked to another Picela account.' : r.error });
     res.json({ ok: true, number: '+' + v.phone });
   });
   app.post('/api/whatsapp/unlink', authMiddleware, async (req, res) => {

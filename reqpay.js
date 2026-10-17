@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// reqpay.js — paying for Idea Requests through IdeaHub (same escrow model as hires)
+// reqpay.js — paying for Idea Requests through Picela (same escrow model as hires)
 //
 //   agreed      the investor selected a proposal. The price starts as the proposal's
 //               price; the creator can confirm or revise price, days and scope until paid.
-//   in_escrow   the investor pays the agreed price + 8% IdeaHub fee into escrow
+//   in_escrow   the investor pays the agreed price + 8% Picela fee into escrow
 //   delivered   the creator uploads the files / notes and marks it delivered
 //   completed   the investor confirms, or 7 days pass → paid to the creator's wallet
-//   disputed    the investor reports a problem → IdeaHub releases or refunds
-//   refunded    IdeaHub refunded the investor
+//   disputed    the investor reports a problem → Picela releases or refunds
+//   refunded    Picela refunded the investor
 // Before paying, the investor can go back and choose a different proposal.
 // Amounts come from the server, never from the browser.
 //
@@ -24,7 +24,7 @@ const PRIVATE = ['agreed_scope', 'delivery_note', 'dispute_reason', 'resolution_
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
 const round2 = n => Math.round(Number(n) * 100) / 100;
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 
 function core(supabase, escrow) {
   const payments = require('./payments')(supabase);
@@ -48,7 +48,7 @@ function core(supabase, escrow) {
       await payments.record({ kind: 'release', userId: r.selected_creator_id, amount: r.escrow_amount, meta: { idea_request_id: r.id, release_type: type } });
       if (r.fee) await payments.record({ kind: 'fee', userId: null, amount: r.fee, meta: { idea_request_id: r.id } });
       await escrow.notify(r.selected_creator_id, { type: 'payment_released', title: '💰 Payment released', message: `${escrow.money(r.escrow_amount)} for "${r.title}" was added to your wallet.`, link: '/transactions' });
-      await escrow.emailUser(r.selected_creator_id, `Payment released: ${escrow.money(r.escrow_amount)}`, 'You were paid', `${escrow.money(r.escrow_amount)} for <strong>"${escrow.esc(r.title)}"</strong> was added to your IdeaHub wallet.${note ? '<br><br>Note from IdeaHub: ' + escrow.esc(note) : ''}`, 'View wallet', '/transactions');
+      await escrow.emailUser(r.selected_creator_id, `Payment released: ${escrow.money(r.escrow_amount)}`, 'You were paid', `${escrow.money(r.escrow_amount)} for <strong>"${escrow.esc(r.title)}"</strong> was added to your Picela wallet.${note ? '<br><br>Note from Picela: ' + escrow.esc(note) : ''}`, 'View wallet', '/transactions');
     } else {
       await escrow.notify(r.selected_creator_id, { type: 'completed', title: '✅ Request completed', message: `"${r.title}" was completed.`, link: `/request/${r.id}` });
     }
@@ -208,7 +208,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (reason.length < 15) return res.status(400).json({ error: 'Explain the problem (at least 15 characters).' });
     const row = await c.upd(r.id, { status: 'disputed', disputed_at: new Date().toISOString(), dispute_reason: reason }, ['in_escrow', 'delivered']);
     if (!row) return res.status(400).json({ error: 'A problem can only be reported after paying and before completion.' });
-    await escrow.notify(r.selected_creator_id, { type: 'disputed', title: '⚠️ The investor reported a problem', message: `"${r.title}" is on hold while IdeaHub reviews it.`, link: `/request/${r.id}` });
+    await escrow.notify(r.selected_creator_id, { type: 'disputed', title: '⚠️ The investor reported a problem', message: `"${r.title}" is on hold while Picela reviews it.`, link: `/request/${r.id}` });
     const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
     for (const ad of admins || []) await escrow.notify(ad.id, { type: 'disputed', title: '⚠️ Request dispute', message: `"${r.title}" (${escrow.money(r.escrow_amount)}): ${reason.slice(0, 120)}`, link: '/admin' });
     res.json(row);

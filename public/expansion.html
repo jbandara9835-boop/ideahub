@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Expansion Deals — IdeaHub</title>
+<title>Expansion Deals — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -112,7 +112,7 @@
   function meetupBox(a) {
     if (!a.meetup_date || !['meetup_scheduled', 'negotiating', 'agreed'].includes(a.status)) return '';
     const virtual = a.meetup_type !== 'in_person';
-    return `<div class="meet"><b>${esc(fullWhen(a.meetup_date))}</b> · ${virtual ? 'IdeaHub video call' : 'In person: ' + esc(a.meetup_location || '')}
+    return `<div class="meet"><b>${esc(fullWhen(a.meetup_date))}</b> · ${virtual ? 'Picela video call' : 'In person: ' + esc(a.meetup_location || '')}
       ${a.meetup_notes ? `<div style="color:var(--soft);font-size:13px;margin-top:4px">${esc(a.meetup_notes)}</div>` : ''}
       ${virtual ? `<div style="margin-top:.6rem"><a class="btn btn-gold btn-sm" href="/call?type=expansion&id=${Number(a.id)}" target="_blank" rel="noopener">Join the video call</a></div>` : ''}</div>`;
   }
@@ -121,7 +121,7 @@
     const v = a.viewer, s = a.status, biz = esc(a.listing?.business_name || 'this business'), inv = esc(a.investor?.name || 'the other party');
     if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>You can read this application and its messages.</p></div>`;
     if (s === 'agreed') return `<div class="panel action"><h2>Agreement reached</h2>
-      <p>Before anyone signs or pays, have an attorney prepare the ${esc(a.type_label.toLowerCase())} agreement${['merger', 'acquisition', 'stake', 'supplier_acquisition', 'distributor_acquisition', 'joint_venture'].includes(a.expansion_type) ? ', and have a chartered accountant value the business and run due diligence' : ', and check the numbers with an accountant'}. Bring them into the deal room. IdeaHub connects you; the agreement and payments are between you.</p>
+      <p>Before anyone signs or pays, have an attorney prepare the ${esc(a.type_label.toLowerCase())} agreement${['merger', 'acquisition', 'stake', 'supplier_acquisition', 'distributor_acquisition', 'joint_venture'].includes(a.expansion_type) ? ', and have a chartered accountant value the business and run due diligence' : ', and check the numbers with an accountant'}. Bring them into the deal room. Picela connects you; the agreement and payments are between you.</p>
       <div class="btns"><a class="btn btn-gold btn-sm" href="/find-support?type=patent_attorney">Find an attorney</a><a class="btn btn-ghost btn-sm" href="/find-support?type=chartered_accountant">Find an accountant</a></div>${meetupBox(a)}</div>`;
     if (s === 'rejected') return `<div class="panel action"><h2>Not selected</h2><p>${v === 'owner' ? `You didn't select ${inv}.` : `The owner didn't select this application.`}${a.reject_reason ? ' ' + esc(a.reject_reason) : ''}</p>${v === 'investor' ? '<div class="btns"><a class="btn btn-gold btn-sm" href="/businesses">Find other businesses</a></div>' : ''}</div>`;
     if (s === 'withdrawn') return `<div class="panel action"><h2>Withdrawn</h2><p>${v === 'owner' ? `${inv} withdrew this application.` : 'You withdrew this application.'}</p>${v === 'investor' && a.listing?.status === 'active' ? `<div class="btns"><a class="btn btn-ghost btn-sm" href="/business/${Number(a.listing.id)}">Apply again</a></div>` : ''}</div>`;
@@ -137,7 +137,7 @@
       <p>${{ pending: `${inv} applied. Review their plan, then shortlist them or book a meetup.`, reviewed: 'Shortlist them or book a meetup.', shortlisted: 'Book a meetup to get to know each other.', meetup_scheduled: 'After the meetup, start negotiating terms, or book another meetup.', negotiating: 'When you have agreed the terms, mark it as agreed.' }[s] || ''}</p>
       ${meetupBox(a)}
       ${showMeet ? `<details style="margin-top:1rem" ${s === 'shortlisted' ? 'open' : ''}><summary style="cursor:pointer;font-weight:600;font-size:14px">${a.meetup_date ? 'Reschedule the meetup' : 'Schedule a meetup'}</summary>
-        <div style="margin-top:.8rem"><div class="seg"><label><input type="radio" name="mt" value="virtual" checked> IdeaHub video call</label><label><input type="radio" name="mt" value="in_person"> In person</label></div>
+        <div style="margin-top:.8rem"><div class="seg"><label><input type="radio" name="mt" value="virtual" checked> Picela video call</label><label><input type="radio" name="mt" value="in_person"> In person</label></div>
         <div class="row2"><div class="field"><label for="mDate">Date and time</label><input class="input" id="mDate" type="datetime-local" /></div><div class="field" id="mLocWrap" style="display:none"><label for="mLoc">Where</label><input class="input" id="mLoc" placeholder="Address or place" /></div></div>
         <div class="field"><label for="mNotes">Note (optional)</label><input class="input" id="mNotes" placeholder="e.g. Bring your site plans" /></div>
         <button class="btn btn-gold btn-sm" data-act="meet">Send meetup</button></div></details>` : ''}
@@ -174,7 +174,7 @@
         ${a.viewer !== 'admin' && (a.room_id || !['rejected', 'withdrawn'].includes(a.status)) ? `<div class="panel"><div class="panel-title">Deal room</div>
           <p class="muted" style="font-size:13px;line-height:1.6">A private space where each side brings its own attorney, accountant or other advisers, shares documents, and has a private channel for advice.</p>
           ${a.room_id ? `<a class="btn btn-gold btn-sm" style="width:100%;margin-top:.8rem" href="/deal-room?id=${Number(a.room_id)}">Open the deal room →</a>` : `<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:.8rem" data-act="room">Open a deal room</button>`}</div>` : ''}
-        <div class="note" style="font-size:12.5px">IdeaHub connects you and keeps a record of your conversation. Agreements and payments for the expansion itself are made directly between you, with your own advisers.</div>
+        <div class="note" style="font-size:12.5px">Picela connects you and keeps a record of your conversation. Agreements and payments for the expansion itself are made directly between you, with your own advisers.</div>
       </aside></div>`;
     const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
   }
@@ -186,7 +186,7 @@
       const d = await r.json();
       if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/expansion">Your expansion deals</a></div>`; return; }
       const keep = {}; ['msgIn', 'mDate', 'mLoc', 'mNotes'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
-      D = d; document.title = `${d.listing?.business_name || 'Application'} — Expansion — IdeaHub`; render(d);
+      D = d; document.title = `${d.listing?.business_name || 'Application'} — Expansion — Picela`; render(d);
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
     } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
   }

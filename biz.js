@@ -17,7 +17,7 @@
 //   anonymous summary. Interested parties sign a confidentiality agreement; once the owner approves,
 //   they see the full listing and can apply. Either side can then open a deal room with advisers.
 //
-// IdeaHub connects the parties; no payment is taken here (connect-only for now).
+// Picela connects the parties; no payment is taken here (connect-only for now).
 // server.js:  require('./biz').mount(app, { supabase, authMiddleware, escrow })  (before the old routes)
 // ─────────────────────────────────────────────────────────────────────────────
 const crypto = require('crypto');
@@ -42,7 +42,7 @@ const PRIVATE_LISTING = ['reg_doc_path', 'reg_doc_name', 'review_note', 'reviewe
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
 const num = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null; };
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 
 function mount(app, { supabase, authMiddleware, escrow }) {
   const multer = require('multer');
@@ -201,7 +201,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const b = await ownListing(req, res); if (!b) return;
     const to = req.body?.status;
     const ok = (to === 'paused' && b.status === 'active') || (to === 'active' && b.status === 'paused' && b.is_verified) || (to === 'closed' && b.status !== 'closed');
-    if (!ok) return res.status(400).json({ error: to === 'active' && !b.is_verified ? 'The listing goes live once IdeaHub has checked it.' : 'That change isn\'t possible right now.' });
+    if (!ok) return res.status(400).json({ error: to === 'active' && !b.is_verified ? 'The listing goes live once Picela has checked it.' : 'That change isn\'t possible right now.' });
     const { data } = await supabase.from('business_listings').update({ status: to, updated_at: new Date().toISOString() }).eq('id', b.id).select().single();
     res.json({ ...data, reg_doc_path: undefined });
   });
@@ -279,7 +279,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     await escrow.notify(b.owner_id, action === 'approve'
       ? { type: 'business_approved', title: '✅ Your business is live', message: `"${b.business_name}" was verified and is now listed in Business Expansion.`, link: `/business/${b.id}` }
       : { type: 'business_rejected', title: '🏢 Your listing needs changes', message: `"${b.business_name}": ${note}`, link: `/list-business?edit=${b.id}` });
-    await escrow.emailUser(b.owner_id, action === 'approve' ? `"${b.business_name}" is live on IdeaHub` : `"${b.business_name}" needs changes`,
+    await escrow.emailUser(b.owner_id, action === 'approve' ? `"${b.business_name}" is live on Picela` : `"${b.business_name}" needs changes`,
       action === 'approve' ? 'Your business is verified' : 'Your listing needs changes',
       action === 'approve' ? `We checked the registration of <strong>"${escrow.esc(b.business_name)}"</strong>. It now shows the ✅ Verified badge and investors can apply.`
         : `We couldn't approve <strong>"${escrow.esc(b.business_name)}"</strong> yet.<br><br><strong>Reason:</strong> ${escrow.esc(note)}<br><br>Update the listing or upload a clearer certificate and it will be checked again.`,
@@ -333,7 +333,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     await escrow.notify(n.user_id, decision === 'approve'
       ? { type: 'business_nda_ok', title: '🔓 Access approved', message: `You can now see the full details of "${b.teaser_title || b.business_name}" and respond.`, link: `/business/${b.id}` }
       : { type: 'business_nda_no', title: 'Access not approved', message: `The owner of "${b.teaser_title || 'a confidential listing'}" didn't approve access.`, link: '/businesses' });
-    if (decision === 'approve') await escrow.emailUser(n.user_id, 'Access approved on IdeaHub', 'You can see the full details', `The owner approved your request. You can now see the full details of <strong>"${escrow.esc(b.teaser_title || b.business_name)}"</strong> and respond. Remember: what you see is covered by the confidentiality agreement you signed.`, 'Open listing', `/business/${b.id}`);
+    if (decision === 'approve') await escrow.emailUser(n.user_id, 'Access approved on Picela', 'You can see the full details', `The owner approved your request. You can now see the full details of <strong>"${escrow.esc(b.teaser_title || b.business_name)}"</strong> and respond. Remember: what you see is covered by the confidentiality agreement you signed.`, 'Open listing', `/business/${b.id}`);
     res.json(rows[0]);
   });
 
@@ -436,7 +436,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const M = {
       reviewed: ['👀 Application reviewed', `The owner of "${name}" has reviewed your application.`],
       shortlisted: ['⭐ You were shortlisted', `You were shortlisted for "${name}".`],
-      meetup_scheduled: ['📅 Meetup scheduled', `Meetup for "${name}" on ${when}${row.meetup_type === 'virtual' ? ' by IdeaHub video call' : ' at ' + (row.meetup_location || '')}.`],
+      meetup_scheduled: ['📅 Meetup scheduled', `Meetup for "${name}" on ${when}${row.meetup_type === 'virtual' ? ' by Picela video call' : ' at ' + (row.meetup_location || '')}.`],
       negotiating: ['🤝 Negotiation started', `The owner of "${name}" wants to agree terms with you.`],
       agreed: ['🎉 Agreement reached', `You reached an agreement with "${name}". Have an attorney prepare the agreement before you sign or pay.`],
       rejected: ['Application not selected', `Your application for "${name}" was not selected this time.${f.reject_reason ? ' ' + f.reject_reason : ''}`]

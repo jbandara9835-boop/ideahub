@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Deal room — IdeaHub</title>
+<title>Deal room — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -76,7 +76,7 @@
 <div class="ov" id="invOv"><div class="modal">
   <h3>Invite an adviser to your side</h3>
   <p>They'll see this deal room and can talk privately with your side. Only you and the other party act on the deal itself.</p>
-  <div class="seg" id="invMode"><button type="button" data-v="ideahub" class="on">IdeaHub professional</button><button type="button" data-v="email">By email</button></div>
+  <div class="seg" id="invMode"><button type="button" data-v="ideahub" class="on">Picela professional</button><button type="button" data-v="email">By email</button></div>
   <div id="invHub"><input class="input" id="invQ" placeholder="Search attorneys, accountants…" /><div class="results" id="invRes"></div></div>
   <div id="invMail" class="hidden"><input class="input" id="invEmail" type="email" placeholder="adviser@firm.com" /></div>
   <div class="row2" style="margin-top:10px">
@@ -173,12 +173,12 @@
         <div class="panel"><div class="panel-title">Files ${chan === 'shared' ? '(everyone)' : '(private)'} ${d.me.admin ? '' : `<label class="btn btn-ghost btn-sm" for="fileIn" style="text-transform:none;letter-spacing:0">Add file</label><input type="file" id="fileIn" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*" />`}</div>
           <div class="flist">${files.length ? files.map(f => `<div class="frow"><span class="nm">${esc(f.name)}${f.channel !== 'shared' ? '<span class="lock">private</span>' : ''} <span class="muted" style="font-size:11.5px">· ${esc(f.uploaded_by)}</span></span><button class="btn btn-ghost btn-sm" data-file="${f.index}">Open</button></div>`).join('') : '<div class="muted" style="font-size:13px">No files here yet.</div>'}</div></div>
         ${!d.me.admin ? `<div class="panel"><div class="panel-title">Adviser work (your side, private)</div>
-          ${d.jobs.length ? d.jobs.map(j => jobCard(j, d)).join('') : `<div class="muted" style="font-size:13px;line-height:1.6">${isAdviser ? 'Send your client a fixed quote. They pay into IdeaHub escrow, and the fee is released when they confirm your work.' : 'Your advisers can send you fixed quotes here. You pay into escrow and release the fee when the work is done.'}</div>`}
+          ${d.jobs.length ? d.jobs.map(j => jobCard(j, d)).join('') : `<div class="muted" style="font-size:13px;line-height:1.6">${isAdviser ? 'Send your client a fixed quote. They pay into Picela escrow, and the fee is released when they confirm your work.' : 'Your advisers can send you fixed quotes here. You pay into escrow and release the fee when the work is done.'}</div>`}
           ${isAdviser ? `<details style="margin-top:1rem"><summary class="btn btn-gold btn-sm" style="list-style:none;display:inline-flex">+ Send a quote to your client</summary>
             <div style="margin-top:.9rem"><div class="field"><label for="jTitle">Work</label><input class="input" id="jTitle" maxlength="120" placeholder="e.g. Draft and negotiate the licence agreement" /></div>
             <div class="field"><label for="jScope">What the fee covers</label><textarea class="textarea" id="jScope" style="min-height:80px"></textarea></div>
             <div class="row2"><div class="field"><label for="jAmt">Fee (USD)</label><input class="input" id="jAmt" type="number" min="1" /></div><div class="field"><label for="jDays">Days</label><input class="input" id="jDays" type="number" min="1" max="365" /></div></div>
-            <p class="muted" style="font-size:12px;margin-bottom:8px">IdeaHub adds 8% on top, paid by your client. You receive your full fee.</p>
+            <p class="muted" style="font-size:12px;margin-bottom:8px">Picela adds 8% on top, paid by your client. You receive your full fee.</p>
             <button class="btn btn-gold btn-sm" data-act="quote">Send quote</button></div></details>` : ''}
         </div>` : ''}
       </div>
@@ -190,7 +190,7 @@
           <div class="pp">${people('b').map(p => personRow(p, d)).join('')}</div>
           ${d.me.admin ? '' : `<a class="btn btn-ghost btn-sm" style="width:100%;margin-top:14px" href="/call?type=room&id=${d.room.id}" target="_blank" rel="noopener">Start a video call with the room</a>`}
         </div>
-        <div class="note" style="font-size:12.5px">Advisers can talk, share files and join calls. Only the two parties act on the deal itself. IdeaHub hosts the room but is not a party to the deal or to any adviser's work.</div>
+        <div class="note" style="font-size:12.5px">Advisers can talk, share files and join calls. Only the two parties act on the deal itself. Picela hosts the room but is not a party to the deal or to any adviser's work.</div>
       </aside></div>`;
     const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
   }
@@ -203,7 +203,7 @@
       if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/deal-room">Your deal rooms</a></div>`; return; }
       if (d.invitation) return renderInvitation(d);
       const keep = {}; ['msgIn', 'jTitle', 'jScope', 'jAmt', 'jDays'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
-      R = d; document.title = `${d.room.title} — Deal room — IdeaHub`; render(d);
+      R = d; document.title = `${d.room.title} — Deal room — Picela`; render(d);
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
     } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
   }
@@ -248,7 +248,7 @@
     const jb = e.target.closest('[data-job]');
     if (jb) {
       const a = jb.dataset.a; let body = {};
-      if (a === 'dispute') { const reason = prompt('What went wrong? IdeaHub will review it. The fee stays in escrow.'); if (!reason) return; body = { reason }; }
+      if (a === 'dispute') { const reason = prompt('What went wrong? Picela will review it. The fee stays in escrow.'); if (!reason) return; body = { reason }; }
       if (a === 'deliver') { const note = prompt('Optional note for your client (e.g. where the documents are):', ''); if (note === null) return; body = { note }; }
       if (a === 'confirm' && !confirm('Confirm the work is done and release the fee? This cannot be undone.')) return;
       try { await api(`/${id}/jobs/${jb.dataset.job}/${a}`, body); toast('Done.'); load(); } catch (err) { toast(err.message); }

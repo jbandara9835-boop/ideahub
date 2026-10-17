@@ -4,15 +4,15 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Professionals — IdeaHub</title>
-<meta name="description" content="Hire verified virtual managers, patent attorneys, and corporate service providers to help manage, protect, and grow your ideas on IdeaHub." />
-<link rel="canonical" href="https://ideahub.it.com/find-support" />
+<title>Professionals — Picela</title>
+<meta name="description" content="Hire verified virtual managers, patent attorneys, and corporate service providers to help manage, protect, and grow your ideas on Picela." />
+<link rel="canonical" href="https://picela.co/find-support" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://ideahub.it.com/find-support" />
-<meta property="og:title" content="Professionals — IdeaHub" />
+<meta property="og:url" content="https://picela.co/find-support" />
+<meta property="og:title" content="Professionals — Picela" />
 <meta property="og:description" content="Hire verified virtual managers, patent attorneys, and corporate service providers to help manage, protect, and grow your ideas." />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Professionals — IdeaHub" />
+<meta name="twitter:title" content="Professionals — Picela" />
 <meta name="twitter:description" content="Hire verified virtual managers, patent attorneys, and corporate service providers to help manage, protect, and grow your ideas." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -541,13 +541,13 @@ const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '
           <div style="flex:1;min-width:0;">
             <div class="card-name">
               ${esc(name)}
-              ${p.is_verified?'<span class="verified-tick" title="Credentials checked by IdeaHub">Verified</span>':''}
+              ${p.is_verified?'<span class="verified-tick" title="Credentials checked by Picela">Verified</span>':''}
             </div>
             <div class="card-role">${roleEmoji[p.role]||''} ${esc(roleMap[p.role]||p.role)}</div>
           </div>
         </div>
         ${p.tagline?`<div class="card-tagline">"${esc(p.tagline)}"</div>`:''}
-        ${(p.credentials||[]).length?`<div class="card-tags">${p.credentials.map(c=>`<span class="card-tag" title="Checked by IdeaHub">${esc(c)}</span>`).join('')}</div>`:''}
+        ${(p.credentials||[]).length?`<div class="card-tags">${p.credentials.map(c=>`<span class="card-tag" title="Checked by Picela">${esc(c)}</span>`).join('')}</div>`:''}
         <div class="card-stats">
           <div class="stat-item">${starsHTML(p.avg_rating, p.completed_jobs)}</div>
           <div class="stat-item"><strong>${p.completed_jobs||0}</strong> jobs</div>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>List Your Business — IdeaHub</title>
+<title>List Your Business — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -192,7 +192,7 @@
 
       <div class="form-card">
         <div class="form-section-title">Company Registration</div>
-        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem;">IdeaHub checks every business before it goes live, so investors know it's real. Your registration number and certificate are kept private: investors only see the Verified badge.</p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem;">Picela checks every business before it goes live, so investors know it's real. Your registration number and certificate are kept private: investors only see the Verified badge.</p>
         <div class="row">
           <div class="field">
             <label class="lbl" for="reg_number">Company Registration Number *</label>
@@ -261,7 +261,7 @@
         </div>
 
         <div class="msg error" id="errorMsg"></div>
-        <div class="msg success" id="successMsg">Submitted. IdeaHub will check it and notify you, usually within 2 business days. Redirecting…</div>
+        <div class="msg success" id="successMsg">Submitted. Picela will check it and notify you, usually within 2 business days. Redirecting…</div>
 
         <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
           <div class="spinner" id="spinner"></div>
@@ -433,8 +433,8 @@
       const tone = { rejected: ['rgba(255,107,107,0.08)', 'rgba(255,107,107,0.35)'], pending_review: ['rgba(96,165,250,0.08)', 'rgba(96,165,250,0.35)'] }[b.status];
       if (tone) {
         banner.style.display = 'block'; banner.style.background = tone[0]; banner.style.border = '1px solid ' + tone[1];
-        banner.innerHTML = b.status === 'rejected' ? `<b>IdeaHub couldn't approve this listing yet.</b><br>${escL(b.review_note || '')}<br>Fix it below and save. It will be checked again.`
-          : `<b>Under review.</b> ${b.has_document ? 'IdeaHub is checking your registration.' : 'Upload your registration certificate so IdeaHub can check it.'}`;
+        banner.innerHTML = b.status === 'rejected' ? `<b>Picela couldn't approve this listing yet.</b><br>${escL(b.review_note || '')}<br>Fix it below and save. It will be checked again.`
+          : `<b>Under review.</b> ${b.has_document ? 'Picela is checking your registration.' : 'Upload your registration certificate so Picela can check it.'}`;
       } else if (['active','paused'].includes(b.status)) {
         banner.style.display = 'block'; banner.style.background = 'rgba(245,200,66,0.06)'; banner.style.border = '1px solid rgba(245,200,66,0.3)';
         banner.innerHTML = 'Changing the business name or registration number sends the listing back for a quick check before it shows again.';

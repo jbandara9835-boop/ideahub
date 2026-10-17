@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// bots.js — IdeaHub scheduled bots
+// bots.js — Picela scheduled bots
 // Usage in server.js (right after the chatbot line):
 //   require('./bots')(app, supabase, sendEmail);
 // Needs: npm install node-cron
@@ -30,7 +30,7 @@ async function runQuality(supabase) {
 const jwt = require('jsonwebtoken');
 
 const TZ = 'Asia/Colombo';
-const SITE = 'https://ideahub.it.com';
+const SITE = 'https://picela.co';
 const ADMIN_EMAIL = () => process.env.ADMIN_EMAIL || 'jbandara9835@gmail.com';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -147,17 +147,17 @@ async function runVerification(supabase, sendEmail) {
     await supabase.from('notifications').insert([{
       user_id: u.id, type: 'verification_approved',
       title: 'Your profile is verified',
-      message: 'Your IdeaHub profile now shows the verified badge.',
+      message: 'Your Picela profile now shows the verified badge.',
       link: '/profile'
     }]);
     if (u.email) {
-      await sendEmail(u.email, 'Your IdeaHub profile is now verified', `
+      await sendEmail(u.email, 'Your Picela profile is now verified', `
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela</div>
           <h2 style="margin:0 0 12px;">You're verified, ${esc(u.first_name || 'there')}</h2>
           <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your profile now shows the verified badge, so buyers and partners can see you're a confirmed member.</p>
           <a href="${SITE}/profile" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View your profile</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Picela (Pvt) Ltd</p>
         </div>`);
     }
   }
@@ -173,11 +173,11 @@ const NEXT_STEPS = {
   idea_creator:       { title: 'List your first idea', text: 'Ideas with a clear summary and a fair price get the most attention from buyers. Listing one takes about five minutes, and you stay in control of what buyers see before they pay.', cta: 'List an idea', path: '/submit' },
   patent_seller:      { title: 'List your first patent', text: 'Buyers are looking for protected ideas. Add your patent number when you list and it goes through our verification, so buyers can trust it.', cta: 'List a patent', path: '/submit' },
   investor:           { title: 'Find your first opportunity', text: 'Browse ideas by industry and budget, or post an Idea Request describing exactly what you want and let creators pitch to you.', cta: 'Browse ideas', path: '/browse' },
-  business_owner:     { title: 'List your business', text: 'Investors and partners on IdeaHub are looking for franchise, licensing and partnership opportunities. A listing takes about ten minutes.', cta: 'List your business', path: '/list-business' },
+  business_owner:     { title: 'List your business', text: 'Investors and partners on Picela are looking for franchise, licensing and partnership opportunities. A listing takes about ten minutes.', cta: 'List your business', path: '/list-business' },
   virtual_manager:    { title: 'Set up your service profile', text: 'Creators and investors search for professionals by role, country and rate. A complete profile is how they find you.', cta: 'Set up profile', path: '/support-profile' },
   chartered_accountant: { title: 'Set up your service profile', text: 'Creators and investors need help with tax, company setup and valuations. A complete profile with your qualifications and rate is how they find you.', cta: 'Set up profile', path: '/support-profile' },
   patent_attorney:    { title: 'Set up your service profile', text: 'Idea creators need patent help. A complete profile with your jurisdictions and rate is how they find you.', cta: 'Set up profile', path: '/support-profile' },
-  corporate_services: { title: 'Set up your service profile', text: 'New businesses on IdeaHub need corporate services. A complete profile is how they find you.', cta: 'Set up profile', path: '/support-profile' },
+  corporate_services: { title: 'Set up your service profile', text: 'New businesses on Picela need corporate services. A complete profile is how they find you.', cta: 'Set up profile', path: '/support-profile' },
 };
 
 async function hasRows(supabase, table, col, id) {
@@ -221,12 +221,12 @@ async function runNudge(supabase, sendEmail) {
 
     await sendEmail(u.email, `${step.title}, ${u.first_name || 'there'}`, `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela</div>
         <h2 style="margin:0 0 12px;">${esc(step.title)}</h2>
-        <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${esc(u.first_name || 'there')}, thanks for joining IdeaHub a few days ago. ${esc(step.text)}</p>
+        <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${esc(u.first_name || 'there')}, thanks for joining Picela a few days ago. ${esc(step.text)}</p>
         <a href="${SITE}${step.path}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">${esc(step.cta)}</a>
         ${profileTip}
-        <p style="color:#6e6b65;font-size:12px;margin-top:28px;">Questions? Just use the contact form at ${SITE}/about. This is a one-time reminder.<br>IdeaHub by Picela (Pvt) Ltd</p>
+        <p style="color:#6e6b65;font-size:12px;margin-top:28px;">Questions? Just use the contact form at ${SITE}/about. This is a one-time reminder.<br>Picela (Pvt) Ltd</p>
       </div>`);
     await supabase.from('users').update({ nudge_sent_at: new Date().toISOString() }).eq('id', u.id);
     sent++;
@@ -274,9 +274,9 @@ async function runEscrow(supabase, escrow) {
     const sent = tx.seller_reminders || 0;
     if (age >= 14) {
       stale++;
-      // Tell the buyer they can ask for a refund, and IdeaHub to look at it (once)
+      // Tell the buyer they can ask for a refund, and Picela to look at it (once)
       if (!tx.stale_notified) {
-        await escrow.notify(tx.buyer_id, { type: 'undelivered', title: '⏰ Still not delivered', message: `"${tx.idea_title}" hasn't been delivered after ${Math.floor(age)} days. You can open a dispute on the Wallet page and IdeaHub will review it for a refund.`, link: '/transactions' });
+        await escrow.notify(tx.buyer_id, { type: 'undelivered', title: '⏰ Still not delivered', message: `"${tx.idea_title}" hasn't been delivered after ${Math.floor(age)} days. You can open a dispute on the Wallet page and Picela will review it for a refund.`, link: '/transactions' });
         const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
         for (const ad of admins || []) await escrow.notify(ad.id, { type: 'undelivered', title: '⏰ Idea not delivered for 14+ days', message: `Deal #${tx.id} "${tx.idea_title}" (${escrow.money(tx.amount)}) is still waiting for the seller.`, link: '/admin' });
         await supabase.from('transactions').update({ stale_notified: true }).eq('id', tx.id);
@@ -478,7 +478,7 @@ function digestHtml(d) {
 
   return `
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:28px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-    <div style="font-size:22px;font-weight:800;color:#f5c842;">IdeaHub</div>
+    <div style="font-size:22px;font-weight:800;color:#f5c842;">Picela</div>
     <div style="font-size:13px;color:#8a8680;margin-bottom:20px;">Daily digest · last 24 hours · ${esc(fmtDate(new Date()))}</div>
 
     <table style="width:100%;border-collapse:separate;border-spacing:6px;"><tr>
@@ -524,13 +524,13 @@ function digestHtml(d) {
 
     ${section('Bots (last 24 hours)', `<p style="font-size:13px;margin:0;line-height:1.8;color:#8a8680;">${botLines}</p>`)}
 
-    <p style="color:#6e6b65;font-size:11px;margin-top:28px;">Sent automatically by IdeaHub at 7:00 AM Sri Lanka time.</p>
+    <p style="color:#6e6b65;font-size:11px;margin-top:28px;">Sent automatically by Picela at 7:00 AM Sri Lanka time.</p>
   </div>`;
 }
 
 async function runDigest(supabase, sendEmail) {
   const d = await buildDigest(supabase);
-  const subject = `IdeaHub daily digest: ${d.newUsers.length} new user${d.newUsers.length === 1 ? '' : 's'}, ${d.newIdeas.length} new idea${d.newIdeas.length === 1 ? '' : 's'}${d.pendingTotal ? `, ${d.pendingTotal} to review` : ''}`;
+  const subject = `Picela daily digest: ${d.newUsers.length} new user${d.newUsers.length === 1 ? '' : 's'}, ${d.newIdeas.length} new idea${d.newIdeas.length === 1 ? '' : 's'}${d.pendingTotal ? `, ${d.pendingTotal} to review` : ''}`;
   await sendEmail(ADMIN_EMAIL(), subject, digestHtml(d));
   return `Sent to ${ADMIN_EMAIL()}`;
 }

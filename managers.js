@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// managers.js — IdeaHub Managers (the Virtual Manager role)
+// managers.js — Picela Managers (the Virtual Manager role)
 //
 // A manager works for ONE side: an idea creator, an investor or a business, under a mandate.
 //
@@ -13,15 +13,15 @@
 //                  the manager never holds client money
 //   Approvals    the manager prepares: an idea purchase, an Idea Request, choosing a proposal,
 //                a proposal to an Idea Request, a Business Expansion application, hiring a
-//                professional. The client approves and IdeaHub runs it AS the client, through
+//                professional. The client approves and Picela runs it AS the client, through
 //                the normal routes (every normal check applies).
 //   Pipeline     the manager's items per client (ideas, requests, businesses, contacts) with
 //                stages; "shared" items become recommendations the client sees and rates.
 //   Money        bills: retainer (paid in advance, released at period end), hours (approved
 //                timesheets), success fee (% of completed deals), one-off fee, venture milestone
-//                fee. IdeaHub adds its 8% on top. Disputes go to admin.
+//                fee. Picela adds its 8% on top. Disputes go to admin.
 //                Referral reward: when a manager brings the buyer to an idea and the sale
-//                completes, IdeaHub gives the manager VM_REFERRAL_SHARE of its own fee.
+//                completes, Picela gives the manager VM_REFERRAL_SHARE of its own fee.
 //   Ventures     a business built for an investor: plan + milestones; each milestone fee is
 //                paid into escrow and released when the investor approves the evidence.
 //   Requests     clients post "I need a manager"; managers pitch; accepting a pitch drafts a mandate.
@@ -37,7 +37,7 @@
 //
 // server.js: const managers = require('./managers'); managers.mount(app, { supabase, authMiddleware, escrow })
 // bots.js:   require('./managers').core(supabase, escrow).runBot()  (daily) / .runWeekly() (Mondays)
-// Railway:   VM_REFERRAL_SHARE (default 0.25 = a quarter of IdeaHub's 8% fee)
+// Railway:   VM_REFERRAL_SHARE (default 0.25 = a quarter of Picela's 8% fee)
 // ─────────────────────────────────────────────────────────────────────────────
 const jwt = require('jsonwebtoken');
 
@@ -51,7 +51,7 @@ const SIDES = { creator: 'Idea creator', investor: 'Investor', business: 'Busine
 const SCOPES = {
   listings: { label: 'Create and edit my idea listings', sides: ['creator'] },
   proposals: { label: 'Prepare proposals to Idea Requests (I approve each one)', sides: ['creator'] },
-  messages: { label: 'Message people on IdeaHub on my behalf', sides: ['creator', 'investor', 'business'] },
+  messages: { label: 'Message people on Picela on my behalf', sides: ['creator', 'investor', 'business'] },
   scout: { label: 'Find and recommend ideas and businesses for me', sides: ['investor', 'business'] },
   purchases: { label: 'Prepare idea purchases (I approve and pay)', sides: ['investor', 'business'] },
   requests: { label: 'Post Idea Requests and choose proposals (I approve)', sides: ['investor', 'business'] },
@@ -72,25 +72,25 @@ const TERMS_VERSION = 'v1';
 const TERMS_POINTS = [
   'Appointment. The client appoints the manager for the tasks ticked in this mandate, from the start date until it ends. Either side can end it at any time from the mandate page.',
   'One side only. The manager acts only for the client. The manager will not act for the other side of any deal the client is in, and will not manage a competing business in the same industry while this mandate is active.',
-  'Approvals and money. Anything binding (a purchase, a proposal, an application, hiring someone) needs the client\'s approval, and the client pays through IdeaHub. The manager never receives the client\'s money outside the fees in this mandate.',
+  'Approvals and money. Anything binding (a purchase, a proposal, an application, hiring someone) needs the client\'s approval, and the client pays through Picela. The manager never receives the client\'s money outside the fees in this mandate.',
   'Confidentiality. The manager keeps everything learned about the client and their deals confidential, during and after the mandate.',
-  'Fees. A retainer is paid at the start of each 30-day period and released to the manager at the end of it unless the client reports a problem. Hours are paid when the client approves the timesheet. A success fee is a percentage of deals completed through IdeaHub that the manager prepared or recommended (for idea creators, sales of the client\'s ideas) during the mandate, or within 90 days after it ends for deals introduced during it. IdeaHub adds its 8% service fee to each payment.',
-  'No side deals. Deals with people met through IdeaHub are completed on IdeaHub.',
-  'Problems. If something goes wrong, either side can report it; IdeaHub reviews the activity log, messages and files and decides on held payments.',
+  'Fees. A retainer is paid at the start of each 30-day period and released to the manager at the end of it unless the client reports a problem. Hours are paid when the client approves the timesheet. A success fee is a percentage of deals completed through Picela that the manager prepared or recommended (for idea creators, sales of the client\'s ideas) during the mandate, or within 90 days after it ends for deals introduced during it. Picela adds its 8% service fee to each payment.',
+  'No side deals. Deals with people met through Picela are completed on Picela.',
+  'Problems. If something goes wrong, either side can report it; Picela reviews the activity log, messages and files and decides on held payments.',
   'Law. This mandate is governed by the laws of Sri Lanka.'
 ];
-const TERMS_TEXT = `MANAGER MANDATE (${TERMS_VERSION})\n\nThis mandate is between the client and the manager named on this page, made through IdeaHub (Picela (Pvt) Ltd), which hosts the payments but is not a party to it.\n\n` + TERMS_POINTS.map((p, i) => `${i + 1}. ${p}`).join('\n\n');
+const TERMS_TEXT = `MANAGER MANDATE (${TERMS_VERSION})\n\nThis mandate is between the client and the manager named on this page, made through Picela (picela.co, run by Picela (Pvt) Ltd), which hosts the payments but is not a party to it.\n\n` + TERMS_POINTS.map((p, i) => `${i + 1}. ${p}`).join('\n\n');
 
 // Induction quiz: pass with 8 of 10
 const QUIZ = [
-  { q: 'An investor client asks you to buy an idea. Who pays the seller?', a: ['You pay, and the client pays you back', 'The client pays through IdeaHub after approving the purchase', 'The seller is paid in cash'], c: 1 },
+  { q: 'An investor client asks you to buy an idea. Who pays the seller?', a: ['You pay, and the client pays you back', 'The client pays through Picela after approving the purchase', 'The seller is paid in cash'], c: 1 },
   { q: 'The creator of an idea your investor wants to buy asks you to manage their listings too. What do you do?', a: ['Accept: more clients is better', 'Accept but keep it secret', 'Decline: a manager never acts for both sides of a deal'], c: 2 },
   { q: 'You manage a bakery chain\'s expansion. Another bakery asks you to be their manager. What do you do?', a: ['Decline while the first mandate is active: no two competing businesses at once', 'Accept and share ideas between them', 'Accept if they are in different cities'], c: 0 },
   { q: 'A seller offers you a private commission if your client buys their idea. What do you do?', a: ['Accept it quietly', 'Refuse it and tell your client', 'Accept and give your client a discount'], c: 1 },
-  { q: 'A buyer you met on IdeaHub suggests closing the deal by bank transfer outside IdeaHub to save the fee. What do you do?', a: ['Agree: it saves money', 'Keep the deal on IdeaHub, where the escrow protects your client', 'Let the client decide privately'], c: 1 },
+  { q: 'A buyer you met on Picela suggests closing the deal by bank transfer outside Picela to save the fee. What do you do?', a: ['Agree: it saves money', 'Keep the deal on Picela, where the escrow protects your client', 'Let the client decide privately'], c: 1 },
   { q: 'What can you share about your client\'s plans with other members?', a: ['Anything that helps close a deal', 'Nothing confidential, during or after the mandate', 'Only the price they will pay'], c: 1 },
   { q: 'When is a retainer released to you?', a: ['At the end of the 30-day period, unless the client reports a problem', 'As soon as the client pays', 'When a deal closes'], c: 0 },
-  { q: 'Your client is unhappy with your work and reports a problem. What happens?', a: ['You keep the money anyway', 'IdeaHub reviews the activity log, messages and files and decides', 'The client keeps everything automatically'], c: 1 },
+  { q: 'Your client is unhappy with your work and reports a problem. What happens?', a: ['You keep the money anyway', 'Picela reviews the activity log, messages and files and decides', 'The client keeps everything automatically'], c: 1 },
   { q: 'Can you sign a company registration on behalf of an investor?', a: ['Yes, managers sign everything', 'No: you prepare and coordinate, the investor (the owner) signs', 'Only for small companies'], c: 1 },
   { q: 'Messages you send on behalf of a client appear as…', a: ['Messages from the client', 'Messages from you, labelled as the client\'s manager', 'Anonymous messages'], c: 1 }
 ];
@@ -99,7 +99,7 @@ const round2 = n => Math.round(Number(n || 0) * 100) / 100;
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
 const intId = v => { const n = parseInt(v, 10); return Number.isFinite(n) && n > 0 ? n : null; };
 const num = (v, max) => { const n = Number(v); return Number.isFinite(n) && n >= 0 && n <= (max || 1e9) ? round2(n) : null; };
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 const norm = s => String(s || '').trim().toLowerCase();
 const sideOfRole = r => r === 'investor' ? 'investor' : r === 'business_owner' ? 'business' : 'creator';
 const CLIENT_ROLES = ['idea_creator', 'patent_seller', 'investor', 'business_owner'];
@@ -215,7 +215,7 @@ function core(supabase, escrow) {
   }
   const kindLabel = k => ({ retainer: 'Retainer', hours: 'Hours', success: 'Success fee', oneoff: 'One-off fee', milestone: 'Milestone fee' }[k] || k);
   async function notifyBill(b, m) {
-    await escrow.notify(b.client_id, { type: 'mandate_bill', title: '🧾 Manager fee to pay', message: `${kindLabel(b.kind)} of ${money(b.amount)} for "${m.title}" (plus IdeaHub's 8%).`, link: `/mandate?id=${m.id}` });
+    await escrow.notify(b.client_id, { type: 'mandate_bill', title: '🧾 Manager fee to pay', message: `${kindLabel(b.kind)} of ${money(b.amount)} for "${m.title}" (plus Picela's 8%).`, link: `/mandate?id=${m.id}` });
   }
   async function releaseBill(id, how, note) {
     const now = new Date().toISOString();
@@ -225,7 +225,7 @@ function core(supabase, escrow) {
     await payments.record({ kind: 'release', userId: b.manager_id, amount: b.amount, meta: { mandate_bill_id: b.id, mandate_id: b.mandate_id, release_type: how } });
     await payments.record({ kind: 'fee', userId: null, amount: b.fee, meta: { mandate_bill_id: b.id } });
     await escrow.notify(b.manager_id, { type: 'payment_released', title: '💰 Manager fee released', message: `${money(b.amount)} (${kindLabel(b.kind).toLowerCase()}) was added to your wallet.`, link: '/transactions' });
-    await log(b.mandate_id, null, 'released', `${kindLabel(b.kind)} ${money(b.amount)} released to the manager${how === 'auto' ? ' automatically' : how === 'admin' ? ' by IdeaHub' : ''}.`);
+    await log(b.mandate_id, null, 'released', `${kindLabel(b.kind)} ${money(b.amount)} released to the manager${how === 'auto' ? ' automatically' : how === 'admin' ? ' by Picela' : ''}.`);
     if (b.kind === 'milestone') await supabase.from('venture_milestones').update({ status: 'approved', approved_at: now }).eq('bill_id', b.id).in('status', ['funded', 'submitted', 'changes']);
     return b;
   }
@@ -235,7 +235,7 @@ function core(supabase, escrow) {
     const b = rows && rows[0]; if (!b) return null;
     await payments.record({ kind: 'refund', userId: b.client_id, amount: b.total, meta: { mandate_bill_id: b.id, note: note || null } });
     for (const uid of [b.client_id, b.manager_id]) await escrow.notify(uid, { type: 'mandate_refund', title: '↩️ Manager fee refunded', message: `${kindLabel(b.kind)} of ${money(b.amount)} was refunded to the client.${note ? ' ' + note : ''}`, link: `/mandate?id=${b.mandate_id}` });
-    await log(b.mandate_id, null, 'refunded', `${kindLabel(b.kind)} ${money(b.amount)} refunded to the client by IdeaHub.`);
+    await log(b.mandate_id, null, 'refunded', `${kindLabel(b.kind)} ${money(b.amount)} refunded to the client by Picela.`);
     return b;
   }
 
@@ -322,7 +322,7 @@ function core(supabase, escrow) {
         await supabase.from('mandate_deals').update({ success_billed: true }).eq('id', d.id);
         if (await createBill(m, { kind: 'success', description: `${Number(m.fee_success_pct)}% of "${done.idea_title || done.title || 'a deal'}" (${money(value)})`, amount: value * Number(m.fee_success_pct) / 100, deal_ref: { kind: d.kind, id: d.ref_id } })) success++;
       }
-      // Referral reward from IdeaHub's own fee, for bringing the buyer to an idea
+      // Referral reward from Picela's own fee, for bringing the buyer to an idea
       if (d.kind === 'purchase' && !d.referral_paid && Number(done.fee) > 0 && referralShare() > 0) {
         // Never pay a manager who is also the seller's manager (one side only)
         const { data: tx } = await supabase.from('transactions').select('seller_id').eq('id', d.ref_id).single();
@@ -332,8 +332,8 @@ function core(supabase, escrow) {
             await supabase.from('mandate_deals').update({ referral_paid: true, referral_amount: reward }).eq('id', d.id);
             await addEarnings(m.manager_id, reward);
             await payments.record({ kind: 'release', userId: m.manager_id, amount: reward, meta: { referral_tx: d.ref_id, mandate_id: m.id } });
-            await escrow.notify(m.manager_id, { type: 'referral_reward', title: '🎁 Referral reward', message: `You brought the buyer for "${done.idea_title || 'an idea'}". IdeaHub added ${money(reward)} to your wallet.`, link: '/transactions' });
-            await log(m.id, null, 'referral', `IdeaHub paid the manager a ${money(reward)} referral reward.`);
+            await escrow.notify(m.manager_id, { type: 'referral_reward', title: '🎁 Referral reward', message: `You brought the buyer for "${done.idea_title || 'an idea'}". Picela added ${money(reward)} to your wallet.`, link: '/transactions' });
+            await log(m.id, null, 'referral', `Picela paid the manager a ${money(reward)} referral reward.`);
             referrals++;
           }
         }
@@ -508,7 +508,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     else { clientId = u.id; managerId = intId(b.manager_id); }
     if (!clientId || !managerId || clientId === managerId) return res.status(400).json({ error: 'Choose who this mandate is with.' });
     const U = await c.users([clientId, managerId]);
-    if (!U[managerId] || U[managerId].role !== 'virtual_manager') return res.status(400).json({ error: 'That person is not an IdeaHub manager.' });
+    if (!U[managerId] || U[managerId].role !== 'virtual_manager') return res.status(400).json({ error: 'That person is not a Picela manager.' });
     if (!U[clientId] || !CLIENT_ROLES.includes(U[clientId].role)) return res.status(400).json({ error: 'Managers work for idea creators, investors and businesses.' });
     if (await c.levelOf(managerId) === 'new') return res.status(400).json({ error: 'This manager hasn\'t finished the ID check and induction yet.' });
     const side = SIDES[b.client_side] ? b.client_side : sideOfRole(U[clientId].role);
@@ -561,7 +561,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       ...m, viewer: as, client: person(m.client_id), manager: { ...person(m.manager_id), level: await c.levelOf(m.manager_id), ...(await c.statsOf(m.manager_id)) },
       scope_labels: (m.scopes || []).map(s => ({ key: s, label: (SCOPES[s] || {}).label || s })),
       actions: actions || [], items: as === 'client' ? (items || []).filter(i => i.shared) : (items || []), tasks: tasks || [], hours: hours || [], bills: bills || [],
-      log: (lg || []).map(l => ({ ...l, actor: l.actor_id ? fullName(U[l.actor_id]) : 'IdeaHub' })), deals: deals || [], rating: rating && rating[0] ? rating[0] : null,
+      log: (lg || []).map(l => ({ ...l, actor: l.actor_id ? fullName(U[l.actor_id]) : 'Picela' })), deals: deals || [], rating: rating && rating[0] ? rating[0] : null,
       ventures: (ventures || []).map(v => ({ ...v, milestones: milestones.filter(x => x.venture_id === v.id) })),
       terms: { version: m.agreement_version || TERMS_VERSION, text: m.agreement_text || TERMS_TEXT, points: TERMS_POINTS },
       fee_rate: FEE_RATE, payments_open: c.payments.purchasesOpen(), can_accept: m.status === 'proposed' && m.proposed_by !== req.user.id && as !== 'admin',
@@ -573,7 +573,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (m.status !== 'proposed' || m.proposed_by === req.user.id || as === 'admin') return res.status(400).json({ error: 'Only the other side can accept this proposal.' });
     if (!(req.body && req.body.agree === true)) return res.status(400).json({ error: 'Please read and accept the mandate terms.' });
     const waitingOn = screeningPending(m);
-    if (waitingOn.length) return res.status(400).json({ error: waitingOn.includes(as) ? 'Finish your hiring steps first: tell IdeaHub you are satisfied, or decline.' : `The ${waitingOn[0]} asked for a hiring process and hasn't finished it yet.`, code: 'screening' });
+    if (waitingOn.length) return res.status(400).json({ error: waitingOn.includes(as) ? 'Finish your hiring steps first: tell Picela you are satisfied, or decline.' : `The ${waitingOn[0]} asked for a hiring process and hasn't finished it yet.`, code: 'screening' });
     if (await c.levelOf(m.manager_id) === 'new') return res.status(400).json({ error: 'The manager must finish the ID check and induction first.' });
     const conflict = await c.mandateConflict(m.manager_id, m.client_id, m.focus_industry, m.id);
     if (conflict) return res.status(400).json({ error: conflict, code: 'conflict' });
@@ -633,16 +633,16 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     res.json({ ok: true });
   });
 
-  // ── Approvals: the manager prepares, the client approves, IdeaHub runs it as the client ──
+  // ── Approvals: the manager prepares, the client approves, Picela runs it as the client ──
   async function prepare(m, kind, p) {
     const out = { payload: {}, summary: '', amount: null, counterparty: null };
     if (kind === 'purchase') {
       const id = intId(p.idea_id); const { data: i } = id ? await supabase.from('ideas').select('id, title, price, creator_id, status, has_patent, engagements').eq('id', id).single() : { data: null };
       if (!i || i.status !== 'live') return { error: 'That idea is not available to buy.' };
-      if (i.has_patent) return { error: 'Patents are not sold through IdeaHub checkout.' };
+      if (i.has_patent) return { error: 'Patents are not sold through Picela checkout.' };
       const extras = Array.isArray(p.engagements) ? p.engagements.slice(0, 10).map(String) : [];
       out.payload = { idea_id: i.id, engagements: extras }; out.amount = Number(i.price); out.counterparty = i.creator_id;
-      out.summary = `Buy "${i.title}" for ${money(i.price)}${extras.length ? ' with extras' : ''} (plus IdeaHub's 8%)`;
+      out.summary = `Buy "${i.title}" for ${money(i.price)}${extras.length ? ' with extras' : ''} (plus Picela's 8%)`;
     } else if (kind === 'post_request') {
       const title = txt(p.title, 150), problem = txt(p.problem, 3000);
       if (title.length < 8 || problem.length < 30) return { error: 'Give the request a title and describe the problem (30+ characters).' };
@@ -954,7 +954,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const reason = txt(req.body && req.body.reason, 1500); if (reason.length < 15) return res.status(400).json({ error: 'Explain the problem (15+ characters).' });
     await supabase.from('mandate_bills').update({ status: 'disputed', dispute_reason: reason, disputed_at: new Date().toISOString() }).eq('id', b.id).eq('status', 'paid');
     await c.log(b.mandate_id, req.user.id, 'disputed', `Client reported a problem with ${c.kindLabel(b.kind).toLowerCase()} ${money(b.amount)}: ${reason}`);
-    await escrow.notify(b.manager_id, { type: 'disputed', title: '⚠️ Client reported a problem', message: `${c.kindLabel(b.kind)} for "${m.title}" is on hold while IdeaHub reviews it.`, link: `/mandate?id=${m.id}` });
+    await escrow.notify(b.manager_id, { type: 'disputed', title: '⚠️ Client reported a problem', message: `${c.kindLabel(b.kind)} for "${m.title}" is on hold while Picela reviews it.`, link: `/mandate?id=${m.id}` });
     for (const a of await c.admins()) await escrow.notify(a, { type: 'disputed', title: '⚠️ Manager fee dispute', message: `${c.kindLabel(b.kind)} ${money(b.amount)} on "${m.title}": ${reason.slice(0, 120)}`, link: '/admin' });
     res.json({ ok: true });
   });
@@ -1249,7 +1249,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (needPledge(m, as)) return res.status(400).json({ error: PLEDGE_ERR, code: 'pledge' });
     const q = txt(req.body && req.body.question, 1000); if (q.length < 8) return res.status(400).json({ error: 'Write your question.' });
     const quality = require('./public/listing-quality');
-    const contact = quality.hasContact(q); if (contact) return res.status(400).json({ error: `Please remove ${contact}. Keep the conversation on IdeaHub.` });
+    const contact = quality.hasContact(q); if (contact) return res.status(400).json({ error: `Please remove ${contact}. Keep the conversation on Picela.` });
     const { data: all } = await supabase.from('mandate_questions').select('id').eq('mandate_id', m.id);
     if ((all || []).length >= 30) return res.status(400).json({ error: 'That is a lot of questions. Talk it through on the video interview.' });
     const { data, error } = await supabase.from('mandate_questions').insert([{ mandate_id: m.id, asked_by: req.user.id, question: q }]).select().single();
@@ -1266,7 +1266,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (needPledge(m, as)) return res.status(400).json({ error: PLEDGE_ERR, code: 'pledge' });
     const a = txt(req.body && req.body.answer, 3000); if (a.length < 2) return res.status(400).json({ error: 'Write your answer.' });
     const quality = require('./public/listing-quality');
-    const contact = quality.hasContact(a); if (contact) return res.status(400).json({ error: `Please remove ${contact}. Keep the conversation on IdeaHub.` });
+    const contact = quality.hasContact(a); if (contact) return res.status(400).json({ error: `Please remove ${contact}. Keep the conversation on Picela.` });
     await supabase.from('mandate_questions').update({ answer: a, answered_at: new Date().toISOString() }).eq('id', q.id);
     await escrow.notify(q.asked_by, { type: 'mandate_question', title: '💬 Question answered', message: `${fullName(u)} answered your question about "${m.title}".`, link: `/mandate?id=${m.id}` });
     res.json({ ok: true });
@@ -1331,7 +1331,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (title.length < 8 || needs.length < 40) return res.status(400).json({ error: 'Give it a title and describe what you need (40+ characters).' });
     const quality = require('./public/listing-quality');
     const contact = quality.hasContact(title) || quality.hasContact(needs);
-    if (contact) return res.status(400).json({ error: `Please remove ${contact}. Managers reply through IdeaHub.` });
+    if (contact) return res.status(400).json({ error: `Please remove ${contact}. Managers reply through Picela.` });
     const { data, error } = await supabase.from('manager_requests').insert([{ client_id: u.id, client_side: side, title, needs, industry: txt(b.industry, 60) || null,
       scopes: (Array.isArray(b.scopes) ? b.scopes : []).filter(s => SCOPES[s] && SCOPES[s].sides.includes(side)), fee_models: (Array.isArray(b.fee_models) ? b.fee_models : []).filter(f => ['retainer', 'hourly', 'success'].includes(f)),
       budget: txt(b.budget, 120) || null, status: 'open', pitch_count: 0 }]).select().single();

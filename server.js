@@ -47,7 +47,8 @@ const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':
   const crypto = require('crypto');
   const app = express();
   app.disable('x-powered-by');
-  app.use(sec.originLock);   // requests that skip Cloudflare (the Railway address) are sent to ideahub.it.com
+  app.use(sec.domainMove);   // ideahub.it.com and www.picela.co → the same page on picela.co
+  app.use(sec.originLock);   // requests that skip Cloudflare (the Railway address) are sent to picela.co
   app.use(sec.headers);      // HTTPS-only, no framing, no sniffing
   app.use(cors({ origin: sec.corsOrigin }));
   // Keeps the raw body for the WhatsApp webhook signature check
@@ -82,7 +83,7 @@ const escHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&':
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'https://ideahub.it.com/auth/google/callback'
+    callbackURL: sec.SITE + '/auth/google/callback'
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       const email = profile.emails[0].value;
@@ -192,12 +193,12 @@ app.get('/robots.txt', (req, res) => {
   const payments = require('./payments')(supabase);
   const originality = require('./originality')(supabase, escrow);
   const matching = require('./matching')(supabase, escrow);
-  // Patent applications through IdeaHub (routes live in patents.js)
+  // Patent applications through Picela (routes live in patents.js)
   require('./patents').mount(app, { supabase, authMiddleware, escrow });
   // Built-in video calls (Daily). Needs DAILY_API_KEY.
   const calls = require('./calls');
   calls.mount(app, { supabase, authMiddleware, escrow });
-  // Patent licences (outright patent sales happen between the parties, off IdeaHub)
+  // Patent licences (outright patent sales happen between the parties, off Picela)
   const licences = require('./licences');
   licences.mount(app, { supabase, authMiddleware, escrow });
   // Deal rooms: each side brings its own advisers (shared + private side channels, adviser jobs in escrow)
@@ -211,7 +212,7 @@ app.get('/robots.txt', (req, res) => {
   require('./market').mount(app, { supabase, authMiddleware, escrow }); // delivery files, wallet history
   require('./whatsapp').mount(app, { supabase, authMiddleware, escrow }); // WhatsApp: number verification + idea bot
   require('./wall').mount(app, { supabase, authMiddleware, escrow }); // IdeaWall: posts, reactions, comments, reports
-  const managers = require('./managers'); managers.mount(app, { supabase, authMiddleware, escrow }); // IdeaHub Managers: mandates, approvals, fees, ventures
+  const managers = require('./managers'); managers.mount(app, { supabase, authMiddleware, escrow }); // Picela Managers: mandates, approvals, fees, ventures
   const quality = require('./public/listing-quality');
   const ideaTerms = require('./public/idea-terms');
   const engagementLevels = require('./public/engagements');
@@ -220,7 +221,7 @@ app.get('/robots.txt', (req, res) => {
     const value = engagementLevels.sanitize(body.engagements);
     for (const k of Object.keys(value)) {
       const c = quality.hasContact(value[k].note);
-      if (c) return { error: `Please remove ${c} from your "${engagementLevels.BY_KEY[k].short}" note. Buyers contact you through IdeaHub messages.` };
+      if (c) return { error: `Please remove ${c} from your "${engagementLevels.BY_KEY[k].short}" note. Buyers contact you through Picela messages.` };
     }
     return { value };
   }
@@ -351,11 +352,11 @@ app.get('/robots.txt', (req, res) => {
       ]);
       const day = d => (d ? new Date(d) : new Date()).toISOString().slice(0, 10);
       const urls = [
-        `  <url>\n    <loc>https://ideahub.it.com/life-hacks</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>`,
-        ...(base.includes('/patents</loc>') ? [] : [`  <url>\n    <loc>https://ideahub.it.com/patents</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`]),
-        ...(ideas || []).map(i => `  <url>\n    <loc>https://ideahub.it.com/idea?id=${Number(i.id)}</loc>\n    <lastmod>${day(i.created_at)}</lastmod>\n    <priority>0.6</priority>\n  </url>`),
-        ...(hacks || []).map(h => `  <url>\n    <loc>https://ideahub.it.com/life-hacks?id=${Number(h.id)}</loc>\n    <lastmod>${day(h.created_at)}</lastmod>\n    <priority>0.5</priority>\n  </url>`),
-        ...(wallPosts || []).map(w => `  <url>\n    <loc>https://ideahub.it.com/wall/post/${Number(w.id)}</loc>\n    <lastmod>${day(w.created_at)}</lastmod>\n    <priority>0.4</priority>\n  </url>`)
+        `  <url>\n    <loc>https://picela.co/life-hacks</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>`,
+        ...(base.includes('/patents</loc>') ? [] : [`  <url>\n    <loc>https://picela.co/patents</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`]),
+        ...(ideas || []).map(i => `  <url>\n    <loc>https://picela.co/idea?id=${Number(i.id)}</loc>\n    <lastmod>${day(i.created_at)}</lastmod>\n    <priority>0.6</priority>\n  </url>`),
+        ...(hacks || []).map(h => `  <url>\n    <loc>https://picela.co/life-hacks?id=${Number(h.id)}</loc>\n    <lastmod>${day(h.created_at)}</lastmod>\n    <priority>0.5</priority>\n  </url>`),
+        ...(wallPosts || []).map(w => `  <url>\n    <loc>https://picela.co/wall/post/${Number(w.id)}</loc>\n    <lastmod>${day(w.created_at)}</lastmod>\n    <priority>0.4</priority>\n  </url>`)
       ];
       const xml = base.includes('/life-hacks</loc>') ? base.replace('</urlset>', urls.slice(1).join('\n') + '\n</urlset>') : base.replace('</urlset>', urls.join('\n') + '\n</urlset>');
       sitemapCache = { at: Date.now(), xml };
@@ -467,9 +468,9 @@ app.get('/robots.txt', (req, res) => {
     }
     if (user.role === 'admin' && sec.adminCodeOn()) {
       const { id, code } = sec.newChallenge(user.id);
-      await sendEmail(user.email, `IdeaHub admin sign-in code: ${code}`, `
+      await sendEmail(user.email, `Picela admin sign-in code: ${code}`, `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:28px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:12px;">IdeaHub</div>
+          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:12px;">Picela</div>
           <p style="color:#c9c4bb;line-height:1.6;">Your admin sign-in code is</p>
           <div style="font-size:32px;font-weight:800;letter-spacing:6px;margin:12px 0 18px;">${code}</div>
           <p style="color:#9a9080;line-height:1.6;font-size:13px;">It works for 10 minutes. If you didn't just try to sign in, change your password now.</p>
@@ -523,13 +524,13 @@ app.get('/robots.txt', (req, res) => {
     const token = sec.issue(user);
     const { password: _, ...safeUser } = user;
     // Welcome email
-    sendEmail(email, 'Welcome to IdeaHub! 🎉', `
+    sendEmail(email, 'Welcome to Picela! 🎉', `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-        <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
+        <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">Picela</div>
         <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${escHtml(firstName)}! 👋</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully. You're now part of the global marketplace where ideas become empires.</p>
-        <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:24px;">Go to Dashboard →</a>
-        <p style="color:#6e6b65;font-size:12px;">IdeaHub by Picela (Pvt) Ltd</p>
+        <a href="https://picela.co/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:24px;">Go to Dashboard →</a>
+        <p style="color:#6e6b65;font-size:12px;">Picela (Pvt) Ltd</p>
       </div>
     `);
 
@@ -629,9 +630,9 @@ app.get('/robots.txt', (req, res) => {
     const open = await openObligations(uid, true);
     if (open.length) return res.status(400).json({ error: `Please finish ${open.join(', ')} first.` });
 
-    await sendEmail(u.email, 'Your IdeaHub account has been deleted', `
+    await sendEmail(u.email, 'Your Picela account has been deleted', `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:28px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:12px;">IdeaHub</div>
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:12px;">Picela</div>
         <p style="color:#c9c4bb;line-height:1.6;">Hi ${escHtml(u.first_name || '')}, your account and personal details have been deleted. Records of completed payments are kept as the law requires.</p>
         <p style="color:#9a9080;line-height:1.6;font-size:13px;">If you didn't ask for this, reply to this email straight away.</p>
       </div>`);
@@ -1133,8 +1134,8 @@ app.get('/robots.txt', (req, res) => {
     if (!idea) return res.status(404).json({ error: 'Idea not found' });
     if (idea.creator_id === req.user.id) return res.status(400).json({ error: 'You cannot buy your own idea.' });
     if (idea.status !== 'live') return res.status(400).json({ error: 'This idea is not available for purchase.' });
-    // Patents are sold directly between the parties (with their own attorney); IdeaHub only connects them
-    if (idea.has_patent) return res.status(400).json({ error: 'Patents are not sold through IdeaHub checkout. Message the owner, and use a registered patent attorney for the checks and the transfer.', code: 'patent_direct' });
+    // Patents are sold directly between the parties (with their own attorney); Picela only connects them
+    if (idea.has_patent) return res.status(400).json({ error: 'Patents are not sold through Picela checkout. Message the owner, and use a registered patent attorney for the checks and the transfer.', code: 'patent_direct' });
     if (!payments.purchasesOpen()) return res.status(403).json({ error: 'Online payments are launching soon. Message the creator to discuss this idea in the meantime.', code: 'payments_closed' });
     // Engagement levels the buyer added (fixed-price ones); free ones are always included
     if (req.body.agreement !== ideaTerms.VERSION) return res.status(400).json({ error: 'Please read and accept the Idea Transfer Agreement.', code: 'agreement_required', version: ideaTerms.VERSION });
@@ -1173,15 +1174,15 @@ app.get('/robots.txt', (req, res) => {
     const { data: seller } = await supabase.from('users').select('email, first_name').eq('id', idea.creator_id).single();
     const { data: buyer } = await supabase.from('users').select('first_name').eq('id', req.user.id).single();
     if (seller?.email) {
-      sendEmail(seller.email, `🔒 Escrow Locked for "${idea.title}" — IdeaHub`, `
+      sendEmail(seller.email, `🔒 Escrow Locked for "${idea.title}" — Picela`, `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela</div>
           <h2 style="margin-bottom:8px;">Your idea has a buyer! 🎉</h2>
           <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">${escHtml(buyer?.first_name || 'A buyer')} has locked <strong style="color:#f5c842;">$${amount.toLocaleString()}</strong> in escrow for your idea <strong>"${escrow.esc(idea.title)}"</strong>.</p>
-          ${extras.items.length ? `<p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">Included with the purchase: <strong style="color:#f0ede8;">${extras.items.map(i => escrow.esc(i.label) + (i.price ? ' ($' + i.price.toLocaleString() + ')' : ' (included)')).join(', ')}</strong>. Agree the details with the buyer in IdeaHub messages.</p>` : ''}
+          ${extras.items.length ? `<p style="color:#9a9080;line-height:1.7;margin-bottom:16px;">Included with the purchase: <strong style="color:#f0ede8;">${extras.items.map(i => escrow.esc(i.label) + (i.price ? ' ($' + i.price.toLocaleString() + ')' : ' (included)')).join(', ')}</strong>. Agree the details with the buyer in Picela messages.</p>` : ''}
           <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Deliver the idea materials to the buyer. Once they confirm delivery, funds will be released to your wallet.</p>
-          <a href="https://ideahub.it.com/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Transaction →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
+          <a href="https://picela.co/transactions" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">View Transaction →</a>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Picela (Pvt) Ltd</p>
         </div>
       `);
     }
@@ -1314,7 +1315,7 @@ app.get('/robots.txt', (req, res) => {
     res.json(updated);
   });
 
-  // Buyer opens a dispute → payment is frozen until IdeaHub decides
+  // Buyer opens a dispute → payment is frozen until Picela decides
   app.post('/api/transactions/:id/dispute', authMiddleware, async (req, res) => {
     const reason = String(req.body?.reason || '').trim().slice(0, 2000);
     if (reason.length < 10) return res.status(400).json({ error: 'Please describe the problem (at least 10 characters).' });
@@ -1328,7 +1329,7 @@ app.get('/robots.txt', (req, res) => {
       .eq('id', tx.id).eq('status', 'escrow').select().single();
     if (error) return res.status(500).json({ error: error.message });
 
-    await escrow.notify(tx.seller_id, { type: 'disputed', title: '⚠️ Dispute Opened', message: `The buyer opened a dispute on "${tx.idea_title}". The payment is on hold while IdeaHub reviews it.`, link: '/transactions' });
+    await escrow.notify(tx.seller_id, { type: 'disputed', title: '⚠️ Dispute Opened', message: `The buyer opened a dispute on "${tx.idea_title}". The payment is on hold while Picela reviews it.`, link: '/transactions' });
     const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
     for (const a of admins || []) await escrow.notify(a.id, { type: 'disputed', title: '⚠️ New Dispute', message: `Dispute on "${tx.idea_title}" (${escrow.money(tx.amount)}): ${reason.slice(0, 120)}`, link: '/admin' });
     await sendEmail(process.env.ADMIN_EMAIL || 'jbandara9835@gmail.com', `Dispute opened: "${tx.idea_title}"`,
@@ -1444,13 +1445,13 @@ app.get('/robots.txt', (req, res) => {
     } else {
       await escrow.notify(idea.creator_id, { type: 'idea_rejected', title: '❌ Your idea was taken down', message: `"${idea.title}" was removed from the marketplace. Reason: ${reason} You can edit it and resubmit for review.`, link: `/submit?edit=${idea.id}` });
       await escrow.emailUser(idea.creator_id, `Your idea "${idea.title}" needs changes`, 'Your idea was taken down',
-        `<strong>"${escrow.esc(idea.title)}"</strong> was removed from the IdeaHub marketplace.<br><br><strong>Reason:</strong> ${escrow.esc(reason)}<br><br>You can edit the idea and resubmit it. We'll review it again.`,
+        `<strong>"${escrow.esc(idea.title)}"</strong> was removed from the Picela marketplace.<br><br><strong>Reason:</strong> ${escrow.esc(reason)}<br><br>You can edit the idea and resubmit it. We'll review it again.`,
         'Edit your idea', `/submit?edit=${idea.id}`);
     }
     res.json(idea);
   });
 
-  // Admin: open appeals (filed by creators through Ask IdeaHub)
+  // Admin: open appeals (filed by creators through Ask Picela)
   app.get('/api/admin/appeals', authMiddleware, async (req, res) => {
     const { data: admin } = await supabase.from('users').select('role').eq('id', req.user.id).single();
     if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
@@ -1508,7 +1509,7 @@ app.get('/robots.txt', (req, res) => {
     const { data: u, error } = await supabase.from('users').update({ verification_status: status }).eq('id', req.params.id).select('id').single();
     if (error || !u) return res.status(400).json({ error: error?.message || 'User not found' });
     await escrow.notify(u.id, status === 'verified'
-      ? { type: 'verification_approved', title: '✅ Your profile is verified', message: 'Your IdeaHub profile now shows the verified badge.', link: '/profile' }
+      ? { type: 'verification_approved', title: '✅ Your profile is verified', message: 'Your Picela profile now shows the verified badge.', link: '/profile' }
       : { type: 'verification_rejected', title: '❌ Verification not approved', message: `Your verification request was not approved.${reason ? ' Reason: ' + reason : ''} You can update your profile and submit again.`, link: '/profile' });
     res.json({ success: true });
   });
@@ -1590,13 +1591,13 @@ app.get('/robots.txt', (req, res) => {
     // Email notification
     const { data: recipient } = await supabase.from('users').select('email, first_name').eq('id', parseInt(toId)).single();
     if (recipient?.email) {
-      sendEmail(recipient.email, `💬 New message from ${senderName} — IdeaHub`, `
+      sendEmail(recipient.email, `💬 New message from ${senderName} — Picela`, `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela</div>
           <h2 style="margin-bottom:8px;">New message from ${escHtml(senderName)}</h2>
           <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-bottom:20px;color:#9a9080;white-space:pre-wrap;">"${escHtml(String(text).slice(0,200))}${String(text).length>200?'...':''}"</div>
-          <a href="https://ideahub.it.com/messages?user=${req.user.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Reply →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
+          <a href="https://picela.co/messages?user=${req.user.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Reply →</a>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Picela (Pvt) Ltd</p>
         </div>
       `);
     }
@@ -1607,7 +1608,7 @@ app.get('/robots.txt', (req, res) => {
   // REQUEST a call (creates a special message of type 'call_request')
   app.post('/api/messages/call-request', authMiddleware, async (req, res) => {
     const { toId, callDate, note } = req.body;
-    const video = req.body.video === true; // "Call now" with IdeaHub video
+    const video = req.body.video === true; // "Call now" with Picela video
     const meetLink = calls.isSafeLink(req.body.meetLink) ? req.body.meetLink : null;
     if (!toId || !callDate) return res.status(400).json({ error: 'toId and callDate required' });
     const callNow = video || !!meetLink;
@@ -1646,7 +1647,7 @@ app.get('/robots.txt', (req, res) => {
   // RESPOND to a call request (accept with meet link, or decline)
   app.put('/api/messages/:id/call-response', authMiddleware, async (req, res) => {
     const { status } = req.body; // status: 'accepted' or 'declined'
-    const meetLink = calls.isSafeLink(req.body.meetLink) ? req.body.meetLink : null; // optional own link; default is IdeaHub video
+    const meetLink = calls.isSafeLink(req.body.meetLink) ? req.body.meetLink : null; // optional own link; default is Picela video
     if (!['accepted','declined'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
     const { data: msg } = await supabase.from('messages').select('*').eq('id', req.params.id).single();
@@ -1797,7 +1798,7 @@ app.get('/robots.txt', (req, res) => {
       : full?.budget_max ? `up to ${escrow.money(full.budget_max)}` : null;
     const snippet = String(full?.problem || '').slice(0, 280) + (String(full?.problem || '').length > 280 ? '…' : '');
     await escrow.emailUser(creatorId, `You're invited to pitch: "${r.title}"`, 'An investor wants your proposal',
-      `<strong style="color:#f0ede8;">${escrow.esc(r.investor_name || 'An investor')}</strong> saw your work on IdeaHub and invited you to send a proposal for:<br><br>` +
+      `<strong style="color:#f0ede8;">${escrow.esc(r.investor_name || 'An investor')}</strong> saw your work on Picela and invited you to send a proposal for:<br><br>` +
       `<strong style="color:#f5c842;">"${escrow.esc(r.title)}"</strong><br>` +
       (snippet ? `<span style="display:block;margin-top:8px;">${escrow.esc(snippet)}</span>` : '') +
       (budget || full?.deadline ? `<span style="display:block;margin-top:12px;">${budget ? 'Budget: <strong style="color:#f0ede8;">' + escrow.esc(budget) + '</strong>' : ''}${budget && full?.deadline ? ' · ' : ''}${full?.deadline ? 'Deadline: <strong style="color:#f0ede8;">' + escrow.esc(new Date(full.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) + '</strong>' : ''}</span>` : '') +
@@ -1960,13 +1961,13 @@ app.get('/robots.txt', (req, res) => {
     // Email investor — new proposal
     const { data: investor } = await supabase.from('users').select('email, first_name').eq('id', request.investor_id).single();
     if (investor?.email) {
-      sendEmail(investor.email, `📝 New proposal for "${request.title}" — IdeaHub`, `
+      sendEmail(investor.email, `📝 New proposal for "${request.title}" — Picela`, `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+          <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela</div>
           <h2 style="margin-bottom:8px;">New proposal received! 📝</h2>
           <p style="color:#9a9080;line-height:1.7;margin-bottom:16px;"><strong>${escHtml(creator?.first_name || 'A creator')} ${escHtml(creator?.last_name || '')}</strong> submitted a proposal for your request <strong>"${escHtml(request.title)}"</strong>.</p>
-          <a href="https://ideahub.it.com/request-detail?id=${req.params.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Review Proposal →</a>
-          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
+          <a href="https://picela.co/request-detail?id=${req.params.id}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Review Proposal →</a>
+          <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Picela (Pvt) Ltd</p>
         </div>
       `);
     }
@@ -2671,13 +2672,13 @@ app.get('/robots.txt', (req, res) => {
     if (error) return res.status(500).json({ error: error.message });
 
     // Welcome email
-    sendEmail(email, 'Welcome to IdeaHub! 🎉', `
+    sendEmail(email, 'Welcome to Picela! 🎉', `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-        <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">IdeaHub</div>
+        <div style="font-size:28px;font-weight:800;color:#f5c842;margin-bottom:8px;">Picela</div>
         <h2 style="font-size:22px;margin-bottom:12px;">Welcome, ${escHtml(first_name)}! 👋</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Your account has been created successfully via Google.</p>
-        <a href="https://ideahub.it.com/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Dashboard →</a>
-        <p style="color:#6e6b65;font-size:12px;">IdeaHub by Picela (Pvt) Ltd</p>
+        <a href="https://picela.co/dashboard" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Dashboard →</a>
+        <p style="color:#6e6b65;font-size:12px;">Picela (Pvt) Ltd</p>
       </div>
     `);
 
@@ -2837,15 +2838,15 @@ app.post('/api/sms/verify-code', (req, res) => res.status(410).json({ error: 'Ph
     await supabase.from('password_resets').insert([{ email, token, expires_at: expiresAt }]);
 
     // Send email
-    const resetLink = `https://ideahub.it.com/reset-password?token=${token}`;
-    await sendEmail(email, 'Reset your IdeaHub password', `
+    const resetLink = `https://picela.co/reset-password?token=${token}`;
+    await sendEmail(email, 'Reset your Picela password', `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+        <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela</div>
         <h2 style="margin-bottom:8px;">Reset your password</h2>
         <p style="color:#9a9080;line-height:1.7;margin-bottom:20px;">Hi ${escHtml(user.first_name)}, we received a request to reset your password. Click the button below to set a new password. This link expires in 1 hour.</p>
         <a href="${resetLink}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-bottom:20px;">Reset Password →</a>
         <p style="color:#6e6b65;font-size:12px;margin-top:16px;">If you didn't request this, ignore this email. Your password won't change.</p>
-        <p style="color:#6e6b65;font-size:12px;">IdeaHub by Picela (Pvt) Ltd</p>
+        <p style="color:#6e6b65;font-size:12px;">Picela (Pvt) Ltd</p>
       </div>
     `);
 
@@ -2894,17 +2895,17 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
   console.log('RESEND_FROM:', process.env.RESEND_FROM);
   await sendEmail(
     'jbandara9835@gmail.com',
-    `📩 New Contact Form: ${subject || 'General Inquiry'} — IdeaHub`,
+    `📩 New Contact Form: ${subject || 'General Inquiry'} — Picela`,
     `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-      <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub — Contact Form</div>
+      <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela — Contact Form</div>
       <p><strong>Name:</strong> ${escHtml(firstName)} ${escHtml(lastName || '')}</p>
       <p><strong>Email:</strong> ${escHtml(email)}</p>
       <p><strong>Role:</strong> ${escHtml(role || 'Not specified')}</p>
       <p><strong>Subject:</strong> ${escHtml(subject || 'Not specified')}</p>
       <p style="margin-top:16px;"><strong>Message:</strong></p>
       <div style="background:#1e1e24;border-left:3px solid #f5c842;padding:14px;border-radius:8px;margin-top:8px;color:#9a9080;white-space:pre-wrap;">${escHtml(message)}</div>
-      <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Sent from ideahub.it.com/about</p>
+      <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Sent from picela.co/about</p>
     </div>
     `
   );
@@ -2920,7 +2921,7 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
 
   // Self-ping every 14 minutes to prevent Railway from sleeping
   setInterval(() => {
-    fetch('https://ideahub.it.com/api/health')
+    fetch('https://picela.co/api/health')
       .then(() => console.log('Keep-alive ping sent:', new Date().toISOString()))
       .catch(err => console.log('Keep-alive ping failed:', err.message));
   }, 14 * 60 * 1000);
@@ -2929,7 +2930,7 @@ app.post('/api/contact', async (req, res) => { if (!(await verifyTurnstile(req.b
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log('');
-    console.log('  ✅  IdeaHub backend running with Supabase!');
+    console.log('  ✅  Picela backend running with Supabase!');
     console.log(`  🌐  http://localhost:${PORT}`);
     console.log(`  🗄️   Database: ${process.env.SUPABASE_URL}`);
     console.log('');

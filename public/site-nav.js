@@ -35,7 +35,7 @@
     corporate_services: 'Corporate Services', virtual_manager: 'Virtual Manager',
     patent_attorney: 'Patent Attorney', chartered_accountant:'Chartered Accountant', business_owner: 'Business Owner', admin: 'Administrator'
   };
-  var LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>';
+  var LOGO = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M31.4 38A24 24 0 0 1 76.6 38Z" fill="#f5c842"/><path d="M76.6 38A24 24 0 0 1 31.4 38Z" fill="#e8862a"/><path d="M31 38H77" stroke="#1d1d22" stroke-width="3" fill="none"/><rect x="24" y="14" width="16" height="76" rx="8" fill="#f0ede8"/></svg>';
 
   var MENU = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
   var CLOSE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
@@ -71,7 +71,7 @@
   host.className = 'sn' + (signedIn ? ' sn-in' : '');
   host.setAttribute('role', 'navigation');
   host.innerHTML =
-    '<a class="sn-logo" href="/"><span class="sn-logo-icon">' + LOGO + '</span><span class="sn-logo-text">IdeaHub</span></a>' +
+    '<a class="sn-logo" href="/"><span class="sn-logo-icon">' + LOGO + '</span><span class="sn-logo-text" style="display:inline-flex;flex-direction:column;line-height:1">Picela<small style="display:block;font:600 9.5px/1 \'DM Sans\',system-ui,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#f5c842;margin-top:4px">the idea hub</small></span></a>' +
     '<div class="sn-links">' + links + '</div>' +
     '<div class="sn-right">' +
       '<div id="guestNav"><a class="sn-btn-ghost" href="/login">Sign In</a><a class="sn-btn-primary" href="/signup">Join Free →</a></div>' +
@@ -256,7 +256,7 @@
     var ft = document.createElement('footer');
     ft.className = 'ih-foot';
     ft.innerHTML =
-      '<a class="ih-foot-logo" href="/" aria-label="IdeaHub home"><span class="sn-logo-icon">' + LOGO + '</span><b>IdeaHub</b></a>' +
+      '<a class="ih-foot-logo" href="/" aria-label="Picela home"><span class="sn-logo-icon">' + LOGO + '</span><b style="display:inline-flex;flex-direction:column;line-height:1">Picela<small style="display:block;font:600 9.5px/1 \'DM Sans\',system-ui,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#f5c842;margin-top:4px">the idea hub</small></b></a>' +
       '<nav class="ih-foot-links" aria-label="Footer">' +
         [['/browse', 'Marketplace'], ['/idea-requests', 'Idea Requests'], ['/businesses', 'Business Expansion'], ['/managers', 'Find a Manager'], ['/find-support', 'Professionals'], ['/wall', 'IdeaWall'], ['/life-hacks', 'Life Hacks'], ['/how-it-works', 'How It Works'], ['/about', 'About & Contact']]
           .map(function (l) { return '<a href="' + l[0] + '">' + l[1] + '</a>'; }).join('') +

@@ -70,7 +70,7 @@ const ready = () => columnsReady;
 
 const SESSION_MSG = {
   ended: 'Your session has ended. Please sign in again.',
-  suspended: 'This account is suspended. Contact support@ideahub.it.com if you think this is a mistake.',
+  suspended: 'This account is suspended. Contact support@picela.co if you think this is a mistake.',
   gone: 'This account no longer exists.'
 };
 /** Checks a decoded token against the account. → { ok } or { ok:false, code, status } */
@@ -122,7 +122,7 @@ async function bump(id, extra) {
 // ── Passwords ──
 const COMMON = new Set(('password,password1,password123,12345678,123456789,1234567890,qwerty123,qwertyuiop,11111111,00000000,' +
   'iloveyou,abc12345,abcd1234,admin123,welcome1,welcome123,letmein1,sunshine,princess,football,baseball,monkey123,' +
-  'dragon123,master123,trustno1,passw0rd,p@ssw0rd,p@ssword,ideahub1,ideahub123,picela123,srilanka,srilanka1,colombo1,' +
+  'dragon123,master123,trustno1,passw0rd,p@ssw0rd,p@ssword,ideahub1,ideahub123,picela1,picela12,picela123,picela.co,srilanka,srilanka1,colombo1,' +
   '87654321,12341234,1q2w3e4r,1qaz2wsx,qwer1234,asdf1234,zxcvbnm1,superman,batman123,whatever,changeme,computer').split(','));
 function passwordProblem(p) {
   p = String(p || '');
@@ -175,12 +175,28 @@ function solveChallenge(id, code) {
 }
 
 // ── Requests that skipped Cloudflare (the Railway address) ──
+// The site's address. Override with PUBLIC_URL in Railway if it ever changes.
+const SITE = String(process.env.PUBLIC_URL || 'https://picela.co').replace(/\/$/, '');
+const OLD_HOSTS = ['ideahub.it.com', 'www.ideahub.it.com'];
+
+// The old address (ideahub.it.com) and www.picela.co send people and Google to the same page on picela.co.
+// API calls, the WhatsApp webhook and Google sign-in callbacks keep working on the old address so
+// nothing in flight breaks while links and settings are updated.
+function domainMove(req, res, next) {
+  const host = String(req.headers.host || '').toLowerCase().split(':')[0];
+  const isOld = OLD_HOSTS.includes(host), isWww = host === 'www.' + SITE.replace(/^https?:\/\//, '');
+  if (!isOld && !isWww) return next();
+  if (isOld && (req.path.startsWith('/api/') || req.path === '/auth/google/callback')) return next();
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  return res.redirect(301, SITE + req.originalUrl);
+}
+
 function originLock(req, res, next) {
   const host = String(req.headers.host || '').toLowerCase();
   if (!/\.railway\.app$/.test(host) || String(process.env.ALLOW_RAILWAY_HOST || '').toLowerCase() === 'on') return next();
   if (req.path === '/api/health') return next();
-  if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) return res.status(403).json({ error: 'Please use https://ideahub.it.com' });
-  return res.redirect(301, 'https://ideahub.it.com' + req.originalUrl);
+  if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) return res.status(403).json({ error: 'Please use ' + SITE });
+  return res.redirect(301, SITE + req.originalUrl);
 }
 
 // ── Standard security headers ──
@@ -205,5 +221,5 @@ function corsOrigin(origin, cb) {
 
 module.exports = {
   init, clientIp, limited, over, hit, clear, accountState, forget, ready, check, viewer, middleware, issue, service, bump,
-  passwordProblem, filterText, imageType, safeFileName, adminCodeOn, newChallenge, solveChallenge, originLock, headers, corsOrigin, SESSION_MSG
+  SITE, domainMove, passwordProblem, filterText, imageType, safeFileName, adminCodeOn, newChallenge, solveChallenge, originLock, headers, corsOrigin, SESSION_MSG
 };

@@ -32,7 +32,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     return d;
   }
 
-  const name = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+  const name = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
   async function users(ids) {
     const { data } = await supabase.from('users').select('id, first_name, last_name').in('id', ids);
     return Object.fromEntries((data || []).map(u => [u.id, u]));

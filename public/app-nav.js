@@ -46,8 +46,8 @@
   aside.sidebar.ih-side{position:fixed!important;top:0!important;left:0!important;bottom:0!important;width:228px!important;height:100vh!important;padding:18px 12px 12px!important;display:flex!important;flex-direction:column!important;gap:0!important;background:#111114!important;border-right:1px solid rgba(255,255,255,.07)!important;z-index:1000!important;overflow:hidden!important;font-family:'DM Sans',system-ui,sans-serif!important;transition:transform .22s ease!important;transform:none}
   .ih-side *{box-sizing:border-box}
   .ih-logo{display:flex;align-items:center;gap:10px;padding:0 8px 16px;text-decoration:none;color:#f0ede8}
-  .ih-logo i{width:32px;height:32px;border-radius:8px;background:#f5c842;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .ih-logo svg{width:18px;height:18px;fill:#0d0d0f}
+  .ih-logo i{width:32px;height:32px;border-radius:8px;background:#1d1d22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ih-logo svg{width:28px;height:28px;fill:#0d0d0f}
   .ih-logo b{font-family:'Cabinet Grotesk','DM Sans',sans-serif;font-size:18px;font-weight:800}
   .ih-nav{flex:1;overflow-y:auto;scrollbar-width:none;margin:0 -4px;padding:0 4px}
   .ih-nav::-webkit-scrollbar{display:none}
@@ -90,7 +90,7 @@
   }`;
   const st = document.createElement('style'); st.id = 'ih-app-nav'; st.textContent = css; document.head.appendChild(st);
 
-  const LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>';
+  const LOGO = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M31.4 38A24 24 0 0 1 76.6 38Z" fill="#f5c842"/><path d="M76.6 38A24 24 0 0 1 31.4 38Z" fill="#e8862a"/><path d="M31 38H77" stroke="#1d1d22" stroke-width="3" fill="none"/><rect x="24" y="14" width="16" height="76" rx="8" fill="#f0ede8"/></svg>';
   const name = user ? (`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'My account') : 'Guest';
   const initials = name.split(/\s+/).map(x => x[0] || '').join('').slice(0, 2).toUpperCase() || '?';
   const avatarUrl = user && (user.avatar_url || user.avatarUrl);
@@ -99,7 +99,7 @@
   aside.setAttribute('aria-label', 'Main menu');
   aside.id = aside.id || 'ihSide';
   aside.innerHTML = `
-    <a class="ih-logo" href="/"><i>${LOGO}</i><b>IdeaHub</b></a>
+    <a class="ih-logo" href="/"><i>${LOGO}</i><b style="display:inline-flex;flex-direction:column;line-height:1">Picela<small style="display:block;font:600 9.5px/1 'DM Sans',system-ui,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#f5c842;margin-top:4px">the idea hub</small></b></a>
     <nav class="ih-nav" aria-label="App">${SECTIONS.map(([label, items]) => `<div class="ih-sec">${esc(label)}</div>` + items.map(([href, text]) => `<a class="ih-item${isActive(href) ? ' on' : ''}" href="${esc(href)}"${isActive(href) ? ' aria-current="page"' : ''}>${esc(text)}</a>`).join('')).join('')}</nav>
     <button class="ih-card" id="userCard" type="button" aria-haspopup="menu" aria-expanded="false">
       <span class="ih-av" id="sidebarAvatar">${avatarUrl ? `<img src="${esc(avatarUrl)}" alt="">` : `<span id="sidebarAvatarText">${esc(initials)}</span>`}</span>
@@ -129,7 +129,7 @@
   // Tablets / phones: a compact top bar with a menu button
   const bar = document.createElement('div');
   bar.className = 'ih-bar';
-  bar.innerHTML = `<button class="ih-burger" type="button" aria-label="Open menu" aria-controls="${aside.id}" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><a class="ih-logo" href="/"><i>${LOGO}</i><b>IdeaHub</b></a>`;
+  bar.innerHTML = `<button class="ih-burger" type="button" aria-label="Open menu" aria-controls="${aside.id}" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><a class="ih-logo" href="/"><i>${LOGO}</i><b style="display:inline-flex;flex-direction:column;line-height:1">Picela<small style="display:block;font:600 9.5px/1 'DM Sans',system-ui,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#f5c842;margin-top:4px">the idea hub</small></b></a>`;
   const scrim = document.createElement('div'); scrim.className = 'ih-scrim';
   document.body.insertBefore(bar, document.body.firstChild);
   document.body.appendChild(scrim);

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Manager workspace — IdeaHub</title>
+<title>Manager workspace — Picela</title>
 <meta name="robots" content="noindex" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet" />
@@ -91,9 +91,9 @@
   }
   function clients() {
     const groups = [['Proposals', W.mandates.filter(m => m.status === 'proposed')], ['Active', W.mandates.filter(m => m.status === 'active')], ['Past', W.mandates.filter(m => !['proposed', 'active'].includes(m.status))]];
-    if (!W.mandates.length) return `<div class="card empty"><div class="big"></div>No clients yet.<br>Pitch on the <a href="/managers?tab=requests" style="color:var(--vm)">Requests board</a>, or propose a mandate to someone you know on IdeaHub.<br><span class="tiny">Clients can also find you in Find a Manager once your level checks are done.</span></div>`;
+    if (!W.mandates.length) return `<div class="card empty"><div class="big"></div>No clients yet.<br>Pitch on the <a href="/managers?tab=requests" style="color:var(--vm)">Requests board</a>, or propose a mandate to someone you know on Picela.<br><span class="tiny">Clients can also find you in Find a Manager once your level checks are done.</span></div>`;
     return `<div class="stack">${groups.filter(g => g[1].length).map(([l, ms]) => `<div class="card pad"><div class="card-title">${l} <small>${ms.length}</small></div>${ms.map(mandateRow).join('')}</div>`).join('')}
-      <div class="notice vm small">You work for one side only, and for one client per industry at a time. IdeaHub blocks anything that would put you on both sides of a deal.</div></div>`;
+      <div class="notice vm small">You work for one side only, and for one client per industry at a time. Picela blocks anything that would put you on both sides of a deal.</div></div>`;
   }
   function pipeline() {
     const byM = Object.fromEntries(W.mandates.map(m => [m.id, m]));
@@ -117,12 +117,12 @@
       <div class="card pad"><div class="card-title">Fees <a class="btn btn-ghost btn-sm" href="/transactions">Wallet & withdrawals</a></div>
       ${W.bills.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Client</th><th>What</th><th>Amount</th><th>Status</th></tr></thead><tbody>${W.bills.map(b => `<tr><td><a href="/mandate?id=${b.mandate_id}&tab=fees" style="color:var(--vm)">${esc(byM[b.mandate_id] ? byM[b.mandate_id].client.name : '')}</a></td><td>${esc(BILL_KIND[b.kind] || b.kind)}<div class="tiny muted">${esc(b.description || '')}</div></td><td>${money(b.amount)}</td><td>${billPill(b.status)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No fees yet.</div>'}
       ${ref.length ? `<div class="hr"></div><div class="lbl" style="margin-bottom:6px">Referral rewards</div>${ref.map(d => `<div class="small sub" style="padding:4px 0">${money(d.referral_amount)} · deal #${d.ref_id} you introduced</div>`).join('')}` : ''}
-      <div class="notice vm small" style="margin-top:14px">When a deal you introduced completes, IdeaHub also shares ${Math.round(META.referral_share * 100)}% of its own 8% fee with you as a referral reward. It never comes out of your client's pocket.</div></div>`;
+      <div class="notice vm small" style="margin-top:14px">When a deal you introduced completes, Picela also shares ${Math.round(META.referral_share * 100)}% of its own 8% fee with you as a referral reward. It never comes out of your client's pocket.</div></div>`;
   }
   function profile() {
     const ck = P.checks, p = P.profile || {};
     const ic = s => s === 'verified' || s === true ? '<span class="ic ok">✓</span>' : s === 'pending' ? '<span class="ic wait">…</span>' : '<span class="ic">•</span>';
-    const st = s => s === 'verified' ? 'Checked' : s === 'pending' ? 'Being checked by IdeaHub' : s === 'rejected' ? 'Not accepted: upload again' : 'Not done yet';
+    const st = s => s === 'verified' ? 'Checked' : s === 'pending' ? 'Being checked by Picela' : s === 'rejected' ? 'Not accepted: upload again' : 'Not done yet';
     const L = ['new', 'associate', 'verified', 'senior'], cur = L.indexOf(P.level);
     const sides = p.sides || [], fees = p.fee_models || [];
     return `<div class="card pad" style="margin-bottom:16px"><div class="card-title">Your level ${levelPill(P.level)}</div>
@@ -139,7 +139,7 @@
         <div class="field"><label for="pfExp">Work history</label><textarea class="in" id="pfExp" maxlength="4000" style="min-height:120px" placeholder="2019–2024 · Business Development Manager, ABC Foods (Colombo): opened 12 franchise outlets…\n2016–2019 · …">${esc(p.experience || '')}</textarea><div class="hint">Shown on your Background card in Find a Manager.</div></div>
         <div class="field"><label for="pfRef">References</label><textarea class="in" id="pfRef" maxlength="1500" style="min-height:70px" placeholder="Name, role, company, and how they know you. Ask them first. Shared only with clients who are hiring you with screening.">${esc(p.references_text || '')}</textarea></div>
         <div class="grid g2"><div class="field"><label for="pfLi">LinkedIn profile (optional)</label><input class="in" id="pfLi" maxlength="200" value="${esc(p.linkedin_url || '')}" placeholder="https://www.linkedin.com/in/…"></div>
-          <div class="field"><span class="lbl">CV (PDF, up to 5 MB)</span><div class="row" style="min-height:44px">${p.cv_path ? `<span class="pill green">${esc(p.cv_name || 'CV')}</span><button class="btn btn-ghost btn-sm" type="button" data-cvview>View</button><button class="btn btn-ghost btn-sm" type="button" data-cvdel>Remove</button>` : '<span class="tiny muted">No CV yet</span>'}<label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.cv_path ? 'Replace' : 'Upload CV'}<input type="file" id="cvFile" accept="application/pdf" style="display:none"></label></div><div class="hint">Only clients who are considering you (screening, or after your pitch) and IdeaHub can open it.</div></div></div>
+          <div class="field"><span class="lbl">CV (PDF, up to 5 MB)</span><div class="row" style="min-height:44px">${p.cv_path ? `<span class="pill green">${esc(p.cv_name || 'CV')}</span><button class="btn btn-ghost btn-sm" type="button" data-cvview>View</button><button class="btn btn-ghost btn-sm" type="button" data-cvdel>Remove</button>` : '<span class="tiny muted">No CV yet</span>'}<label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.cv_path ? 'Replace' : 'Upload CV'}<input type="file" id="cvFile" accept="application/pdf" style="display:none"></label></div><div class="hint">Only clients who are considering you (screening, or after your pitch) and Picela can open it.</div></div></div>
         <div class="grid g2"><div class="field"><label for="pfInd">Industries (comma separated)</label><input class="in" id="pfInd" value="${esc((p.industries || []).join(', '))}" placeholder="Agriculture, Food & Beverage"></div><div class="field"><label for="pfCty">Countries you cover</label><input class="in" id="pfCty" value="${esc((p.countries || []).join(', '))}" placeholder="Sri Lanka, Maldives"></div></div>
         <div class="field"><span class="lbl">I work for</span><div class="row">${Object.entries(META.sides).map(([k, v]) => `<label class="check"><input type="checkbox" data-side value="${k}" ${sides.includes(k) ? 'checked' : ''}> <span>${esc({ creator: 'Idea creators', investor: 'Investors', business: 'Businesses' }[k] || v)}</span></label>`).join('')}</div></div>
         <div class="field"><span class="lbl">Fee models I offer</span><div class="row">${[['retainer', 'Monthly retainer'], ['hourly', 'Hourly'], ['success', 'Success fee']].map(([k, v]) => `<label class="check"><input type="checkbox" data-fee value="${k}" ${fees.includes(k) ? 'checked' : ''}> <span>${v}</span></label>`).join('')}</div></div>
@@ -147,7 +147,7 @@
         <button class="btn btn-vm" data-saveprof>Save profile</button></div>`;
   }
   function quiz() {
-    MG.dialog('Manager induction', `<p class="sub small" style="margin-top:0">Ten questions about how managers work on IdeaHub. You need 8 right. You can retake it.</p><div class="terms" style="max-height:none;margin-bottom:14px">${esc(META.terms.text)}</div>${META.quiz.map((x, i) => `<div class="q" id="q${i}"><p>${i + 1}. ${esc(x.q)}</p>${x.a.map((a, j) => `<label><input type="radio" name="q${i}" value="${j}"> <span>${esc(a)}</span></label>`).join('')}</div>`).join('')}`,
+    MG.dialog('Manager induction', `<p class="sub small" style="margin-top:0">Ten questions about how managers work on Picela. You need 8 right. You can retake it.</p><div class="terms" style="max-height:none;margin-bottom:14px">${esc(META.terms.text)}</div>${META.quiz.map((x, i) => `<div class="q" id="q${i}"><p>${i + 1}. ${esc(x.q)}</p>${x.a.map((a, j) => `<label><input type="radio" name="q${i}" value="${j}"> <span>${esc(a)}</span></label>`).join('')}</div>`).join('')}`,
       `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="qsend">Submit answers</button>`, { width: '720px' });
     $('qsend').onclick = e => MG.busy(e.currentTarget, async () => {
       const answers = META.quiz.map((x, i) => { const c = document.querySelector(`input[name=q${i}]:checked`); return c ? Number(c.value) : -1; });
@@ -160,7 +160,7 @@
   }
   async function propose() {
     const body = await MG.mandateForm({ side: 'creator', chooseSide: true, asManager: true, intro: 'Propose a mandate to an idea creator, investor or business. They review the terms and accept before anything starts.' });
-    MG.dialog('Propose a mandate', `<div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" placeholder="e.g. https://ideahub.it.com/public-profile?id=42"></div>` + body,
+    MG.dialog('Propose a mandate', `<div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" placeholder="e.g. https://picela.co/public-profile?id=42"></div>` + body,
       `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="psend">Send proposal</button>`, { width: '680px' });
     const onSide = async () => { const d = MG.readMandateForm(); const html = await MG.mandateForm({ side: $('mfSide').value, chooseSide: true, asManager: true, defaults: d }); const keep = $('pcl').value; $('mgDialogBody').innerHTML = `<div class="notice red err" id="mgErr" role="alert"></div><div class="field"><label for="pcl">Client (profile link or member number)</label><input class="in" id="pcl" value="${esc(keep)}"></div>` + html; $('mfSide').onchange = onSide; };
     $('mfSide').onchange = onSide;

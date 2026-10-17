@@ -2,7 +2,7 @@
 // market.js — marketplace extras
 //   • Delivery files for idea purchases: the seller uploads the idea materials to the deal
 //     (private storage, transaction_files); the buyer and admins can open them. They are the
-//     record IdeaHub uses if there is a dispute.
+//     record Picela uses if there is a dispute.
 //   • Wallet history: every money movement for the signed-in user from the payments ledger
 //     (idea sales/purchases, hires, idea requests, adviser jobs, patents, refunds, payouts).
 // server.js: require('./market').mount(app, { supabase, authMiddleware, escrow })

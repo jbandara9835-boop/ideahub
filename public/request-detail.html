@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Request — IdeaHub</title>
+  <title>Request — Picela</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -307,7 +307,7 @@
     const idx = { agreed: 0, in_escrow: 1, delivered: 2, completed: 3, disputed: r.delivered_at ? 2 : 1, refunded: 1 }[s];
     const steps = `<div class="deal-steps">${['Price agreed', 'Paid into escrow', 'Delivered', 'Completed'].map((l, i) => `<div class="${i < idx || (s === 'completed') ? 'done' : i === idx ? 'now' : ''}">${l}</div>`).join('')}</div>`;
     const q = r.price_quote;
-    const sum = q ? `<table class="deal-sum"><tr><td>Creator's price</td><td>${money(q.amount)}</td></tr><tr><td>IdeaHub fee (8%, includes escrow protection)</td><td>${money(q.fee)}</td></tr><tr class="tot"><td>Total</td><td>${money(q.total)}</td></tr></table>` : '';
+    const sum = q ? `<table class="deal-sum"><tr><td>Creator's price</td><td>${money(q.amount)}</td></tr><tr><td>Picela fee (8%, includes escrow protection)</td><td>${money(q.fee)}</td></tr><tr class="tot"><td>Total</td><td>${money(q.total)}</td></tr></table>` : '';
     const scope = r.agreed_scope ? `<div class="deal-scope">${escR(r.agreed_scope)}</div>` : '';
     let body = '';
     if (s === 'agreed' && v === 'creator') body = `
@@ -315,11 +315,11 @@
       <div class="form-row"><div class="field"><label class="lbl" for="tAmt">Your price ($)</label><input type="number" id="tAmt" min="1" value="${r.agreed_price ? Number(r.agreed_price) : ''}" /></div>
       <div class="field"><label class="lbl" for="tDays">Days to deliver</label><input type="number" id="tDays" min="1" max="365" value="${r.agreed_days ? Number(r.agreed_days) : ''}" /></div></div>
       <div class="field"><label class="lbl" for="tScope">What you'll deliver</label><textarea id="tScope" placeholder="e.g. Full product concept, supplier list and cost sheet">${escR(r.agreed_scope || '')}</textarea></div>
-      <div class="deal-p" style="font-size:0.75rem">IdeaHub adds 8% on top, paid by the investor. You receive your full price.</div>
+      <div class="deal-p" style="font-size:0.75rem">Picela adds 8% on top, paid by the investor. You receive your full price.</div>
       <button class="btn-primary" onclick="dealAct('terms')">${r.terms_at ? 'Update price' : 'Confirm price'}</button>`;
     else if (s === 'agreed' && v === 'investor') body = r.agreed_price ? `
       <div class="deal-p">Delivered within <b style="color:var(--text)">${Number(r.agreed_days || 0) || '—'} days</b> of payment.</div>${scope}${sum}
-      <div class="deal-p">Your payment is held by IdeaHub and released only when you confirm the delivery (or ${7} days after delivery if you don't respond).</div>
+      <div class="deal-p">Your payment is held by Picela and released only when you confirm the delivery (or ${7} days after delivery if you don't respond).</div>
       ${r.payments_open ? '' : '<div class="info-box info-gold">Online payments are launching soon. Message the creator in the meantime.</div>'}
       <button class="btn-primary" onclick="dealAct('pay')" ${r.payments_open ? '' : 'disabled'}>Pay ${money(q.total)} into escrow</button>
       <button class="btn-secondary" onclick="dealAct('reselect')">Choose a different proposal</button>`
@@ -339,9 +339,9 @@
       <button class="btn-primary" style="margin-top:12px;background:var(--green)" onclick="dealAct('confirm')">Confirm and release payment</button>
       <button class="btn-secondary" style="color:var(--error);border-color:rgba(255,107,107,0.4)" onclick="dealAct('dispute')">Report a problem</button>`;
     else if (s === 'delivered' && v === 'creator') body = `<div class="deal-p">Waiting for the investor to confirm. Your ${money(r.escrow_amount)} is released when they do, or automatically on <b style="color:var(--text)">${dday(r.confirm_by)}</b>.</div><div class="lbl">Files</div>${filesList(r, false)}`;
-    else if (s === 'disputed') body = `<div class="deal-p">A problem was reported: <i>${escR(r.dispute_reason || '')}</i><br>The money stays in escrow while IdeaHub reviews the messages and files.</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, v === 'creator') : ''}`;
-    else if (s === 'completed') body = `<div class="deal-p">Completed${r.paid_at ? `: ${money(r.escrow_amount)} was released to the creator` : ''}.${r.resolution_note ? ' Note from IdeaHub: ' + escR(r.resolution_note) : ''}</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, false) : ''}`;
-    else if (s === 'refunded') body = `<div class="deal-p">IdeaHub refunded ${money(r.total)} to the investor.${r.resolution_note ? ' Note: ' + escR(r.resolution_note) : ''}</div>`;
+    else if (s === 'disputed') body = `<div class="deal-p">A problem was reported: <i>${escR(r.dispute_reason || '')}</i><br>The money stays in escrow while Picela reviews the messages and files.</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, v === 'creator') : ''}`;
+    else if (s === 'completed') body = `<div class="deal-p">Completed${r.paid_at ? `: ${money(r.escrow_amount)} was released to the creator` : ''}.${r.resolution_note ? ' Note from Picela: ' + escR(r.resolution_note) : ''}</div>${r.files?.length ? '<div class="lbl">Files</div>' + filesList(r, false) : ''}`;
+    else if (s === 'refunded') body = `<div class="deal-p">Picela refunded ${money(r.total)} to the investor.${r.resolution_note ? ' Note: ' + escR(r.resolution_note) : ''}</div>`;
     return `<div class="card"><div class="card-title">The deal</div>${steps}${body}</div>`;
   }
   async function dealAct(act) {
@@ -352,7 +352,7 @@
     else if (act === 'reselect') { if (!confirm('Go back and choose a different proposal? The creator will be told.')) return; }
     else if (act === 'deliver') { if (!confirm('Mark as delivered? The investor will be asked to confirm.')) return; body = { note: document.getElementById('dNote').value }; }
     else if (act === 'confirm') { if (!confirm(`Confirm the delivery and release ${money(r.escrow_amount)} to the creator? This can't be undone.`)) return; }
-    else if (act === 'dispute') { const reason = prompt('What went wrong? The payment stays in escrow while IdeaHub reviews it.'); if (!reason) return; body = { reason }; }
+    else if (act === 'dispute') { const reason = prompt('What went wrong? The payment stays in escrow while Picela reviews it.'); if (!reason) return; body = { reason }; }
     dealBusy = true;
     try {
       const res = await fetch(`${API_URL}/api/requests/${requestId}/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });

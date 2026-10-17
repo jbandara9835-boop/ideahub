@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>IdeaWall — IdeaHub</title>
-<meta name="description" content="IdeaWall: the IdeaHub community feed. Share new ideas, social work, events and life hacks, and react, comment and connect with innovators." />
+<title>IdeaWall — Picela</title>
+<meta name="description" content="IdeaWall: the Picela community feed. Share new ideas, social work, events and life hacks, and react, comment and connect with innovators." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -316,10 +316,10 @@ a { color: inherit; }
         <li>New ideas and innovations you want feedback on</li>
         <li>Social work you did: clean-ups, donations, teaching, volunteering</li>
         <li>Events, calls for collaborators, success stories, life hacks</li>
-        <li>No selling, phone numbers, emails or links. People reach you through IdeaHub messages.</li>
+        <li>No selling, phone numbers, emails or links. People reach you through Picela messages.</li>
       </ul>
     </div>
-    <div class="foot"><a href="/about">About</a><a href="/life-hacks">Life Hacks</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><br>© IdeaHub by Picela (Pvt) Ltd</div>
+    <div class="foot"><a href="/about">About</a><a href="/life-hacks">Life Hacks</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><br>© Picela (Pvt) Ltd</div>
   </aside>
 </main>
 
@@ -342,7 +342,7 @@ a { color: inherit; }
       <div class="thumbs" id="cmpThumbs"></div>
       <div class="add-media"><span id="mediaHint">Add up to 6 photos or 1 video</span><button type="button" id="cmpAddMedia">Photo / Video</button></div>
       <input type="file" id="cmpFile" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" multiple hidden />
-      <div class="hint">Keep it about ideas, innovation or social good. Don't add phone numbers, emails or links: people reach you through IdeaHub messages.</div>
+      <div class="hint">Keep it about ideas, innovation or social good. Don't add phone numbers, emails or links: people reach you through Picela messages.</div>
     </div>
     <div class="modal-foot"><button class="btn btn-gold btn-block" type="button" id="cmpSubmit" disabled>Post</button></div>
   </div>
@@ -354,7 +354,7 @@ a { color: inherit; }
     <div class="modal-head"><h2 id="repTitle">Report post</h2><button class="icon-btn" type="button" data-close="repBg" aria-label="Close">✕</button></div>
     <div class="modal-body">
       <div class="err" id="repErr" role="alert"></div>
-      <p style="margin:0 0 6px;color:var(--sub);font-size:14px">Why are you reporting this post? IdeaHub reviews every report. The author is not told who reported it.</p>
+      <p style="margin:0 0 6px;color:var(--sub);font-size:14px">Why are you reporting this post? Picela reviews every report. The author is not told who reported it.</p>
       <div class="reasons" id="repReasons"></div>
       <label class="sr" for="repNote">More details</label>
       <textarea class="note" id="repNote" maxlength="300" placeholder="Anything else we should know? (optional)"></textarea>
@@ -404,7 +404,7 @@ a { color: inherit; }
     { key: 'needs_work', e: '👎', l: 'Needs work' }
   ];
   const RXK = Object.fromEntries(RX.map(r => [r.key, r]));
-  const ROLE = { idea_creator: 'Idea Creator', patent_seller: 'Patent Seller', investor: 'Investor', business_owner: 'Business Owner', virtual_manager: 'Virtual Manager', chartered_accountant: 'Chartered Accountant', patent_attorney: 'Patent Attorney', corporate_services: 'Corporate Services', admin: 'IdeaHub Team' };
+  const ROLE = { idea_creator: 'Idea Creator', patent_seller: 'Patent Seller', investor: 'Investor', business_owner: 'Business Owner', virtual_manager: 'Virtual Manager', chartered_accountant: 'Chartered Accountant', patent_attorney: 'Patent Attorney', corporate_services: 'Corporate Services', admin: 'Picela Team' };
   const PLACEHOLDER = {
     'Social Work': 'What did you do? Where, with whom, and what changed?',
     'Innovation': 'What is the idea, and what problem does it solve?',
@@ -437,7 +437,7 @@ a { color: inherit; }
   function goLogin() { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); }
   function initials(f, l) { return (((f || '')[0] || '') + ((l || '')[0] || '')).toUpperCase() || '?'; }
   function avatar(url, f, l, cls) { return `<span class="av ${cls || ''}" aria-hidden="true">${url ? `<img src="${esc(url)}" alt="" loading="lazy">` : esc(initials(f, l))}</span>`; }
-  function nameOf(p) { return `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'IdeaHub member'; }
+  function nameOf(p) { return `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Picela member'; }
   function ago(d) {
     const t = new Date(d).getTime(); if (!t) return '';
     const s = Math.max(0, (Date.now() - t) / 1000);
@@ -478,7 +478,7 @@ a { color: inherit; }
     $('composerBox').innerHTML = single ? '' : signedIn
       ? `<div class="box composer"><div class="composer-top">${avatar(me.avatar_url || me.avatarUrl, me.first_name, me.last_name)}<button type="button" class="composer-fake" data-compose="">What's new, ${esc(me.first_name || 'friend')}? Share an idea or social work…</button></div>
          <div class="composer-quick"><button type="button" data-compose="media"><span>Photo / Video</span></button><button type="button" data-compose="Social Work"><span>Social work</span></button><button type="button" data-compose="Life Hack"><span>Life hack</span></button></div></div>`
-      : `<div class="box composer guest-cta" style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap"><div><b>Share your ideas and social work</b><div style="color:var(--sub);font-size:13.5px;margin-top:2px">Join IdeaHub to post, react and comment. It's free.</div></div><div style="display:flex;gap:8px"><a class="btn btn-gold" href="/signup">Join free</a><a class="btn btn-ghost" href="/login?next=/wall">Sign in</a></div></div>`;
+      : `<div class="box composer guest-cta" style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap"><div><b>Share your ideas and social work</b><div style="color:var(--sub);font-size:13.5px;margin-top:2px">Join Picela to post, react and comment. It's free.</div></div><div style="display:flex;gap:8px"><a class="btn btn-gold" href="/signup">Join free</a><a class="btn btn-ghost" href="/login?next=/wall">Sign in</a></div></div>`;
     $('searchInput').value = state.q; $('searchClear').style.display = state.q ? '' : 'none';
     $('toolbar').style.display = single ? 'none' : '';
     $('backBar').style.display = single ? 'block' : 'none';
@@ -622,7 +622,7 @@ a { color: inherit; }
         </div>
         <button type="button" class="icon-btn" data-act="menu" data-id="${p.id}" aria-label="More options" aria-haspopup="true">⋯</button>
       </div>
-      ${p.status === 'hidden' ? `<div class="notice">${own ? 'This post is hidden while IdeaHub reviews reports about it. Only you can see it.' : `Hidden after ${Number(p.report_count) || 0} reports. Review it in Admin → IdeaWall.`}</div>` : ''}
+      ${p.status === 'hidden' ? `<div class="notice">${own ? 'This post is hidden while Picela reviews reports about it. Only you can see it.' : `Hidden after ${Number(p.report_count) || 0} reports. Review it in Admin → IdeaWall.`}</div>` : ''}
       ${p.title || p.description ? `<div class="post-body">${p.title ? `<h3 class="post-title">${esc(p.title)}</h3>` : ''}${textHtml(p)}</div>` : ''}
       ${p.is_from_idea && p.source_idea_id ? `<a class="idea-link" href="/idea?id=${encodeURIComponent(p.source_idea_id)}"><span style="font-size:22px"></span><div><b>Listed on the Marketplace</b><br><span>View the idea, its price and the creator's terms →</span></div></a>` : ''}
       ${mediaHtml(p)}
@@ -898,7 +898,7 @@ a { color: inherit; }
   function openReport(id) { reportId = id; $('repErr').style.display = 'none'; $('repNote').value = ''; $('repBg').classList.add('open'); }
   $('repSubmit').onclick = async () => {
     const reason = (document.querySelector('input[name="rr"]:checked') || {}).value;
-    try { const d = await api(`/api/wall/${reportId}/report`, { method: 'POST', body: JSON.stringify({ reason, note: $('repNote').value }) }); $('repBg').classList.remove('open'); toast(d.already ? 'You already reported this post' : 'Thanks. IdeaHub will review it.'); }
+    try { const d = await api(`/api/wall/${reportId}/report`, { method: 'POST', body: JSON.stringify({ reason, note: $('repNote').value }) }); $('repBg').classList.remove('open'); toast(d.already ? 'You already reported this post' : 'Thanks. Picela will review it.'); }
     catch (e) { $('repErr').textContent = e.message; $('repErr').style.display = 'block'; }
   };
   document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => $(b.dataset.close).classList.remove('open'));

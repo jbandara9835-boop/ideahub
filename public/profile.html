@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Profile — IdeaHub</title>
+<title>My Profile — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -347,7 +347,7 @@
         </div>
       </div>
 
-      <!-- WHATSAPP — verify the number and link the IdeaHub bot (all roles) -->
+      <!-- WHATSAPP — verify the number and link the Picela bot (all roles) -->
       <div class="form-card" id="waCard">
         <div class="form-section-title">WhatsApp</div>
         <div id="waBody"><div class="tip">Loading…</div></div>
@@ -807,7 +807,7 @@ function updateStates() {
     other.classList.remove('show'); el.textContent=text; el.classList.add('show');
     setTimeout(()=>el.classList.remove('show'),5000);
   }
-// ── WhatsApp: verify the number (the user sends us a code — free) and link the IdeaHub bot ──
+// ── WhatsApp: verify the number (the user sends us a code — free) and link the Picela bot ──
   let waPoll = null, waState = null;
   const waEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   async function waApi(path, method, body) {
@@ -829,11 +829,11 @@ function updateStates() {
     const body = document.getElementById('waBody');
     if (waState.linked) {
       body.innerHTML = `<div class="wa-ok">✓ ${waEsc(waState.number)} is verified and linked</div>
-        <p class="wa-note">You can list ideas by sending a message to IdeaHub on WhatsApp${waState.bot_number ? ` (<a style="color:var(--accent)" href="https://wa.me/${waState.bot_number.replace(/\D/g, '')}?text=menu" target="_blank" rel="noopener">${waEsc(waState.bot_number)}</a>)` : ''}. Changed your number? Unlink, then verify the new one.</p>
+        <p class="wa-note">You can list ideas by sending a message to Picela on WhatsApp${waState.bot_number ? ` (<a style="color:var(--accent)" href="https://wa.me/${waState.bot_number.replace(/\D/g, '')}?text=menu" target="_blank" rel="noopener">${waEsc(waState.bot_number)}</a>)` : ''}. Changed your number? Unlink, then verify the new one.</p>
         <button class="wa-btn ghost" onclick="waUnlink()">Unlink WhatsApp</button>`;
       return;
     }
-    body.innerHTML = `<p class="wa-note" style="margin-top:0">${waState.phone_verified ? `Your phone ${waEsc(waState.phone || '')} is verified. Link WhatsApp to list ideas from your phone.` : 'Verify your number on WhatsApp. It confirms your account, and lets you list ideas on IdeaHub by chatting on WhatsApp.'} It's free.</p>
+    body.innerHTML = `<p class="wa-note" style="margin-top:0">${waState.phone_verified ? `Your phone ${waEsc(waState.phone || '')} is verified. Link WhatsApp to list ideas from your phone.` : 'Verify your number on WhatsApp. It confirms your account, and lets you list ideas on Picela by chatting on WhatsApp.'} It's free.</p>
       <button class="wa-btn" onclick="waStart()">Verify WhatsApp</button>
       ${waState.can_send_code ? `<div style="margin-top:0.6rem"><a href="#" style="font-size:12px;color:var(--muted)" onclick="event.preventDefault();waShowAlt()">Can't send a message? Get a code instead</a></div>` : ''}
       <div id="waAlt"></div>`;
@@ -845,11 +845,11 @@ function updateStates() {
     const sim = d.mode !== 'live' || !d.wa_link;
     body.innerHTML = `<div class="wa-row">
         <div class="wa-steps">
-          ${sim ? `<p style="color:var(--accent)">WhatsApp isn't connected yet (simulator mode). An admin can test this in <a style="color:var(--accent)" href="/wa-sim" target="_blank">the WhatsApp simulator</a> by sending the message below.</p>` : `<p><strong style="color:var(--text)">1.</strong> Tap the button: WhatsApp opens with a message to IdeaHub already written.<br><strong style="color:var(--text)">2.</strong> Press <strong style="color:var(--text)">Send</strong>. That's it.</p>`}
+          ${sim ? `<p style="color:var(--accent)">WhatsApp isn't connected yet (simulator mode). An admin can test this in <a style="color:var(--accent)" href="/wa-sim" target="_blank">the WhatsApp simulator</a> by sending the message below.</p>` : `<p><strong style="color:var(--text)">1.</strong> Tap the button: WhatsApp opens with a message to Picela already written.<br><strong style="color:var(--text)">2.</strong> Press <strong style="color:var(--text)">Send</strong>. That's it.</p>`}
           <div class="wa-code">${waEsc(d.code)}</div>
           <div>${sim ? '' : `<a class="wa-btn" href="${waEsc(d.wa_link)}" target="_blank" rel="noopener">Open WhatsApp</a>`}
             <button class="wa-btn ghost" onclick="loadWhatsApp();waStop()">Cancel</button></div>
-          <p class="wa-note">Or send this to ${waEsc(d.bot_number || 'IdeaHub')} on WhatsApp yourself: <em>${waEsc(d.message)}</em><br>The code works for 15 minutes. This page updates by itself when we receive it.</p>
+          <p class="wa-note">Or send this to ${waEsc(d.bot_number || 'Picela')} on WhatsApp yourself: <em>${waEsc(d.message)}</em><br>The code works for 15 minutes. This page updates by itself when we receive it.</p>
         </div>
         ${sim ? '' : `<div class="wa-qr-wrap"><div class="wa-qr" id="waQr"></div><div class="wa-qr-cap">On a computer? Scan with your phone camera.</div></div>`}
       </div>`;
@@ -882,7 +882,7 @@ function updateStates() {
     catch (e) { m.textContent = e.message; m.style.color = 'var(--error)'; }
   }
   async function waUnlink() {
-    if (!confirm('Unlink WhatsApp? Your number stays verified, but you won\'t be able to use IdeaHub on WhatsApp until you link it again.')) return;
+    if (!confirm('Unlink WhatsApp? Your number stays verified, but you won\'t be able to use Picela on WhatsApp until you link it again.')) return;
     try { await waApi('unlink', 'POST'); loadWhatsApp(); } catch (e) { alert(e.message); }
   }
   initRoleUI();

@@ -3,7 +3,7 @@
 //
 //   pending      the client sends a request            → the pro is notified + emailed
 //   quoted       the pro sends a fixed price and timeline (can revise until paid)
-//   in_progress  the client pays the quote + 8% IdeaHub fee into escrow
+//   in_progress  the client pays the quote + 8% Picela fee into escrow
 //   delivered    the pro marks the work delivered
 //   completed    the client confirms, or 7 days pass → paid to the pro's wallet
 //   rejected (pro declines) · cancelled (client, before paying) · disputed → admin
@@ -24,7 +24,7 @@ const ROLE_LABEL = { patent_attorney: 'Patent attorney / agent', chartered_accou
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
 const round2 = n => Math.round(Number(n) * 100) / 100;
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 
 function core(supabase, escrow) {
   const payments = require('./payments')(supabase);
@@ -57,7 +57,7 @@ function core(supabase, escrow) {
     await payments.record({ kind: 'fee', userId: null, amount: h.fee, meta: { hire_id: h.id } });
     await log(h.id, `Completed. ${escrow.money(h.amount)} was released to the professional.${note ? ' Note: ' + note : ''}`);
     await escrow.notify(h.support_id, { type: 'payment_released', title: '💰 Payment released', message: `${escrow.money(h.amount)} for "${h.title}" was added to your wallet.`, link: '/transactions' });
-    await escrow.emailUser(h.support_id, `Payment released: ${escrow.money(h.amount)}`, 'You were paid', `${escrow.money(h.amount)} for <strong>"${escrow.esc(h.title)}"</strong> was added to your IdeaHub wallet.`, 'View wallet', '/transactions');
+    await escrow.emailUser(h.support_id, `Payment released: ${escrow.money(h.amount)}`, 'You were paid', `${escrow.money(h.amount)} for <strong>"${escrow.esc(h.title)}"</strong> was added to your Picela wallet.`, 'View wallet', '/transactions');
     await escrow.notify(h.client_id, { type: 'hire_completed', title: '⭐ How did it go?', message: `"${h.title}" is complete. Leave a review to help others choose.`, link: `/hire?id=${h.id}` });
     await refreshStats(h.support_id);
     return h;
@@ -68,7 +68,7 @@ function core(supabase, escrow) {
     if (error) throw error;
     const h = rows && rows[0]; if (!h) return null;
     await payments.record({ kind: 'refund', userId: h.client_id, amount: h.total, meta: { hire_id: h.id, note: note || null } });
-    await log(h.id, `Refunded to the client by IdeaHub.${note ? ' Note: ' + note : ''}`);
+    await log(h.id, `Refunded to the client by Picela.${note ? ' Note: ' + note : ''}`);
     for (const uid of [h.client_id, h.support_id]) await escrow.notify(uid, { type: 'hire_refunded', title: '↩️ Hire refunded', message: `"${h.title}" was refunded to the client.${note ? ' Note: ' + note : ''}`, link: `/hire?id=${h.id}` });
     await refreshStats(h.support_id);
     return h;
@@ -141,7 +141,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     await c.log(h.id, `${fullName(u)} sent this request.`);
     await escrow.notify(proId, { type: 'hire_request', title: '📥 New hire request', message: `${fullName(u)}: "${title}"${budget ? ` (budget ${escrow.money(budget)})` : ''}. Send a quote or decline.`, link: `/hire?id=${h.id}` });
     await escrow.emailUser(proId, `New hire request: "${title}"`, 'A client wants to hire you',
-      `<strong style="color:#f0ede8;">${escrow.esc(fullName(u))}</strong> sent you a request:<br><br><strong>"${escrow.esc(title)}"</strong>${budget ? `<br>Budget: ${escrow.money(budget)}` : ''}<br><br>Reply with a fixed quote or decline. The client pays into IdeaHub escrow when they accept.`, 'Open request', `/hire?id=${h.id}`);
+      `<strong style="color:#f0ede8;">${escrow.esc(fullName(u))}</strong> sent you a request:<br><br><strong>"${escrow.esc(title)}"</strong>${budget ? `<br>Budget: ${escrow.money(budget)}` : ''}<br><br>Reply with a fixed quote or decline. The client pays into Picela escrow when they accept.`, 'Open request', `/hire?id=${h.id}`);
     await c.refreshStats(proId);
     res.status(201).json(h);
   });
@@ -219,7 +219,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (!row) return res.status(400).json({ error: 'A quote can only be sent before payment.' });
     await c.log(h.id, `${revised ? 'Quote revised' : 'Quote sent'}: ${escrow.money(amount)}, within ${days} days.`);
     await escrow.notify(h.client_id, { type: 'hire_quote', title: revised ? '📝 Quote revised' : '📝 You received a quote', message: `${fullName(u)} quoted ${escrow.money(amount)} for "${h.title}".`, link: `/hire?id=${h.id}` });
-    await escrow.emailUser(h.client_id, `Quote for "${h.title}"`, 'You received a quote', `<strong style="color:#f0ede8;">${escrow.esc(fullName(u))}</strong> quoted <strong style="color:#f5c842;">${escrow.money(amount)}</strong> to complete <strong>"${escrow.esc(h.title)}"</strong> within ${days} days.<br><br>Accept to pay into IdeaHub escrow. The professional is paid only after you confirm the work.`, 'Review quote', `/hire?id=${h.id}`);
+    await escrow.emailUser(h.client_id, `Quote for "${h.title}"`, 'You received a quote', `<strong style="color:#f0ede8;">${escrow.esc(fullName(u))}</strong> quoted <strong style="color:#f5c842;">${escrow.money(amount)}</strong> to complete <strong>"${escrow.esc(h.title)}"</strong> within ${days} days.<br><br>Accept to pay into Picela escrow. The professional is paid only after you confirm the work.`, 'Review quote', `/hire?id=${h.id}`);
     res.json(row);
   }));
   const doDecline = async ({ h, as, u }, req, res) => {
@@ -288,7 +288,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const row = await upd(h.id, { status: 'disputed', dispute_reason: reason, disputed_at: new Date().toISOString() }, ['in_progress', 'delivered']);
     if (!row) return res.status(400).json({ error: 'A problem can only be reported after paying and before completion.' });
     await c.log(h.id, `${fullName(u)} reported a problem: ${reason}`);
-    await escrow.notify(h.support_id, { type: 'disputed', title: '⚠️ Client reported a problem', message: `"${h.title}" is on hold while IdeaHub reviews it.`, link: `/hire?id=${h.id}` });
+    await escrow.notify(h.support_id, { type: 'disputed', title: '⚠️ Client reported a problem', message: `"${h.title}" is on hold while Picela reviews it.`, link: `/hire?id=${h.id}` });
     const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
     for (const ad of admins || []) await escrow.notify(ad.id, { type: 'disputed', title: '⚠️ Hire dispute', message: `"${h.title}" (${escrow.money(h.amount)}): ${reason.slice(0, 120)}`, link: '/admin' });
     res.json(row);

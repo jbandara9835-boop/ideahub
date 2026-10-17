@@ -53,7 +53,7 @@
     else if (title.length < 25) add('title_specific', 'tip', 'title', 'A more specific title (who it is for, what it does) gets more clicks.');
     else add('title_ok', 'ok', 'title', 'Clear title.');
     var tc = hasContact(title);
-    if (tc) add('title_contact', 'block', 'title', 'Remove ' + tc + ' from the title. Contact happens through IdeaHub messages so the deal stays protected by escrow.');
+    if (tc) add('title_contact', 'block', 'title', 'Remove ' + tc + ' from the title. Contact happens through Picela messages so the deal stays protected by escrow.');
 
     // ── Summary (public) ──
     if (!summary) add('summary_missing', 'block', 'summary', 'Add a one-sentence summary. It is what buyers read before deciding.');
@@ -61,7 +61,7 @@
     else if (summary.length < 40) add('summary_short', 'warn', 'summary', 'Expand the summary (40+ characters): the problem, and who would buy it.');
     else add('summary_ok', 'ok', 'summary', 'Good summary.');
     var sc = hasContact(summary);
-    if (sc) add('summary_contact', 'block', 'summary', 'Remove ' + sc + ' from the summary. Buyers contact you through IdeaHub messages so the deal stays protected by escrow.');
+    if (sc) add('summary_contact', 'block', 'summary', 'Remove ' + sc + ' from the summary. Buyers contact you through Picela messages so the deal stays protected by escrow.');
 
     // ── Full description (shared after payment) ──
     if (desc.length < 50) add('desc_missing', 'block', 'desc', 'Write the full description (at least 50 characters). It is what the buyer pays for, shared only after payment is held in escrow.');

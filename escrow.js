@@ -4,7 +4,7 @@
 // Release is guarded by the current status, so a deal can never be paid twice
 // (e.g. buyer clicks confirm while the auto-release bot runs).
 // ─────────────────────────────────────────────────────────────────────────────
-const SITE = 'https://ideahub.it.com';
+const SITE = 'https://picela.co';
 
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -16,11 +16,11 @@ function money(n) {
 function emailShell(heading, bodyHtml, ctaText, ctaPath) {
   return `
   <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#0d0d0f;color:#f0ede8;border-radius:12px;">
-    <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">IdeaHub</div>
+    <div style="font-size:24px;font-weight:800;color:#f5c842;margin-bottom:16px;">Picela</div>
     <h2 style="margin:0 0 12px;">${esc(heading)}</h2>
     <div style="color:#9a9080;line-height:1.7;margin-bottom:20px;">${bodyHtml}</div>
     ${ctaText ? `<a href="${SITE}${ctaPath}" style="display:inline-block;background:#f5c842;color:#0d0d0f;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;">${esc(ctaText)}</a>` : ''}
-    <p style="color:#6e6b65;font-size:12px;margin-top:24px;">IdeaHub by Picela (Pvt) Ltd</p>
+    <p style="color:#6e6b65;font-size:12px;margin-top:24px;">Picela (Pvt) Ltd</p>
   </div>`;
 }
 
@@ -61,11 +61,11 @@ module.exports = function makeEscrow(supabase, sendEmail) {
 
     const title = tx.idea_title || 'your idea';
     const why = releaseType === 'auto' ? 'The buyer did not respond within 7 days of delivery, so the payment was released automatically.'
-      : releaseType === 'admin' ? 'IdeaHub reviewed the deal and released the payment.'
+      : releaseType === 'admin' ? 'Picela reviewed the deal and released the payment.'
       : 'The buyer confirmed delivery.';
     await notify(tx.seller_id, { type: 'payment_released', title: '💰 Payment Released', message: `${money(tx.amount)} for "${title}" was added to your wallet. ${why}`, link: '/transactions' });
     await emailUser(tx.seller_id, `Payment released: ${money(tx.amount)} for "${title}"`, 'Your idea was sold',
-      `${esc(why)} <strong style="color:#f5c842;">${money(tx.amount)}</strong> for <strong>"${esc(title)}"</strong> has been added to your IdeaHub wallet.`,
+      `${esc(why)} <strong style="color:#f5c842;">${money(tx.amount)}</strong> for <strong>"${esc(title)}"</strong> has been added to your Picela wallet.`,
       'View wallet', '/transactions');
 
     await notify(tx.buyer_id, {
@@ -93,7 +93,7 @@ module.exports = function makeEscrow(supabase, sendEmail) {
     await notify(tx.buyer_id, { type: 'deal_refunded', title: '↩️ Purchase Refunded', message: `Your purchase of "${title}" was refunded.${note ? ' Note: ' + note : ''}`, link: '/transactions' });
     await notify(tx.seller_id, { type: 'deal_refunded', title: '↩️ Sale Refunded', message: `The sale of "${title}" was refunded to the buyer and your idea is live again.${note ? ' Note: ' + note : ''}`, link: '/transactions' });
     await emailUser(tx.buyer_id, `Refund for "${title}"`, 'Your purchase was refunded',
-      `IdeaHub reviewed your dispute about <strong>"${esc(title)}"</strong> and refunded the purchase.${note ? '<br><br>' + esc(note) : ''}`, 'View wallet', '/transactions');
+      `Picela reviewed your dispute about <strong>"${esc(title)}"</strong> and refunded the purchase.${note ? '<br><br>' + esc(note) : ''}`, 'View wallet', '/transactions');
     return tx;
   }
 

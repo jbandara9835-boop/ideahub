@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Business Dashboard — IdeaHub</title>
+<title>Business Dashboard — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -22,8 +22,8 @@
   body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
   .sidebar { position:fixed; top:0; left:0; width:220px; height:100vh; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 1rem; z-index:100; }
   .logo { display:flex; align-items:center; gap:10px; margin-bottom:2.5rem; padding:0 0.5rem; }
-  .logo-icon { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; }
-  .logo-icon svg { width:18px; height:18px; fill:#0d0d0f; }
+  .logo-icon { width:32px; height:32px; background:#1d1d22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:28px; height:28px; fill:#0d0d0f; }
   .logo-text { font-family:'Cabinet Grotesk',sans-serif; font-size:18px; font-weight:700; }
   .nav { flex:1; display:flex; flex-direction:column; gap:2px; overflow-y:auto; scrollbar-width:none; }
   .nav::-webkit-scrollbar { display:none; }
@@ -189,8 +189,8 @@
     <div class="topbar-left">
       <button class="menu-toggle" id="menuToggle" type="button" onclick="toggleSidebar()" aria-label="Open menu"></button>
       <a class="topbar-logo" href="/">
-        <div class="topbar-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg></div>
-        <span class="topbar-logo-text">IdeaHub</span>
+        <div class="topbar-logo-icon"><svg viewBox="0 0 100 100"><path d="M31.4 38A24 24 0 0 1 76.6 38Z" fill="#f5c842"/><path d="M76.6 38A24 24 0 0 1 31.4 38Z" fill="#e8862a"/><path d="M31 38H77" stroke="#1d1d22" stroke-width="3" fill="none"/><rect x="24" y="14" width="16" height="76" rx="8" fill="#f0ede8"/></svg></div>
+        <span class="topbar-logo-text">Picela</span>
       </a>
       <div class="topbar-search">
         <span style="color:var(--muted);font-size:14px;"></span>
@@ -349,13 +349,13 @@ const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '
           const initials = escB(String(b.business_name||'B').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2));
           const nApps = allApps.filter(a => a.biz_id === b.id && a.status !== 'withdrawn').length;
           const st = LST[b.status] || [b.status, 'rgba(255,255,255,0.06)', '#9a9080'];
-          const warn = b.status === 'rejected' ? `<div style="font-size:12px;color:#ff6b6b;margin-top:4px">${escB(b.review_note || 'IdeaHub needs changes.')} <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Fix it →</a></div>`
-            : b.status === 'pending_review' && !b.has_document ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Upload your registration certificate so IdeaHub can check it. <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Upload →</a></div>`
-            : b.status === 'pending_review' ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">IdeaHub is checking your registration. You'll be notified.</div>`
+          const warn = b.status === 'rejected' ? `<div style="font-size:12px;color:#ff6b6b;margin-top:4px">${escB(b.review_note || 'Picela needs changes.')} <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Fix it →</a></div>`
+            : b.status === 'pending_review' && !b.has_document ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Upload your registration certificate so Picela can check it. <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Upload →</a></div>`
+            : b.status === 'pending_review' ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">Picela is checking your registration. You'll be notified.</div>`
             : b.status === 'active' && !b.is_verified ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Not verified yet. <a href="/list-business?edit=${Number(b.id)}" style="color:var(--accent)">Add your registration →</a></div>` : '';
           return `<div class="listing-row">
             <div class="listing-logo">${initials}</div>
-            <div class="listing-info"><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px">${b.direction === 'seek' ? 'Looking for' : 'Offering'}: ${escB((b.expansion_types || []).map(t => (window.Routes && Routes.BY_KEY[t]) ? Routes.BY_KEY[t].label : t).join(', '))}${b.confidential ? ' · Confidential' : ''}</div><div class="listing-name">${escB(b.business_name)} <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${st[1]};color:${st[2]};margin-left:6px">${escB(st[0])}</span>${b.is_verified ? ' <span title="Registration checked by IdeaHub" style="font-size:12px"></span>' : ''}</div>
+            <div class="listing-info"><div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px">${b.direction === 'seek' ? 'Looking for' : 'Offering'}: ${escB((b.expansion_types || []).map(t => (window.Routes && Routes.BY_KEY[t]) ? Routes.BY_KEY[t].label : t).join(', '))}${b.confidential ? ' · Confidential' : ''}</div><div class="listing-name">${escB(b.business_name)} <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${st[1]};color:${st[2]};margin-left:6px">${escB(st[0])}</span>${b.is_verified ? ' <span title="Registration checked by Picela" style="font-size:12px"></span>' : ''}</div>
               <div class="listing-meta">${escB(b.industry||'—')} · ${escB(b.country||'—')} · ${nApps} application${nApps===1?'':'s'} · ${Number(b.view_count)||0} views</div>${warn}${b.nda_pending ? `<div style="font-size:12px;margin-top:4px"><a href="/business/${Number(b.id)}#access" style="color:#c4b5fd">${Number(b.nda_pending)} access request${b.nda_pending === 1 ? '' : 's'} waiting →</a></div>` : ''}${b.status === 'active' ? `<div style="font-size:12px;margin-top:4px"><a href="/business/${Number(b.id)}#matches" style="color:var(--accent)">See businesses that fit →</a></div>` : ''}</div>
             <div class="listing-actions" style="flex-wrap:wrap">
               ${b.status !== 'closed' ? `<a class="btn-view" href="/list-business?edit=${Number(b.id)}">Edit</a>` : ''}

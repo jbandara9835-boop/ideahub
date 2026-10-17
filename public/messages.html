@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Messages — IdeaHub</title>
+<title>Messages — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -265,7 +265,7 @@
     </div>
     <div style="text-align:center;margin:0.75rem 0;font-size:11px;color:var(--muted);">— or —</div>
     <button class="call-modal-submit" style="width:100%;background:var(--success);" onclick="startCallNow()">Video call now</button>
-    <div style="text-align:center;margin-top:0.6rem;font-size:11px;color:var(--muted);">Private IdeaHub video call. Works in the browser, no app needed.</div>
+    <div style="text-align:center;margin-top:0.6rem;font-size:11px;color:var(--muted);">Private Picela video call. Works in the browser, no app needed.</div>
   </div>
 </div>
 
@@ -273,9 +273,9 @@
 <div class="modal-overlay" id="meetLinkModal">
   <div class="call-modal">
     <h3>Accept call</h3>
-    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem;">The call happens on IdeaHub video: private, in the browser, no app needed. Both of you get a Join button.</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem;">The call happens on Picela video: private, in the browser, no app needed. Both of you get a Join button.</p>
     <label>Prefer your own meeting link? (optional)</label>
-    <input type="text" id="meetLinkInput" placeholder="https://meet.google.com/… (leave empty for IdeaHub video)" />
+    <input type="text" id="meetLinkInput" placeholder="https://meet.google.com/… (leave empty for Picela video)" />
     <div class="call-modal-actions">
       <button class="call-modal-cancel" onclick="closeMeetLinkModal()">Cancel</button>
       <button class="call-modal-submit" onclick="submitMeetLink()">Accept</button>
@@ -879,7 +879,7 @@
 
   async function submitMeetLink() {
     const link = document.getElementById('meetLinkInput').value.trim();
-    if (link && !/^https:\/\/\S+$/i.test(link)) { alert('Paste a full meeting link starting with https://, or leave it empty to use IdeaHub video.'); return; }
+    if (link && !/^https:\/\/\S+$/i.test(link)) { alert('Paste a full meeting link starting with https://, or leave it empty to use Picela video.'); return; }
     await respondCall(pendingCallMsgId, 'accepted', pendingCallIsGroup, link || undefined);
     closeMeetLinkModal();
   }
@@ -989,7 +989,7 @@
           const r = await fetch(`${API_URL}/api/users/${uid}/public`, { headers: { Authorization: `Bearer ${token}` } });
           if (r.ok) {
             const u = await r.json();
-            pendingConv = { id: uid, name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member', messages: [], lastMsg: null };
+            pendingConv = { id: uid, name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member', messages: [], lastMsg: null };
             conversations.unshift(pendingConv);
             renderConvList();
             conv = pendingConv;

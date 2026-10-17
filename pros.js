@@ -39,7 +39,7 @@ const PRO_ROLES = Object.keys(REQUIRED);
 const ROLE_KINDS = { chartered_accountant: ['ca_membership', 'identity'], corporate_services: ['secretary', 'secretarial_firm', 'identity'], virtual_manager: ['identity', 'address'], patent_attorney: ['identity'] };
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 const verifiedOnly = () => (process.env.PRO_VERIFIED_ONLY || 'on').toLowerCase() !== 'off';
 
 async function isVerified(supabase, userId, role) {
@@ -211,7 +211,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const { data, error } = await supabase.from('delegations').insert([{ owner_id: req.user.id, delegate_id: delegateId, scope: 'listings', status: 'active' }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
     const u = await me(req);
-    await escrow.notify(delegateId, { type: 'delegation', title: '🔑 You can now manage listings', message: `${fullName(u)} gave you access to create and edit their IdeaHub listings.`, link: `/manage?owner=${req.user.id}` });
+    await escrow.notify(delegateId, { type: 'delegation', title: '🔑 You can now manage listings', message: `${fullName(u)} gave you access to create and edit their Picela listings.`, link: `/manage?owner=${req.user.id}` });
     res.status(201).json(data);
   });
   app.delete('/api/delegations/:did', authMiddleware, async (req, res) => {

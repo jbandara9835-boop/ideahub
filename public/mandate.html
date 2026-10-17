@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Mandate — IdeaHub</title>
+<title>Mandate — Picela</title>
 <meta name="robots" content="noindex" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet" />
@@ -77,7 +77,7 @@
   async function load() {
     try { [D, META] = await Promise.all([api('/api/mandates/' + id), MG.meta()]); }
     catch (e) { $('root').innerHTML = `<div class="card empty"><div class="big"></div>${esc(e.message)}<br><a class="btn btn-ghost btn-sm" style="margin-top:12px" href="/managers">Back to managers</a></div>`; return; }
-    document.title = D.title + ' — Mandate — IdeaHub';
+    document.title = D.title + ' — Mandate — Picela';
     render();
   }
   const other = () => isC() ? D.manager : D.client;
@@ -188,7 +188,7 @@
     const any = H.client.required || H.manager.required;
     const bg = isC() || D.viewer === 'admin' ? managerBg() : clientBg();
     if (!any) return `<div class="hire-grid" style="margin-bottom:16px">${bg}<div class="card pad"><div class="card-title">Hiring</div><p class="sub small" style="margin-top:0">This is a quick hire: ${isC() ? 'the manager' : 'the client'} can accept the terms below straight away.</p>${D.viewer !== 'admin' ? `<p class="sub small">Want to ${isC() ? 'see their CV, ask questions and interview them' : 'ask questions and interview the client'} first?</p><button class="btn btn-ghost btn-sm" data-screen>Add a hiring process</button>` : ''}</div></div>`;
-    const pledge = H.pledge_needed ? `<div class="card pad attn" style="margin-bottom:16px"><div class="card-title">Before the hiring process</div><p class="sub small" style="margin-top:0">${esc(D.client.name)} may share plans, ideas and money matters with you during screening, before anything is agreed.</p><label class="check" style="margin-bottom:12px"><input type="checkbox" id="pledgeOk"> <span>I will keep everything I learn in this hiring process confidential and will not use it for myself or anyone else, whether or not I am hired. I understand IdeaHub logs this promise.</span></label><button class="btn btn-vm" data-pledge>Confirm and continue</button></div>` : '';
+    const pledge = H.pledge_needed ? `<div class="card pad attn" style="margin-bottom:16px"><div class="card-title">Before the hiring process</div><p class="sub small" style="margin-top:0">${esc(D.client.name)} may share plans, ideas and money matters with you during screening, before anything is agreed.</p><label class="check" style="margin-bottom:12px"><input type="checkbox" id="pledgeOk"> <span>I will keep everything I learn in this hiring process confidential and will not use it for myself or anyone else, whether or not I am hired. I understand Picela logs this promise.</span></label><button class="btn btn-vm" data-pledge>Confirm and continue</button></div>` : '';
     const steps = [];
     const st = (ok, now, t, sub) => steps.push(`<div class="stp"><span class="ic ${ok ? 'ok' : now ? 'now' : ''}">${ok ? '✓' : '•'}</span><div><b>${t}</b>${sub ? `<div class="li-sub">${sub}</div>` : ''}</div></div>`);
     if (H.client.required || H.manager.required) {
@@ -238,7 +238,7 @@
           <div class="row" style="margin-top:8px">${x.status === 'scheduled' && can ? `<a class="btn ${soon ? 'btn-vm' : 'btn-ghost'} btn-sm" href="${callUrl()}" target="_blank">Join video call</a>${started ? `<button class="btn btn-ghost btn-sm" data-ivdone="${x.id}">Mark as done</button>` : '<span class="tiny muted">Opens 15 minutes before</span>'}` : ''}
           ${['proposed', 'scheduled'].includes(x.status) && can ? `<button class="btn btn-ghost btn-sm" data-ivcancel="${x.id}">Cancel</button>` : ''}</div>
         </div><span class="pill ${x.status === 'scheduled' ? 'blue' : x.status === 'done' ? 'green' : 'gold'}">${{ proposed: 'Choosing a time', scheduled: 'Booked', done: 'Done' }[x.status]}</span></div>`; }).join('')
-        : `<div class="empty" style="padding:14px">${H.pledge_needed ? 'Confirm the confidentiality promise first.' : `No ${word} yet. Offer up to 3 times; the other person picks one. The call runs inside IdeaHub, private to you both.`}</div>`}
+        : `<div class="empty" style="padding:14px">${H.pledge_needed ? 'Confirm the confidentiality promise first.' : `No ${word} yet. Offer up to 3 times; the other person picks one. The call runs inside Picela, private to you both.`}</div>`}
       ${D.status === 'active' && can ? `<div class="hr"></div><a class="btn btn-ghost btn-sm" href="${callUrl()}" target="_blank">Start a call now</a> <span class="tiny muted">${esc(other().name.split(' ')[0])} is notified</span>` : ''}</div>`;
   }
   function questionsCard() {
@@ -272,7 +272,7 @@
   // ── Approvals ──
   function approvals() {
     const list = D.actions;
-    const head = isM() && D.status === 'active' ? `<div class="row between" style="margin-bottom:14px"><p class="sub small" style="margin:0">Prepare a step; your client approves it and IdeaHub carries it out in their name, with their payment.</p><button class="btn btn-vm btn-sm" data-prepare>Prepare a step</button></div>` : isC() ? `<p class="sub small" style="margin:0 0 14px">Your manager prepares these. Nothing happens until you approve. Payments come from you, through IdeaHub.</p>` : '';
+    const head = isM() && D.status === 'active' ? `<div class="row between" style="margin-bottom:14px"><p class="sub small" style="margin:0">Prepare a step; your client approves it and Picela carries it out in their name, with their payment.</p><button class="btn btn-vm btn-sm" data-prepare>Prepare a step</button></div>` : isC() ? `<p class="sub small" style="margin:0 0 14px">Your manager prepares these. Nothing happens until you approve. Payments come from you, through Picela.</p>` : '';
     return head + `<div class="card pad">${list.length ? list.map(a => {
       const [lbl, cls] = ACT_STATUS[a.status] || [a.status, ''];
       const pay = a.payload || {};
@@ -293,14 +293,14 @@
     const fields = async () => {
       const k = $('pk').value, f = $('pf');
       const inp = (id, label, ph, type, extra) => `<div class="field"><label for="${id}">${label}</label>${type === 'area' ? `<textarea class="in" id="${id}" placeholder="${esc(ph || '')}" ${extra || ''}></textarea>` : `<input class="in" id="${id}" type="${type || 'text'}" placeholder="${esc(ph || '')}" ${extra || ''}>`}</div>`;
-      if (k === 'purchase') f.innerHTML = inp('p_idea', 'Idea (link or number)', 'e.g. https://ideahub.it.com/idea?id=123') + `<div class="hint small muted" style="margin:-6px 0 12px">Your client sees the idea, accepts the Idea Transfer Agreement and pays when approving.</div>`;
+      if (k === 'purchase') f.innerHTML = inp('p_idea', 'Idea (link or number)', 'e.g. https://picela.co/idea?id=123') + `<div class="hint small muted" style="margin:-6px 0 12px">Your client sees the idea, accepts the Idea Transfer Agreement and pays when approving.</div>`;
       else if (k === 'post_request') f.innerHTML = inp('p_t', 'Request title', 'e.g. Low-cost cold storage for vegetable sellers') + inp('p_pr', 'Problem to solve', 'What the investor wants and why', 'area') + `<div class="grid g2">${inp('p_ind', 'Industry', '')}${inp('p_dl', 'Deadline', '', 'date')}</div><div class="grid g2">${inp('p_bmin', 'Budget from ($)', '', 'number')}${inp('p_bmax', 'Budget up to ($)', '', 'number')}</div>` + inp('p_req', 'Requirements (optional)', '', 'area');
       else if (k === 'select_proposal') {
         f.innerHTML = '<div class="loading">Loading your client\'s requests…</div>';
         try { const rs = await api(`/api/mandates/${id}/client-requests`); const opts = rs.flatMap(r => r.proposals.map(p => `<option value="${p.id}">${esc(r.title)} → ${esc(p.title)} by ${esc(p.creator)}${p.price ? ' (' + money(p.price) + ')' : ''}</option>`));
           f.innerHTML = opts.length ? `<div class="field"><label for="p_prop">Proposal to choose</label><select class="in" id="p_prop">${opts.join('')}</select></div>` : '<div class="notice gold">Your client has no open requests with proposals yet.</div>'; } catch (e) { f.innerHTML = `<div class="notice red">${esc(e.message)}</div>`; }
-      } else if (k === 'proposal') f.innerHTML = inp('p_rq', 'Idea Request (link or number)', 'e.g. https://ideahub.it.com/request/45') + inp('p_t', 'Proposal title', '') + inp('p_sum', 'Summary', 'What your client\'s idea is and why it fits', 'area') + inp('p_app', 'Approach (optional)', '', 'area') + `<div class="grid g2">${inp('p_price', 'Price ($)', '', 'number')}${inp('p_days', 'Delivery days', '', 'number')}</div>`;
-      else if (k === 'expansion_apply') f.innerHTML = inp('p_lst', 'Business listing (link or number)', 'e.g. https://ideahub.it.com/business/12') + `<div class="field"><label for="p_type">Deal type</label><select class="in" id="p_type">${(window.Routes ? Routes.TYPES : []).map(t => `<option value="${t.key}">${esc(t.label)}</option>`).join('')}</select></div>` + inp('p_msg', 'Introduction', 'Who your client is and the plan', 'area') + `<div class="grid g2">${inp('p_cap', 'Investment capacity', 'e.g. $50k–$100k')}${inp('p_ter', 'Territory', 'e.g. Southern Province')}</div>`;
+      } else if (k === 'proposal') f.innerHTML = inp('p_rq', 'Idea Request (link or number)', 'e.g. https://picela.co/request/45') + inp('p_t', 'Proposal title', '') + inp('p_sum', 'Summary', 'What your client\'s idea is and why it fits', 'area') + inp('p_app', 'Approach (optional)', '', 'area') + `<div class="grid g2">${inp('p_price', 'Price ($)', '', 'number')}${inp('p_days', 'Delivery days', '', 'number')}</div>`;
+      else if (k === 'expansion_apply') f.innerHTML = inp('p_lst', 'Business listing (link or number)', 'e.g. https://picela.co/business/12') + `<div class="field"><label for="p_type">Deal type</label><select class="in" id="p_type">${(window.Routes ? Routes.TYPES : []).map(t => `<option value="${t.key}">${esc(t.label)}</option>`).join('')}</select></div>` + inp('p_msg', 'Introduction', 'Who your client is and the plan', 'area') + `<div class="grid g2">${inp('p_cap', 'Investment capacity', 'e.g. $50k–$100k')}${inp('p_ter', 'Territory', 'e.g. Southern Province')}</div>`;
       else if (k === 'hire') f.innerHTML = inp('p_sup', 'Professional (profile link or number)', 'An accountant, attorney or corporate services provider') + inp('p_t', 'Job title', 'e.g. Register the company and open a bank account') + inp('p_desc', 'What is needed', '', 'area');
     };
     $('pk').addEventListener('change', fields); fields();
@@ -334,9 +334,9 @@
         <button class="tiny" data-delitem="${i.id}" style="background:none;border:none;color:var(--muted);cursor:pointer">Delete</button></div></div>`).join('')}</div>`; }).join('')}</div>`;
   }
   function addItemDialog() {
-    MG.dialog('Add to pipeline', `<div class="field"><label for="ik">Type</label><select class="in" id="ik"><option value="idea">Idea on IdeaHub</option><option value="request">Idea Request</option><option value="business">Business listing</option><option value="contact">Member to contact</option><option value="other">Other (note)</option></select></div>
-      <div class="field" id="irefw"><label for="iref">Link or number</label><input class="in" id="iref" placeholder="Paste the IdeaHub link"></div>
-      <div class="field"><label for="ititle">Title (optional for IdeaHub items)</label><input class="in" id="ititle" maxlength="150"></div>
+    MG.dialog('Add to pipeline', `<div class="field"><label for="ik">Type</label><select class="in" id="ik"><option value="idea">Idea on Picela</option><option value="request">Idea Request</option><option value="business">Business listing</option><option value="contact">Member to contact</option><option value="other">Other (note)</option></select></div>
+      <div class="field" id="irefw"><label for="iref">Link or number</label><input class="in" id="iref" placeholder="Paste the Picela link"></div>
+      <div class="field"><label for="ititle">Title (optional for Picela items)</label><input class="in" id="ititle" maxlength="150"></div>
       <div class="field"><label for="inote">Notes</label><textarea class="in" id="inote" maxlength="1500" placeholder="Why it fits, price, next step…"></textarea></div>
       <div class="grid g2"><div class="field"><label for="istage">Stage</label><select class="in" id="istage">${STAGES.map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></div><label class="check" style="align-self:end;margin-bottom:14px"><input type="checkbox" id="ishare"> <span>Show to my client as a recommendation</span></label></div>`,
       `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="isave">Add</button>`);
@@ -379,7 +379,7 @@
   function ventureDialog() {
     const row = (i) => `<div class="card" style="padding:12px;margin-bottom:10px;background:var(--card2)" data-msrow><div class="grid g2"><div class="field"><label>Milestone ${i}</label><input class="in" data-f="title" placeholder="e.g. Company registered"></div><div class="field"><label>Your fee for it ($)</label><input class="in" data-f="fee" type="number" min="0" value="0"></div></div><div class="grid g2"><div class="field"><label>Due date</label><input class="in" data-f="due_date" type="date"></div><div class="field"><label>What will be done</label><input class="in" data-f="description"></div></div></div>`;
     MG.dialog('Plan the venture', `<div class="field"><label for="vt">Venture name</label><input class="in" id="vt" maxlength="150" placeholder="e.g. Solar cold box company"></div>
-      <div class="field"><label for="vp">The plan</label><textarea class="in" id="vp" maxlength="5000" style="min-height:130px" placeholder="What the business is, how you'll set it up, who you'll hire, what the client will own, and the timeline."></textarea><div class="hint">The company is always registered in your client's name. You coordinate; your client signs and pays suppliers through IdeaHub.</div></div>
+      <div class="field"><label for="vp">The plan</label><textarea class="in" id="vp" maxlength="5000" style="min-height:130px" placeholder="What the business is, how you'll set it up, who you'll hire, what the client will own, and the timeline."></textarea><div class="hint">The company is always registered in your client's name. You coordinate; your client signs and pays suppliers through Picela.</div></div>
       <div id="msrows">${row(1)}${row(2)}</div><button class="btn btn-ghost btn-sm" id="msmore">＋ Another milestone</button>`,
       `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="vsave">Send plan to client</button>`, { width: '680px' });
     $('msmore').onclick = () => $('msrows').insertAdjacentHTML('beforeend', row(document.querySelectorAll('[data-msrow]').length + 1));
@@ -393,7 +393,7 @@
   // ── Fees & hours ──
   function fees() {
     const due = D.bills.filter(b => b.status === 'due');
-    const bills = `<div class="card pad"><div class="card-title">Fees <small>IdeaHub adds 8% to each payment</small>${isM() && ['active', 'ended'].includes(D.status) ? '<button class="btn btn-ghost btn-sm" data-oneoff>Request a one-off fee</button>' : ''}</div>
+    const bills = `<div class="card pad"><div class="card-title">Fees <small>Picela adds 8% to each payment</small>${isM() && ['active', 'ended'].includes(D.status) ? '<button class="btn btn-ghost btn-sm" data-oneoff>Request a one-off fee</button>' : ''}</div>
       ${D.bills.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>What</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>${D.bills.map(b => `<tr><td><b>${esc({ retainer: 'Retainer', hours: 'Hours', success: 'Success fee', oneoff: 'One-off fee', milestone: 'Milestone fee' }[b.kind] || b.kind)}</b><div class="tiny muted">${esc(b.description || '')}</div>${b.dispute_reason ? `<div class="tiny" style="color:var(--red)">Problem: ${esc(b.dispute_reason)}</div>` : ''}</td><td>${money(b.amount)}<div class="tiny muted">${money(b.total)} with fee</div></td><td>${billPill(b.status)}${b.status === 'paid' && b.kind === 'retainer' && b.period_end ? `<div class="tiny muted">released ${MG.date(b.period_end)}</div>` : ''}</td>
         <td style="text-align:right">${isC() && b.status === 'due' ? `<button class="btn btn-gold btn-sm" data-pay="${b.id}">Pay ${money(b.total)}</button>${b.kind === 'oneoff' ? ` <button class="btn btn-ghost btn-sm" data-billcancel="${b.id}">Decline</button>` : ''}` : ''}
           ${isC() && b.status === 'paid' && b.kind === 'retainer' ? `<button class="btn btn-ghost btn-sm" data-release="${b.id}">Release now</button> ` : ''}${isC() && b.status === 'paid' ? `<button class="btn btn-danger btn-sm" data-dispute="${b.id}">Report a problem</button>` : ''}
@@ -402,12 +402,12 @@
     const hours = D.fee_hourly > 0 ? `<div class="card pad" style="margin-top:16px"><div class="card-title">Hours <small>${money(D.fee_hourly)}/hour</small>${isM() && D.status === 'active' ? `<div class="row"><button class="btn btn-ghost btn-sm" data-loghours>Log hours</button>${sub.length ? '<button class="btn btn-vm btn-sm" data-sendhours>Send to client</button>' : ''}</div>` : ''}</div>
       ${D.hours.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr>${isC() ? '<th></th>' : ''}<th>Date</th><th>Hours</th><th>Work</th><th>Status</th>${isM() ? '<th></th>' : ''}</tr></thead><tbody>${D.hours.map(h => `<tr>${isC() ? `<td>${h.status === 'submitted' ? `<input type="checkbox" data-h="${h.id}" checked style="appearance:auto;accent-color:#f5c842">` : ''}</td>` : ''}<td>${MG.date(h.work_date)}</td><td>${Number(h.hours)}</td><td>${esc(h.description)}</td><td><span class="pill ${h.status === 'approved' ? 'green' : h.status === 'rejected' ? 'red' : 'gold'}">${{ submitted: 'Waiting', approved: 'Approved', rejected: 'Not approved', billed: 'Billed' }[h.status] || h.status}</span></td>${isM() ? `<td>${h.status === 'submitted' ? `<button class="btn btn-ghost btn-sm" data-delh="${h.id}">Delete</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>
         ${isC() && sub.length ? `<div class="row" style="margin-top:12px"><button class="btn btn-gold btn-sm" data-hok>Approve selected</button><button class="btn btn-ghost btn-sm" data-hno>Don't approve selected</button></div>` : ''}` : '<div class="empty">No hours logged yet.</div>'}</div>` : '';
-    return (isC() && due.length ? `<div class="notice gold" style="margin-bottom:14px">You have ${due.length} fee${due.length > 1 ? 's' : ''} to pay. Payments go through IdeaHub; retainers and milestone fees are held until the work is done.</div>` : '') + bills + hours;
+    return (isC() && due.length ? `<div class="notice gold" style="margin-bottom:14px">You have ${due.length} fee${due.length > 1 ? 's' : ''} to pay. Payments go through Picela; retainers and milestone fees are held until the work is done.</div>` : '') + bills + hours;
   }
   function payDialog(b) {
     MG.dialog('Pay manager fee', `<div class="stack"><div><b>${esc({ retainer: 'Retainer', hours: 'Hours', success: 'Success fee', oneoff: 'One-off fee', milestone: 'Milestone fee' }[b.kind])}</b><div class="sub small">${esc(b.description || '')}</div></div>
-      <table class="tbl"><tr><td>Fee to the manager</td><td style="text-align:right">${money(b.amount)}</td></tr><tr><td>IdeaHub service fee (8%)</td><td style="text-align:right">${money(b.fee)}</td></tr><tr><td><b>Total</b></td><td style="text-align:right"><b>${money(b.total)}</b></td></tr></table>
-      <div class="notice vm small">${b.kind === 'retainer' ? 'Held by IdeaHub and paid to the manager at the end of the period, unless you report a problem.' : b.kind === 'milestone' ? 'Held by IdeaHub until you approve the milestone.' : 'Paid to the manager straight away.'}</div></div>`,
+      <table class="tbl"><tr><td>Fee to the manager</td><td style="text-align:right">${money(b.amount)}</td></tr><tr><td>Picela service fee (8%)</td><td style="text-align:right">${money(b.fee)}</td></tr><tr><td><b>Total</b></td><td style="text-align:right"><b>${money(b.total)}</b></td></tr></table>
+      <div class="notice vm small">${b.kind === 'retainer' ? 'Held by Picela and paid to the manager at the end of the period, unless you report a problem.' : b.kind === 'milestone' ? 'Held by Picela until you approve the milestone.' : 'Paid to the manager straight away.'}</div></div>`,
       `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-gold" id="paynow">Pay ${money(b.total)}</button>`, { width: '460px' });
     $('paynow').onclick = e => MG.busy(e.currentTarget, async () => { await api(`/api/mandate-bills/${b.id}/pay`, { method: 'POST', body: { expected_total: b.total } }); MG.close(); toast('Paid'); await load(); });
   }
@@ -457,7 +457,7 @@
     if ((b = q('[data-delitem]'))) { if (!confirm('Delete this item?')) return; return MG.busy(b, async () => { await api(`/api/mandate-items/${b.dataset.delitem}`, { method: 'DELETE' }); await load(); }); }
     if ((b = q('[data-pay]'))) return payDialog(D.bills.find(x => x.id === Number(b.dataset.pay)));
     if ((b = q('[data-release]'))) { if (!confirm('Release this retainer to your manager now?')) return; return MG.busy(b, async () => { await api(`/api/mandate-bills/${b.dataset.release}/release`, { method: 'POST' }); await load(); }); }
-    if ((b = q('[data-dispute]'))) { const reason = prompt('What went wrong? IdeaHub will review it and hold the payment meanwhile.', ''); if (!reason) return; return MG.busy(b, async () => { await api(`/api/mandate-bills/${b.dataset.dispute}/dispute`, { method: 'POST', body: { reason } }); toast('Reported. IdeaHub will review it.'); await load(); }); }
+    if ((b = q('[data-dispute]'))) { const reason = prompt('What went wrong? Picela will review it and hold the payment meanwhile.', ''); if (!reason) return; return MG.busy(b, async () => { await api(`/api/mandate-bills/${b.dataset.dispute}/dispute`, { method: 'POST', body: { reason } }); toast('Reported. Picela will review it.'); await load(); }); }
     if ((b = q('[data-billcancel]'))) { if (!confirm(isC() ? 'Decline this fee?' : 'Withdraw this fee request?')) return; return MG.busy(b, async () => { await api(`/api/mandate-bills/${b.dataset.billcancel}/cancel`, { method: 'POST' }); await load(); }); }
     if (q('[data-oneoff]')) {
       MG.dialog('Request a one-off fee', `<div class="field"><label for="oa">Amount ($)</label><input class="in" id="oa" type="number" min="1"></div><div class="field"><label for="od">What is it for?</label><input class="in" id="od" maxlength="200" placeholder="e.g. Closing the franchise agreement with 3 franchisees"></div><div class="notice vm small">Your client can pay or decline it.</div>`, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="osend">Send</button>`, { width: '460px' });
@@ -478,7 +478,7 @@
     }
     if ((b = q('[data-vapprove]'))) { if (!confirm('Approve this venture plan?')) return; return MG.busy(b, async () => { await api(`/api/ventures/${b.dataset.vapprove}/approve`, { method: 'POST' }); await load(); }); }
     if ((b = q('[data-fund]'))) return MG.busy(b, async () => { const d = await api(`/api/milestones/${b.dataset.fund}/fund`, { method: 'POST' }); await load(); if (d.pay && d.bill) payDialog(d.bill); else toast('Milestone started'); });
-    if ((b = q('[data-mssub]'))) { const ev = prompt('Describe what was done and where the proof is (files in the deal room, links on IdeaHub, registration numbers…):', ''); if (!ev) return; return MG.busy(b, async () => { await api(`/api/milestones/${b.dataset.mssub}/submit`, { method: 'POST', body: { evidence: ev } }); toast('Submitted to your client'); await load(); }); }
+    if ((b = q('[data-mssub]'))) { const ev = prompt('Describe what was done and where the proof is (files in the deal room, links on Picela, registration numbers…):', ''); if (!ev) return; return MG.busy(b, async () => { await api(`/api/milestones/${b.dataset.mssub}/submit`, { method: 'POST', body: { evidence: ev } }); toast('Submitted to your client'); await load(); }); }
     if ((b = q('[data-msok]'))) { if (!confirm('Approve this milestone? Its fee is released to your manager.')) return; return MG.busy(b, async () => { await api(`/api/milestones/${b.dataset.msok}/approve`, { method: 'POST' }); await load(); }); }
     if ((b = q('[data-mschg]'))) { const note = prompt('What needs to change?', ''); if (!note) return; return MG.busy(b, async () => { await api(`/api/milestones/${b.dataset.mschg}/changes`, { method: 'POST', body: { note } }); await load(); }); }
     if ((b = q('[data-addms]'))) {
@@ -487,7 +487,7 @@
       return;
     }
     if (q('[data-msgfor]')) {
-      MG.dialog('Message someone for your client', `<div class="field"><label for="mto">Who? (profile link or member number)</label><input class="in" id="mto" placeholder="e.g. https://ideahub.it.com/public-profile?id=42"></div><div class="notice vm small">Your messages are labelled “manager for ${esc(D.client.name)}”. You can't message someone you also manage.</div>`, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="mgo">Open chat</button>`, { width: '480px' });
+      MG.dialog('Message someone for your client', `<div class="field"><label for="mto">Who? (profile link or member number)</label><input class="in" id="mto" placeholder="e.g. https://picela.co/public-profile?id=42"></div><div class="notice vm small">Your messages are labelled “manager for ${esc(D.client.name)}”. You can't message someone you also manage.</div>`, `<button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-vm" id="mgo">Open chat</button>`, { width: '480px' });
       $('mgo').onclick = () => { const to = lastNum($('mto').value); if (!to) return MG.err('Paste their profile link.'); location.href = `/messages?user=${to}&for=${D.client.id}`; };
       return;
     }

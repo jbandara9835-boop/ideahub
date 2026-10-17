@@ -98,7 +98,7 @@
       steps.push('At about 30 months, enter the national phase in the countries you want.');
     }
     var wantsUS = markets.indexOf('United States') >= 0 || worldwide;
-    if (wantsUS && !isUS) notes.push('Since 20 July 2026, applicants living outside the US must file in the US through a USPTO-registered patent attorney or agent. IdeaHub only shows registered practitioners for US filings.');
+    if (wantsUS && !isUS) notes.push('Since 20 July 2026, applicants living outside the US must file in the US through a USPTO-registered patent attorney or agent. Picela only shows registered practitioners for US filings.');
     if (home === 'India' && abroadCount > 0) notes.push('Indian residents generally must file in India first, or get permission, before filing abroad. Your attorney will check.');
     else if (abroadCount > 0) notes.push('Some countries require you to file at home first or get permission before filing abroad. Your attorney will check this for you.');
     notes.push('Keep the invention confidential until it is filed. Most countries refuse a patent for anything already made public.');

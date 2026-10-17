@@ -6,7 +6,7 @@
 //   listing  → one buyer talking to the owner of a listing (owner = A, buyer = B);
 //              used for patent-sale enquiries and idea deals
 // Members: the two parties, plus advisers each side invites (attorney, accountant,
-// virtual manager, other) — IdeaHub professionals, or anyone by email.
+// virtual manager, other) — Picela professionals, or anyone by email.
 // Channels:
 //   shared → everyone in the room
 //   a / b  → one side and its own advisers only (the other side never sees it)
@@ -14,7 +14,7 @@
 // Advisers can talk, share files and join calls; only the parties act on the deal.
 //
 // Paid adviser work (jobs): an adviser quotes their own client a fixed fee,
-// the client pays (+8% IdeaHub fee) into escrow, the adviser marks it delivered,
+// the client pays (+8% Picela fee) into escrow, the adviser marks it delivered,
 // the client confirms (or 7 days pass) → released to the adviser. Disputes go to admin.
 //
 // server.js:  require('./rooms').mount(app, { supabase, authMiddleware, escrow, sendEmail });
@@ -28,11 +28,11 @@ const AUTO_RELEASE_DAYS = 7;
 const MAX_MEMBERS = 12;
 const ROLES = { attorney: 'Attorney', accountant: 'Accountant', virtual_manager: 'Virtual manager', other: 'Adviser' };
 const ROLE_FROM_USER = { patent_attorney: 'attorney', chartered_accountant: 'accountant', virtual_manager: 'virtual_manager', corporate_services: 'other' };
-const SITE = 'https://ideahub.it.com';
+const SITE = 'https://picela.co';
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
 const round2 = n => Math.round(Number(n) * 100) / 100;
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 
 function core(supabase, escrow) {
   const payments = require('./payments')(supabase);
@@ -63,7 +63,7 @@ function core(supabase, escrow) {
     if (error) throw error;
     const j = rows && rows[0]; if (!j) return null;
     await payments.record({ kind: 'refund', userId: j.client_id, amount: j.total, meta: { deal_room_job_id: j.id, note: note || null } });
-    await log(j.room_id, j.side, `Adviser fee for "${j.title}" was refunded by IdeaHub.${note ? ' Note: ' + note : ''}`);
+    await log(j.room_id, j.side, `Adviser fee for "${j.title}" was refunded by Picela.${note ? ' Note: ' + note : ''}`);
     for (const uid of [j.client_id, j.adviser_id]) await escrow.notify(uid, { type: 'job_refunded', title: '↩️ Adviser job refunded', message: `"${j.title}" was refunded to the client.${note ? ' Note: ' + note : ''}`, link: `/deal-room?id=${j.room_id}` });
     return j;
   }
@@ -241,7 +241,7 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
     res.json({ url: data.signedUrl });
   });
 
-  // Find IdeaHub professionals to invite
+  // Find Picela professionals to invite
   app.get('/api/rooms/advisers/search', authMiddleware, async (req, res) => {
     const q = txt(req.query.q, 60).toLowerCase();
     const { data: profs } = await supabase.from('support_profiles').select('user_id, role, tagline, home_country');
@@ -253,7 +253,7 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
       .slice(0, 12).map(u => ({ id: u.id, name: fullName(u), avatar_url: u.avatar_url || null, role: ROLE_FROM_USER[u.role], role_label: ROLES[ROLE_FROM_USER[u.role]], tagline: P[u.id]?.tagline || '', country: P[u.id]?.home_country || '' })));
   });
 
-  // A party invites an adviser to their own side (IdeaHub user, or by email)
+  // A party invites an adviser to their own side (Picela user, or by email)
   app.post('/api/rooms/:id/invite', authMiddleware, async (req, res) => {
     const r = await load(req); if (!r.room || r.admin) return fail(res);
     if (!isParty(r)) return res.status(403).json({ error: 'Only the parties can invite advisers.' });
@@ -274,7 +274,7 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
       if (error) return res.status(500).json({ error: error.message });
       await escrow.notify(userId, { type: 'deal_room_invite', title: '🤝 You were invited to a deal room', message: `${fullName(r.u)} invited you as their ${(label || ROLES[role]).toLowerCase()} on "${r.room.title}".`, link: `/deal-room?id=${r.room.id}` });
       await escrow.emailUser(userId, `Invitation: be ${fullName(r.u)}'s ${(label || ROLES[role]).toLowerCase()}`, 'You were invited to a deal room',
-        `<strong style="color:#f0ede8;">${escrow.esc(fullName(r.u))}</strong> wants you to advise them, as ${escrow.esc(sideName)}, on <strong>"${escrow.esc(r.room.title)}"</strong>.<br><br>Accept to see the deal room, talk privately with your client, and quote for your work through IdeaHub escrow.`, 'Open invitation', `/deal-room?id=${r.room.id}`);
+        `<strong style="color:#f0ede8;">${escrow.esc(fullName(r.u))}</strong> wants you to advise them, as ${escrow.esc(sideName)}, on <strong>"${escrow.esc(r.room.title)}"</strong>.<br><br>Accept to see the deal room, talk privately with your client, and quote for your work through Picela escrow.`, 'Open invitation', `/deal-room?id=${r.room.id}`);
     } else if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
       if (active.some(m => m.invite_email === email)) return res.status(400).json({ error: 'That email was already invited.' });
       const token = crypto.randomBytes(24).toString('hex');
@@ -282,16 +282,16 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
       const { error } = await supabase.from('deal_room_members').insert([row]);
       if (error) return res.status(500).json({ error: error.message });
       if (sendEmail) await sendEmail(email, `${fullName(r.u)} invited you to advise on a deal`, escrow.emailShell('You were invited to a deal room',
-        `<strong style="color:#f0ede8;">${escrow.esc(fullName(r.u))}</strong> wants you as their ${escrow.esc((label || ROLES[role]).toLowerCase())} on <strong>"${escrow.esc(r.room.title)}"</strong> on IdeaHub.<br><br>Sign in or create a free account with this link to join. The invitation expires in 14 days.`,
+        `<strong style="color:#f0ede8;">${escrow.esc(fullName(r.u))}</strong> wants you as their ${escrow.esc((label || ROLES[role]).toLowerCase())} on <strong>"${escrow.esc(r.room.title)}"</strong> on Picela.<br><br>Sign in or create a free account with this link to join. The invitation expires in 14 days.`,
         'Accept invitation', `/deal-room?id=${r.room.id}&invite=${token}`));
-    } else return res.status(400).json({ error: 'Choose an IdeaHub professional or enter a valid email.' });
+    } else return res.status(400).json({ error: 'Choose a Picela professional or enter a valid email.' });
     const what = (label || ROLES[role]).toLowerCase();
     await c.log(r.room.id, 'shared', `${fullName(r.u)} invited ${userId ? (/^[aeiou]/.test(what) ? 'an' : 'a') : 'an outside'} ${what} to advise their side.`);
     await notifyRoom(r, 'shared', { type: 'deal_room', title: 'Adviser invited', message: `${fullName(r.u)} invited their ${(label || ROLES[role]).toLowerCase()} to "${r.room.title}".` }, req.user.id);
     res.status(201).json({ ok: true });
   });
 
-  // Accept an invitation (IdeaHub user invite, or an email link with token)
+  // Accept an invitation (Picela user invite, or an email link with token)
   app.post('/api/rooms/:id/accept', authMiddleware, async (req, res) => {
     const id = parseInt(req.params.id, 10);
     const token = txt(req.body?.token, 80);
@@ -400,8 +400,8 @@ function mount(app, { supabase, authMiddleware, escrow, sendEmail }) {
         if (as !== 'client') return res.status(403).json({ error: 'Only the client can report a problem.' });
         const reason = txt(req.body?.reason, 1500); if (reason.length < 15) return res.status(400).json({ error: 'Explain the problem (at least 15 characters).' });
         const row = await upd({ status: 'disputed', dispute_reason: reason, disputed_at: now }, ['in_progress', 'delivered']); if (!row) return res.status(400).json({ error: 'This work cannot be disputed now.' });
-        await c.log(j.room_id, j.side, `A problem was reported on "${j.title}". IdeaHub will review it.`);
-        await escrow.notify(j.adviser_id, { type: 'disputed', title: '⚠️ Client reported a problem', message: `"${j.title}" is on hold while IdeaHub reviews it.`, link: `/deal-room?id=${j.room_id}` });
+        await c.log(j.room_id, j.side, `A problem was reported on "${j.title}". Picela will review it.`);
+        await escrow.notify(j.adviser_id, { type: 'disputed', title: '⚠️ Client reported a problem', message: `"${j.title}" is on hold while Picela reviews it.`, link: `/deal-room?id=${j.room_id}` });
         const { data: admins } = await supabase.from('users').select('id').eq('role', 'admin');
         for (const ad of admins || []) await escrow.notify(ad.id, { type: 'disputed', title: '⚠️ Adviser job dispute', message: `"${j.title}" (${escrow.money(j.amount)}): ${reason.slice(0, 120)}`, link: '/admin' });
         return res.json(row);

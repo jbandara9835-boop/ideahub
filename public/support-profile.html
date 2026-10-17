@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Support Profile — IdeaHub</title>
+<title>Support Profile — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -236,7 +236,7 @@
             <div class="field" style="margin-bottom:0;"><label class="lbl" for="verName">Name on the record</label><input type="text" id="verName" maxlength="120" placeholder="As it appears on the certificate" /></div>
           </div>
           <div class="field"><label class="lbl" for="verFile">Certificate or document (PDF or image, max 10MB) *</label><input type="file" id="verFile" accept=".pdf,.png,.jpg,.jpeg,.webp" style="font-size:13px;color:var(--muted)" /></div>
-          <p style="font-size:12px;color:var(--muted);margin:.4rem 0 .9rem" id="verHint">Stored privately. Only IdeaHub admins can open it.</p>
+          <p style="font-size:12px;color:var(--muted);margin:.4rem 0 .9rem" id="verHint">Stored privately. Only Picela admins can open it.</p>
           <div class="msg error" id="verError"></div>
           <button class="save-btn" id="verBtn" onclick="submitCredential()"><span id="verBtnText">Submit for checking</span></button>
         </div>
@@ -774,7 +774,7 @@ const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '
     document.getElementById('verIntro').innerHTML = attorney
       ? `Patent attorneys and agents are verified through their patent-office registrations. ${VER.verified ? 'You\'re verified.' : 'Add each office you\'re registered with on the Patents page.'} <a href="/patents#regSection" style="color:var(--accent)">Manage registrations →</a>`
       : VER.verified ? `You're verified. Clients see the badge and your checked credential on Professionals.`
-      : `To appear in Professionals and receive requests, add your <b>${esc(need)}</b> with a copy of the certificate. IdeaHub checks it, usually within 2 business days.${VER.verified_only ? '' : ' (Unverified profiles are currently still shown.)'}`;
+      : `To appear in Professionals and receive requests, add your <b>${esc(need)}</b> with a copy of the certificate. Picela checks it, usually within 2 business days.${VER.verified_only ? '' : ' (Unverified profiles are currently still shown.)'}`;
     const st = { pending: ['pending', 'Being checked'], verified: ['approved', 'Verified'], rejected: ['rejected', 'Not accepted'] };
     document.getElementById('verList').innerHTML = (VER.credentials || []).map(c => `
       <div class="cert-item"><div class="cert-icon"></div><div class="cert-info">
@@ -796,8 +796,8 @@ const ihEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '
     document.getElementById('verNumLbl').textContent = k.numberLabel + ' *';
     const n = document.getElementById('verNumber'); n.value = ''; n.maxLength = k.kind === 'identity' ? 4 : 60;
     document.getElementById('verHint').textContent = k.kind === 'identity'
-      ? 'Enter only the last 4 characters of your ID. Upload a photo of the ID; it is stored privately and only IdeaHub admins can open it.'
-      : 'Stored privately. Only IdeaHub admins can open it. If your body isn\'t listed, choose Other and name it in "Name on the record".';
+      ? 'Enter only the last 4 characters of your ID. Upload a photo of the ID; it is stored privately and only Picela admins can open it.'
+      : 'Stored privately. Only Picela admins can open it. If your body isn\'t listed, choose Other and name it in "Name on the record".';
   }
   async function submitCredential() {
     const err = document.getElementById('verError'); err.classList.remove('show');

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Start a patent application — IdeaHub</title>
+<title>Start a patent application — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -87,9 +87,9 @@
 
   <!-- 1. Invention -->
   <section class="stage panel" data-stage="0">
-    <div class="note gold" style="margin-bottom:1.1rem">Keep your invention confidential until it's filed. In most countries, anything already public (online, on IdeaHub, at a trade fair) can't be patented.</div>
+    <div class="note gold" style="margin-bottom:1.1rem">Keep your invention confidential until it's filed. In most countries, anything already public (online, on Picela, at a trade fair) can't be patented.</div>
     <div class="field" id="ideaField">
-      <label for="idea">Link one of your IdeaHub ideas <span class="muted">(optional)</span></label>
+      <label for="idea">Link one of your Picela ideas <span class="muted">(optional)</span></label>
       <select class="select" id="idea"><option value="">No, this is a new invention</option></select>
     </div>
     <div class="row2">
@@ -161,7 +161,7 @@
   <section class="stage panel" data-stage="4">
     <div class="panel-title">Review and send</div>
     <dl class="review" id="review"></dl>
-    <div class="note gold" style="margin:1.25rem 0 1rem;">Only <b id="attyName">the practitioner</b> and IdeaHub admins will be able to read this. Your files are stored privately. Their email notification doesn't include your invention details. After you send it, IdeaHub's AI also does a quick private pre-check you can both read.</div>
+    <div class="note gold" style="margin:1.25rem 0 1rem;">Only <b id="attyName">the practitioner</b> and Picela admins will be able to read this. Your files are stored privately. Their email notification doesn't include your invention details. After you send it, Picela's AI also does a quick private pre-check you can both read.</div>
     <label class="check"><input type="checkbox" id="ack" /> I understand who can see my invention, and I'm sending it to this practitioner to get a quote.</label>
   </section>
 
@@ -283,7 +283,7 @@
     } catch (e) { attorneys = []; }
     if (!attorneys.some(a => a.id === state.attorney_id)) state.attorney_id = null;
     if (!attorneys.length) {
-      $('attys').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon"></div>No practitioners registered for ${esc(state.jurisdiction)} have joined IdeaHub yet.<br>Try another office, or choose "International (PCT)" or "Other / not sure". Your answers are saved in this browser.</div>`;
+      $('attys').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon"></div>No practitioners registered for ${esc(state.jurisdiction)} have joined Picela yet.<br>Try another office, or choose "International (PCT)" or "Other / not sure". Your answers are saved in this browser.</div>`;
       return;
     }
     $('attys').innerHTML = attorneys.map(a => `<button type="button" class="atty ${state.attorney_id === a.id ? 'on' : ''}" data-a="${a.id}">

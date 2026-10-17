@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Licence — IdeaHub</title>
+<title>Licence — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -87,12 +87,12 @@
   }
 
   function practitionerHelp() {
-    return `<div class="help" style="margin-top:.8rem">Have the agreement drafted or checked by a <a href="/find-support?type=patent_attorney">patent attorney</a>. A <a href="/find-support?type=chartered_accountant">chartered accountant</a> can help set a fair fee or royalty and with tax. IdeaHub doesn't set the terms.</div>`;
+    return `<div class="help" style="margin-top:.8rem">Have the agreement drafted or checked by a <a href="/find-support?type=patent_attorney">patent attorney</a>. A <a href="/find-support?type=chartered_accountant">chartered accountant</a> can help set a fair fee or royalty and with tax. Picela doesn't set the terms.</div>`;
   }
 
   function actionPanel(d) {
     const v = d.viewer, s = d.status, otherName = v === 'licensor' ? d.licensee?.name : d.licensor?.name;
-    if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>You can read this deal. IdeaHub is not a party to the licence.</p></div>`;
+    if (v === 'admin') return `<div class="panel action"><h2>Admin view</h2><p>You can read this deal. Picela is not a party to the licence.</p></div>`;
     if (s === 'requested' && v === 'licensor') return `<div class="panel action"><h2>${esc(otherName)} wants a licence</h2><p>Read their request below. Accept to start agreeing terms (you can still say no later), or decline.</p>
       <div class="btns"><button class="btn btn-gold" data-act="accept">Accept and discuss terms</button><button class="btn btn-danger" data-act="decline">Decline</button></div></div>`;
     if (s === 'requested') return `<div class="panel action"><h2>Waiting for the owner</h2><p>${esc(otherName)} will accept to discuss terms, or decline. You'll get a notification.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="cancel">Withdraw request</button></div></div>`;
@@ -106,7 +106,7 @@
         ${practitionerHelp()}
         <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
           <b style="font-size:14px">Register the signed agreement</b>
-          <p style="font-size:13px;margin-top:4px">Both of you confirm the same signed file and dates. ${d.fee_amount > 0 ? `Then IdeaHub's fixed fee of ${money(d.fee_amount)} applies${d.fee_payer === 'split' ? ' (split equally)' : d.fee_payer === 'licensor' ? ' (paid by the owner)' : ' (paid by the licensee)'}.` : ''}</p>
+          <p style="font-size:13px;margin-top:4px">Both of you confirm the same signed file and dates. ${d.fee_amount > 0 ? `Then Picela's fixed fee of ${money(d.fee_amount)} applies${d.fee_payer === 'split' ? ' (split equally)' : d.fee_payer === 'licensor' ? ' (paid by the owner)' : ' (paid by the licensee)'}.` : ''}</p>
           ${d.files.length ? `<div class="row2" style="margin-top:.8rem"><div class="field"><label for="cFile">Signed agreement</label><select class="select" id="cFile">${opts}</select></div><div></div></div>
           <div class="row2"><div class="field"><label for="cStart">Licence starts</label><input class="input" id="cStart" type="date" value="${esc(d.start_date || '')}" /></div><div class="field"><label for="cEnd">Licence ends <span class="muted">(empty if no end date)</span></label><input class="input" id="cEnd" type="date" value="${esc(d.end_date || '')}" /></div></div>
           <div class="conf"><span class="${myConf ? 'ok' : ''}">${myConf ? '✓ You confirmed' : 'You: not confirmed'}</span><span class="${theirConf ? 'ok' : ''}">${theirConf ? `✓ ${esc(otherName)} confirmed` : `${esc(otherName)}: not confirmed`}</span></div>
@@ -117,7 +117,7 @@
     if (s === 'signed') {
       const owes = d.my_fee_share > 0 && !d.fee_paid_by_me;
       return `<div class="panel action"><h2>Signed. Register the licence</h2>
-        <p>Both of you confirmed the signed agreement. ${owes ? `Pay IdeaHub's licence fee of <b>${money(d.my_fee_share)}</b> to register it.` : d.fee_paid_by_me ? 'You paid your share. Waiting for the other side.' : `Waiting for ${esc(otherName)} to pay IdeaHub's licence fee.`}</p>
+        <p>Both of you confirmed the signed agreement. ${owes ? `Pay Picela's licence fee of <b>${money(d.my_fee_share)}</b> to register it.` : d.fee_paid_by_me ? 'You paid your share. Waiting for the other side.' : `Waiting for ${esc(otherName)} to pay Picela's licence fee.`}</p>
         ${owes ? (d.payments_open ? `<div class="btns"><button class="btn btn-gold" data-act="pay">Pay ${money(d.my_fee_share)}</button></div>` : '<div class="note" style="margin-top:.8rem">Online payments are launching soon.</div>') : ''}</div>`;
     }
     if (s === 'active') return `<div class="panel action"><h2>Licence active</h2><p>${esc(d.type_label)} from <b>${esc(fdate(d.start_date))}</b>${d.end_date ? ` to <b>${esc(fdate(d.end_date))}</b>` : ''}. Payments between you follow your signed agreement. We'll remind you both before it ends.</p>
@@ -161,9 +161,9 @@
           <button class="btn btn-gold btn-sm" style="width:100%;margin-top:8px" data-act="room">Deal room: bring in your advisers</button>
           <div class="muted" style="font-size:11.5px;text-align:center;margin-top:6px">Both sides can add their attorney and accountant, with a private channel for each side.</div>` : ''}
         </div>
-        <div class="panel"><div class="panel-title">IdeaHub fee</div>
-          <div class="help">${d.fee_amount > 0 ? `A fixed ${money(d.fee_amount)} to register the signed licence${d.fee_payer === 'split' ? ', split equally' : d.fee_payer === 'licensor' ? ', paid by the owner' : ', paid by the licensee'}.` : 'No IdeaHub fee.'} The licence fee or royalties are agreed between you and paid as your agreement says.</div></div>
-        <div class="note" style="font-size:12.5px">IdeaHub connects you and keeps the record. It is not a party to the licence and does not give legal advice.</div>
+        <div class="panel"><div class="panel-title">Picela fee</div>
+          <div class="help">${d.fee_amount > 0 ? `A fixed ${money(d.fee_amount)} to register the signed licence${d.fee_payer === 'split' ? ', split equally' : d.fee_payer === 'licensor' ? ', paid by the owner' : ', paid by the licensee'}.` : 'No Picela fee.'} The licence fee or royalties are agreed between you and paid as your agreement says.</div></div>
+        <div class="note" style="font-size:12.5px">Picela connects you and keeps the record. It is not a party to the licence and does not give legal advice.</div>
       </aside></div>`;
     const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
   }
@@ -175,7 +175,7 @@
       const d = await r.json();
       if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'This licence was not found, or you are not part of it.')}<div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="/transactions">Wallet</a><a class="btn btn-gold btn-sm" href="/messages">Messages</a></div></div>`; return; }
       const keep = {}; ['msgIn', 'cStart', 'cEnd'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
-      D = d; document.title = `${d.idea_title}: licence — IdeaHub`; render(d);
+      D = d; document.title = `${d.idea_title}: licence — Picela`; render(d);
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
     } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
   }

@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   site.css — shared IdeaHub look (loaded by every page, before the page's own
+   site.css — shared Picela look (loaded by every page, before the page's own
    <style>). Holds the brand tokens, base typography and the shared top nav
    rendered by /site-nav.js. Page styles still win where a page sets its own.
    ───────────────────────────────────────────────────────────────────────────── */
@@ -39,8 +39,8 @@ h1, h2, h3 { font-family: var(--ih-display); }
 .sn-spacer { height: var(--sn-h); }
 .sn a { text-decoration: none; }
 .sn .sn-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.sn .sn-logo-icon { width: 34px; height: 34px; background: var(--ih-accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.sn .sn-logo-icon svg { width: 18px; height: 18px; fill: #080809; }
+.sn .sn-logo-icon { width: 34px; height: 34px; background:#1d1d22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.sn .sn-logo-icon svg { width: 30px; height: 30px; fill: #080809; }
 .sn .sn-logo-text { font-family: var(--ih-display); font-size: 20px; font-weight: 800; color: var(--ih-text); letter-spacing: -0.2px; }
 .sn .sn-links { display: flex; align-items: center; gap: 2rem; }
 .sn .sn-links a { color: var(--ih-muted); font-size: 14px; font-weight: 400; white-space: nowrap; transition: color .2s; padding: 4px 0; background: none; border: 0; }
@@ -139,6 +139,8 @@ footer.ih-foot { display: grid; grid-template-columns: auto 1fr auto; align-item
 footer.ih-foot a { color: #8a867f; text-decoration: none; transition: color .2s; }
 footer.ih-foot a:hover { color: #f0ede8; }
 .ih-foot-logo { display: flex; align-items: center; gap: 10px; }
+.ih-foot-logo .sn-logo-icon { width: 32px; height: 32px; border-radius: 8px; background:#1d1d22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ih-foot-logo .sn-logo-icon svg { width: 28px; height: 28px; }
 .ih-foot-logo b { font-family: 'Cabinet Grotesk', 'DM Sans', sans-serif; font-size: 19px; font-weight: 800; color: #f0ede8; }
 .ih-foot-links { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; justify-content: center; }
 .ih-foot-legal { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }

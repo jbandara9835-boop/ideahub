@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Settings — IdeaHub</title>
+<title>Settings — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -251,7 +251,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
       <div class="section" id="section-notifications">
         <div class="settings-card">
           <div class="settings-card-title">Email Notifications</div>
-          <div class="settings-card-sub">Choose what emails you receive from IdeaHub</div>
+          <div class="settings-card-sub">Choose what emails you receive from Picela</div>
           <div class="toggle-row">
             <div class="toggle-info">
               <div class="toggle-label">New Messages</div>
@@ -283,7 +283,7 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
           <div class="toggle-row">
             <div class="toggle-info">
               <div class="toggle-label">Marketing & Updates</div>
-              <div class="toggle-desc">News, tips and product updates from IdeaHub</div>
+              <div class="toggle-desc">News, tips and product updates from Picela</div>
             </div>
             <div class="toggle" id="notif-marketing" onclick="toggleNotif(this)"><div class="toggle-knob"></div></div>
           </div>
@@ -344,11 +344,11 @@ body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--t
       <div class="section" id="section-appearance">
         <div class="settings-card">
           <div class="settings-card-title">Appearance</div>
-          <div class="settings-card-sub">Customize how IdeaHub looks for you</div>
+          <div class="settings-card-sub">Customize how Picela looks for you</div>
           <div class="toggle-row">
             <div class="toggle-info">
               <div class="toggle-label">Dark Mode</div>
-              <div class="toggle-desc">IdeaHub always uses dark mode for the best experience</div>
+              <div class="toggle-desc">Picela always uses dark mode for the best experience</div>
             </div>
             <div class="toggle on" style="opacity:0.5;cursor:not-allowed;"><div class="toggle-knob"></div></div>
           </div>
@@ -585,7 +585,7 @@ function saveAppearance() {
 }
 
 async function logoutAll() {
-  if (!confirm('Sign out of IdeaHub on every other phone and computer? This device stays signed in.')) return;
+  if (!confirm('Sign out of Picela on every other phone and computer? This device stays signed in.')) return;
   try {
     const res = await fetch(`${API_URL}/api/auth/logout-all`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();

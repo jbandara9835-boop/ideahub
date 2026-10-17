@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Manage Listings — IdeaHub</title>
+<title>Manage Listings — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -49,7 +49,7 @@
     const del = await fetch('/api/delegations', { headers: H() }).then(x => x.ok ? x.json() : { managing: [] }).catch(() => ({ managing: [] }));
     const mine = (del.managing || []).find(m => m.user_id === owner);
     const log = mine ? await fetch(`/api/delegations/${mine.id}/log`, { headers: H() }).then(x => x.ok ? x.json() : []).catch(() => []) : [];
-    document.title = `${d.owner.name}'s listings — IdeaHub`;
+    document.title = `${d.owner.name}'s listings — Picela`;
     $('root').innerHTML = `
       <div class="top"><div><a href="/manage" class="muted" style="font-size:13px;text-decoration:none">← Your clients</a>
         <h1>${esc(d.owner.name)}'s listings</h1>

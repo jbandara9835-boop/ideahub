@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Choose Your Role — IdeaHub</title>
+<title>Choose Your Role — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -40,8 +40,8 @@
   }
   @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
   .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
-  .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-  .logo-icon svg { width: 20px; height: 20px; fill: #0d0d0f; }
+  .logo-icon { width: 36px; height: 36px; background:#1d1d22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 30px; height: 30px; fill: #0d0d0f; }
   .logo-text { font-family: 'Cabinet Grotesk', sans-serif; font-size: 20px; font-weight: 700; }
   .user-greeting { display: flex; align-items: center; gap: 12px; background: var(--surface2); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1.75rem; }
   .user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
@@ -89,15 +89,15 @@
 <div class="card">
   <a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;" class="logo">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.9-1.06 3.54-2.6 4.4L14 14h-4l-.4-.6C8.06 12.54 7 10.9 7 9c0-2.76 2.24-5 5-5zm-1 13h2v1h-2v-1zm-1 2h4v1h-4v-1z"/></svg>
+      <svg viewBox="0 0 100 100"><path d="M31.4 38A24 24 0 0 1 76.6 38Z" fill="#f5c842"/><path d="M76.6 38A24 24 0 0 1 31.4 38Z" fill="#e8862a"/><path d="M31 38H77" stroke="#1d1d22" stroke-width="3" fill="none"/><rect x="24" y="14" width="16" height="76" rx="8" fill="#f0ede8"/></svg>
     </div>
-    <span class="logo-text">IdeaHub</span>
+    <span class="logo-text" style="display:inline-flex;flex-direction:column;line-height:1">Picela<small style="display:block;font:600 9.5px/1 'DM Sans',system-ui,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#f5c842;margin-top:4px">the idea hub</small></span>
   </a>
 
   <div class="user-greeting" id="userGreeting"></div>
 
   <h1>Choose your role</h1>
-  <p class="subtitle">Select how you'll be using IdeaHub</p>
+  <p class="subtitle">Select how you'll be using Picela</p>
 
   <div class="error-msg" id="errorMsg"></div>
 

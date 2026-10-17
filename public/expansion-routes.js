@@ -199,7 +199,7 @@
   }
 
   var NDA_VERSION = 'v1';
-  var NDA_TEXT = 'I agree to keep confidential everything the business shares with me through IdeaHub about this opportunity (its identity, finances, customers, suppliers and plans). I will use it only to evaluate the opportunity, will not share it except with my own professional advisers who are bound by the same duty, will not contact its staff, customers or suppliers about it without permission, and will return or delete it if asked. This applies for 2 years from today. I understand the business may enforce this agreement directly against me.';
+  var NDA_TEXT = 'I agree to keep confidential everything the business shares with me through Picela about this opportunity (its identity, finances, customers, suppliers and plans). I will use it only to evaluate the opportunity, will not share it except with my own professional advisers who are bound by the same duty, will not contact its staff, customers or suppliers about it without permission, and will return or delete it if asked. This applies for 2 years from today. I understand the business may enforce this agreement directly against me.';
 
   return { GROUPS: GROUPS, GROUP: GROUP, TYPES: TYPES, BY_KEY: BY_KEY, BY_GROUP: BY_GROUP, CROSS: CROSS, FIELDS: FIELDS, REVENUE: REVENUE, PROFIT: PROFIT,
     typeLabel: typeLabel, mustBeConfidential: mustBeConfidential, groupOf: groupOf, cleanDetails: cleanDetails, teaserDetails: teaserDetails,

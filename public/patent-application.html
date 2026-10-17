@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Patent application — IdeaHub</title>
+<title>Patent application — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -150,7 +150,7 @@ a.cstage:hover { border-color: var(--border-hover); }
     const q = split(a);
     return `<table class="sum"><tr><td>Professional fee</td><td>${money(q.prof)}</td></tr>
       ${q.official ? `<tr><td>Official fees (paid to the patent office)</td><td>${money(q.official)}</td></tr>` : ''}
-      <tr><td>IdeaHub fee (${Math.round(a.fee_rate * 100)}% of the professional fee, includes escrow protection)</td><td>${money(q.fee)}</td></tr>
+      <tr><td>Picela fee (${Math.round(a.fee_rate * 100)}% of the professional fee, includes escrow protection)</td><td>${money(q.fee)}</td></tr>
       <tr class="total"><td>Total</td><td>${money(q.total)}</td></tr></table>`;
   }
 
@@ -169,14 +169,14 @@ a.cstage:hover { border-color: var(--border-hover); }
       <div class="field"><label for="qOff">Official fees (USD)</label><input class="input" id="qOff" type="number" min="0" step="1" value="${a.quote_amount ? esc(q.official) : ''}" placeholder="Paid to the office, e.g. 50" /></div></div>
       <div class="row2"><div class="field"><label for="qDays">Days to complete</label><input class="input" id="qDays" type="number" min="1" max="365" value="${a.quote_days ? esc(a.quote_days) : ''}" placeholder="e.g. 21" /></div><div></div></div>
       <div class="field"><label for="qScope">What's included</label><textarea class="textarea" id="qScope" placeholder="e.g. Novelty search, drafting the specification and claims, 3 drawings, official filing at NIPO.">${esc(a.quote_scope || '')}</textarea></div>
-      <p class="muted" style="font-size:12.5px">You pay the official fees to the patent office from the escrow payout. IdeaHub adds 8% of your professional fee on top, paid by the creator.</p>
+      <p class="muted" style="font-size:12.5px">You pay the official fees to the patent office from the escrow payout. Picela adds 8% of your professional fee on top, paid by the creator.</p>
       <div class="btns"><button class="btn btn-gold" data-act="quote">${s === 'quoted' ? 'Update quote' : 'Send quote'}</button><button class="btn btn-danger" data-act="decline">Decline</button></div></div>`;
     }
     if (s === 'quoted' && v === 'creator') return `<div class="panel action">
       <h2>Your quote from ${esc(atty)}</h2><p><b>${esc(a.stage_label)}</b>, done within <b>${Number(a.quote_days)} days</b> of payment.</p>
       ${a.quote_scope ? `<div class="scope" style="margin-top:.8rem">${esc(a.quote_scope)}</div>` : ''}
       ${quoteTable(a)}
-      <p style="font-size:13px">Your payment is held by IdeaHub. ${esc(atty)} is paid only after uploading the ${esc(proofWord(a))} and you confirm (or 7 days pass without a dispute).</p>
+      <p style="font-size:13px">Your payment is held by Picela. ${esc(atty)} is paid only after uploading the ${esc(proofWord(a))} and you confirm (or 7 days pass without a dispute).</p>
       ${a.payments_open ? '' : '<div class="note" style="margin-top:.8rem">Online payments are launching soon. Message the practitioner below in the meantime.</div>'}
       <div class="btns"><button class="btn btn-gold" data-act="pay" ${a.payments_open ? '' : 'disabled'}>Accept and pay ${money(split(a).total)}</button><button class="btn btn-danger" data-act="cancel">Decline quote</button></div></div>`;
     if (s === 'in_progress' && v === 'attorney') {
@@ -198,9 +198,9 @@ a.cstage:hover { border-color: var(--border-hover); }
       <p style="margin-top:.6rem">Open the ${esc(proofWord(a))} in Files and check it. If everything is right, confirm to release the fee. If nothing happens, it is released automatically on <b>${day(a.confirm_by)}</b>.</p>
       <div class="btns"><button class="btn btn-gold" data-act="confirm">Confirm and release fee</button><button class="btn btn-danger" data-act="dispute">Open a dispute</button></div></div>`;
     if (s === 'filed' && v === 'attorney') return `<div class="panel action"><h2>Waiting for the creator to confirm</h2><p>${summary} Your fee of ${money(a.amount)} is released when the creator confirms, or automatically on <b>${day(a.confirm_by)}</b>.</p></div>`;
-    if (s === 'disputed') return `<div class="panel action"><h2>Under review by IdeaHub</h2><p>A dispute was opened on ${day(a.disputed_at)}: <i>${esc(a.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while IdeaHub reviews the messages and files here. Both of you will be notified of the decision.</p></div>`;
+    if (s === 'disputed') return `<div class="panel action"><h2>Under review by Picela</h2><p>A dispute was opened on ${day(a.disputed_at)}: <i>${esc(a.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while Picela reviews the messages and files here. Both of you will be notified of the decision.</p></div>`;
     if (s === 'completed') return `<div class="panel action"><h2>Completed</h2><p>${summary} ${v === 'creator' ? 'Keep the documents safe. The case deadlines below show what comes next.' : 'The fee was added to your wallet.'}</p></div>`;
-    if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>IdeaHub refunded ${money(a.total)} to the creator.${a.resolution_note ? ' Note: ' + esc(a.resolution_note) : ''}</p></div>`;
+    if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>Picela refunded ${money(a.total)} to the creator.${a.resolution_note ? ' Note: ' + esc(a.resolution_note) : ''}</p></div>`;
     if (s === 'declined') return `<div class="panel action"><h2>Declined</h2><p>${esc(atty)} declined: <i>${esc(a.decline_reason)}</i></p>${v === 'creator' ? `<div class="btns">${a.case_id ? '<a class="btn btn-gold" href="#case">Choose another practitioner below</a>' : `<a class="btn btn-gold" href="/patent-apply?from=${a.id}">Send to another practitioner</a>`}</div>` : ''}</div>`;
     if (s === 'cancelled') return `<div class="panel action"><h2>Cancelled</h2><p>This request was cancelled before payment.</p>${v === 'creator' && !a.case_id ? `<div class="btns"><a class="btn btn-ghost" href="/patent-apply?from=${a.id}">Start again from this request</a></div>` : ''}</div>`;
     return '';
@@ -253,7 +253,7 @@ a.cstage:hover { border-color: var(--border-hover); }
         ${list('Questions for your practitioner', r.questions_for_attorney, s => `<li>${esc(s)}</li>`)}
       </dl>
       <div class="btns" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.8rem">${r.search_url ? `<a class="btn btn-ghost btn-sm" href="${esc(r.search_url)}" target="_blank" rel="noopener">Search Google Patents →</a>` : ''}${a.viewer === 'creator' ? '<button class="btn btn-ghost btn-sm" data-act="precheck">Run again</button>' : ''}</div>
-      <p class="muted" style="font-size:11.5px;margin-top:.8rem">An automatic estimate from IdeaHub's AI on ${esc(day(r.checked_at))}, seen only by you and your practitioners. It is not a patent search or legal advice.</p></div>`;
+      <p class="muted" style="font-size:11.5px;margin-top:.8rem">An automatic estimate from Picela's AI on ${esc(day(r.checked_at))}, seen only by you and your practitioners. It is not a patent search or legal advice.</p></div>`;
   }
 
   function render(a) {
@@ -309,7 +309,7 @@ a.cstage:hover { border-color: var(--border-hover); }
             <div class="kv"><span>Paid into escrow</span><span>${a.total ? money(a.total) : '—'}</span></div>
             <div class="kv"><span>Status</span><span>${a.status === 'completed' ? 'Released' : a.status === 'refunded' ? 'Refunded' : a.paid_at ? 'Held in escrow' : 'Not paid'}</span></div>
           </div>
-          <div class="note" style="font-size:12.5px">Keep all communication and files here. If there's a dispute, IdeaHub decides based on what's on this page.</div>
+          <div class="note" style="font-size:12.5px">Keep all communication and files here. If there's a dispute, Picela decides based on what's on this page.</div>
         </aside>
       </div>`;
     const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
@@ -339,7 +339,7 @@ a.cstage:hover { border-color: var(--border-hover); }
       if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/patents">Back to patent applications</a></div>`; return; }
       // Keep anything typed in forms across refreshes
       const keep = {}; ['fNo', 'fDate', 'fOffice', 'qProf', 'qOff', 'qDays', 'qScope', 'qStage', 'msgIn', 'nsNote', 'dlTitle', 'dlDate'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
-      A = d; document.title = `${d.title} — Patent application — IdeaHub`; render(d);
+      A = d; document.title = `${d.title} — Patent application — Picela`; render(d);
       Object.entries(keep).forEach(([k, v]) => { const el = $(k); if (el) el.value = v; });
     } catch (e) { $('root').innerHTML = '<div class="empty">Could not load. Check your connection and refresh.</div>'; }
   }
@@ -415,7 +415,7 @@ a.cstage:hover { border-color: var(--border-hover); }
         const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Could not add.');
         $('dlTitle').value = ''; $('dlDate').value = ''; toast('Deadline added.');
       } else if (act === 'dispute') {
-        const reason = await ask({ title: 'Open a dispute', text: 'The fee stays in escrow while IdeaHub reviews this page. Explain what went wrong.', ok: 'Open dispute', min: 15 });
+        const reason = await ask({ title: 'Open a dispute', text: 'The fee stays in escrow while Picela reviews this page. Explain what went wrong.', ok: 'Open dispute', min: 15 });
         if (reason === null) return; await api('/dispute', { reason });
       }
       await load();

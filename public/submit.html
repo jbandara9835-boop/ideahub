@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Submit Idea — IdeaHub</title>
+<title>Submit Idea — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -624,8 +624,8 @@
           <div class="field"><label>Existing licences or rights given to others <span style="color:var(--muted)">(optional)</span></label><textarea id="ptLicences" maxlength="600" rows="2" placeholder="e.g. Non-exclusive licence to ABC Ltd for India until 2028"></textarea></div>
           <div class="field">
             <label>What are you offering?</label>
-            <label class="pt-check"><input type="checkbox" id="ptSale" checked /> Open to selling the patent <span>Buyers can enquire. The sale and transfer happen directly between you, with your own attorney. IdeaHub only connects you.</span></label>
-            <label class="pt-check"><input type="checkbox" id="ptLicence" /> Open to licensing it through IdeaHub <span>Licensees request a licence here, you agree terms with a practitioner, and the licence is registered on IdeaHub.</span></label>
+            <label class="pt-check"><input type="checkbox" id="ptSale" checked /> Open to selling the patent <span>Buyers can enquire. The sale and transfer happen directly between you, with your own attorney. Picela only connects you.</span></label>
+            <label class="pt-check"><input type="checkbox" id="ptLicence" /> Open to licensing it through Picela <span>Licensees request a licence here, you agree terms with a practitioner, and the licence is registered on Picela.</span></label>
             <div id="ptLicBox" style="display:none;margin:.4rem 0 0 1.6rem">
               <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px">
                 <label><input type="checkbox" class="ptType" value="exclusive" /> Exclusive</label>
@@ -670,7 +670,7 @@
 
         <div class="seller-terms" id="sellerTerms">
           <div class="st-head">Idea Transfer Agreement</div>
-          <div class="st-intro">Every sale on IdeaHub uses the same standard agreement between you and the buyer. When the buyer's payment is released to you, the idea and its materials pass to them.</div>
+          <div class="st-intro">Every sale on Picela uses the same standard agreement between you and the buyer. When the buyer's payment is released to you, the idea and its materials pass to them.</div>
           <details class="st-details"><summary>Read the agreement</summary><ol id="stPoints"></ol></details>
           <label class="st-check"><input type="checkbox" id="sellerAgree" /> <span id="stLabel">I own this idea (or have the right to sell it) and agree to sell it under the Idea Transfer Agreement. Once sold, I won't sell, license or publish it to anyone else.</span></label>
           <div class="st-done" id="stDone" style="display:none">✓ You accepted the Idea Transfer Agreement for this listing.</div>
@@ -963,11 +963,11 @@
         const m = idea.moderation || {};
         const b = document.getElementById('modBanner');
         const head = idea.status === 'rejected' ? 'This idea is not live' : 'This idea is waiting for review';
-        const by = m.by === 'bot' ? 'Our automatic originality check' : m.by === 'admin' ? 'IdeaHub' : '';
+        const by = m.by === 'bot' ? 'Our automatic originality check' : m.by === 'admin' ? 'Picela' : '';
         b.innerHTML = `<strong>${head}</strong><br>${m.note ? `${by ? by + ': ' : ''}${origEsc(m.note)}<br>` : ''}` +
           (m.by === 'bot' ? 'Add what makes your idea different and save. It is checked again automatically and goes live by itself if it passes.'
             : 'Make your changes and save. An admin reviews it again.') +
-          ' Think the decision is wrong? Ask <strong>Ask IdeaHub</strong> (bottom right) to file an appeal.';
+          ' Think the decision is wrong? Ask <strong>Ask Picela</strong> (bottom right) to file an appeal.';
         b.style.display = 'block';
       }
     })
@@ -1164,7 +1164,7 @@
     }
     const btn = document.getElementById('origBtn');
     btn.disabled = true; btn.textContent = 'Checking…';
-    box.innerHTML = '<div class="orig-intro">Comparing with listings on IdeaHub and known products… this takes a few seconds.</div>'; box.classList.add('show');
+    box.innerHTML = '<div class="orig-intro">Comparing with listings on Picela and known products… this takes a few seconds.</div>'; box.classList.add('show');
     try {
       const res = await fetch(`${API_URL}/api/originality/check`, {
         method: 'POST',
@@ -1192,7 +1192,7 @@
       </div>`;
     const sim = r.similar || [];
     if (sim.length || r.private_similar) {
-      h += `<div class="orig-sec"><div class="orig-sec-title">Similar listings on IdeaHub</div>`;
+      h += `<div class="orig-sec"><div class="orig-sec-title">Similar listings on Picela</div>`;
       h += sim.map(s => `<div class="orig-item"><div><a href="/idea?id=${encodeURIComponent(s.id)}" target="_blank" rel="noopener">${origEsc(s.title)}</a><div class="orig-note">${origEsc(s.reason)}</div></div><span class="orig-pct">${Number(s.similarity) || 0}% alike</span></div>`).join('');
       if (r.private_similar) h += `<div class="orig-item"><div class="orig-note">${r.private_similar} similar private listing${r.private_similar > 1 ? 's' : ''} (details hidden)</div></div>`;
       h += `</div>`;

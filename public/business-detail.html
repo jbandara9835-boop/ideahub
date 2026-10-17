@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Business — IdeaHub</title>
+<title>Business — Picela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -281,7 +281,7 @@
       const types = (b.expansion_types || []);
       const d = b.details || {};
       const initials = b.masked ? '' : escB(String(title).split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
-      document.title = `${title} — IdeaHub`;
+      document.title = `${title} — Picela`;
       const detailRows = Object.keys(d).map(k => { const f = Routes.fieldLabel(b.route, dir, k); return f ? `<div class="meta-item"><div class="meta-label">${escB(f.label)}</div><div class="meta-value" style="white-space:pre-wrap">${escB(Routes.formatDetail(f, d[k]))}</div></div>` : ''; }).join('');
       const money = n => '$' + (Number(n) || 0).toLocaleString();
       const inv = b.investment_min && b.investment_max ? `${money(b.investment_min)} — ${money(b.investment_max)}` : b.investment_min ? `From ${money(b.investment_min)}` : b.investment_max ? `Up to ${money(b.investment_max)}` : (dir === 'seek' ? 'Open' : 'Negotiable');
@@ -321,7 +321,7 @@
           <div class="field"><label class="lbl" for="appTerritory">Territory</label><input type="text" id="appTerritory" placeholder="e.g. Southern Sri Lanka" /></div>
           <div class="field"><label class="lbl" for="appBackground">Your background</label><textarea id="appBackground" placeholder="Your business, experience, capacity…" style="min-height:70px;"></textarea></div>
           ${!token ? `<a href="/login?next=${encodeURIComponent(location.pathname)}" style="display:block;text-align:center;background:var(--accent);color:#0d0d0f;border-radius:10px;padding:0.85rem;font-weight:700;text-decoration:none;">Login to respond</a>` : `<button class="btn-primary" id="applyBtn" onclick="submitApplication()">Send →</button>`}
-          <p style="font-size:11px;color:var(--muted);margin-top:0.75rem;text-align:center;">No payment required: IdeaHub connects you.</p></div>`;
+          <p style="font-size:11px;color:var(--muted);margin-top:0.75rem;text-align:center;">No payment required: Picela connects you.</p></div>`;
 
       document.getElementById('pageContent').innerHTML = `
         <div class="detail-grid">
@@ -332,7 +332,7 @@
                 <div class="biz-logo-lg">${initials}</div>
                 <div>
                   <div class="biz-name-lg">${escB(title)}</div>
-                  <div style="font-size:12.5px;margin:2px 0 6px;color:${b.is_verified ? 'var(--success)' : 'var(--muted)'}">${b.is_verified ? 'Verified business · registration checked by IdeaHub' : 'Registration not verified yet'}${b.confidential ? ' · <span style="color:#c4b5fd">Confidential</span>' : ''}</div>
+                  <div style="font-size:12.5px;margin:2px 0 6px;color:${b.is_verified ? 'var(--success)' : 'var(--muted)'}">${b.is_verified ? 'Verified business · registration checked by Picela' : 'Registration not verified yet'}${b.confidential ? ' · <span style="color:#c4b5fd">Confidential</span>' : ''}</div>
                   ${b.tagline ? `<div class="biz-tagline-lg">${escB(b.tagline)}</div>` : ''}
                   <div>${types.map(t => `<span class="type-pill">${escB(Routes.typeLabel(t, dir))}</span>`).join('')}</div>
                 </div>

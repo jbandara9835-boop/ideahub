@@ -3,7 +3,7 @@
 //
 //   Posts      text + optional headline, up to 6 photos or 1 video, a category. Authors can
 //              edit or delete; admins can remove. Contact details are blocked (people reach
-//              each other through IdeaHub messages). Rate-limited.
+//              each other through Picela messages). Rate-limited.
 //   Reactions  💡 Brilliant · 🔥 Hot · 🤝 I'd invest · 🌍 World changer · 👎 Needs work.
 //              One per person per post; can be changed or removed. "Needs work" is counted
 //              separately and never raises a post in Trending. Counts are recounted from the
@@ -31,12 +31,12 @@ const REPORT_REASONS = ['Spam or selling', 'Contact details', 'Offensive or abus
 const HIDE_AFTER_REPORTS = 3;
 const MAX_IMAGES = 6;
 const BUCKET = 'idea-images';
-const SITE = (process.env.SITE_URL || 'https://ideahub.it.com').replace(/\/$/, '');
+const SITE = (process.env.SITE_URL || 'https://picela.co').replace(/\/$/, '');
 const AUTHOR = 'users(id, first_name, last_name, role, avatar_url, verification_status)';
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n{4,}/g, '\n\n\n').trim().slice(0, max);
 const intId = v => { const n = parseInt(v, 10); return Number.isFinite(n) && n > 0 && String(n) === String(v).trim() ? n : null; };
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 const escHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // In-memory rate limits (one Railway instance)
@@ -73,7 +73,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     };
   }
 
-  // Validate media sent by the browser: only files uploaded to IdeaHub storage
+  // Validate media sent by the browser: only files uploaded to Picela storage
   function cleanMedia(list) {
     if (list == null) return { value: [] };
     if (!Array.isArray(list)) return { error: 'Photos could not be read. Please add them again.' };
@@ -106,7 +106,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       hackTopic = LIFE_HACK_TOPICS.includes(b.hack_topic) ? b.hack_topic : 'Other';
     }
     const contact = quality.hasContact(title) || quality.hasContact(description);
-    if (contact) return { error: `Please remove ${contact}. On IdeaHub people reach you through your profile and messages, which keeps everyone safe.` };
+    if (contact) return { error: `Please remove ${contact}. On Picela people reach you through your profile and messages, which keeps everyone safe.` };
     // "Listed on the Marketplace" link: only to the author's own live idea
     let sourceIdea = existing ? existing.source_idea_id : null;
     if (!existing && b.source_idea_id) {
@@ -148,7 +148,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       try { await supabase.from(t).delete().eq('post_id', p.id); } catch (e) { /* table may not exist yet */ }
     }
     await supabase.from('wall_posts').delete().eq('id', p.id);
-    if (byAdmin && p.user_id !== byId) await notify(p.user_id, { type: 'wall_removed', title: 'A post was removed', message: `Your IdeaWall post${p.title ? ` "${p.title.slice(0, 60)}"` : ''} was removed by IdeaHub moderators because it did not follow the community guidelines.`, link: '/wall' });
+    if (byAdmin && p.user_id !== byId) await notify(p.user_id, { type: 'wall_removed', title: 'A post was removed', message: `Your IdeaWall post${p.title ? ` "${p.title.slice(0, 60)}"` : ''} was removed by Picela moderators because it did not follow the community guidelines.`, link: '/wall' });
   }
 
   // ── Uploads (photos up to 8 MB, videos up to 25 MB) ──
@@ -330,7 +330,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     const text = txt(req.body && req.body.text, 1000);
     if (!text) return res.status(400).json({ error: 'Write a comment first.' });
     const contact = quality.hasContact(text);
-    if (contact) return res.status(400).json({ error: `Please remove ${contact} from your comment. People can message each other on IdeaHub.` });
+    if (contact) return res.status(400).json({ error: `Please remove ${contact} from your comment. People can message each other on Picela.` });
     if (limited('cmt:' + req.user.id, 20, 600000)) return res.status(429).json({ error: 'You are commenting very fast. Please wait a few minutes.' });
     const { data, error } = await supabase.from('wall_comments').insert([{ user_id: req.user.id, post_id: id, text }]).select().single();
     if (error) return res.status(500).json({ error: error.message });
@@ -406,7 +406,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
       const img = (media.find(m => m.type !== 'video') || {}).url;
       const meta = [
         `<meta property="og:type" content="article" />`,
-        `<meta property="og:site_name" content="IdeaHub" />`,
+        `<meta property="og:site_name" content="Picela" />`,
         `<meta property="og:title" content="${escHtml(title)}" />`,
         `<meta property="og:description" content="${escHtml(desc)}" />`,
         `<meta property="og:url" content="${SITE}/wall/post/${p.id}" />`,

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Video call — IdeaHub</title>
+<title>Video call — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -40,7 +40,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 </head>
 <body>
 <div class="bar">
-  <a class="logo" href="/" aria-label="IdeaHub home"><span></span><b>IdeaHub</b></a>
+  <a class="logo" href="/" aria-label="Picela home"><span></span><b>Picela</b></a>
   <div class="title" id="title">Video call</div>
   <a class="back" id="back" href="/messages">← Back</a>
 </div>
@@ -86,7 +86,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       return show(d.code === 'video_not_configured' ? '' : '', d.code === 'video_not_configured' ? 'Video calls are coming soon' : 'Can\'t join this call', d.error || 'Something went wrong.', `${r.status >= 500 ? '<button class="btn gold" onclick="start()">Try again</button>' : ''}${backBtn()}`);
     }
     $('title').innerHTML = `${esc(d.title)}<small>Private</small>`;
-    document.title = `${d.title} — IdeaHub`;
+    document.title = `${d.title} — Picela`;
     if (!window.Daily) return show('', 'Video couldn\'t load', 'Something blocked the video component. Disable ad blockers for this page and try again.', `<button class="btn gold" onclick="location.reload()">Reload</button>${backBtn()}`);
     $('msg').classList.add('hidden');
     try {

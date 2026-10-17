@@ -4,13 +4,13 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Life Hacks — Free everyday tips from IdeaHub creators</title>
-<meta name="description" id="metaDesc" content="Free life hacks shared by IdeaHub creators: clever, tested tips for home, food, money, health, tech, work and travel." />
-<link rel="canonical" id="canonicalLink" href="https://ideahub.it.com/life-hacks" />
+<title>Life Hacks — Free everyday tips from Picela creators</title>
+<meta name="description" id="metaDesc" content="Free life hacks shared by Picela creators: clever, tested tips for home, food, money, health, tech, work and travel." />
+<link rel="canonical" id="canonicalLink" href="https://picela.co/life-hacks" />
 <meta property="og:type" content="website" />
-<meta property="og:url" id="ogUrl" content="https://ideahub.it.com/life-hacks" />
-<meta property="og:title" id="ogTitle" content="Life Hacks — IdeaHub" />
-<meta property="og:description" id="ogDesc" content="Free life hacks shared by IdeaHub creators." />
+<meta property="og:url" id="ogUrl" content="https://picela.co/life-hacks" />
+<meta property="og:title" id="ogTitle" content="Life Hacks — Picela" />
+<meta property="og:description" id="ogDesc" content="Free life hacks shared by Picela creators." />
 <meta name="twitter:card" content="summary" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -125,7 +125,7 @@ footer a:hover { color: var(--text); }
 <header id="siteNav"></header><script src="/site-nav.js"></script>
 
 <section class="hero">
-  <div class="kicker">Free · Shared by IdeaHub creators</div>
+  <div class="kicker">Free · Shared by Picela creators</div>
   <h1>Life <span>Hacks</span></h1>
   <p>Clever, tested tips for everyday life — at home, in the kitchen, with money, health, tech, work and travel. Free to read, free to share.</p>
   <div class="hero-actions">
@@ -152,7 +152,7 @@ footer a:hover { color: var(--text); }
   <div class="cta-box">
     <div>
       <h3>Got an idea that's worth more than a tip?</h3>
-      <p>List it on the IdeaHub marketplace and sell it to investors, protected by escrow.</p>
+      <p>List it on the Picela marketplace and sell it to investors, protected by escrow.</p>
     </div>
     <div class="cta-actions">
       <a class="btn-ghost" href="/browse">Browse ideas</a>
@@ -183,7 +183,7 @@ footer a:hover { color: var(--text); }
     return new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   }
   function avatar(p) { return p.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : initials(p); }
-  function name(p) { return esc(`${p.first_name || ''} ${p.last_name || ''}`.trim() || 'IdeaHub member'); }
+  function name(p) { return esc(`${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Picela member'); }
 
   // Signed-out visitors are sent to sign in first
   if (!token) document.getElementById('shareBtn').href = '/login';
@@ -243,12 +243,12 @@ footer a:hover { color: var(--text); }
   const ov = document.getElementById('ov');
   const baseTitle = document.title;
   function setMeta(p) {
-    const url = p ? `https://ideahub.it.com/life-hacks?id=${Number(p.id)}` : 'https://ideahub.it.com/life-hacks';
-    const desc = p ? String(p.description || p.title).replace(/\s+/g, ' ').slice(0, 155) : 'Free life hacks shared by IdeaHub creators.';
-    document.title = p ? `${p.title} — Life Hack | IdeaHub` : baseTitle;
+    const url = p ? `https://picela.co/life-hacks?id=${Number(p.id)}` : 'https://picela.co/life-hacks';
+    const desc = p ? String(p.description || p.title).replace(/\s+/g, ' ').slice(0, 155) : 'Free life hacks shared by Picela creators.';
+    document.title = p ? `${p.title} — Life Hack | Picela` : baseTitle;
     document.getElementById('canonicalLink').href = url;
     document.getElementById('ogUrl').content = url;
-    document.getElementById('ogTitle').content = p ? `${p.title} — Life Hack` : 'Life Hacks — IdeaHub';
+    document.getElementById('ogTitle').content = p ? `${p.title} — Life Hack` : 'Life Hacks — Picela';
     document.getElementById('ogDesc').content = desc;
     document.getElementById('metaDesc').content = desc;
   }
@@ -272,7 +272,7 @@ footer a:hover { color: var(--text); }
     if (push) history.pushState({ id: p.id }, '', `/life-hacks?id=${Number(p.id)}`);
     document.getElementById('closeBtn').onclick = () => closeHack(true);
     document.getElementById('copyBtn').onclick = async e => {
-      try { await navigator.clipboard.writeText(`https://ideahub.it.com/life-hacks?id=${Number(p.id)}`); e.target.textContent = '✓ Link copied'; }
+      try { await navigator.clipboard.writeText(`https://picela.co/life-hacks?id=${Number(p.id)}`); e.target.textContent = '✓ Link copied'; }
       catch (err) { e.target.textContent = 'Copy failed'; }
     };
   }

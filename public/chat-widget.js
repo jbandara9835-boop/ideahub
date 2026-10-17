@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// chat-widget.js — IdeaHub assistant widget
+// chat-widget.js — Picela assistant widget
 // Put this file in /public, then add before </body> on any page:
 //   <script src="/chat-widget.js" defer></script>
 // ─────────────────────────────────────────────────────────────────────────────
@@ -57,15 +57,15 @@
 
   // ── Markup ──────────────────────────────────────────────────────────────────
   const btn = el('button', 'ihc-btn');
-  btn.innerHTML = '<span class="ihc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg></span><span class="ihc-tx">Ask IdeaHub</span>';
-  btn.setAttribute('aria-label', 'Open IdeaHub assistant');
+  btn.innerHTML = '<span class="ihc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg></span><span class="ihc-tx">Ask Picela</span>';
+  btn.setAttribute('aria-label', 'Open Picela assistant');
 
   const panel = el('div', 'ihc-panel');
   panel.setAttribute('role', 'dialog');
-  panel.setAttribute('aria-label', 'IdeaHub assistant');
+  panel.setAttribute('aria-label', 'Picela assistant');
   panel.innerHTML = `
     <div class="ihc-head">
-      <div><div class="ihc-title">IdeaHub Assistant</div><div class="ihc-sub">Find ideas, businesses and experts</div></div>
+      <div><div class="ihc-title">Picela Assistant</div><div class="ihc-sub">Find ideas, businesses and experts</div></div>
       <button class="ihc-close" aria-label="Close">&times;</button>
     </div>
     <div class="ihc-body"></div>

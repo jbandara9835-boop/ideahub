@@ -4,16 +4,16 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Idea — IdeaHub</title>
-<meta name="description" id="metaDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
-<link rel="canonical" id="canonicalLink" href="https://ideahub.it.com/idea" />
+<title>Idea — Picela</title>
+<meta name="description" id="metaDesc" content="Discover innovative ideas for sale on Picela — the global marketplace connecting creators and investors." />
+<link rel="canonical" id="canonicalLink" href="https://picela.co/idea" />
 <meta property="og:type" content="website" />
-<meta property="og:url" id="ogUrl" content="https://ideahub.it.com/idea" />
-<meta property="og:title" id="ogTitle" content="Idea — IdeaHub" />
-<meta property="og:description" id="ogDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
+<meta property="og:url" id="ogUrl" content="https://picela.co/idea" />
+<meta property="og:title" id="ogTitle" content="Idea — Picela" />
+<meta property="og:description" id="ogDesc" content="Discover innovative ideas for sale on Picela — the global marketplace connecting creators and investors." />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" id="twTitle" content="Idea — IdeaHub" />
-<meta name="twitter:description" id="twDesc" content="Discover innovative ideas for sale on IdeaHub — the global marketplace connecting creators and investors." />
+<meta name="twitter:title" id="twTitle" content="Idea — Picela" />
+<meta name="twitter:description" id="twDesc" content="Discover innovative ideas for sale on Picela — the global marketplace connecting creators and investors." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -249,7 +249,7 @@
 <div class="modal-overlay" id="licModal">
   <div class="modal">
     <div class="modal-title">Request a licence</div>
-    <div class="modal-sub">Tell the owner what you need. If they accept, you agree the terms and fee together (ideally drafted by a patent attorney), then register the signed licence on IdeaHub.</div>
+    <div class="modal-sub">Tell the owner what you need. If they accept, you agree the terms and fee together (ideally drafted by a patent attorney), then register the signed licence on Picela.</div>
     <label class="lic-l">Type of licence</label>
     <div id="licTypes" class="lic-types"></div>
     <div class="lic-row"><div><label class="lic-l">Territory</label><input id="licTerritory" maxlength="200" placeholder="e.g. Sri Lanka, or South Asia" /></div>
@@ -484,7 +484,7 @@
     document.getElementById('feeFee').textContent = formatPrice(c.fee);
     document.getElementById('feeTotal').textContent = formatPrice(c.total);
   }
-  // ── Patents: sold directly between the parties; licences run on IdeaHub ──
+  // ── Patents: sold directly between the parties; licences run on Picela ──
   const LIC_TYPES = { exclusive: ['Exclusive', 'Only the licensee may use it in the agreed territory and field.'], sole: ['Sole', 'The licensee and the owner may use it; nobody else.'], non_exclusive: ['Non-exclusive', 'The owner may license others too.'] };
   let licCfg = null;
   function fd(d) { return d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'; }
@@ -501,7 +501,7 @@
         ${item('Granted', fd(d.grant_date))}
         ${item('Expires', fd(d.expiry_date))}
         ${item('Fees paid until', fd(d.fees_paid_until))}
-        ${item('Verified by IdeaHub', idea.patent_verified ? 'Documents checked' : '—')}
+        ${item('Verified by Picela', idea.patent_verified ? 'Documents checked' : '—')}
       </div>
       ${d.family ? `<div style="font-size:13px;margin-top:.9rem;color:var(--muted)">Also filed as: <span style="color:var(--text)">${escI(d.family)}</span></div>` : ''}
       ${d.co_owners ? `<div style="font-size:13px;margin-top:.5rem;color:var(--muted)">Co-owners: <span style="color:var(--text)">${escI(d.co_owners)}</span></div>` : ''}
@@ -528,7 +528,7 @@
         <li>Hire a <a href="/find-support?type=patent_attorney">patent attorney</a> to check ownership, status, fees and existing licences, and to prepare the assignment.</li>
         <li>A <a href="/find-support?type=chartered_accountant">chartered accountant</a> can help with valuation and tax.</li>
         <li>Sign the assignment and record it with the patent office.</li></ol>
-        The sale, payment and transfer happen directly between you and the owner. IdeaHub connects you but is not part of the sale.</div>` : ''}
+        The sale, payment and transfer happen directly between you and the owner. Picela connects you but is not part of the sale.</div>` : ''}
       ${!token && !isOwner ? `<div style="text-align:center;margin-bottom:1rem;"><a href="${loginUrl()}" style="color:var(--accent);font-size:13px;">Sign in to contact the owner</a></div>` : ''}
       ${originalityPanel(idea.originality_rating, isOwner)}
     </div>`;
@@ -538,7 +538,7 @@
       const list = await fetch(`${API_URL}/api/ideas/${encodeURIComponent(id)}/licences`).then(r => r.json());
       if (!Array.isArray(list) || !list.length) return;
       const el = document.getElementById('activeLic'); if (!el) return;
-      el.innerHTML = `<div style="font-size:13px;margin-top:.9rem"><div class="meta-label" style="margin-bottom:6px">Licences registered on IdeaHub</div>${list.map(l => `<div style="color:var(--text);margin-bottom:3px">• ${escI(l.type_label)} · ${escI(l.territory || '')}${l.field_of_use ? ' · ' + escI(l.field_of_use) : ''}${l.end_date ? ' · until ' + fd(l.end_date) : ''}</div>`).join('')}</div>`;
+      el.innerHTML = `<div style="font-size:13px;margin-top:.9rem"><div class="meta-label" style="margin-bottom:6px">Licences registered on Picela</div>${list.map(l => `<div style="color:var(--text);margin-bottom:3px">• ${escI(l.type_label)} · ${escI(l.territory || '')}${l.field_of_use ? ' · ' + escI(l.field_of_use) : ''}${l.end_date ? ' · until ' + fd(l.end_date) : ''}</div>`).join('')}</div>`;
     } catch (e) {}
   }
   async function openRoom() {
@@ -559,7 +559,7 @@
     const types = (currentIdea.patent_offer?.licence_types || []);
     document.getElementById('licTypes').innerHTML = types.map((t, i) => `<label class="lic-type"><input type="radio" name="licType" value="${escI(t)}" ${i === 0 ? 'checked' : ''} /><span><b>${escI((LIC_TYPES[t] || [t])[0])}</b><small>${escI((LIC_TYPES[t] || ['', ''])[1])}</small></span></label>`).join('');
     const payer = licCfg.payer === 'split' ? 'shared equally by both sides' : licCfg.payer === 'licensor' ? 'paid by the owner' : 'paid by you';
-    document.getElementById('licFee').textContent = licCfg.amount > 0 ? `When the signed licence is registered on IdeaHub, a fixed IdeaHub fee of $${licCfg.amount} applies (${payer}). The licence fee or royalties themselves are whatever you and the owner agree.` : '';
+    document.getElementById('licFee').textContent = licCfg.amount > 0 ? `When the signed licence is registered on Picela, a fixed Picela fee of $${licCfg.amount} applies (${payer}). The licence fee or royalties themselves are whatever you and the owner agree.` : '';
     document.getElementById('licError').classList.remove('show');
     document.getElementById('licModal').classList.add('show');
   }
@@ -589,8 +589,8 @@
     const col = r.band === 'original' ? '#6ee7b7' : r.band === 'similar' ? '#f5c842' : '#ff8a8a';
     const facts = [];
     facts.push(r.similar_listings
-      ? `<div><span>≈</span><span>${r.similar_listings} similar listing${r.similar_listings > 1 ? 's' : ''} on IdeaHub${r.closest_similarity ? ` (closest ${Number(r.closest_similarity)}% alike)` : ''}</span></div>`
-      : `<div><span>✓</span><span>No close match among IdeaHub listings</span></div>`);
+      ? `<div><span>≈</span><span>${r.similar_listings} similar listing${r.similar_listings > 1 ? 's' : ''} on Picela${r.closest_similarity ? ` (closest ${Number(r.closest_similarity)}% alike)` : ''}</span></div>`
+      : `<div><span>✓</span><span>No close match among Picela listings</span></div>`);
     facts.push(r.known_products
       ? `<div><span>≈</span><span>${r.known_products} existing product${r.known_products > 1 ? 's' : ''} cover similar ground</span></div>`
       : `<div><span>✓</span><span>No well-known product does the same thing</span></div>`);
@@ -600,7 +600,7 @@
         <div><div class="orig-kicker">AI originality check</div><div class="orig-label" style="color:${col}">${escI(r.label)}</div></div>
       </div>
       <div class="orig-facts">${facts.join('')}</div>
-      <div class="orig-note">Compared with every IdeaHub listing and products our AI knows of${r.checked_at ? ', ' + new Date(r.checked_at).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' }) : ''}. An estimate to help you decide, not a legal patent search.${isOwner ? ' <a href="/submit?edit=' + encodeURIComponent(currentIdea.id) + '" style="color:var(--accent);">See your full report →</a>' : ''}</div>
+      <div class="orig-note">Compared with every Picela listing and products our AI knows of${r.checked_at ? ', ' + new Date(r.checked_at).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' }) : ''}. An estimate to help you decide, not a legal patent search.${isOwner ? ' <a href="/submit?edit=' + encodeURIComponent(currentIdea.id) + '" style="color:var(--accent);">See your full report →</a>' : ''}</div>
     </div>`;
   }
 
@@ -622,17 +622,17 @@
       const idea = await res.json();
       currentIdea = idea;
 
-      document.title = `${idea.title} — IdeaHub`;
+      document.title = `${idea.title} — Picela`;
       document.getElementById('breadcrumbTitle').textContent = idea.title;
 
-      const seoDesc = (idea.summary || idea.description || `${idea.title} — a ${idea.industry || ''} idea listed on IdeaHub.`).slice(0, 160);
-      const seoUrl = `https://ideahub.it.com/idea?id=${idea.id}`;
+      const seoDesc = (idea.summary || idea.description || `${idea.title} — a ${idea.industry || ''} idea listed on Picela.`).slice(0, 160);
+      const seoUrl = `https://picela.co/idea?id=${idea.id}`;
       document.getElementById('metaDesc').setAttribute('content', seoDesc);
       document.getElementById('canonicalLink').setAttribute('href', seoUrl);
       document.getElementById('ogUrl').setAttribute('content', seoUrl);
-      document.getElementById('ogTitle').setAttribute('content', `${idea.title} — IdeaHub`);
+      document.getElementById('ogTitle').setAttribute('content', `${idea.title} — Picela`);
       document.getElementById('ogDesc').setAttribute('content', seoDesc);
-      document.getElementById('twTitle').setAttribute('content', `${idea.title} — IdeaHub`);
+      document.getElementById('twTitle').setAttribute('content', `${idea.title} — Picela`);
       document.getElementById('twDesc').setAttribute('content', seoDesc);
 
       const lvl = getLevelInfo(idea.level);

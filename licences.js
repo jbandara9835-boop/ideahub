@@ -1,25 +1,25 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// licences.js — patent licence deals through IdeaHub, and patent listing details
+// licences.js — patent licence deals through Picela, and patent listing details
 //
-// Outright patent SALES are not handled by IdeaHub: patent listings have no Buy
+// Outright patent SALES are not handled by Picela: patent listings have no Buy
 // button or escrow. Buyers enquire, and are pointed to registered practitioners and
 // accountants for due diligence and the transfer, which happens between the parties.
 //
-// LICENCES run on IdeaHub:
+// LICENCES run on Picela:
 //   requested    → the licensee asks (type, territory, field of use, term, message)
 //   negotiating  → the owner accepts to talk; both message, call, upload drafts. A
-//                  practitioner (hired by either side) drafts the agreement. IdeaHub
+//                  practitioner (hired by either side) drafts the agreement. Picela
 //                  never drafts or decides the terms or the licence fee.
 //   signed       → one side uploads the final signed agreement; BOTH confirm that file
-//   active       → IdeaHub's fixed licence fee is paid; the licence is recorded here
+//   active       → Picela's fixed licence fee is paid; the licence is recorded here
 //                  with its dates, reminders before it ends; an exclusive licence
 //                  blocks new requests for the same patent
 //   ended | declined | cancelled
 // Money between the parties (upfront fees, royalties) follows their agreement and is
-// paid outside IdeaHub.
+// paid outside Picela.
 //
 // Railway variables:
-//   LICENCE_FEE_USD    IdeaHub's fixed fee per licence (default 49)
+//   LICENCE_FEE_USD    Picela's fixed fee per licence (default 49)
 //   LICENCE_FEE_PAYER  licensee | licensor | split (default licensee)
 //
 // server.js:  const licences = require('./licences');
@@ -39,7 +39,7 @@ const STATUS_LABEL = { requested: 'Requested', negotiating: 'Negotiating', signe
 const OPEN = ['requested', 'negotiating', 'signed'];
 
 const txt = (v, max) => String(v == null ? '' : v).replace(/\r\n/g, '\n').trim().slice(0, max);
-const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'IdeaHub member' : 'IdeaHub member';
+const fullName = u => u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Picela member' : 'Picela member';
 const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s + 'T00:00:00Z'));
 const niceDate = d => d ? new Date(String(d).slice(0, 10) + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '';
 
@@ -96,7 +96,7 @@ function core(supabase, escrow) {
       for (const uid of [d.licensor_id, d.licensee_id]) {
         await escrow.notify(uid, { type: 'licence_ending', title: '📅 Licence ending soon', message: `The licence for "${d.idea_title}" ends in ${left} day${left === 1 ? '' : 's'} (${niceDate(d.end_date)}). Talk about renewing it in good time.`, link: `/licence?id=${d.id}` });
         if (Math.min(...due) <= 30) await escrow.emailUser(uid, `Licence ending ${niceDate(d.end_date)}`, 'A licence is ending soon',
-          `The licence for <strong>"${escrow.esc(d.idea_title)}"</strong> ends on <strong>${escrow.esc(niceDate(d.end_date))}</strong>. If you want to renew, agree new terms with the other side and register the new agreement on IdeaHub.`, 'Open licence', `/licence?id=${d.id}`);
+          `The licence for <strong>"${escrow.esc(d.idea_title)}"</strong> ends on <strong>${escrow.esc(niceDate(d.end_date))}</strong>. If you want to renew, agree new terms with the other side and register the new agreement on Picela.`, 'Open licence', `/licence?id=${d.id}`);
       }
       await supabase.from('licence_deals').update({ reminders: [...new Set([...sent, ...due])] }).eq('id', d.id);
       reminders++;
@@ -283,7 +283,7 @@ function mount(app, { supabase, authMiddleware, escrow }) {
   });
 
   // Each side confirms which uploaded file is the final signed agreement, plus the key dates.
-  // When both point at the same file, the deal is signed and IdeaHub's fee becomes due.
+  // When both point at the same file, the deal is signed and Picela's fee becomes due.
   app.post('/api/licences/:id/confirm-signed', authMiddleware, async (req, res) => {
     const r = await load(req); if (!r.d) return fail(res, r);
     if (r.as === 'admin') return res.status(403).json({ error: 'Not allowed.' });
@@ -309,8 +309,8 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (!rows || !rows.length) return res.status(409).json({ error: 'This deal changed. Refresh the page.' });
     const fname = r.d.files[idx].name;
     if (both) {
-      await c.log(r.d.id, null, `Both sides confirmed "${fname}" as the signed agreement (from ${niceDate(start)}${end ? ' to ' + niceDate(end) : ''}).${fee > 0 ? ` IdeaHub's licence fee of ${escrow.money(fee)} is now due.` : ' The licence is active.'}`);
-      for (const uid of [r.d.licensor_id, r.d.licensee_id]) await escrow.notify(uid, { type: 'licence_signed', title: '✍️ Licence agreement confirmed', message: `"${r.d.idea_title}": both sides confirmed the signed agreement.${fee > 0 ? ' Pay the IdeaHub licence fee to register it.' : ''}`, link: `/licence?id=${r.d.id}` });
+      await c.log(r.d.id, null, `Both sides confirmed "${fname}" as the signed agreement (from ${niceDate(start)}${end ? ' to ' + niceDate(end) : ''}).${fee > 0 ? ` Picela's licence fee of ${escrow.money(fee)} is now due.` : ' The licence is active.'}`);
+      for (const uid of [r.d.licensor_id, r.d.licensee_id]) await escrow.notify(uid, { type: 'licence_signed', title: '✍️ Licence agreement confirmed', message: `"${r.d.idea_title}": both sides confirmed the signed agreement.${fee > 0 ? ' Pay the Picela licence fee to register it.' : ''}`, link: `/licence?id=${r.d.id}` });
     } else {
       await c.log(r.d.id, null, `${fullName(r.u)} confirmed "${fname}" as the signed agreement${otherAt ? ' (with different details, so the other side needs to confirm again)' : ''}. Waiting for the other side.`);
       await escrow.notify(other(r), { type: 'licence_confirm', title: '✍️ Please confirm the signed agreement', message: `${fullName(r.u)} marked "${fname}" as the signed licence agreement for "${r.d.idea_title}". Check it and confirm.`, link: `/licence?id=${r.d.id}` });
@@ -318,13 +318,13 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     res.json(rows[0]);
   });
 
-  // Pay IdeaHub's fixed licence fee (the payer's share). Activates the licence when fully paid.
+  // Pay Picela's fixed licence fee (the payer's share). Activates the licence when fully paid.
   app.post('/api/licences/:id/pay-fee', authMiddleware, async (req, res) => {
     const r = await load(req); if (!r.d) return fail(res, r);
     if (r.as === 'admin') return res.status(403).json({ error: 'Not allowed.' });
     if (r.d.status !== 'signed') return res.status(400).json({ error: 'No fee is due on this licence.' });
     const payer = r.d.fee_payer || 'licensee';
-    if (payer !== 'split' && payer !== r.as) return res.status(400).json({ error: `The ${payer} pays IdeaHub's fee for this licence.` });
+    if (payer !== 'split' && payer !== r.as) return res.status(400).json({ error: `The ${payer} pays Picela's fee for this licence.` });
     const col = r.as === 'licensor' ? 'fee_paid_licensor_at' : 'fee_paid_licensee_at';
     if (r.d[col]) return res.status(400).json({ error: 'You have already paid.' });
     if (!c.payments.purchasesOpen()) return res.status(403).json({ error: 'Online payments are launching soon.', code: 'payments_closed' });
@@ -340,15 +340,15 @@ function mount(app, { supabase, authMiddleware, escrow }) {
     if (done) {
       const { data: act } = await supabase.from('licence_deals').update({ status: 'active', activated_at: now }).eq('id', d.id).eq('status', 'signed').select();
       out = (act && act[0]) || d;
-      await c.log(d.id, null, `IdeaHub's licence fee was paid. The licence is registered and active${d.end_date ? ' until ' + niceDate(d.end_date) : ''}.`);
+      await c.log(d.id, null, `Picela's licence fee was paid. The licence is registered and active${d.end_date ? ' until ' + niceDate(d.end_date) : ''}.`);
       for (const uid of [d.licensor_id, d.licensee_id]) {
         await escrow.notify(uid, { type: 'licence_active', title: '✅ Licence registered', message: `The ${TYPES[d.licence_type].toLowerCase()} for "${d.idea_title}" is active from ${niceDate(d.start_date)}.`, link: `/licence?id=${d.id}` });
-        await escrow.emailUser(uid, `Licence registered: "${d.idea_title}"`, 'Your licence is registered on IdeaHub',
+        await escrow.emailUser(uid, `Licence registered: "${d.idea_title}"`, 'Your licence is registered on Picela',
           `The <strong>${escrow.esc(TYPES[d.licence_type].toLowerCase())}</strong> for <strong>"${escrow.esc(d.idea_title)}"</strong> (${escrow.esc(d.territory)}) is active from <strong>${escrow.esc(niceDate(d.start_date))}</strong>${d.end_date ? ` to <strong>${escrow.esc(niceDate(d.end_date))}</strong>` : ''}.<br><br>Payments between you follow your signed agreement. Ask your practitioner whether the licence should also be recorded with the patent office.`, 'Open licence', `/licence?id=${d.id}`);
       }
     } else {
-      await c.log(d.id, null, `${fullName(r.u)} paid their half of IdeaHub's licence fee.`);
-      await escrow.notify(other(r), { type: 'licence_fee', title: 'Your half of the licence fee is due', message: `The other side paid their half of IdeaHub's fee for "${d.idea_title}". Pay yours to register the licence.`, link: `/licence?id=${d.id}` });
+      await c.log(d.id, null, `${fullName(r.u)} paid their half of Picela's licence fee.`);
+      await escrow.notify(other(r), { type: 'licence_fee', title: 'Your half of the licence fee is due', message: `The other side paid their half of Picela's fee for "${d.idea_title}". Pay yours to register the licence.`, link: `/licence?id=${d.id}` });
     }
     res.json(out);
   });

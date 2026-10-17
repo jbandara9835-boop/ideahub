@@ -1,4 +1,4 @@
-/* mgr.css — shared look for the IdeaHub Managers pages (/managers, /mandate, /workspace) */
+/* mgr.css — shared look for the Picela Managers pages (/managers, /mandate, /workspace) */
 *, *::before, *::after { box-sizing: border-box; }
 :root {
   --bg: #08080a; --card: #121216; --card2: #1a1a20; --line: rgba(255,255,255,0.08); --line2: rgba(255,255,255,0.15);

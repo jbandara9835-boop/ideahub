@@ -14,7 +14,7 @@
     { key: 'video_call', icon: '', label: 'Explain it on a video call', short: 'Video call',
       help: 'Walk the buyer through the idea and answer questions live.' },
     { key: 'meet_in_person', icon: '', label: 'Meet the buyer in person', short: 'Meet in person',
-      help: 'A face-to-face meeting.', warning: 'In-person meetings happen outside IdeaHub. We are not responsible for them, so meet in a public place.' },
+      help: 'A face-to-face meeting.', warning: 'In-person meetings happen outside Picela. We are not responsible for them, so meet in a public place.' },
     { key: 'prototype', icon: '', label: 'Sell the prototype', short: 'Prototype',
       help: 'Hand over a working prototype or sample with the idea.' },
     { key: 'supplier', icon: '', label: 'Make the product and supply it', short: 'Supplier',

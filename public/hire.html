@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Hires — IdeaHub</title>
+<title>Hires — Picela</title>
 <meta name="robots" content="noindex" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -119,14 +119,14 @@
       <p>${s === 'quoted' ? `You quoted ${money(h.quote_amount)} within ${h.quote_days} days. You can revise it until the client pays.` : `Read the request, then quote one price for the whole job. The client pays it into escrow, and you're paid when they confirm the work.`}</p>
       <div class="row2" style="margin-top:1rem"><div class="field"><label for="qAmt">Your fee (USD)</label><input class="input" id="qAmt" type="number" min="1" value="${h.quote_amount ? esc(h.quote_amount) : (h.budget ? esc(h.budget) : '')}" /></div><div class="field"><label for="qDays">Days to complete</label><input class="input" id="qDays" type="number" min="1" max="365" value="${h.quote_days ? esc(h.quote_days) : ''}" /></div></div>
       <div class="field"><label for="qScope">What's included</label><textarea class="textarea" id="qScope" placeholder="e.g. Prepare and file the 2025 company tax return, including one revision.">${esc(h.quote_scope || '')}</textarea></div>
-      <p class="muted" style="font-size:12.5px">IdeaHub adds 8% on top, paid by the client. You receive your full fee.</p>
+      <p class="muted" style="font-size:12.5px">Picela adds 8% on top, paid by the client. You receive your full fee.</p>
       <div class="btns"><button class="btn btn-gold" data-act="quote">${s === 'quoted' ? 'Update quote' : 'Send quote'}</button><button class="btn btn-danger" data-act="decline">Decline</button></div></div>`;
     if (s === 'quoted' && v === 'client') {
       const fee = Math.round(h.quote_amount * h.fee_rate * 100) / 100;
       return `<div class="panel action"><h2>Your quote from ${esc(other)}</h2><p>Done within <b>${Number(h.quote_days)} days</b> of payment.</p>
       ${h.quote_scope ? `<div class="scope" style="margin-top:.8rem">${esc(h.quote_scope)}</div>` : ''}
-      <table class="sum"><tr><td>Professional's fee</td><td>${money(h.quote_amount)}</td></tr><tr><td>IdeaHub fee (8%, includes escrow protection)</td><td>${money(fee)}</td></tr><tr class="total"><td>Total</td><td>${money(Number(h.quote_amount) + fee)}</td></tr></table>
-      <p style="font-size:13px">Your payment is held by IdeaHub and released only after you confirm the work (or 7 days after delivery without a dispute).</p>
+      <table class="sum"><tr><td>Professional's fee</td><td>${money(h.quote_amount)}</td></tr><tr><td>Picela fee (8%, includes escrow protection)</td><td>${money(fee)}</td></tr><tr class="total"><td>Total</td><td>${money(Number(h.quote_amount) + fee)}</td></tr></table>
+      <p style="font-size:13px">Your payment is held by Picela and released only after you confirm the work (or 7 days after delivery without a dispute).</p>
       ${h.payments_open ? '' : '<div class="note" style="margin-top:.8rem">Online payments are launching soon. Message the professional below in the meantime.</div>'}
       <div class="btns"><button class="btn btn-gold" data-act="pay" ${h.payments_open ? '' : 'disabled'}>Accept and pay ${money(Number(h.quote_amount) + fee)}</button><button class="btn btn-danger" data-act="cancel">Decline quote</button></div></div>`;
     }
@@ -134,7 +134,7 @@
     if (s === 'in_progress' && v === 'client') return `<div class="panel action"><h2>Work in progress</h2><p>${money(h.total)} is held safely in escrow. ${esc(other)} expects to finish by <b>${esc(due)}</b>.</p><div class="btns"><button class="btn btn-danger btn-sm" data-act="dispute">Report a problem</button></div></div>`;
     if (s === 'delivered' && v === 'client') return `<div class="panel action"><h2>Work delivered</h2>${h.delivery_note ? `<div class="scope" style="margin:.6rem 0">${esc(h.delivery_note)}</div>` : ''}<p>Check the work. Confirm to release ${money(h.amount)} to ${esc(other)}, or report a problem. If you do nothing, it's released automatically on <b>${day(h.confirm_by)}</b>.</p><div class="btns"><button class="btn btn-gold" data-act="confirm">Confirm and release payment</button><button class="btn btn-danger" data-act="dispute">Report a problem</button></div></div>`;
     if (s === 'delivered' && v === 'pro') return `<div class="panel action"><h2>Waiting for the client to confirm</h2><p>Your fee of ${money(h.amount)} is released when they confirm, or automatically on <b>${day(h.confirm_by)}</b>.</p></div>`;
-    if (s === 'disputed') return `<div class="panel action"><h2>Under review by IdeaHub</h2><p>A problem was reported: <i>${esc(h.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while IdeaHub reviews the messages here.</p></div>`;
+    if (s === 'disputed') return `<div class="panel action"><h2>Under review by Picela</h2><p>A problem was reported: <i>${esc(h.dispute_reason)}</i></p><p style="margin-top:.6rem">The money stays in escrow while Picela reviews the messages here.</p></div>`;
     if (s === 'completed') {
       if (v === 'client' && !h.rating) return `<div class="panel action"><h2>Completed: leave a review</h2><p>How was ${esc(other)}? Your review helps other creators choose.</p>
         <div class="stars" id="stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-star="${n}" aria-label="${n} stars">★</button>`).join('')}</div>
@@ -142,7 +142,7 @@
         <div class="btns"><button class="btn btn-gold" data-act="rate">Post review</button></div></div>`;
       return `<div class="panel action"><h2>Completed</h2>${h.rating ? `<p><span style="color:var(--accent)">${'★'.repeat(h.rating.stars)}</span>${'☆'.repeat(5 - h.rating.stars)} ${h.rating.review ? '· ' + esc(h.rating.review) : ''}</p>` : `<p>${v === 'pro' ? 'The payment was added to your wallet.' : ''}</p>`}</div>`;
     }
-    if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>IdeaHub refunded ${money(h.total)} to the client.${h.resolution_note ? ' Note: ' + esc(h.resolution_note) : ''}</p></div>`;
+    if (s === 'refunded') return `<div class="panel action"><h2>Refunded</h2><p>Picela refunded ${money(h.total)} to the client.${h.resolution_note ? ' Note: ' + esc(h.resolution_note) : ''}</p></div>`;
     if (s === 'rejected') return `<div class="panel action"><h2>Declined</h2><p>${esc(h.cancel_reason || 'The professional declined this request.')}</p>${v === 'client' ? '<div class="btns"><a class="btn btn-gold" href="/find-support">Find another professional</a></div>' : ''}</div>`;
     if (s === 'cancelled') return `<div class="panel action"><h2>Cancelled</h2><p>This request was cancelled before payment.</p></div>`;
     return '';
@@ -189,7 +189,7 @@
           <div class="kv" style="display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">Paid into escrow</span><span>${h.total ? money(h.total) : '—'}</span></div>
           <div class="kv" style="display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0"><span class="muted">Status</span><span>${h.status === 'completed' ? 'Released' : h.status === 'refunded' ? 'Refunded' : h.paid_at ? 'Held in escrow' : 'Not paid'}</span></div>
         </div>
-        <div class="note" style="font-size:12.5px">Keep messages and files here. If there's a problem, IdeaHub decides based on this page.</div>
+        <div class="note" style="font-size:12.5px">Keep messages and files here. If there's a problem, Picela decides based on this page.</div>
       </aside></div>`;
     const t = $('thread'); if (t) t.scrollTop = t.scrollHeight;
   }
@@ -201,7 +201,7 @@
       const d = await r.json();
       if (!r.ok) { $('root').innerHTML = `<div class="empty"><div class="icon"></div>${esc(d.error || 'Not found')}<br><a class="btn btn-ghost btn-sm" style="margin-top:1rem" href="/hire">Your hires</a></div>`; return; }
       const keep = {}; ['msgIn', 'qAmt', 'qDays', 'qScope', 'dNote', 'rvText'].forEach(k => { const el = $(k); if (el && el.value) keep[k] = el.value; });
-      D = d; document.title = `${d.title} — Hire — IdeaHub`; render(d);
+      D = d; document.title = `${d.title} — Hire — Picela`; render(d);
       if (d.viewer === 'client' && d.delegation?.active && d.delegation.id) {
         fetch('/api/delegations/' + d.delegation.id + '/log', { headers: H() }).then(r => r.ok ? r.json() : []).then(log => {
           const el = $('delLog'); if (!el) return;
@@ -229,7 +229,7 @@
       else if (act === 'pay') { b.disabled = true; await api(`/${id}/pay`, { expected_amount: D.quote_amount }); toast('Paid. The professional has been notified.'); }
       else if (act === 'deliver') { if (!confirm('Mark the work as delivered? The client will be asked to confirm.')) { busy = false; return; } await api(`/${id}/deliver`, { note: $('dNote').value }); toast('Marked delivered.'); }
       else if (act === 'confirm') { if (!confirm(`Confirm the work and release ${money(D.amount)}? This can't be undone.`)) { busy = false; return; } await api(`/${id}/confirm`, {}); toast('Confirmed. Thank you!'); }
-      else if (act === 'dispute') { const reason = prompt('What went wrong? The payment stays in escrow while IdeaHub reviews it.'); if (!reason) { busy = false; return; } await api(`/${id}/dispute`, { reason }); }
+      else if (act === 'dispute') { const reason = prompt('What went wrong? The payment stays in escrow while Picela reviews it.'); if (!reason) { busy = false; return; } await api(`/${id}/dispute`, { reason }); }
       else if (act === 'rate') { if (!stars) { toast('Choose 1 to 5 stars.'); busy = false; return; } await api(`/${id}/rate`, { stars, review: $('rvText').value }); toast('Thanks for your review!'); }
       else if (act === 'grant') {
         if (!confirm(`Let ${D.pro.name} create and edit your listings? You can remove access any time.`)) { busy = false; return; }
